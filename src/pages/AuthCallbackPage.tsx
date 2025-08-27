@@ -1,0 +1,223 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import Card, { CardBody } from '../components/ui/Card';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Database } from '../types/supabase';
+
+const AuthCallbackPage: React.FC = () => {
+  console.log('AuthCallbackPage: Component is rendering.');
+
+  const supabase = useSupabaseClient<Database>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState<string>('Processing authentication...');
+
+  const processingRef = useRef(false); // ADDED: Ref to prevent multiple executions
+
+  useEffect(() => {
+    console.log('AuthCallbackPage: useEffect triggered.');
+    console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
+
+    // Get the 'redirect' query parameter
+    const redirectParam = searchParams.get('redirect');
+    let invitationToken: string | null = null;
+
+    // Check if the redirect URL contains an invitation token
+    if (redirectParam) {
+      try {
+        const url = new URL(redirectParam, window.location.origin);
+        const tokenParam = url.searchParams.get('token');
+        if (url.pathname === '/accept-invitation' && tokenParam) {
+          invitationToken = tokenParam;
+          console.log('AuthCallbackPage: Found invitation token in redirect URL:', invitationToken);
+        }
+      } catch (e) {
+        console.error('AuthCallbackPage: Error parsing redirect URL:', e);
+      }
+    }
+
+    // Listen for auth state changes to detect when the session is set by the redirect
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
+
+      // ADDED: Prevent multiple executions of the core logic
+      if (processingRef.current) {
+        console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
+        return;
+      }
+
+      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
+        processingRef.current = true; // Set flag to true
+
+        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
+
+        try {
+          // 1. Create/Update User Profile
+          const storedFullName = currentSession.user.user_metadata.full_name || null;
+          const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
+          const storedCountryCode = currentSession.user.user_metadata.country_code || null;
+
+          console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
+            storedFullName,
+            storedMobilePhoneNumber,
+            storedCountryCode,
+          });
+
+          const { error: profileEdgeFunctionError } = await supabase.functions.invoke('create-user-profile', {
+            body: {
+              userId: currentSession.user.id,
+              fullName: storedFullName,
+              mobilePhoneNumber: storedMobilePhoneNumber,
+              countryCode: storedCountryCode,
+            },
+          });
+
+          if (profileEdgeFunctionError) {
+            console.error('AuthCallbackPage: Error calling create-user-profile Edge Function:', profileEdgeFunctionError);
+            // Don't stop here, try to proceed with invitation if any, but log the profile error
+          } else {
+            console.log('AuthCallbackPage: Profile created/updated successfully via Edge Function.');
+            // Update login_at timestamp after successful profile creation/update
+            try {
+              await supabase
+                .from('profiles')
+                .update({ login_at: new Date().toISOString() })
+                .eq('id', currentSession.user.id);
+              console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
+            } catch (updateLoginError) {
+              console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
+            }
+          }
+
+          // 2. Handle Invitation Acceptance (if token exists)
+          if (invitationToken) {
+            console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
+            const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
+              body: { invitation_token: invitationToken },
+              headers: {
+                'Authorization': `Bearer ${currentSession.access_token}`,
+              },
+            });
+
+            if (inviteError) {
+              console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
+              setStatus('error');
+              setMessage(`Failed to accept invitation: ${inviteError.message}`);
+              processingRef.current = false; // Reset flag on error
+              setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on error
+              return; // Stop here if invitation acceptance fails
+            } else {
+              console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
+              setMessage('Authentication and invitation successful! Redirecting to dashboard...');
+            }
+          } else {
+            setMessage('Authentication successful! Redirecting to dashboard...');
+          }
+
+          setStatus('success');
+          // Determine where to redirect based on admin status
+          const { data: profileData, error: profileCheckError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', currentSession.user.id)
+            .maybeSingle();
+
+          if (profileCheckError) {
+            console.error('Error checking admin status for redirection:', profileCheckError);
+            navigate('/dashboard'); // Default to dashboard on error
+          } else if (profileData?.is_admin) {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+
+        } catch (overallError: any) {
+          console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
+          setStatus('error');
+          setMessage(`An unexpected error occurred: ${overallError.message}`);
+          setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on error
+        } finally {
+          processingRef.current = false; // Always reset flag
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setStatus('error');
+        setMessage('Your session has ended. Please log in again.');
+        console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
+        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on SIGNED_OUT error
+      } else if (event === 'INITIAL_SESSION' && !currentSession) {
+        setStatus('error');
+        setMessage('Authentication failed or no active session. Please sign up or try again.');
+        console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
+        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on INITIAL_SESSION error
+      } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
+        setStatus('error');
+        setMessage('Email not confirmed. Please check your email for a confirmation link.');
+        console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
+        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on unconfirmed email error
+      }
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      console.log('AuthCallbackPage: Cleaning up auth listener.');
+      authListener?.unsubscribe();
+    };
+  }, [navigate, supabase.auth, searchParams]);
+
+  const renderContent = () => {
+    switch (status) {
+      case 'loading':
+        return (
+          <>
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing...</h2>
+            <p className="text-gray-600">{message}</p>
+          </>
+        );
+      case 'success':
+        return (
+          <>
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
+            <p className="text-gray-600">{message}</p>
+          </>
+        );
+      case 'error':
+        return (
+          <>
+            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
+            <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {!session && (
+              <Link to="/login">
+                <Button variant="primary" size="lg" className="w-full mb-4">
+                  Log In
+                </Button>
+              </Link>
+            )}
+            <Link to="/">
+              <Button variant="outline" size="lg" className="w-full">
+                Return to Home
+              </Button>
+            </Link>
+          </>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <Card className="max-w-md w-full">
+        <CardBody className="text-center">
+          {renderContent()}
+        </CardBody>
+      </Card>
+    </div>
+  );
+};
+
+export default AuthCallbackPage;

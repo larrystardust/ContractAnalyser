@@ -1,0 +1,463 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { Database } from '../types/supabase';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { ArrowLeft, LifeBuoy, Loader2, Calendar, User, Tag, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+
+interface SupportTicket {
+  id: string;
+  profiles: { email: string; full_name: string | null } | null; // Updated type for joined data
+  subject: string;
+  description: string;
+  status: 'open' | 'in progress' | 'closed' | 'resolved';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  created_at: string;
+  updated_at: string;
+}
+
+interface SupportTicketReply {
+  id: string;
+  ticket_id: string;
+  admin_user_id: string; // Now explicitly a string
+  reply_message: string;
+  created_at: string;
+  profiles?: { full_name: string | null } | null; // Optional profiles object for rendering
+}
+
+const AdminSupportTicketsPage: React.FC = () => {
+  const supabase = useSupabaseClient<Database>();
+  const session = useSession();
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
+
+  // State for reply functionality
+  const [replyMessage, setReplyMessage] = useState<Record<string, string>>({});
+  const [replyLoading, setReplyLoading] = useState<Record<string, boolean>>({});
+  const [replyError, setReplyError] = useState<Record<string, string | null>>({});
+  const [replySuccess, setReplySuccess] = useState<Record<string, string | null>>({});
+  const [adminFullName, setAdminFullName] = useState<string | null>(null);
+
+  // State for fetched replies
+  const [ticketReplies, setTicketReplies] = useState<SupportTicketReply[]>([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+
+  const fetchTickets = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase.functions.invoke('admin-get-support-tickets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+      setTickets(data.tickets || []);
+    } catch (err: any) {
+      console.error('Error fetching support tickets:', err);
+      setError(err.message || 'Failed to load support tickets.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      fetchTickets();
+    }
+
+    const fetchAdminProfile = async () => {
+      if (session?.user?.id) {
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        if (profileError) {
+          console.error('Error fetching admin profile:', profileError);
+        } else {
+          setAdminFullName(data?.full_name || null);
+        }
+      }
+    };
+    fetchAdminProfile();
+  }, [session, supabase]);
+
+  const fetchRepliesForTicket = async (ticketId: string) => {
+    setLoadingReplies(true);
+    try {
+      // First, fetch the replies without any joins
+      const { data: repliesData, error: fetchError } = await supabase
+        .from('support_ticket_replies')
+        .select('*')
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: true });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      if (!repliesData || repliesData.length === 0) {
+        setTicketReplies([]);
+        setLoadingReplies(false);
+        return;
+      }
+
+      // Extract unique admin_user_ids
+      const adminUserIds = [...new Set(repliesData.map(reply => reply.admin_user_id))];
+
+      // Fetch profiles for these admin_user_ids
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', adminUserIds);
+
+      if (profilesError) {
+        throw profilesError;
+      }
+
+      const adminProfilesMap = new Map(profilesData.map(profile => [profile.id, profile.full_name]));
+
+      // Map the replies to include the admin's full name
+      const mappedReplies: SupportTicketReply[] = repliesData.map(reply => ({
+        ...reply,
+        profiles: {
+          full_name: adminProfilesMap.get(reply.admin_user_id) || null,
+        },
+      }));
+
+      setTicketReplies(mappedReplies);
+    } catch (err: any) {
+      console.error('Error fetching ticket replies:', err);
+      setError(err.message || 'Failed to load replies.');
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
+  const toggleExpand = (id: string) => {
+    if (expandedTicketId === id) {
+      setExpandedTicketId(null);
+      setTicketReplies([]); // Clear replies when collapsing
+    } else {
+      setExpandedTicketId(id);
+      fetchRepliesForTicket(id); // Fetch replies when expanding
+    }
+  };
+
+  const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    setUpdatingTicketId(ticketId);
+    setError(null);
+    try {
+      const { data, error: updateError } = await supabase.functions.invoke('admin-update-support-ticket', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
+          // when the body is a JavaScript object.
+        },
+        body: { ticket_id: ticketId, status: newStatus }, // This is the corrected line
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setTickets(prevTickets =>
+        prevTickets.map(ticket =>
+          ticket.id === ticketId ? { ...ticket, status: newStatus as SupportTicket['status'] } : ticket
+        )
+      );
+    } catch (err: any) {
+      console.error('Error updating ticket status:', err);
+      setError(err.message || 'Failed to update ticket status.');
+    } finally {
+      setUpdatingTicketId(null);
+    }
+  };
+
+  const handlePriorityChange = async (ticketId: string, newPriority: string) => {
+    setUpdatingTicketId(ticketId);
+    setError(null);
+    try {
+      const { data, error: updateError } = await supabase.functions.invoke('admin-update-support-ticket', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
+          // when the body is a JavaScript object.
+        },
+        body: { ticket_id: ticketId, priority: newPriority }, // This is the corrected line
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setTickets(prevTickets =>
+        prevTickets.map(ticket =>
+          ticket.id === ticketId ? { ...ticket, priority: newPriority as SupportTicket['priority'] } : ticket
+        )
+      );
+    } catch (err: any) {
+      console.error('Error updating ticket priority:', err);
+      setError(err.message || 'Failed to update ticket priority.');
+    } finally {
+      setUpdatingTicketId(null);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  const getUserEmail = (ticket: SupportTicket) => {
+    if (ticket.profiles && ticket.profiles.email) {
+      return ticket.profiles.email;
+    }
+    return 'N/A';
+  };
+
+  const getUserFullName = (ticket: SupportTicket) => {
+    if (ticket.profiles && ticket.profiles.full_name) {
+      return ticket.profiles.full_name;
+    }
+    return 'N/A';
+  };
+
+  const handleReply = async (ticket: SupportTicket) => {
+    setReplyLoading(prev => ({ ...prev, [ticket.id]: true }));
+    setReplyError(prev => ({ ...prev, [ticket.id]: null }));
+    setReplySuccess(prev => ({ ...prev, [ticket.id]: null }));
+
+    if (!replyMessage[ticket.id] || replyMessage[ticket.id].trim() === '') {
+      setReplyError(prev => ({ ...prev, [ticket.id]: 'Reply message cannot be empty.' }));
+      setReplyLoading(prev => ({ ...prev, [ticket.id]: false }));
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-admin-reply-email', {
+        body: {
+          recipientEmail: getUserEmail(ticket),
+          subject: `Re: ${ticket.subject}`,
+          message: replyMessage[ticket.id],
+          recipientName: getUserFullName(ticket),
+          adminName: adminFullName,
+          replyType: 'support_ticket', // Specify reply type
+          entityId: ticket.id, // Pass ticket ID
+        },
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setReplySuccess(prev => ({ ...prev, [ticket.id]: data.message || 'Reply sent successfully!' }));
+      setReplyMessage(prev => ({ ...prev, [ticket.id]: '' })); // Clear reply message
+      fetchRepliesForTicket(ticket.id); // Refresh replies after sending
+    } catch (err: any) {
+      console.error('Error sending reply:', err);
+      setReplyError(prev => ({ ...prev, [ticket.id]: err.message || 'Failed to send reply.' }));
+    } finally {
+      setReplyLoading(prev => ({ ...prev, [ticket.id]: false }));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 mt-16 text-center">
+        <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+        <p className="text-gray-500">Loading support tickets...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6 mt-16 text-center">
+        <p className="text-red-600">Error: {error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-6 mt-16">
+      <div className="mb-6">
+        <Link to="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin Dashboard
+        </Link>
+      </div>
+
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Manage Support Tickets</h1>
+      <p className="text-gray-700 mb-8">Handle user support requests and track their status.</p>
+
+      {tickets.length === 0 ? (
+        <Card>
+          <CardBody className="text-center py-8">
+            <LifeBuoy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No support tickets found.</p>
+          </CardBody>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {tickets.map((ticket) => (
+            <Card key={ticket.id} className="border-l-4 border-red-500">
+              <CardBody>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{ticket.subject}</h3>
+                    <div className="text-sm text-gray-600 flex items-center space-x-4 mb-2">
+                      <span className="flex items-center">
+                        <User className="h-4 w-4 mr-1" /> {getUserFullName(ticket)} ({getUserEmail(ticket)})
+                      </span>
+                      <span className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" /> {formatDate(ticket.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-gray-700">
+                      {expandedTicketId === ticket.id ? ticket.description : `${ticket.description.substring(0, 150)}...`}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-3">
+                      {ticket.description.length > 150 && (
+                        <button
+                          onClick={() => toggleExpand(ticket.id)}
+                          className="text-blue-600 hover:underline text-sm"
+                        >
+                          {expandedTicketId === ticket.id ? 'Show Less' : 'Read More'}
+                        </button>
+                      )}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => toggleExpand(ticket.id)}
+                        icon={<Send className="h-4 w-4" />}
+                      >
+                        Reply
+                      </Button>
+                    </div>
+                    <div className="mt-4 flex items-center space-x-4">
+                      <div>
+                        <label htmlFor={`status-${ticket.id}`} className="sr-only">Status</label>
+                        <select
+                          id={`status-${ticket.id}`}
+                          value={ticket.status}
+                          onChange={(e) => handleStatusChange(ticket.id, e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          disabled={updatingTicketId === ticket.id}
+                        >
+                          <option value="open">Open</option>
+                          <option value="in progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor={`priority-${ticket.id}`} className="sr-only">Priority</label>
+                        <select
+                          id={`priority-${ticket.id}`}
+                          value={ticket.priority}
+                          onChange={(e) => handlePriorityChange(ticket.id, e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          disabled={updatingTicketId === ticket.id}
+                        >
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="urgent">Urgent</option>
+                        </select>
+                      </div>
+                      {updatingTicketId === ticket.id && (
+                        <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      )}
+                    </div>
+
+                    {expandedTicketId === ticket.id && (
+                      <div className="mt-6 pt-4 border-t border-gray-200">
+                        <h4 className="text-md font-semibold text-gray-800 mb-2">Reply History</h4>
+                        {loadingReplies ? (
+                          <div className="text-center py-2">
+                            <Loader2 className="h-5 w-5 text-blue-500 animate-spin mx-auto" />
+                            <p className="text-gray-500 text-sm">Loading replies...</p>
+                          </div>
+                        ) : ticketReplies.length === 0 ? (
+                          <p className="text-gray-500 text-sm mb-4">No replies yet.</p>
+                        ) : (
+                          <div className="space-y-3 mb-4">
+                            {ticketReplies.map(reply => (
+                              <div key={reply.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                                <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
+                                  <span>Replied by: {reply.profiles?.full_name || 'Admin'}</span>
+                                  <span>{formatDate(reply.created_at)}</span>
+                                </div>
+                                <p className="text-sm text-gray-800">{reply.reply_message}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <h4 className="text-md font-semibold text-gray-800 mb-2">Send New Reply</h4>
+                        {replySuccess[ticket.id] && (
+                          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-3 flex items-center">
+                            <CheckCircle className="h-5 w-5 mr-2" />
+                            <span>{replySuccess[ticket.id]}</span>
+                          </div>
+                        )}
+                        {replyError[ticket.id] && (
+                          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-3 flex items-center">
+                            <AlertCircle className="h-5 w-5 mr-2" />
+                            <span>{replyError[ticket.id]}</span>
+                          </div>
+                        )}
+                        <textarea
+                          rows={4}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          placeholder={`Reply to ${getUserFullName(ticket)}...`}
+                          value={replyMessage[ticket.id] || ''}
+                          onChange={(e) => setReplyMessage(prev => ({ ...prev, [ticket.id]: e.target.value }))}
+                          disabled={replyLoading[ticket.id]}
+                        ></textarea>
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleReply(ticket)}
+                            disabled={replyLoading[ticket.id]}
+                            icon={<Send className="h-4 w-4" />}
+                          >
+                            {replyLoading[ticket.id] ? 'Sending...' : 'Send Reply'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AdminSupportTicketsPage;
