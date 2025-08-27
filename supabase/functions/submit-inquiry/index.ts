@@ -1,0 +1,80 @@
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+// Helper for CORS responses
+function corsResponse(body: string | object | null, status = 200) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*', // IMPORTANT: Adjust this in production to your frontend domain (e.g., 'https://your-app.netlify.app') for security
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+    'Content-Type': 'application/json',
+  };
+  if (status === 204) {
+    return new Response(null, { status, headers });
+  }
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return corsResponse(null, 204);
+  }
+
+  if (req.method !== 'POST') {
+    return corsResponse({ error: 'Method not allowed' }, 405);
+  }
+
+  try {
+    const { first_name, last_name, email, subject, message, recaptcha_token } = await req.json();
+
+    if (!first_name || !last_name || !email || !subject || !message || !recaptcha_token) {
+      return corsResponse({ error: 'Missing required form fields or reCAPTCHA token.' }, 400);
+    }
+
+    // Verify reCAPTCHA token with Google's API
+    const recaptchaSecretKey = Deno.env.get('RECAPTCHA_SECRET_KEY');
+    if (!recaptchaSecretKey) {
+      console.error('RECAPTCHA_SECRET_KEY is not set in environment variables.');
+      return corsResponse({ error: 'Server configuration error: reCAPTCHA secret key missing.' }, 500);
+    }
+
+    const recaptchaVerificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptcha_token}`;
+    const recaptchaResponse = await fetch(recaptchaVerificationUrl, { method: 'POST' });
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success) {
+      console.warn('reCAPTCHA verification failed:', recaptchaData['error-codes']);
+      return corsResponse({ error: 'reCAPTCHA verification failed. Please try again.' }, 403);
+    }
+
+    // reCAPTCHA passed, now insert inquiry into database
+    const { data, error: insertError } = await supabase
+      .from('inquiries')
+      .insert({
+        first_name,
+        last_name,
+        email,
+        subject,
+        message,
+        recaptcha_token: recaptcha_token, // Storing the token is optional, but can be useful for auditing
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting inquiry:', insertError);
+      return corsResponse({ error: insertError.message || 'Failed to submit inquiry to database.' }, 500);
+    }
+
+    return corsResponse({ message: 'Inquiry submitted successfully!', inquiry: data });
+
+  } catch (error: any) {
+    console.error('Error in submit-inquiry Edge Function:', error);
+    return corsResponse({ error: error.message }, 500);
+  }
+});

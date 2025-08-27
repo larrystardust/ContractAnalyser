@@ -1,0 +1,2 @@
+ALTER TABLE public.subscription_memberships
+ADD COLUMN invited_email_address text;
