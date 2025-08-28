@@ -17,7 +17,6 @@ const MfaChallengePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
-  const [mfaVerified, setMfaVerified] = useState(false); // NEW STATE
 
   const redirectPath = searchParams.get('redirect') || '/dashboard';
 
@@ -32,6 +31,7 @@ const MfaChallengePage: React.FC = () => {
 
     // If user is already aal2, redirect immediately
     if (session.aal === 'aal2') {
+      setMessage('MFA already verified. Redirecting...');
       navigate(redirectPath);
       return;
     }
@@ -50,12 +50,12 @@ const MfaChallengePage: React.FC = () => {
           setMessage('Please enter your 2FA code.');
         } else {
           // No TOTP factor found, redirect to dashboard (or login if unexpected)
-          // This case should ideally be handled by AuthGuard/LoginPage not redirecting here
-          // if no MFA is enrolled. But as a fallback, redirect.
-          navigate(redirectPath);
+          // This means the user was incorrectly sent to MFA challenge page.
+          console.warn('MfaChallengePage: User has no verified TOTP factors but is on MFA challenge page. Redirecting.');
+          navigate(redirectPath); // Or navigate('/login') if this is a critical error
         }
       } catch (err: any) {
-        console.error('Error fetching MFA factors:', err);
+        console.error('MfaChallengePage: Error fetching MFA factors:', err);
         setError(err.message || 'Failed to load MFA factors.');
         navigate('/login'); // Redirect to login on error
       } finally {
@@ -66,13 +66,13 @@ const MfaChallengePage: React.FC = () => {
     fetchMfaFactors();
   }, [session, isSessionLoading, navigate, supabase, redirectPath]);
 
-  // NEW useEffect to handle redirection after MFA verification
+  // This useEffect handles redirection once session.aal becomes aal2
   useEffect(() => {
-    if (mfaVerified && session?.aal === 'aal2') {
+    if (!isSessionLoading && session?.aal === 'aal2') {
       setMessage('MFA verified successfully! Redirecting...');
       navigate(redirectPath);
     }
-  }, [mfaVerified, session?.aal, navigate, redirectPath]);
+  }, [session?.aal, isSessionLoading, navigate, redirectPath]);
 
 
   const handleVerifyMfa = async (e: React.FormEvent) => {
@@ -105,8 +105,9 @@ const MfaChallengePage: React.FC = () => {
 
       if (verifyError) throw verifyError;
 
-      // MFA verification successful, set state to trigger redirection in useEffect
-      setMfaVerified(true); 
+      // MFA verification successful. The session.aal will be updated by Supabase's auth listener.
+      // The useEffect above will handle the navigation.
+      setMessage('Verification successful. Waiting for session update...');
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
@@ -124,8 +125,9 @@ const MfaChallengePage: React.FC = () => {
     );
   }
 
+  // If session is already aal2, it should have been redirected by the useEffect.
+  // This is a fallback to prevent rendering the form if already authenticated.
   if (!session?.user || session.aal === 'aal2') {
-    // Should have been redirected by useEffect, but as a fallback
     return null;
   }
 
