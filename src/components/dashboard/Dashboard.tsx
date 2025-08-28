@@ -12,7 +12,7 @@ import { useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Impo
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts(); // MODIFIED: Added errorContracts
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(selectedContractId); // MODIFIED: Initialize with existing state
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
 
