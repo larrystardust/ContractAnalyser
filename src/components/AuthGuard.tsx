@@ -77,8 +77,17 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // If an authenticated user session is found, MFA is not required (or already aal2), render the protected content.
-  console.log('AuthGuard: User is authenticated and MFA check passed. Rendering protected content.');
-  return <Outlet />;
+  // ADDED: Explicitly check for aal2 here to ensure full authentication level.
+  if (session.aal === 'aal2') {
+    console.log('AuthGuard: User is authenticated and MFA check passed. Rendering protected content.');
+    return <Outlet />;
+  } else {
+    // This case should ideally not be hit if logic is perfect, but acts as a safeguard.
+    // It means session.user exists, mfaRequired is false, but aal is not aal2.
+    // This could happen if MFA was disabled, or if aal is still undefined/aal1 for some reason.
+    console.warn('AuthGuard: User authenticated but AAL is not aal2. Redirecting to MFA challenge as a fallback.');
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
 };
 
 export default AuthGuard;
