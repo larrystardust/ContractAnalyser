@@ -67,9 +67,12 @@ const MfaChallengePage: React.FC = () => {
   }, [session, isSessionLoading, navigate, supabase, redirectPath]);
 
   // This useEffect handles redirection once session.aal becomes aal2
+  // Keep this for robustness, as the session context might update after direct navigation
   useEffect(() => {
     if (!isSessionLoading && session?.aal === 'aal2') {
       setMessage('MFA verified successfully! Redirecting...');
+      // This navigation is a fallback/confirmation, the primary navigation happens in handleVerifyMfa
+      // if the direct navigation is successful.
       navigate(redirectPath);
     }
   }, [session?.aal, isSessionLoading, navigate, redirectPath]);
@@ -105,9 +108,8 @@ const MfaChallengePage: React.FC = () => {
 
       if (verifyError) throw verifyError;
 
-      // MFA verification successful. The session.aal will be updated by Supabase's auth listener.
-      // The useEffect above will handle the navigation.
-      setMessage('Verification successful. Waiting for session update...');
+      // MFA verification successful. Directly navigate.
+      navigate(redirectPath);
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
