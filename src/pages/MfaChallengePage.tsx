@@ -108,7 +108,20 @@ const MfaChallengePage: React.FC = () => {
 
       if (verifyError) throw verifyError;
 
-      // MFA verification successful. Directly navigate.
+      // MFA verification successful.
+      // Explicitly refresh the session to ensure AAL is updated immediately.
+      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+
+      if (refreshError) {
+        console.error('Error refreshing session after MFA verification:', refreshError);
+        // Even if refresh fails, try to navigate, as the AAL might still update eventually.
+      } else if (refreshedSession?.aal === 'aal2') {
+        console.log('Session successfully refreshed to aal2.');
+      } else {
+        console.warn('Session refreshed, but aal is not aal2. Current aal:', refreshedSession?.aal);
+      }
+
+      // Navigate to the intended path.
       navigate(redirectPath);
 
     } catch (err: any) {
