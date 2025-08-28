@@ -17,6 +17,7 @@ const MfaChallengePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
+  const [mfaVerifiedSuccessfully, setMfaVerifiedSuccessfully] = useState(false); // ADDED: New state
 
   const redirectPath = searchParams.get('redirect') || '/dashboard';
 
@@ -59,14 +60,21 @@ const MfaChallengePage: React.FC = () => {
     fetchMfaFactors();
   }, [session, isSessionLoading, navigate, supabase, redirectPath]);
 
-  // REMOVED: The useEffect that watches session.aal for navigation.
-  // This was causing a race condition with AuthGuard.
+  // ADDED: New useEffect to handle navigation after successful MFA verification and session update
+  useEffect(() => {
+    if (mfaVerifiedSuccessfully && session?.aal === 'aal2') {
+      setMessage('Verification successful. Redirecting...');
+      navigate(redirectPath);
+    }
+  }, [mfaVerifiedSuccessfully, session, navigate, redirectPath]);
+
 
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
+    setMfaVerifiedSuccessfully(false); // Reset state on new attempt
 
     if (!factorId) {
       setError('MFA factor not found. Please try logging in again.');
@@ -101,9 +109,7 @@ const MfaChallengePage: React.FC = () => {
         // Log the error but still attempt to navigate, as the session might eventually update.
       }
 
-      // Navigate directly after the session refresh.
-      setMessage('Verification successful. Redirecting...');
-      navigate(redirectPath);
+      setMfaVerifiedSuccessfully(true); // Set success state, useEffect will handle navigation
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
