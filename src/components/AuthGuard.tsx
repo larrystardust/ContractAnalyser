@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'; // Import useRef
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { Navigate, Outlet, useLocation, useNavigate } => {
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'; // Corrected import statement
 import { Database } from '../types/supabase';
 
 interface AuthGuardProps {
