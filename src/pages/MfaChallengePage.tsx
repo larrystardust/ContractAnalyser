@@ -103,10 +103,19 @@ const MfaChallengePage: React.FC = () => {
       // MFA verification successful.
       // Explicitly refresh the session to ensure AAL is updated immediately.
       // This is crucial for AuthGuard to correctly recognize the session.
-      const { error: refreshError } = await supabase.auth.refreshSession();
+      const { data: refreshedSessionData, error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
-        console.error('Error refreshing session after MFA verification:', refreshError);
-        // Log the error but still attempt to navigate, as the session might eventually update.
+        console.error('MfaChallengePage: Error refreshing session after MFA verification:', refreshError);
+      } else {
+        console.log('MfaChallengePage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal);
+      }
+
+      // Now, explicitly get the session again to ensure we have the latest state
+      const { data: { session: currentSessionAfterRefresh }, error: getSessionError } = await supabase.auth.getSession();
+      if (getSessionError) {
+        console.error('MfaChallengePage: Error getting session after refresh:', getSessionError);
+      } else {
+        console.log('MfaChallengePage: Current session AAL after refresh and getSession:', currentSessionAfterRefresh?.aal);
       }
 
       setMfaVerifiedSuccessfully(true); // Set success state, useEffect will handle navigation
