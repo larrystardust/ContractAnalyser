@@ -60,7 +60,7 @@ const AdminGuard: React.FC = () => {
           // If MFA is enrolled AND the mfa_passed flag is set, assume AAL2
           if (mfaPassedFlag === 'true') {
             console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Assuming aal2.');
-            localStorage.removeItem('mfa_passed'); // Clear the flag
+            // localStorage.removeItem('mfa_passed'); // REMOVED: MfaChallengePage will handle clearing this
             setTargetAal('aal2');
           } else {
             // MFA enrolled but no flag, or aal is not aal2, redirect to challenge
