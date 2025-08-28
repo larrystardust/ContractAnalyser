@@ -47,7 +47,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         // Active session exists, proceed with logout
         await supabase.auth.signOut({ scope: 'local' });
       }
-      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag on logout
     } catch (error) {
       // Log any unexpected errors but don't prevent navigation
       console.warn('Logout error:', error);
