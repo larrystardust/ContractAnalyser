@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'; // Import useRef
+import React, { useEffect, useState } from 'react'; // Removed useRef
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -11,7 +11,7 @@ const AdminGuard: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdminStatus, setLoadingAdminStatus] = useState(true);
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
-  const mfaPassedFlagRef = useRef(false); // Use a ref to track if MFA was passed in this session
+  // Removed mfaPassedFlagRef and its associated useEffect for clearing localStorage
 
   useEffect(() => {
     const checkAdminAndMfaStatus = async () => {
@@ -24,15 +24,7 @@ const AdminGuard: React.FC = () => {
         setIsAdmin(false);
         setLoadingAdminStatus(false);
         setTargetAal(null); // No user, will redirect to login
-        mfaPassedFlagRef.current = false; // Reset ref on logout
         return;
-      }
-
-      // Check localStorage for the mfa_passed flag only once per session
-      if (!mfaPassedFlagRef.current && localStorage.getItem('mfa_passed') === 'true') {
-        mfaPassedFlagRef.current = true;
-        // localStorage.removeItem('mfa_passed'); // REMOVED: Clear it immediately after reading, now delayed
-        console.log('AdminGuard: MFA passed flag detected.');
       }
 
       try {
@@ -63,19 +55,19 @@ const AdminGuard: React.FC = () => {
         console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled);
 
         if (hasMfaEnrolled) {
-          // If MFA is enrolled, and we have the mfaPassedFlagRef set, or session.aal is aal2
-          if (mfaPassedFlagRef.current || session.aal === 'aal2') {
-            console.log('AdminGuard: MFA enrolled and either flag or AAL2 detected. Granting access.');
+          // If MFA is enrolled, check localStorage for the mfa_passed flag
+          const mfaPassedFlag = localStorage.getItem('mfa_passed');
+          if (mfaPassedFlag === 'true') {
+            console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Granting access.');
             setTargetAal('aal2');
           } else {
-            // MFA enrolled but no flag/AAL2, redirect to challenge
-            console.log('AdminGuard: MFA enrolled but no flag/AAL2. Redirecting to challenge.');
+            // MFA enrolled but no flag, redirect to challenge
+            console.log('AdminGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
             setTargetAal('aal1'); // User needs to complete MFA challenge
           }
         } else {
-          // If no MFA is enrolled, AAL1 is sufficient (or aal2 if they somehow got it).
-          // In this case, they are considered fully authenticated for access.
-          console.log('AdminGuard: No MFA enrolled. Assuming aal2.');
+          // If no MFA is enrolled, AAL1 is sufficient.
+          console.log('AdminGuard: No MFA enrolled. Granting access.');
           setTargetAal('aal2');
         }
       } catch (err) {
@@ -90,19 +82,7 @@ const AdminGuard: React.FC = () => {
     checkAdminAndMfaStatus();
   }, [session, loadingSession, supabase]);
 
-  // New useEffect to clear the localStorage flag after a delay
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (targetAal === 'aal2' && mfaPassedFlagRef.current) {
-      // Clear the flag after a short delay to ensure navigation and rendering stabilize
-      timer = setTimeout(() => {
-        localStorage.removeItem('mfa_passed');
-        mfaPassedFlagRef.current = false; // Reset ref after clearing
-        console.log('AdminGuard: Cleared mfa_passed from localStorage after delay.');
-      }, 500); // 500ms delay
-    }
-    return () => clearTimeout(timer); // Cleanup the timer
-  }, [targetAal]); // Run this effect when targetAal changes
+  // Removed useEffect to clear localStorage flag after delay
 
   // Show loading indicator while checking authentication and admin/MFA status
   if (loadingSession || loadingAdminStatus || targetAal === null) {
