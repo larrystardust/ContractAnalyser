@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
 const AdminGuard: React.FC = () => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdminStatus, setLoadingAdminStatus] = useState(true);
-  const [mfaCheckComplete, setMfaCheckComplete] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState<boolean | null>(null); // null: checking, true: required, false: not required
 
   useEffect(() => {
     const checkAdminAndMfaStatus = async () => {
@@ -18,7 +19,7 @@ const AdminGuard: React.FC = () => {
       if (!session?.user) {
         setIsAdmin(false);
         setLoadingAdminStatus(false);
-        setMfaCheckComplete(true);
+        setMfaRequired(false); // No user, so MFA not required (will redirect to login)
         return;
       }
 
@@ -43,35 +44,35 @@ const AdminGuard: React.FC = () => {
           const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
           if (factorsError) {
             console.error('AdminGuard: Error listing MFA factors:', factorsError);
-            setMfaCheckComplete(true); // Allow access on error, but log it
+            setMfaRequired(false); // Treat error as no MFA required for now
             return;
           }
 
           if (factors.totp.length > 0) {
-            // Admin user has MFA enrolled but session is aal1, redirect to MFA challenge
-            console.log('AdminGuard: Admin user has MFA enrolled but session is aal1. Redirecting to MFA challenge.');
-            navigate(`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+            // Admin user has MFA enrolled but session is aal1, MFA is required
+            setMfaRequired(true);
           } else {
-            // No MFA factors enrolled, allow access
-            setMfaCheckComplete(true);
+            // No MFA factors enrolled, MFA is not required
+            setMfaRequired(false);
           }
         } else {
-          // Either not an admin, or already aal2, or no MFA enrolled, so MFA check is complete
-          setMfaCheckComplete(true);
+          // Either not an admin, or already aal2, or no MFA enrolled, so MFA is not required
+          setMfaRequired(false);
         }
       } catch (err) {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
         setIsAdmin(false);
         setLoadingAdminStatus(false);
-        setMfaCheckComplete(true);
+        setMfaRequired(false); // Treat unexpected error as no MFA required
       }
     };
 
+    setMfaRequired(null); // Reset state to 'checking' on session/loadingSession change
     checkAdminAndMfaStatus();
-  }, [session, loadingSession, supabase, location, navigate]); // Added navigate to dependencies
+  }, [session, loadingSession, supabase]); // Removed location, navigate from dependencies
 
   // Show loading indicator while checking authentication and admin/MFA status
-  if (loadingSession || loadingAdminStatus || !mfaCheckComplete) {
+  if (loadingSession || loadingAdminStatus || mfaRequired === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -79,10 +80,22 @@ const AdminGuard: React.FC = () => {
     );
   }
 
-  // If not loading, check if a user session exists and if the user is an admin and MFA check passed.
-  if (!session || !session.user || !isAdmin || session.aal === 'aal1') { // Added session.aal check here as a final gate
-    console.log('AdminGuard: User is not authenticated, not an admin, or MFA not completed. Redirecting to dashboard.');
-    return <Navigate to="/dashboard" replace />; // Redirect to dashboard or login page
+  // If not loading, check if a user session exists.
+  if (!session || !session.user) {
+    console.log('AdminGuard: No active user session found. Redirecting to login page.');
+    return <Navigate to="/login" replace />;
+  }
+
+  // Admin specific check
+  if (!isAdmin) {
+    console.log('AdminGuard: User is not an admin. Redirecting to dashboard.');
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // MFA check for admin
+  if (mfaRequired) {
+    console.log('AdminGuard: Admin user has MFA enrolled but session is aal1. Redirecting to MFA challenge.');
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // If an authenticated admin user is found and MFA check passed, render the protected content.
