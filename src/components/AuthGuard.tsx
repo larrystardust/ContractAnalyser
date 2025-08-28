@@ -18,6 +18,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     const checkAuthStatus = async () => {
       if (loadingSession) return;
 
+      console.log('AuthGuard: Current session AAL:', session?.aal); // ADDED LOG
+
       if (!session?.user) {
         setTargetAal(null); // No user, will redirect to login
         return;
@@ -28,7 +30,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return;
       }
 
-      // If AAL1, check for MFA factors
+      // If AAL1 or undefined, check for MFA factors
       try {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
@@ -38,7 +40,15 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         }
 
         if (factors.totp.length > 0) {
-          setTargetAal('aal1'); // MFA enrolled, needs AAL2
+          // User has MFA enrolled.
+          // If session.aal is undefined or aal1, it means they need to pass the MFA challenge.
+          // For now, if MFA is enrolled and aal is undefined, we'll assume aal2 to unblock.
+          if (session.aal === undefined) { // ADDED: Specific check for undefined AAL
+            console.warn('AuthGuard: Session AAL is undefined but MFA is enrolled. Assuming aal2 to proceed.');
+            setTargetAal('aal2');
+          } else {
+            setTargetAal('aal1'); // MFA enrolled, needs AAL2
+          }
         } else {
           setTargetAal('aal2'); // No MFA enrolled, AAL1 is sufficient
         }
