@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, Smartphone, Eye, EyeOff, Save, QrCode, CheckCircle, XCircle, Copy, Lock } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
 
@@ -278,7 +278,11 @@ const SecuritySettings: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Corrected API call for generating recovery codes
+      // Check if recoveryCodes functionality is available
+      if (!supabase.auth.mfa || !supabase.auth.mfa.recoveryCodes) {
+        throw new Error('Recovery codes functionality is not available. Please ensure MFA is fully enabled and configured in your Supabase project settings, including recovery codes.');
+      }
+
       const { codes, error: generateError } = await supabase.auth.mfa.recoveryCodes.generate();
       if (generateError) throw generateError;
       
