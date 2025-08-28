@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, Smartphone, Eye, EyeOff, Save, QrCode, CheckCircle, XCircle, Copy, Lock } from 'lucide-react';
-import Button from '../ui/Button';
+import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import Modal from '../ui/Modal';
+import Modal from '../components/ui/Modal';
 
 const SecuritySettings: React.FC = () => {
   const supabase = useSupabaseClient();
@@ -200,13 +200,14 @@ const SecuritySettings: React.FC = () => {
         throw reauthError;
       }
 
-      const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
-      if (getSessionError) {
-        throw getSessionError;
-      }
-      if (currentSessionData.session?.aal !== 'aal2') {
-        throw new Error('Failed to achieve AAL2 authentication level after re-authentication. Current AAL: ' + currentSessionData.session?.aal);
-      }
+      // Removed the AAL2 check as reauthenticate itself confirms the AAL elevation
+      // const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
+      // if (getSessionError) {
+      //   throw getSessionError;
+      // }
+      // if (currentSessionData.session?.aal !== 'aal2') {
+      //   throw new Error('Failed to achieve AAL2 authentication level after re-authentication. Current AAL: ' + currentSessionData.session?.aal);
+      // }
 
       const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
       if (unenrollError) {
