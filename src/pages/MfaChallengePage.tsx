@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Smartphone, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Smartphone, Loader2, AlertCircle, CheckCircle, LogOut } from 'lucide-react'; // ADDED LogOut icon
 import { Database } from '../types/supabase';
 
 const MfaChallengePage: React.FC = () => {
@@ -93,13 +93,30 @@ const MfaChallengePage: React.FC = () => {
       if (verifyError) throw verifyError;
 
       // MFA verification successful.
-      // Directly navigate to the intended path.
-      // The auth-helpers-react library should update the session context after mfa.verify.
-      navigate(redirectPath);
+      // Add a small delay before navigating to allow session context to fully update
+      setMessage('Verification successful. Redirecting...');
+      setTimeout(() => {
+        navigate(redirectPath);
+      }, 500); // 500ms delay
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
       setError(err.message || 'Invalid 2FA code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await supabase.auth.signOut();
+      navigate('/login'); // Redirect to login page after logout
+    } catch (err: any) {
+      console.error('Error logging out:', err);
+      setError(err.message || 'Failed to log out.');
     } finally {
       setLoading(false);
     }
@@ -115,7 +132,6 @@ const MfaChallengePage: React.FC = () => {
 
   // If session is already aal2, it should have been redirected by the useEffect.
   // This is a fallback to prevent rendering the form if already authenticated.
-  // This check is still important for initial load if the user somehow lands here with aal2.
   if (!session?.user || session.aal === 'aal2') {
     return null;
   }
@@ -176,6 +192,19 @@ const MfaChallengePage: React.FC = () => {
               </Button>
             </div>
           </form>
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={handleLogout}
+              disabled={loading}
+              icon={<LogOut className="h-5 w-5" />}
+            >
+              Logout
+            </Button>
+          </div>
         </CardBody>
       </Card>
     </div>
