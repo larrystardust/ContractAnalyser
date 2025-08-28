@@ -143,7 +143,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange })
       if (subscription && currentFileCount >= maxAllowedFiles) {
         alert(`You have reached your file storage limit of ${maxAllowedFiles} files. To add more files, please delete old files from your Contracts page.`);
       } else if (!hasAvailableSingleUse()) {
-        alert('You do not have an available single-use credit. Please purchase one to upload a contract.');
+        alert('You do not have an available single-use credit or a subscription plan. Please purchase one to upload and analyze contracts.');
       }
       return;
     }
