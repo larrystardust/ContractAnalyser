@@ -12,52 +12,48 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [mfaRequired, setMfaRequired] = useState<boolean | null>(null); // null: checking, true: required, false: not required
+  const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // ADDED: New state to track desired AAL
 
   useEffect(() => {
-    const checkMfaStatus = async () => {
-      if (loadingSession) return; // Wait for session to load
+    const checkAuthStatus = async () => {
+      if (loadingSession) return;
 
       if (!session?.user) {
-        // No user session, MFA not required (will redirect to login)
-        setMfaRequired(false);
+        setTargetAal(null); // No user, will redirect to login
         return;
       }
 
-      // If session is already aal2, no MFA challenge needed
       if (session.aal === 'aal2') {
-        setMfaRequired(false);
+        setTargetAal('aal2'); // Already AAL2, good to go
         return;
       }
 
-      // If aal1, check for MFA factors
+      // If AAL1, check for MFA factors
       try {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
           console.error('AuthGuard: Error listing MFA factors:', factorsError);
-          setMfaRequired(false); // Treat error as no MFA required for now, but log
+          setTargetAal('aal1'); // Assume AAL1 if error, let login handle
           return;
         }
 
         if (factors.totp.length > 0) {
-          // User has MFA enrolled but session is aal1, MFA is required
-          setMfaRequired(true);
+          setTargetAal('aal1'); // MFA enrolled, needs AAL2
         } else {
-          // No MFA factors enrolled, MFA is not required
-          setMfaRequired(false);
+          setTargetAal('aal2'); // No MFA enrolled, AAL1 is sufficient
         }
       } catch (err) {
         console.error('AuthGuard: Unexpected error during MFA check:', err);
-        setMfaRequired(false); // Treat unexpected error as no MFA required
+        setTargetAal('aal1'); // Fallback
       }
     };
 
-    setMfaRequired(null); // Reset state to 'checking' on session/loadingSession change
-    checkMfaStatus();
+    setTargetAal(null); // Reset on session/loadingSession change
+    checkAuthStatus();
   }, [session, loadingSession, supabase]); // Removed location, navigate from dependencies as they are used in render logic
 
   // Show loading indicator while checking authentication and MFA status
-  if (loadingSession || mfaRequired === null) {
+  if (loadingSession || targetAal === null) { // MODIFIED: Use targetAal for loading state
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -71,23 +67,19 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (mfaRequired) {
-    console.log('AuthGuard: MFA is required but session is aal1. Redirecting to MFA challenge.');
+  if (targetAal === 'aal1') { // MODIFIED: User is AAL1 and needs MFA
+    console.log('AuthGuard: MFA is required (aal1). Redirecting to MFA challenge.');
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If an authenticated user session is found, MFA is not required (or already aal2), render the protected content.
-  // ADDED: Explicitly check for aal2 here to ensure full authentication level.
-  if (session.aal === 'aal2') {
-    console.log('AuthGuard: User is authenticated and MFA check passed. Rendering protected content.');
+  if (targetAal === 'aal2') { // MODIFIED: User is AAL2 or AAL1 and no MFA enrolled
+    console.log('AuthGuard: User is authenticated and AAL2 or no MFA required. Rendering protected content.');
     return <Outlet />;
-  } else {
-    // This case should ideally not be hit if logic is perfect, but acts as a safeguard.
-    // It means session.user exists, mfaRequired is false, but aal is not aal2.
-    // This could happen if MFA was disabled, or if aal is still undefined/aal1 for some reason.
-    console.warn('AuthGuard: User authenticated but AAL is not aal2. Redirecting to MFA challenge as a fallback.');
-    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
+
+  // This should ideally not be reached
+  console.warn('AuthGuard: Unexpected state. Redirecting to login.');
+  return <Navigate to="/login" replace />;
 };
 
 export default AuthGuard;
