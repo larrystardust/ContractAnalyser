@@ -111,9 +111,6 @@ const MfaChallengePage: React.FC = () => {
       localStorage.setItem('mfa_passed', 'true');
       // REMOVED: localStorage.removeItem('mfa_passed'); // This line was removed from AuthGuard and AdminGuard
 
-      // Clear the flag here, right before navigating away
-      // localStorage.removeItem('mfa_passed'); // REMOVED: This will now be handled by AuthGuard/AdminGuard
-
       // Navigate to the redirect path
       navigate(redirectPath);
 
@@ -131,6 +128,7 @@ const MfaChallengePage: React.FC = () => {
     setMessage(null);
     try {
       await supabase.auth.signOut();
+      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag on logout
       navigate('/login'); // Redirect to login page after logout
     } catch (err: any) {
       console.error('Error logging out:', err);
