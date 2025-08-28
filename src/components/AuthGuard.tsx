@@ -38,17 +38,24 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         const hasMfaEnrolled = factors.totp.length > 0;
         console.log('AuthGuard: User has MFA enrolled:', hasMfaEnrolled);
 
+        // Check localStorage flag for MFA completion
+        const mfaPassedFlag = localStorage.getItem('mfa_passed');
+
         if (hasMfaEnrolled) {
-          // If MFA is enrolled, user MUST have aal2 to proceed.
-          // If session.aal is not 'aal2' (which includes 'undefined' or 'aal1'), redirect to challenge.
-          if (session.aal !== 'aal2') {
-            setTargetAal('aal1'); // User needs to complete MFA challenge
+          // If MFA is enrolled AND the mfa_passed flag is set, assume AAL2
+          if (mfaPassedFlag === 'true') {
+            console.log('AuthGuard: MFA enrolled and mfa_passed flag found. Assuming aal2.');
+            localStorage.removeItem('mfa_passed'); // Clear the flag
+            setTargetAal('aal2');
           } else {
-            setTargetAal('aal2'); // User is fully authenticated (aal2)
+            // MFA enrolled but no flag, or aal is not aal2, redirect to challenge
+            console.log('AuthGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
+            setTargetAal('aal1'); // User needs to complete MFA challenge
           }
         } else {
-          // If no MFA is enrolled, aal1 is sufficient (or aal2 if they somehow got it).
+          // If no MFA is enrolled, AAL1 is sufficient (or aal2 if they somehow got it).
           // In this case, they are considered fully authenticated for access.
+          console.log('AuthGuard: No MFA enrolled. Assuming aal2.');
           setTargetAal('aal2');
         }
       } catch (err) {
