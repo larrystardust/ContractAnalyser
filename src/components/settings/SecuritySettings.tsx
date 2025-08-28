@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, Smartphone, Eye, EyeOff, Save, QrCode, CheckCircle, XCircle, Copy, Lock } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../components/ui/Card';
+import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
 
