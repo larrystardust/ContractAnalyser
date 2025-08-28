@@ -99,8 +99,15 @@ const AdminGuard: React.FC = () => {
   }
 
   // If an authenticated admin user is found and MFA check passed, render the protected content.
-  console.log('AdminGuard: User is an admin and MFA check passed. Rendering protected content.');
-  return <Outlet />;
+  // ADDED: Explicitly check for aal2 here to ensure full authentication level.
+  if (session.aal === 'aal2') {
+    console.log('AdminGuard: User is an admin and MFA check passed. Rendering protected content.');
+    return <Outlet />;
+  } else {
+    // This case should ideally not be hit if logic is perfect, but acts as a safeguard.
+    console.warn('AdminGuard: Admin user authenticated but AAL is not aal2. Redirecting to MFA challenge as a fallback.');
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
 };
 
 export default AdminGuard;
