@@ -200,7 +200,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange })
                 </p>
               ) : (
                 <p>
-                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <a href="/pricing" className="font-medium underline">Pricing page</a> to upload and start analyzing contracts.
+                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <a href="/pricing" className="font-medium underline">Pricing page</a> to start uploading and analyzing contracts.
                 </p>
               )}
             </div>
