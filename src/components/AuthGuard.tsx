@@ -1,32 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'; // ADDED useNavigate
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
 interface AuthGuardProps {
-  children: React.ReactNode;
+  children?: React.ReactNode; // Optional, as Outlet is used
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
+const AuthGuard: React.FC<AuthGuardProps> = () => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
-  const navigate = useNavigate(); // ADDED: Initialize useNavigate hook
-  const [mfaCheckComplete, setMfaCheckComplete] = useState(false);
+  const navigate = useNavigate();
+  const [mfaRequired, setMfaRequired] = useState<boolean | null>(null); // null: checking, true: required, false: not required
 
   useEffect(() => {
     const checkMfaStatus = async () => {
       if (loadingSession) return; // Wait for session to load
 
       if (!session?.user) {
-        // No user session, redirect to login
-        setMfaCheckComplete(true);
+        // No user session, MFA not required (will redirect to login)
+        setMfaRequired(false);
         return;
       }
 
-      // If session is already aal2, or no MFA factors are enrolled, allow access
+      // If session is already aal2, no MFA challenge needed
       if (session.aal === 'aal2') {
-        setMfaCheckComplete(true);
+        setMfaRequired(false);
         return;
       }
 
@@ -35,29 +35,29 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
           console.error('AuthGuard: Error listing MFA factors:', factorsError);
-          setMfaCheckComplete(true); // Allow access on error, but log it
+          setMfaRequired(false); // Treat error as no MFA required for now, but log
           return;
         }
 
         if (factors.totp.length > 0) {
-          // User has MFA enrolled but session is aal1, redirect to MFA challenge
-          console.log('AuthGuard: User has MFA enrolled but session is aal1. Redirecting to MFA challenge.');
-          navigate(`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+          // User has MFA enrolled but session is aal1, MFA is required
+          setMfaRequired(true);
         } else {
-          // No MFA factors enrolled, allow access
-          setMfaCheckComplete(true);
+          // No MFA factors enrolled, MFA is not required
+          setMfaRequired(false);
         }
       } catch (err) {
         console.error('AuthGuard: Unexpected error during MFA check:', err);
-        setMfaCheckComplete(true); // Allow access on unexpected error
+        setMfaRequired(false); // Treat unexpected error as no MFA required
       }
     };
 
+    setMfaRequired(null); // Reset state to 'checking' on session/loadingSession change
     checkMfaStatus();
-  }, [session, loadingSession, supabase, location, navigate]); // `navigate` is now correctly a dependency
+  }, [session, loadingSession, supabase]); // Removed location, navigate from dependencies as they are used in render logic
 
   // Show loading indicator while checking authentication and MFA status
-  if (loadingSession || !mfaCheckComplete) {
+  if (loadingSession || mfaRequired === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -65,13 +65,18 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     );
   }
 
-  // If not loading and MFA check is complete, check if a user session exists.
+  // If not loading and MFA check is complete, evaluate redirection
   if (!session || !session.user) {
     console.log('AuthGuard: No active user session found. Redirecting to login page.');
     return <Navigate to="/login" replace />;
   }
 
-  // If an authenticated user session is found and MFA check passed, render the protected content.
+  if (mfaRequired) {
+    console.log('AuthGuard: MFA is required but session is aal1. Redirecting to MFA challenge.');
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
+
+  // If an authenticated user session is found, MFA is not required (or already aal2), render the protected content.
   console.log('AuthGuard: User is authenticated and MFA check passed. Rendering protected content.');
   return <Outlet />;
 };
