@@ -10,13 +10,14 @@ const AdminGuard: React.FC = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdminStatus, setLoadingAdminStatus] = useState(true);
-  const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // ADDED: New state to track desired AAL
+  const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
 
   useEffect(() => {
     const checkAdminAndMfaStatus = async () => {
       if (loadingSession) return;
 
-      console.log('AdminGuard: Current session AAL:', session?.aal); // ADDED LOG
+      console.log('AdminGuard: Current session AAL:', session?.aal); // Log current AAL
+      console.log('AdminGuard: Current session user:', session?.user?.id); // Log current user ID
 
       if (!session?.user) {
         setIsAdmin(false);
@@ -41,45 +42,44 @@ const AdminGuard: React.FC = () => {
         }
         setLoadingAdminStatus(false);
 
-        // Then, check MFA status if admin and aal1
-        if (profile?.is_admin && session.aal === 'aal1') {
-          const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-          if (factorsError) {
-            console.error('AdminGuard: Error listing MFA factors:', factorsError);
-            setTargetAal('aal1'); // Assume AAL1 if error
-            return;
-          }
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        if (factorsError) {
+          console.error('AdminGuard: Error listing MFA factors:', factorsError);
+          // If error fetching factors, assume no MFA is required for now to avoid blocking
+          setTargetAal('aal2');
+          return;
+        }
 
-          if (factors.totp.length > 0) {
-            // Admin user has MFA enrolled.
-            // If session.aal is undefined, we'll assume aal2 to unblock.
-            if (session.aal === undefined) { // ADDED: Specific check for undefined AAL
-              console.warn('AdminGuard: Session AAL is undefined but MFA is enrolled. Assuming aal2 to proceed.');
-              setTargetAal('aal2');
-            } else {
-              setTargetAal('aal1'); // MFA enrolled, needs AAL2
-            }
+        const hasMfaEnrolled = factors.totp.length > 0;
+        console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled);
+
+        if (hasMfaEnrolled) {
+          // If MFA is enrolled, user MUST have aal2 to proceed.
+          // If session.aal is not 'aal2' (which includes 'undefined' or 'aal1'), redirect to challenge.
+          if (session.aal !== 'aal2') {
+            setTargetAal('aal1'); // User needs to complete MFA challenge
           } else {
-            setTargetAal('aal2'); // No MFA enrolled, AAL1 is sufficient
+            setTargetAal('aal2'); // User is fully authenticated (aal2)
           }
         } else {
-          // Either not an admin, or already aal2, or no MFA enrolled, so AAL2 is sufficient
+          // If no MFA is enrolled, aal1 is sufficient (or aal2 if they somehow got it).
+          // In this case, they are considered fully authenticated for access.
           setTargetAal('aal2');
         }
       } catch (err) {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
         setIsAdmin(false);
         setLoadingAdminStatus(false);
-        setTargetAal('aal1'); // Fallback
+        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
       }
     };
 
     setTargetAal(null); // Reset on session/loadingSession change
     checkAdminAndMfaStatus();
-  }, [session, loadingSession, supabase]); // Removed location, navigate from dependencies
+  }, [session, loadingSession, supabase]);
 
   // Show loading indicator while checking authentication and admin/MFA status
-  if (loadingSession || loadingAdminStatus || targetAal === null) { // MODIFIED: Use targetAal for loading state
+  if (loadingSession || loadingAdminStatus || targetAal === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -100,13 +100,13 @@ const AdminGuard: React.FC = () => {
   }
 
   // MFA check for admin
-  if (targetAal === 'aal1') { // MODIFIED: Admin user is AAL1 and needs MFA
+  if (targetAal === 'aal1') {
     console.log('AdminGuard: Admin user has MFA enrolled but session is aal1. Redirecting to MFA challenge.');
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // If an authenticated admin user is found and MFA check passed, render the protected content.
-  if (targetAal === 'aal2') { // MODIFIED: Admin user is AAL2 or AAL1 and no MFA enrolled
+  if (targetAal === 'aal2') {
     console.log('AdminGuard: User is an admin and MFA check passed. Rendering protected content.');
     return <Outlet />;
   }
