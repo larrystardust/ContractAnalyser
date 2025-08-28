@@ -112,7 +112,7 @@ const MfaChallengePage: React.FC = () => {
       // REMOVED: localStorage.removeItem('mfa_passed'); // This line was removed from AuthGuard and AdminGuard
 
       // Clear the flag here, right before navigating away
-      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag here
+      // localStorage.removeItem('mfa_passed'); // REMOVED: This will now be handled by AuthGuard/AdminGuard
 
       // Navigate to the redirect path
       navigate(redirectPath);
