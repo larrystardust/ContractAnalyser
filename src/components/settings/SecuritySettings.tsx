@@ -3,7 +3,7 @@ import { Shield, Key, Smartphone, Eye, EyeOff, Save, QrCode, CheckCircle, XCircl
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import Modal from '../components/ui/Modal';
+import Modal from '../ui/Modal';
 
 const SecuritySettings: React.FC = () => {
   const supabase = useSupabaseClient();
