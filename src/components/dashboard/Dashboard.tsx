@@ -138,7 +138,7 @@ const Dashboard: React.FC = () => {
                     : 'No Contract Selected'}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {selectedContract && selectedContract.status !== 'completed"
+                  {selectedContract && selectedContract.status !== 'completed'
                     ? 'Please wait while the analysis is in progress.'
                     : 'Select a completed contract from the list or upload a new one to begin analysis.'}
                 </p>
