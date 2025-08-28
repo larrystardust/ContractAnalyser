@@ -32,7 +32,7 @@ export const stripeProducts: StripeProduct[] = [
   {
     id: 'prod_SuPkz2RKm6alku',
     name: 'ContractAnalyser Professional Use',
-    description: 'Professional Subscription Plan (Unlimited use for only two users)',
+    description: 'Professional Subscription Plan (Unlimited use for only two(2) users)',
     mode: 'subscription',
     fileRetentionPolicy: 'Files are retained for the duration of your active subscription plus a 30 day grace period.',
     maxFiles: 200, // Quota for Professional plan
