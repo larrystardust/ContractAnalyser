@@ -179,36 +179,36 @@ const SecuritySettings: React.FC = () => {
     }
 
     try {
+      // Step 1: Reauthenticate with password to ensure password is correct and elevate AAL if needed.
+      // This also implicitly checks if the user is who they say they are.
+      const { error: passwordReauthError } = await supabase.auth.reauthenticate({
+        password: reauthPassword,
+      });
+      if (passwordReauthError) {
+        throw passwordReauthError; // This will catch incorrect passwords
+      }
+
+      // Step 2: Challenge the MFA factor to get a challengeId for TOTP verification.
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
       if (challengeError) {
         throw challengeError;
       }
-
       if (!challengeData?.id) {
-        throw new Error('Failed to create MFA challenge');
+        throw new Error('Failed to create MFA challenge for TOTP verification.');
       }
 
-      const { error: reauthError } = await supabase.auth.reauthenticate({
-        password: reauthPassword,
-        mfa: {
-          factorId,
-          challengeId: challengeData.id,
-          code: reauthTotpCode
-        }
+      // Step 3: Explicitly verify the TOTP code. This is where the code validation happens.
+      const { error: verifyTotpError } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challengeData.id,
+        code: reauthTotpCode,
       });
-      if (reauthError) {
-        throw reauthError;
+      if (verifyTotpError) {
+        throw verifyTotpError; // This will catch invalid TOTP codes
       }
 
-      // Removed the AAL2 check as reauthenticate itself confirms the AAL elevation
-      // const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
-      // if (getSessionError) {
-      //   throw getSessionError;
-      // }
-      // if (currentSessionData.session?.aal !== 'aal2') {
-      //   throw new Error('Failed to achieve AAL2 authentication level after re-authentication. Current AAL: ' + currentSessionData.session?.aal);
-      // }
-
+      // Step 4: If both password re-authentication and TOTP verification succeed, unenroll the factor.
+      // The session should now be AAL2 due to the reauthenticate call.
       const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
       if (unenrollError) {
         throw unenrollError;
@@ -223,8 +223,8 @@ const SecuritySettings: React.FC = () => {
       setReauthPassword('');
       setReauthTotpCode('');
     } catch (err: any) {
-      console.error('Error during re-authentication or disabling 2FA:', err);
-      setReauthError(err.message || 'Failed to disable 2FA. Please check your password.');
+      console.error('Error during 2FA disable process:', err);
+      setReauthError(err.message || 'Failed to disable 2FA. Please check your password and TOTP code.');
     } finally {
       setIsLoading(false);
     }
@@ -500,7 +500,7 @@ const SecuritySettings: React.FC = () => {
                     <CheckCircle className="h-5 w-5 mr-2" /> Step 2: Verify Code
                   </h5>
                   <p className="text-sm text-gray-600">
-                    Enter the 6-digit code from your authenticator app to complete setup.
+                    Enter the 6-digit code from your authenticator app.
                   </p>
                   <div>
                     <label htmlFor="verificationCode" className="sr-only">Verification Code</label>
