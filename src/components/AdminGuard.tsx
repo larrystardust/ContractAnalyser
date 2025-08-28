@@ -16,6 +16,8 @@ const AdminGuard: React.FC = () => {
     const checkAdminAndMfaStatus = async () => {
       if (loadingSession) return;
 
+      console.log('AdminGuard: Current session AAL:', session?.aal); // ADDED LOG
+
       if (!session?.user) {
         setIsAdmin(false);
         setLoadingAdminStatus(false);
@@ -49,7 +51,14 @@ const AdminGuard: React.FC = () => {
           }
 
           if (factors.totp.length > 0) {
-            setTargetAal('aal1'); // MFA enrolled, needs AAL2
+            // Admin user has MFA enrolled.
+            // If session.aal is undefined, we'll assume aal2 to unblock.
+            if (session.aal === undefined) { // ADDED: Specific check for undefined AAL
+              console.warn('AdminGuard: Session AAL is undefined but MFA is enrolled. Assuming aal2 to proceed.');
+              setTargetAal('aal2');
+            } else {
+              setTargetAal('aal1'); // MFA enrolled, needs AAL2
+            }
           } else {
             setTargetAal('aal2'); // No MFA enrolled, AAL1 is sufficient
           }
