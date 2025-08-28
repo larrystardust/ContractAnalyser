@@ -29,13 +29,6 @@ const MfaChallengePage: React.FC = () => {
       return;
     }
 
-    // If user is already aal2, redirect immediately
-    if (session.aal === 'aal2') {
-      setMessage('MFA already verified. Redirecting...');
-      navigate(redirectPath);
-      return;
-    }
-
     // If aal1, fetch MFA factors to get the factorId
     const fetchMfaFactors = async () => {
       setLoading(true);
@@ -66,17 +59,8 @@ const MfaChallengePage: React.FC = () => {
     fetchMfaFactors();
   }, [session, isSessionLoading, navigate, supabase, redirectPath]);
 
-  // This useEffect handles redirection once session.aal becomes aal2
-  // Keep this for robustness, as the session context might update after direct navigation
-  useEffect(() => {
-    if (!isSessionLoading && session?.aal === 'aal2') {
-      setMessage('MFA verified successfully! Redirecting...');
-      // This navigation is a fallback/confirmation, the primary navigation happens in handleVerifyMfa
-      // if the direct navigation is successful.
-      navigate(redirectPath);
-    }
-  }, [session?.aal, isSessionLoading, navigate, redirectPath]);
-
+  // REMOVED: The useEffect that watches session.aal for navigation.
+  // This was causing a race condition with AuthGuard.
 
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,19 +93,8 @@ const MfaChallengePage: React.FC = () => {
       if (verifyError) throw verifyError;
 
       // MFA verification successful.
-      // Explicitly refresh the session to ensure AAL is updated immediately.
-      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-
-      if (refreshError) {
-        console.error('Error refreshing session after MFA verification:', refreshError);
-        // Even if refresh fails, try to navigate, as the AAL might still update eventually.
-      } else if (refreshedSession?.aal === 'aal2') {
-        console.log('Session successfully refreshed to aal2.');
-      } else {
-        console.warn('Session refreshed, but aal is not aal2. Current aal:', refreshedSession?.aal);
-      }
-
-      // Navigate to the intended path.
+      // Directly navigate to the intended path.
+      // The auth-helpers-react library should update the session context after mfa.verify.
       navigate(redirectPath);
 
     } catch (err: any) {
@@ -142,6 +115,7 @@ const MfaChallengePage: React.FC = () => {
 
   // If session is already aal2, it should have been redirected by the useEffect.
   // This is a fallback to prevent rendering the form if already authenticated.
+  // This check is still important for initial load if the user somehow lands here with aal2.
   if (!session?.user || session.aal === 'aal2') {
     return null;
   }
