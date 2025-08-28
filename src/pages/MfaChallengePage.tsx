@@ -17,7 +17,6 @@ const MfaChallengePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [factorId, setFactorId] = useState<string | null>(null);
-  const [mfaVerifiedSuccessfully, setMfaVerifiedSuccessfully] = useState(false); // ADDED: New state
 
   const redirectPath = searchParams.get('redirect') || '/dashboard';
 
@@ -60,21 +59,11 @@ const MfaChallengePage: React.FC = () => {
     fetchMfaFactors();
   }, [session, isSessionLoading, navigate, supabase, redirectPath]);
 
-  // ADDED: New useEffect to handle navigation after successful MFA verification and session update
-  useEffect(() => {
-    if (mfaVerifiedSuccessfully && session?.aal === 'aal2') {
-      setMessage('Verification successful. Redirecting...');
-      navigate(redirectPath);
-    }
-  }, [mfaVerifiedSuccessfully, session, navigate, redirectPath]);
-
-
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
-    setMfaVerifiedSuccessfully(false); // Reset state on new attempt
 
     if (!factorId) {
       setError('MFA factor not found. Please try logging in again.');
@@ -118,7 +107,12 @@ const MfaChallengePage: React.FC = () => {
         console.log('MfaChallengePage: Current session AAL after refresh and getSession:', currentSessionAfterRefresh?.aal);
       }
 
-      setMfaVerifiedSuccessfully(true); // Set success state, useEffect will handle navigation
+      // Set localStorage flag to indicate MFA was passed
+      localStorage.setItem('mfa_passed', 'true');
+      // REMOVED: localStorage.removeItem('mfa_passed'); // This line was removed from AuthGuard and AdminGuard
+
+      // Navigate to the redirect path
+      navigate(redirectPath);
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
@@ -134,6 +128,7 @@ const MfaChallengePage: React.FC = () => {
     setMessage(null);
     try {
       await supabase.auth.signOut();
+      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag on logout
       navigate('/login'); // Redirect to login page after logout
     } catch (err: any) {
       console.error('Error logging out:', err);
