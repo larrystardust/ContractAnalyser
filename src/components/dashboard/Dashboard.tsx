@@ -11,13 +11,13 @@ import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Import useSessionContext
 
 const Dashboard: React.FC = () => {
-  const { contracts, loadingContracts } = useContracts();
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
+  const { contracts, loadingContracts, errorContracts } = useContracts(); // MODIFIED: Added errorContracts
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(selectedContractId); // MODIFIED: Initialize with existing state
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
 
-  const { subscription, membership, loading: loadingSubscription } = useSubscription();
-  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: ordersError } = useUserOrders();
+  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription(); // MODIFIED: Added errorSubscription
+  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders(); // MODIFIED: Added errorOrders
   const { isLoading: isSessionLoading } = useSessionContext(); // ADDED: Get session loading state
 
   useEffect(() => {
@@ -70,6 +70,29 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // ADDED: Handle errors from data fetching hooks
+  if (errorContracts || errorSubscription || errorOrders) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-4">
+            There was a problem fetching your data. This might be due to a temporary issue or a configuration problem.
+          </p>
+          {errorContracts && <p className="text-sm text-red-500">Contracts Error: {errorContracts.message}</p>}
+          {errorSubscription && <p className="text-sm text-red-500">Subscription Error: {errorSubscription.message}</p>}
+          {errorOrders && <p className="text-sm text-red-500">Orders Error: {errorOrders.message}</p>}
+          <p className="text-sm text-gray-500 mt-4">
+            Please check your Supabase RLS policies and database logs for more details.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Conditional rendering:
   // If the user has their own contracts OR is identified as a paying customer by plan, show their real dashboard.
   // Otherwise, show the sample dashboard content.
@@ -115,7 +138,7 @@ const Dashboard: React.FC = () => {
                     : 'No Contract Selected'}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {selectedContract && selectedContract.status !== 'completed'
+                  {selectedContract && selectedContract.status !== 'completed"
                     ? 'Please wait while the analysis is in progress.'
                     : 'Select a completed contract from the list or upload a new one to begin analysis.'}
                 </p>
