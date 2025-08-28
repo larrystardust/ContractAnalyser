@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Smartphone, Loader2, AlertCircle, CheckCircle, LogOut } from 'lucide-react'; // ADDED LogOut icon
+import { Smartphone, Loader2, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
 import { Database } from '../types/supabase';
 
 const MfaChallengePage: React.FC = () => {
@@ -93,11 +93,17 @@ const MfaChallengePage: React.FC = () => {
       if (verifyError) throw verifyError;
 
       // MFA verification successful.
-      // Add a small delay before navigating to allow session context to fully update
+      // Explicitly refresh the session to ensure AAL is updated immediately.
+      // This is crucial for AuthGuard to correctly recognize the session.
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error('Error refreshing session after MFA verification:', refreshError);
+        // Log the error but still attempt to navigate, as the session might eventually update.
+      }
+
+      // Navigate directly after the session refresh.
       setMessage('Verification successful. Redirecting...');
-      setTimeout(() => {
-        navigate(redirectPath);
-      }, 500); // 500ms delay
+      navigate(redirectPath);
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
@@ -130,7 +136,7 @@ const MfaChallengePage: React.FC = () => {
     );
   }
 
-  // If session is already aal2, it should have been redirected by the useEffect.
+  // If session is already aal2, it should have been redirected by the AuthGuard.
   // This is a fallback to prevent rendering the form if already authenticated.
   if (!session?.user || session.aal === 'aal2') {
     return null;
