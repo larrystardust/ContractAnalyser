@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom'; // MODIFIED: Added useLocation, useNavigate, useNavigationType
 // REMOVED: import Header from './components/layout/Header';
 import Dashboard from './components/dashboard/Dashboard';
 import PricingSection from './components/pricing/PricingSection';
@@ -40,11 +40,26 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage'; // ADDED: Import MfaChallengePage
+import { useSession } from '@supabase/auth-helpers-react'; // MODIFIED: Import useSession
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
+  const location = useLocation(); // MODIFIED
+  const navigate = useNavigate(); // MODIFIED
+  const navigationType = useNavigationType(); // MODIFIED
+  const session = useSession(); // MODIFIED
 
   useTheme();
+
+  // MODIFIED: Effect to handle back button redirection after logout
+  useEffect(() => {
+    // If there's no session (user is logged out)
+    // AND the navigation type is 'POP' (browser back/forward button)
+    // AND the current path is not the landing page
+    if (!session && navigationType === 'POP' && location.pathname !== '/') {
+      navigate('/', { replace: true }); // Redirect to landing page and replace the history entry
+    }
+  }, [location, navigationType, session, navigate]); // Dependencies for the effect
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
