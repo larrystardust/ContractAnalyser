@@ -59,9 +59,11 @@ const AuthCallbackPage: React.FC = () => {
           const storedFullName = currentSession.user.user_metadata.full_name || null;
           const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
           const storedCountryCode = currentSession.user.user_metadata.country_code || null;
+          const storedBusinessName = currentSession.user.user_metadata.business_name || null; // ADDED: Extract business_name
 
           console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
             storedFullName,
+            storedBusinessName, // ADDED: Log business_name
             storedMobilePhoneNumber,
             storedCountryCode,
           });
@@ -70,6 +72,7 @@ const AuthCallbackPage: React.FC = () => {
             body: {
               userId: currentSession.user.id,
               fullName: storedFullName,
+              businessName: storedBusinessName, // ADDED: Pass business_name
               mobilePhoneNumber: storedMobilePhoneNumber,
               countryCode: storedCountryCode,
             },
