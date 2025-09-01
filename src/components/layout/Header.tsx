@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
       console.warn('Logout error:', error);
     }
     // Always navigate to home page regardless of logout success/failure
-    navigate('/');
+    navigate('/', { replace: true }); // MODIFIED: Use replace: true for back button behavior
   };
 
   const handleSearchClick = () => {
