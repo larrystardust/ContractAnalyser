@@ -35,7 +35,7 @@ export interface AnalysisResult {
   contract_id: string; // Added foreign key
   executiveSummary: string;
   findings: Finding[];
-  jurisdictionSummaries: Record<Jurisdiction, JurisdictionSummary>;
+  jurisdictionSummaries: Record<Jurisdiction, JurisdictionSummary>; // ADDED
   dataProtectionImpact?: string;
   complianceScore: number; // 0-100
   created_at: string; // Added
