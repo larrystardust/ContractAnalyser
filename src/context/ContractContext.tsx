@@ -40,7 +40,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         analysis_results (
           *,
           findings (*),
-          jurisdiction_summaries // ADDED
+          jurisdiction_summaries
         )
       `)
       .eq('user_id', session.user.id)
