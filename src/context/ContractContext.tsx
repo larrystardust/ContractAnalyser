@@ -39,7 +39,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         subscription_id,
         analysis_results (
           *,
-          findings (*)
+          findings (*),
+          jurisdiction_summaries // ADDED
         )
       `)
       .eq('user_id', session.user.id)
@@ -87,7 +88,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               created_at: dbFinding.created_at,
               updated_at: dbFinding.updated_at,
             })),
-            jurisdictionSummaries: {}
+            jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {} // ADDED
           } : undefined,
         };
       });
