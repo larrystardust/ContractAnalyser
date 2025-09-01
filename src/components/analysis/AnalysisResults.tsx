@@ -11,66 +11,13 @@ interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
 }
 
-// Helper function to generate jurisdiction summaries from findings
-const generateJurisdictionSummaries = (
-  findings: Finding[],
-  contractJurisdictions: Jurisdiction[]
-): Record<Jurisdiction, JurisdictionSummary> => {
-  const summaries: Record<Jurisdiction, JurisdictionSummary> = {};
-
-  // Initialize summaries for all contract jurisdictions
-  contractJurisdictions.forEach(j => {
-    summaries[j] = {
-      jurisdiction: j,
-      applicableLaws: [], // Placeholder, as this isn't in findings
-      keyFindings: [],
-      riskLevel: 'none', // Will be updated
-    };
-  });
-
-  // Process findings to populate keyFindings and determine riskLevel
-  findings.forEach(finding => {
-    const j = finding.jurisdiction;
-    if (summaries[j]) {
-      summaries[j].keyFindings.push(finding.title);
-      // Update risk level if a higher risk finding is encountered
-      if (finding.riskLevel === 'high') {
-        summaries[j].riskLevel = 'high';
-      } else if (finding.riskLevel === 'medium' && summaries[j].riskLevel !== 'high') {
-        summaries[j].riskLevel = 'medium';
-      } else if (finding.riskLevel === 'low' && summaries[j].riskLevel === 'none') {
-        summaries[j].riskLevel = 'low';
-      }
-    } else if (j === 'EU' && !summaries['EU']) { // Handle EU findings if not explicitly in contract jurisdictions
-      summaries['EU'] = {
-        jurisdiction: 'EU',
-        applicableLaws: [],
-        keyFindings: [finding.title],
-        riskLevel: finding.riskLevel,
-      };
-    }
-  });
-
-  // Add placeholder applicable laws for demonstration
-  Object.values(summaries).forEach(summary => {
-    if (summary.applicableLaws.length === 0) {
-      summary.applicableLaws.push(`${getJurisdictionLabel(summary.jurisdiction)} Law 1`);
-      summary.applicableLaws.push(`${getJurisdictionLabel(summary.jurisdiction)} Law 2`);
-    }
-  });
-
-  return summaries;
-};
-
-
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   
-  // Generate jurisdiction summaries dynamically
-  const contractJurisdictions = analysisResult.findings.map(f => f.jurisdiction).filter((value, index, self) => self.indexOf(value) === index); // Get unique jurisdictions from findings
-  const jurisdictionSummaries = generateJurisdictionSummaries(analysisResult.findings, contractJurisdictions as Jurisdiction[]);
-
+  // Use jurisdictionSummaries directly from analysisResult
+  const jurisdictionSummaries = analysisResult.jurisdictionSummaries; // MODIFIED
+  
   const filteredFindings = selectedJurisdiction === 'all' 
     ? analysisResult.findings 
     : analysisResult.findings.filter(finding => finding.jurisdiction === selectedJurisdiction);
@@ -159,7 +106,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         
         {jurisdictions.map((jurisdiction) => {
           // Only show jurisdictions that have findings
-          if (jurisdictionSummaries[jurisdiction].keyFindings.length === 0) {
+          if (jurisdictionSummaries[jurisdiction].keyFindings.length === 0) { // MODIFIED
             return null;
           }
           
