@@ -212,7 +212,15 @@ Return your findings strictly as a valid JSON object with the following structur
       "recommendations": ["...", "..."],
       "clauseReference": "..."
     }
-  ]
+  ],
+  "jurisdictionSummaries": { // ADDED to prompt
+    "UK": {
+      "jurisdiction": "UK",
+      "applicableLaws": ["...", "..."],
+      "keyFindings": ["...", "..."],
+      "riskLevel": "high"
+    }
+  }
 }
 
 NOTES:  
@@ -248,6 +256,7 @@ NOTES:
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
     const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
+    const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {}; // ADDED
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
@@ -258,6 +267,7 @@ NOTES:
         executive_summary: executiveSummary,
         data_protection_impact: dataProtectionImpact,
         compliance_score: complianceScore,
+        jurisdiction_summaries: jurisdictionSummaries, // ADDED
       })
       .select()
       .single();
