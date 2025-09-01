@@ -71,7 +71,10 @@ export const allSampleFindings: Finding[] = [
       'Add data breach notification timeframes',
       'Specify data subject rights handling procedures'
     ],
-    clauseReference: 'Section 12.3'
+    clauseReference: 'Section 12.3',
+    created_at: '2025-04-10T14:30:00Z', // ADDED
+    updated_at: '2025-04-10T14:30:00Z', // ADDED
+    analysis_result_id: 'ar1' // Placeholder
   },
   {
     id: 'f2',
@@ -85,7 +88,10 @@ export const allSampleFindings: Finding[] = [
       'Reference UK statutory instruments that replaced EU regulations',
       'Include specific dispute resolution mechanism for regulatory conflicts'
     ],
-    clauseReference: 'Section 22.1'
+    clauseReference: 'Section 22.1',
+    created_at: '2025-04-10T14:30:00Z', // ADDED
+    updated_at: '2025-04-10T14:30:00Z', // ADDED
+    analysis_result_id: 'ar1' // Placeholder
   },
   {
     id: 'f3',
@@ -99,7 +105,10 @@ export const allSampleFindings: Finding[] = [
       'Include player fund segregation provisions as per international best practices',
       'Reference relevant international gaming license requirements'
     ],
-    clauseReference: 'Section 8'
+    clauseReference: 'Section 8',
+    created_at: '2025-04-08T09:15:00Z', // ADDED
+    updated_at: '2025-04-08T09:15:00Z', // ADDED
+    analysis_result_id: 'ar2' // Placeholder
   },
   {
     id: 'f4',
@@ -113,7 +122,10 @@ export const allSampleFindings: Finding[] = [
       'Remove limitations for gross negligence',
       'Apply proportionate caps based on contract value'
     ],
-    clauseReference: 'Section 14.2'
+    clauseReference: 'Section 14.2',
+    created_at: '2025-04-05T16:45:00Z', // ADDED
+    updated_at: '2025-04-05T16:45:00Z', // ADDED
+    analysis_result_id: 'ar3' // Placeholder
   },
   {
     id: 'f5',
@@ -127,7 +139,10 @@ export const allSampleFindings: Finding[] = [
       'Add tax residency certification requirements',
       'Reference double taxation treaty provisions if applicable'
     ],
-    clauseReference: 'Section 17.4'
+    clauseReference: 'Section 17.4',
+    created_at: '2025-04-02T11:20:00Z', // ADDED
+    updated_at: '2025-04-02T11:20:00Z', // ADDED
+    analysis_result_id: 'ar4' // Placeholder
   },
   {
     id: 'f6',
@@ -141,7 +156,10 @@ export const allSampleFindings: Finding[] = [
       'Define clear procedures for invoking force majeure',
       'Specify consequences of force majeure events on contractual obligations'
     ],
-    clauseReference: 'N/A'
+    clauseReference: 'N/A',
+    created_at: '2025-04-10T14:30:00Z', // ADDED
+    updated_at: '2025-04-10T14:30:00Z', // ADDED
+    analysis_result_id: 'ar1' // Placeholder
   },
   {
     id: 'f7',
@@ -155,7 +173,10 @@ export const allSampleFindings: Finding[] = [
       'Specify notice periods for termination for convenience',
       'Outline post-termination obligations and rights'
     ],
-    clauseReference: 'Section 18'
+    clauseReference: 'Section 18',
+    created_at: '2025-04-08T09:15:00Z', // ADDED
+    updated_at: '2025-04-08T09:15:00Z', // ADDED
+    analysis_result_id: 'ar2' // Placeholder
   },
   {
     id: 'f8',
@@ -169,7 +190,10 @@ export const allSampleFindings: Finding[] = [
       'Ensure proper consumer rights (e.g., right to know, delete, opt-out) are addressed',
       'Consult with legal counsel for state-specific compliance'
     ],
-    clauseReference: 'Section 14.2'
+    clauseReference: 'Section 14.2',
+    created_at: '2025-04-01T10:00:00Z', // ADDED
+    updated_at: '2025-04-01T10:00:00Z', // ADDED
+    analysis_result_id: 'ar5' // Placeholder
   },
   {
     id: 'f9',
@@ -183,7 +207,10 @@ export const allSampleFindings: Finding[] = [
       'Implement clear opt-in processes for commercial electronic messages',
       'Ensure proper identification of sender and unsubscribe mechanisms'
     ],
-    clauseReference: 'Article 5.1'
+    clauseReference: 'Article 5.1',
+    created_at: '2025-03-28T14:00:00Z', // ADDED
+    updated_at: '2025-03-28T14:00:00Z', // ADDED
+    analysis_result_id: 'ar6' // Placeholder
   },
   {
     id: 'f10',
@@ -197,7 +224,10 @@ export const allSampleFindings: Finding[] = [
       'Ensure terms are reasonably necessary to protect legitimate interests',
       'Seek legal advice on specific clauses under ACL'
     ],
-    clauseReference: 'Schedule 2, Section 23'
+    clauseReference: 'Schedule 2, Section 23',
+    created_at: '2025-03-28T14:00:00Z', // ADDED
+    updated_at: '2025-03-28T14:00:00Z', // ADDED
+    analysis_result_id: 'ar6' // Placeholder
   }
 ];
 
@@ -250,12 +280,15 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
 
 
   return {
-    contractId,
+    id: `ar-${contractId}`, // Placeholder ID for analysis result
+    contract_id: contractId,
     executiveSummary,
     findings: relevantFindings,
-    jurisdictionSummaries,
+    jurisdictionSummaries, // ADDED
     dataProtectionImpact,
-    complianceScore
+    complianceScore,
+    created_at: new Date().toISOString(), // Placeholder
+    updated_at: new Date().toISOString(), // Placeholder
   };
 };
 
