@@ -166,6 +166,7 @@ const SignupPage: React.FC = () => {
           console.error('Error initiating profile creation from SignupPage:', profileError);
         }
       }
+      localStorage.setItem('signup_email', email); // ADDED: Save email to local storage
       navigate('/auth/email-sent');
     }
     
