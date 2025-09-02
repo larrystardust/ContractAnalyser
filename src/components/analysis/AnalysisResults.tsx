@@ -74,7 +74,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       const data = await response.json();
 
       if (data && data.url) {
-        window.open(data.url, '_blank');
+        // MODIFIED: Instead of opening in a new tab, trigger a download
+        const link = document.createElement('a');
+        link.href = data.url;
+        link.download = `ContractAnalysisReport-${analysisResult.contract_id}.html`; // Suggest a filename
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        alert('Report download initiated!'); // Inform the user
       } else {
         alert('Failed to get report download link.');
       }
