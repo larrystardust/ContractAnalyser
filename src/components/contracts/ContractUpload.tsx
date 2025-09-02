@@ -11,7 +11,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // Set the worker source for pdfjs-dist using Vite's ?url suffix
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
