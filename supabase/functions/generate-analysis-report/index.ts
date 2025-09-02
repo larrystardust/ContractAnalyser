@@ -20,6 +20,14 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
+// Helper function to get a safe risk level string
+function getSafeRiskLevel(riskLevel: string | undefined): string {
+  if (typeof riskLevel === 'string' && ['high', 'medium', 'low', 'none'].includes(riskLevel)) {
+    return riskLevel;
+  }
+  return 'none'; // Default to 'none' if undefined or invalid
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsResponse(null, 204);
@@ -59,8 +67,6 @@ Deno.serve(async (req) => {
     // If called directly by the client, we need to ensure the user owns the contract or is part of its subscription.
     // For simplicity, we'll assume contract-analyzer handles the primary authorization.
     // If called directly, the client-side `AnalysisResults.tsx` will pass the contractId, and we'll fetch the contract details here.
-    // For this implementation, we'll trust the `contract-analyzer` to pass valid data.
-    // If called directly from client, we'd need to fetch contract details and perform authorization here.
     // For now, we'll just ensure the user is authenticated.
 
     // Generate HTML report content
@@ -141,7 +147,7 @@ Deno.serve(async (req) => {
                                       ${summary.keyFindings.map((finding: string) => `<li>${finding}</li>`).join('')}
                                   </ul>
                               ` : ''}
-                              <strong>Risk Level:</strong> <span class="risk-badge risk-${summary.riskLevel}">${summary.riskLevel.charAt(0).toUpperCase() + summary.riskLevel.slice(1)}</span>
+                              <strong>Risk Level:</strong> <span class="risk-badge risk-${getSafeRiskLevel(summary.riskLevel)}">${getSafeRiskLevel(summary.riskLevel).charAt(0).toUpperCase() + getSafeRiskLevel(summary.riskLevel).slice(1)}</span>
                           </div>
                       `).join('')
                   : '<p>No specific jurisdiction summaries available.</p>'}
@@ -154,7 +160,7 @@ Deno.serve(async (req) => {
                           <div class="finding">
                               <div class="finding-header">
                                   <span class="finding-title">${finding.title}</span>
-                                  <span class="risk-badge risk-${finding.risk_level}">${finding.risk_level.charAt(0).toUpperCase() + finding.risk_level.slice(1)}</span>
+                                  <span class="risk-badge risk-${getSafeRiskLevel(finding.risk_level)}">${getSafeRiskLevel(finding.risk_level).charAt(0).toUpperCase() + getSafeRiskLevel(finding.risk_level).slice(1)}</span>
                               </div>
                               <p><strong>Jurisdiction:</strong> ${finding.jurisdiction}</p>
                               <p><strong>Category:</strong> ${finding.category}</p>
