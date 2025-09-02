@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
   let userEmail: string;
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
-  let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {}; // RE-INTRODUCED
+  let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
 
   try {
     const { contract_id, contract_text } = await req.json();
@@ -67,10 +67,9 @@ Deno.serve(async (req) => {
     userId = user.id;
     userEmail = user.email!;
 
-    // MODIFIED: Fetch user's full name and notification_settings from profiles table
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('full_name, notification_settings') // Selecting notification_settings
+      .select('full_name, notification_settings')
       .eq('id', userId)
       .maybeSingle();
 
@@ -80,17 +79,16 @@ Deno.serve(async (req) => {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      if (profileData?.notification_settings) { // Populate userNotificationSettings
+      if (profileData?.notification_settings) {
         userNotificationSettings = profileData.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
       }
     }
 
-    // Fetch the user's active subscription ID via subscription_memberships
     const { data: membershipData, error: membershipError } = await supabase
       .from('subscription_memberships')
       .select('subscription_id')
       .eq('user_id', userId)
-      .eq('status', 'active') // Only consider active memberships
+      .eq('status', 'active')
       .maybeSingle();
 
     if (membershipError) {
@@ -112,12 +110,9 @@ Deno.serve(async (req) => {
   let consumedOrderId: number | null = null;
 
   // --- START: Authorization Logic ---
-  // If the user is part of an active multi-user subscription (owner or member), they are authorized.
   if (userSubscriptionId) {
     console.log(`User ${userId} is authorized via active subscription: ${userSubscriptionId}.`);
-    // No further checks needed for subscription-based users.
   } else {
-    // If not part of a multi-user subscription, check for single-use credits.
     console.log(`User ${userId} is not part of a multi-user subscription. Checking for single-use credits.`);
 
     const { data: customerData, error: customerError } = await supabase
@@ -213,7 +208,7 @@ Return your findings strictly as a valid JSON object with the following structur
       "clauseReference": "..."
     }
   ],
-  "jurisdictionSummaries": { // ADDED to prompt
+  "jurisdictionSummaries": {
     "UK": {
       "jurisdiction": "UK",
       "applicableLaws": ["...", "..."],
@@ -256,9 +251,36 @@ NOTES:
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
     const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
-    const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {}; // ADDED
+    const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
+
+    // --- START: Generate and Store Report HTML ---
+    // Call the generate-analysis-report function to get the report URL and path
+    const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
+      body: {
+        contractId: contractId,
+        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
+        analysisResult: {
+          executive_summary: executiveSummary,
+          data_protection_impact: dataProtectionImpact,
+          compliance_score: complianceScore,
+          jurisdiction_summaries: jurisdictionSummaries,
+          findings: findings,
+        },
+      },
+      headers: {
+        // Pass the current user's token for authorization within generate-analysis-report
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (reportError) {
+      console.error('Error invoking generate-analysis-report Edge Function:', reportError);
+      // Do not throw, allow analysis to complete, but report path will be null
+    }
+    const reportFilePath = reportData?.filePath || null; // Get the file path from the response
+    // --- END: Generate and Store Report HTML ---
 
     const { data: analysisResult, error: analysisError } = await supabase
       .from('analysis_results')
@@ -267,7 +289,8 @@ NOTES:
         executive_summary: executiveSummary,
         data_protection_impact: dataProtectionImpact,
         compliance_score: complianceScore,
-        jurisdiction_summaries: jurisdictionSummaries, // ADDED
+        jurisdiction_summaries: jurisdictionSummaries,
+        report_file_path: reportFilePath, // ADDED: Store the report file path
       })
       .select()
       .single();
@@ -324,7 +347,6 @@ NOTES:
       }
     }
 
-    // MODIFIED: Check the 'analysis-complete' setting within userNotificationSettings
     const sendEmailReport = userNotificationSettings['analysis-complete']?.email === true;
 
     if (sendEmailReport) {
@@ -338,7 +360,7 @@ NOTES:
           reportSummary: executiveSummary,
           reportLink: `${Deno.env.get('APP_BASE_URL')}/dashboard?contractId=${contractId}`,
           userName: userName,
-          sendEmail: true, // This will always be true if sendEmailReport is true
+          sendEmail: true,
         },
       });
 
