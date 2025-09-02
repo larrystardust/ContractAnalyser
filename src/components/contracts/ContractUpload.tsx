@@ -165,7 +165,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         const contractText = await extractTextFromFile(file);
         
         // Pass the extracted text along with other data
-        const newContractId = await addContract({ file, jurisdictions: selectedJurisdicted, contractText });
+        const newContractId = await addContract({ file, jurisdictions: selectedJurisdictions, contractText });
         
         alert('Contract uploaded and analysis initiated!');
         refetchContracts(); // Call refetchContracts after alert is dismissed
