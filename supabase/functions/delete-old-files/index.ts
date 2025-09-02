@@ -40,13 +40,16 @@ Deno.serve(async (req) => {
 
     console.log(`Looking for single-use contracts created before: ${thirtyDaysAgoISO} or any contracts marked for deletion by admin.`);
 
-    // 1. Query for contracts to be deleted
-    // This query combines two conditions:
-    // a) Single-use contracts older than 30 days (subscription_id is NULL)
-    // b) Any contract explicitly marked for deletion by an admin (marked_for_deletion_by_admin is TRUE)
+    // 1. Query for contracts to be deleted, including their analysis results for report_file_path
     const { data: contractsToDelete, error: fetchError } = await supabase
       .from('contracts')
-      .select('id, file_path')
+      .select(`
+        id,
+        file_path,
+        analysis_results (
+          report_file_path
+        )
+      `)
       .or(`and(created_at.lt.${thirtyDaysAgoISO},subscription_id.is.null),marked_for_deletion_by_admin.eq.true`);
 
     if (fetchError) {
@@ -63,21 +66,39 @@ Deno.serve(async (req) => {
 
     const deletionResults = await Promise.all(contractsToDelete.map(async (contract) => {
       try {
-        // 2. Delete file from Supabase Storage
-        if (contract.file_path) {
+        const originalContractFilePath = contract.file_path;
+        const reportFilePath = contract.analysis_results && contract.analysis_results.length > 0
+          ? contract.analysis_results[0].report_file_path
+          : null;
+
+        // 2. Delete original contract file from Supabase Storage
+        if (originalContractFilePath) {
           const { error: storageError } = await supabase.storage
             .from('contracts')
-            .remove([contract.file_path]);
+            .remove([originalContractFilePath]);
 
           if (storageError) {
-            console.error(`Error deleting file ${contract.file_path} from storage:`, storageError);
+            console.error(`Error deleting original contract file ${originalContractFilePath} from storage:`, storageError);
             // Don't throw, try to delete the DB record anyway
           } else {
-            console.log(`Successfully deleted file: ${contract.file_path}`);
+            console.log(`Successfully deleted original contract file: ${originalContractFilePath}`);
           }
         }
 
-        // 3. Delete contract record from 'contracts' table
+        // 3. Delete report file from Supabase Storage if it exists
+        if (reportFilePath) {
+          const { error: reportStorageError } = await supabase.storage
+            .from('reports')
+            .remove([reportFilePath]);
+
+          if (reportStorageError) {
+            console.error(`Error deleting report file ${reportFilePath} from storage:`, reportStorageError);
+          } else {
+            console.log(`Successfully deleted report file: ${reportFilePath}`);
+          }
+        }
+
+        // 4. Delete contract record from 'contracts' table
         // This should cascade delete analysis_results and findings due to foreign key constraints
         const { error: dbError } = await supabase
           .from('contracts')
