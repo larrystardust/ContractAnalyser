@@ -42,6 +42,12 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
     const token = authHeader.replace('Bearer ', '');
+    
+    // Validate token is not empty or literal strings
+    if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
+      return corsResponse({ error: 'Invalid or empty authentication token' }, 401);
+    }
+    
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
