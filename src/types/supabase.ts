@@ -7,40 +7,41 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   public: {
     Tables: {
       analysis_results: {
         Row: {
-          compliance_score: number
-          contract_id: string
-          created_at: string
-          data_protection_impact: string | null
-          executive_summary: string
           id: string
+          contract_id: string
+          executive_summary: string
+          data_protection_impact: string | null
+          compliance_score: number
+          created_at: string
           updated_at: string
+          jurisdiction_summaries: Json | null
+          report_file_path: string | null
         }
         Insert: {
-          compliance_score: number
-          contract_id: string
-          created_at?: string
-          data_protection_impact?: string | null
-          executive_summary: string
           id?: string
+          contract_id: string
+          executive_summary: string
+          data_protection_impact?: string | null
+          compliance_score: number
+          created_at?: string
           updated_at?: string
+          jurisdiction_summaries?: Json | null
+          report_file_path?: string | null
         }
         Update: {
-          compliance_score?: number
-          contract_id?: string
-          created_at?: string
-          data_protection_impact?: string | null
-          executive_summary?: string
           id?: string
+          contract_id?: string
+          executive_summary?: string
+          data_protection_impact?: string | null
+          compliance_score?: number
+          created_at?: string
           updated_at?: string
+          jurisdiction_summaries?: Json | null
+          report_file_path?: string | null
         }
         Relationships: [
           {
@@ -49,51 +50,51 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contracts"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       contracts: {
         Row: {
-          created_at: string
-          file_path: string
           id: string
-          jurisdictions: string[]
-          marked_for_deletion_by_admin: boolean | null
-          name: string
-          processing_progress: number | null
-          size: string
-          status: string
-          subscription_id: string | null
-          updated_at: string
           user_id: string
+          name: string
+          file_path: string
+          size: string
+          jurisdictions: string[]
+          status: string
+          processing_progress: number | null
+          created_at: string
+          updated_at: string
+          subscription_id: string | null
+          marked_for_deletion_by_admin: boolean | null
         }
         Insert: {
-          created_at?: string
-          file_path: string
           id?: string
-          jurisdictions: string[]
-          marked_for_deletion_by_admin?: boolean | null
-          name: string
-          processing_progress?: number | null
-          size: string
-          status?: string
-          subscription_id?: string | null
-          updated_at?: string
           user_id: string
+          name: string
+          file_path: string
+          size: string
+          jurisdictions: string[]
+          status?: string
+          processing_progress?: number | null
+          created_at?: string
+          updated_at?: string
+          subscription_id?: string | null
+          marked_for_deletion_by_admin?: boolean | null
         }
         Update: {
-          created_at?: string
-          file_path?: string
           id?: string
-          jurisdictions?: string[]
-          marked_for_deletion_by_admin?: boolean | null
-          name?: string
-          processing_progress?: number | null
-          size?: string
-          status?: string
-          subscription_id?: string | null
-          updated_at?: string
           user_id?: string
+          name?: string
+          file_path?: string
+          size?: string
+          jurisdictions?: string[]
+          status?: string
+          processing_progress?: number | null
+          created_at?: string
+          updated_at?: string
+          subscription_id?: string | null
+          marked_for_deletion_by_admin?: boolean | null
         }
         Relationships: [
           {
@@ -104,86 +105,79 @@ export type Database = {
             referencedColumns: ["subscription_id"]
           },
           {
-            foreignKeyName: "contracts_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "stripe_user_subscriptions"
-            referencedColumns: ["subscription_id"]
-          },
-          {
             foreignKeyName: "fk_user_id"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       email_otps: {
         Row: {
-          created_at: string
-          email: string
-          expires_at: string
           id: string
-          is_used: boolean
+          email: string
           otp_code: string
+          created_at: string
+          expires_at: string
+          is_used: boolean
         }
         Insert: {
-          created_at?: string
-          email: string
-          expires_at: string
           id?: string
-          is_used?: boolean
+          email: string
           otp_code: string
+          created_at?: string
+          expires_at: string
+          is_used?: boolean
         }
         Update: {
-          created_at?: string
-          email?: string
-          expires_at?: string
           id?: string
-          is_used?: boolean
+          email?: string
           otp_code?: string
+          created_at?: string
+          expires_at?: string
+          is_used?: boolean
         }
         Relationships: []
       }
       findings: {
         Row: {
+          id: string
           analysis_result_id: string
+          title: string
+          description: string
+          risk_level: string
+          jurisdiction: string
           category: string
+          recommendations: string[]
           clause_reference: string | null
           created_at: string
-          description: string
-          id: string
-          jurisdiction: string
-          recommendations: string[]
-          risk_level: string
-          title: string
           updated_at: string
         }
         Insert: {
+          id?: string
           analysis_result_id: string
+          title: string
+          description: string
+          risk_level: string
+          jurisdiction: string
           category: string
+          recommendations: string[]
           clause_reference?: string | null
           created_at?: string
-          description: string
-          id?: string
-          jurisdiction: string
-          recommendations: string[]
-          risk_level: string
-          title: string
           updated_at?: string
         }
         Update: {
+          id?: string
           analysis_result_id?: string
+          title?: string
+          description?: string
+          risk_level?: string
+          jurisdiction?: string
           category?: string
+          recommendations?: string[]
           clause_reference?: string | null
           created_at?: string
-          description?: string
-          id?: string
-          jurisdiction?: string
-          recommendations?: string[]
-          risk_level?: string
-          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -193,63 +187,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "analysis_results"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       inquiries: {
         Row: {
-          created_at: string
-          email: string
-          first_name: string
           id: string
+          first_name: string
           last_name: string
+          email: string
+          subject: string
           message: string
           recaptcha_token: string | null
-          subject: string
+          created_at: string
         }
         Insert: {
-          created_at?: string
-          email: string
-          first_name: string
           id?: string
+          first_name: string
           last_name: string
+          email: string
+          subject: string
           message: string
           recaptcha_token?: string | null
-          subject: string
+          created_at?: string
         }
         Update: {
-          created_at?: string
-          email?: string
-          first_name?: string
           id?: string
+          first_name?: string
           last_name?: string
+          email?: string
+          subject?: string
           message?: string
           recaptcha_token?: string | null
-          subject?: string
+          created_at?: string
         }
         Relationships: []
       }
       inquiry_replies: {
         Row: {
-          admin_user_id: string
-          created_at: string
           id: string
           inquiry_id: string
+          admin_user_id: string
           reply_message: string
+          created_at: string
         }
         Insert: {
-          admin_user_id: string
-          created_at?: string
           id?: string
           inquiry_id: string
+          admin_user_id: string
           reply_message: string
+          created_at?: string
         }
         Update: {
-          admin_user_id?: string
-          created_at?: string
           id?: string
           inquiry_id?: string
+          admin_user_id?: string
           reply_message?: string
+          created_at?: string
         }
         Relationships: [
           {
@@ -265,36 +259,36 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inquiries"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       notifications: {
         Row: {
-          created_at: string
           id: string
-          is_read: boolean
-          message: string
-          title: string
-          type: string
           user_id: string
+          title: string
+          message: string
+          type: string
+          is_read: boolean
+          created_at: string
         }
         Insert: {
-          created_at?: string
           id?: string
-          is_read?: boolean
-          message: string
-          title: string
-          type?: string
           user_id: string
+          title: string
+          message: string
+          type?: string
+          is_read?: boolean
+          created_at?: string
         }
         Update: {
-          created_at?: string
           id?: string
-          is_read?: boolean
-          message?: string
-          title?: string
-          type?: string
           user_id?: string
+          title?: string
+          message?: string
+          type?: string
+          is_read?: boolean
+          created_at?: string
         }
         Relationships: [
           {
@@ -303,51 +297,51 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       profiles: {
         Row: {
-          business_name: string | null
+          id: string
+          full_name: string | null
+          mobile_phone_number: string | null
           country_code: string | null
           created_at: string
-          default_jurisdictions: string[] | null
+          theme_preference: string
           email_reports_enabled: boolean
-          full_name: string | null
-          id: string
+          default_jurisdictions: string[] | null
+          notification_settings: Json | null
           is_admin: boolean | null
           login_at: string | null
-          mobile_phone_number: string | null
-          notification_settings: Json | null
-          theme_preference: string
+          business_name: string | null
         }
         Insert: {
-          business_name?: string | null
+          id: string
+          full_name?: string | null
+          mobile_phone_number?: string | null
           country_code?: string | null
           created_at?: string
-          default_jurisdictions?: string[] | null
+          theme_preference?: string
           email_reports_enabled?: boolean
-          full_name?: string | null
-          id: string
+          default_jurisdictions?: string[] | null
+          notification_settings?: Json | null
           is_admin?: boolean | null
           login_at?: string | null
-          mobile_phone_number?: string | null
-          notification_settings?: Json | null
-          theme_preference?: string
+          business_name?: string | null
         }
         Update: {
-          business_name?: string | null
+          id?: string
+          full_name?: string | null
+          mobile_phone_number?: string | null
           country_code?: string | null
           created_at?: string
-          default_jurisdictions?: string[] | null
+          theme_preference?: string
           email_reports_enabled?: boolean
-          full_name?: string | null
-          id?: string
+          default_jurisdictions?: string[] | null
+          notification_settings?: Json | null
           is_admin?: boolean | null
           login_at?: string | null
-          mobile_phone_number?: string | null
-          notification_settings?: Json | null
-          theme_preference?: string
+          business_name?: string | null
         }
         Relationships: [
           {
@@ -356,33 +350,33 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       stripe_customers: {
         Row: {
-          created_at: string | null
-          customer_id: string
-          deleted_at: string | null
           id: number
-          updated_at: string | null
           user_id: string
+          customer_id: string
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
         }
         Insert: {
-          created_at?: string | null
-          customer_id: string
-          deleted_at?: string | null
-          id?: never
-          updated_at?: string | null
+          id?: number
           user_id: string
+          customer_id: string
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
         }
         Update: {
-          created_at?: string | null
-          customer_id?: string
-          deleted_at?: string | null
-          id?: never
-          updated_at?: string | null
+          id?: number
           user_id?: string
+          customer_id?: string
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
         }
         Relationships: [
           {
@@ -391,180 +385,180 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       stripe_orders: {
         Row: {
+          id: number
+          checkout_session_id: string
+          payment_intent_id: string
+          customer_id: string
           amount_subtotal: number
           amount_total: number
-          checkout_session_id: string
-          created_at: string | null
           currency: string
-          customer_id: string
-          deleted_at: string | null
-          id: number
-          is_consumed: boolean
-          payment_intent_id: string
           payment_status: string
-          price_id: string | null
           status: Database["public"]["Enums"]["stripe_order_status"]
+          created_at: string | null
           updated_at: string | null
+          deleted_at: string | null
+          is_consumed: boolean
+          price_id: string | null
         }
         Insert: {
+          id?: number
+          checkout_session_id: string
+          payment_intent_id: string
+          customer_id: string
           amount_subtotal: number
           amount_total: number
-          checkout_session_id: string
-          created_at?: string | null
           currency: string
-          customer_id: string
-          deleted_at?: string | null
-          id?: never
-          is_consumed?: boolean
-          payment_intent_id: string
           payment_status: string
-          price_id?: string | null
           status?: Database["public"]["Enums"]["stripe_order_status"]
+          created_at?: string | null
           updated_at?: string | null
+          deleted_at?: string | null
+          is_consumed?: boolean
+          price_id?: string | null
         }
         Update: {
+          id?: number
+          checkout_session_id?: string
+          payment_intent_id?: string
+          customer_id?: string
           amount_subtotal?: number
           amount_total?: number
-          checkout_session_id?: string
-          created_at?: string | null
           currency?: string
-          customer_id?: string
-          deleted_at?: string | null
-          id?: never
-          is_consumed?: boolean
-          payment_intent_id?: string
           payment_status?: string
-          price_id?: string | null
           status?: Database["public"]["Enums"]["stripe_order_status"]
+          created_at?: string | null
           updated_at?: string | null
+          deleted_at?: string | null
+          is_consumed?: boolean
+          price_id?: string | null
         }
         Relationships: []
       }
       stripe_product_metadata: {
         Row: {
-          created_at: string
-          max_files: number | null
-          max_users: number | null
           price_id: string
           product_id: string
+          max_users: number | null
+          max_files: number | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          created_at?: string
-          max_files?: number | null
-          max_users?: number | null
           price_id: string
           product_id: string
+          max_users?: number | null
+          max_files?: number | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          created_at?: string
-          max_files?: number | null
-          max_users?: number | null
           price_id?: string
           product_id?: string
+          max_users?: number | null
+          max_files?: number | null
+          created_at?: string
           updated_at?: string
         }
         Relationships: []
       }
       stripe_subscriptions: {
         Row: {
-          cancel_at_period_end: boolean | null
-          created_at: string | null
-          current_period_end: number | null
-          current_period_start: number | null
-          customer_id: string
-          deleted_at: string | null
           id: number
-          max_files: number | null
-          max_users: number | null
+          customer_id: string
+          subscription_id: string | null
+          price_id: string | null
+          current_period_start: number | null
+          current_period_end: number | null
+          cancel_at_period_end: boolean | null
           payment_method_brand: string | null
           payment_method_last4: string | null
-          price_id: string | null
           status: Database["public"]["Enums"]["stripe_subscription_status"]
-          subscription_id: string | null
+          created_at: string | null
           updated_at: string | null
+          deleted_at: string | null
+          max_users: number | null
+          max_files: number | null
         }
         Insert: {
-          cancel_at_period_end?: boolean | null
-          created_at?: string | null
-          current_period_end?: number | null
-          current_period_start?: number | null
+          id?: number
           customer_id: string
-          deleted_at?: string | null
-          id?: never
-          max_files?: number | null
-          max_users?: number | null
+          subscription_id?: string | null
+          price_id?: string | null
+          current_period_start?: number | null
+          current_period_end?: number | null
+          cancel_at_period_end?: boolean | null
           payment_method_brand?: string | null
           payment_method_last4?: string | null
-          price_id?: string | null
           status: Database["public"]["Enums"]["stripe_subscription_status"]
-          subscription_id?: string | null
+          created_at?: string | null
           updated_at?: string | null
+          deleted_at?: string | null
+          max_users?: number | null
+          max_files?: number | null
         }
         Update: {
-          cancel_at_period_end?: boolean | null
-          created_at?: string | null
-          current_period_end?: number | null
-          current_period_start?: number | null
+          id?: number
           customer_id?: string
-          deleted_at?: string | null
-          id?: never
-          max_files?: number | null
-          max_users?: number | null
+          subscription_id?: string | null
+          price_id?: string | null
+          current_period_start?: number | null
+          current_period_end?: number | null
+          cancel_at_period_end?: boolean | null
           payment_method_brand?: string | null
           payment_method_last4?: string | null
-          price_id?: string | null
           status?: Database["public"]["Enums"]["stripe_subscription_status"]
-          subscription_id?: string | null
+          created_at?: string | null
           updated_at?: string | null
+          deleted_at?: string | null
+          max_users?: number | null
+          max_files?: number | null
         }
         Relationships: []
       }
       subscription_memberships: {
         Row: {
-          accepted_at: string | null
-          created_at: string | null
           id: string
-          invited_at: string | null
-          invited_by: string | null
-          invited_email_address: string | null
+          subscription_id: string
+          user_id: string | null
           role: string
           status: string
-          subscription_id: string
+          invited_by: string | null
+          invited_at: string | null
+          accepted_at: string | null
+          created_at: string | null
           updated_at: string | null
-          user_id: string | null
+          invited_email_address: string | null
         }
         Insert: {
-          accepted_at?: string | null
-          created_at?: string | null
           id?: string
-          invited_at?: string | null
-          invited_by?: string | null
-          invited_email_address?: string | null
+          subscription_id: string
+          user_id?: string | null
           role?: string
           status?: string
-          subscription_id: string
+          invited_by?: string | null
+          invited_at?: string | null
+          accepted_at?: string | null
+          created_at?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          invited_email_address?: string | null
         }
         Update: {
-          accepted_at?: string | null
-          created_at?: string | null
           id?: string
-          invited_at?: string | null
-          invited_by?: string | null
-          invited_email_address?: string | null
+          subscription_id?: string
+          user_id?: string | null
           role?: string
           status?: string
-          subscription_id?: string
+          invited_by?: string | null
+          invited_at?: string | null
+          accepted_at?: string | null
+          created_at?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          invited_email_address?: string | null
         }
         Relationships: [
           {
@@ -582,42 +576,76 @@ export type Database = {
             referencedColumns: ["subscription_id"]
           },
           {
-            foreignKeyName: "subscription_memberships_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "stripe_user_subscriptions"
-            referencedColumns: ["subscription_id"]
-          },
-          {
             foreignKeyName: "subscription_memberships_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
+        ]
+      }
+      support_tickets: {
+        Row: {
+          id: string
+          user_id: string
+          subject: string
+          description: string
+          status: string
+          priority: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          subject: string
+          description: string
+          status?: string
+          priority?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          subject?: string
+          description?: string
+          status?: string
+          priority?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
       support_ticket_replies: {
         Row: {
-          admin_user_id: string
-          created_at: string
           id: string
-          reply_message: string
           ticket_id: string
+          admin_user_id: string
+          reply_message: string
+          created_at: string
         }
         Insert: {
-          admin_user_id: string
-          created_at?: string
           id?: string
-          reply_message: string
           ticket_id: string
+          admin_user_id: string
+          reply_message: string
+          created_at?: string
         }
         Update: {
-          admin_user_id?: string
-          created_at?: string
           id?: string
-          reply_message?: string
           ticket_id?: string
+          admin_user_id?: string
+          reply_message?: string
+          created_at?: string
         }
         Relationships: [
           {
@@ -633,129 +661,84 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "support_tickets"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      support_tickets: {
-        Row: {
-          created_at: string
-          description: string
-          id: string
-          priority: string
-          status: string
-          subject: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          id?: string
-          priority?: string
-          status?: string
-          subject: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          id?: string
-          priority?: string
-          status?: string
-          subject?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "support_tickets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
     Views: {
       stripe_user_orders: {
         Row: {
+          customer_id: string | null
+          order_id: number | null
+          checkout_session_id: string | null
+          payment_intent_id: string | null
           amount_subtotal: number | null
           amount_total: number | null
-          checkout_session_id: string | null
           currency: string | null
-          customer_id: string | null
-          order_date: string | null
-          order_id: number | null
-          order_status:
-            | Database["public"]["Enums"]["stripe_order_status"]
-            | null
-          payment_intent_id: string | null
           payment_status: string | null
+          order_status: Database["public"]["Enums"]["stripe_order_status"] | null
+          order_date: string | null
         }
         Relationships: []
       }
       stripe_user_subscriptions: {
         Row: {
-          cancel_at_period_end: boolean | null
-          current_period_end: number | null
-          current_period_start: number | null
           customer_id: string | null
+          subscription_id: string | null
+          subscription_status: Database["public"]["Enums"]["stripe_subscription_status"] | null
+          price_id: string | null
+          current_period_start: number | null
+          current_period_end: number | null
+          cancel_at_period_end: boolean | null
           payment_method_brand: string | null
           payment_method_last4: string | null
-          price_id: string | null
-          subscription_id: string | null
-          subscription_status:
-            | Database["public"]["Enums"]["stripe_subscription_status"]
-            | null
         }
         Relationships: []
       }
       users: {
         Row: {
+          id: string | null
           aud: string | null
-          created_at: string | null
+          role: string | null
           email: string | null
           email_confirmed_at: string | null
-          id: string | null
-          is_sso_user: boolean | null
-          last_sign_in_at: string | null
           phone: string | null
           phone_confirmed_at: string | null
+          last_sign_in_at: string | null
           raw_app_meta_data: Json | null
           raw_user_meta_data: Json | null
-          role: string | null
+          is_sso_user: boolean | null
+          created_at: string | null
           updated_at: string | null
         }
         Insert: {
+          id?: string | null
           aud?: string | null
-          created_at?: string | null
+          role?: string | null
           email?: string | null
           email_confirmed_at?: string | null
-          id?: string | null
-          is_sso_user?: boolean | null
-          last_sign_in_at?: string | null
           phone?: string | null
           phone_confirmed_at?: string | null
+          last_sign_in_at?: string | null
           raw_app_meta_data?: Json | null
           raw_user_meta_data?: Json | null
-          role?: string | null
+          is_sso_user?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
+          id?: string | null
           aud?: string | null
-          created_at?: string | null
+          role?: string | null
           email?: string | null
           email_confirmed_at?: string | null
-          id?: string | null
-          is_sso_user?: boolean | null
-          last_sign_in_at?: string | null
           phone?: string | null
           phone_confirmed_at?: string | null
+          last_sign_in_at?: string | null
           raw_app_meta_data?: Json | null
           raw_user_meta_data?: Json | null
-          role?: string | null
+          is_sso_user?: boolean | null
+          created_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -763,15 +746,18 @@ export type Database = {
     }
     Functions: {
       is_subscription_owner: {
-        Args: { p_subscription_id: string; p_user_id: string }
+        Args: {
+          p_user_id: string
+          p_subscription_id: string
+        }
         Returns: boolean
       }
     }
     Enums: {
       stripe_order_status: "pending" | "completed" | "canceled"
-      stripe_subscription_status:
+      stripe_subscription_status: 
         | "not_started"
-        | "incomplete"
+        | "incomplete" 
         | "incomplete_expired"
         | "trialing"
         | "active"
@@ -786,33 +772,27 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -820,24 +800,20 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -845,24 +821,20 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -870,54 +842,14 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      stripe_order_status: ["pending", "completed", "canceled"],
-      stripe_subscription_status: [
-        "not_started",
-        "incomplete",
-        "incomplete_expired",
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "unpaid",
-        "paused",
-      ],
-    },
-  },
-} as const
