@@ -37,9 +37,12 @@ Deno.serve(async (req) => {
     return corsResponse({ error: 'Method not allowed' }, 405);
   }
 
-  let requestBody: any;
+  let requestBody: any = {}; // Initialize as empty object
   try {
-    requestBody = await req.json();
+    const rawBody = await req.text(); // Read raw body as text
+    if (rawBody) { // Only parse as JSON if the raw body is not empty
+      requestBody = JSON.parse(rawBody);
+    }
   } catch (e) {
     console.error('Error parsing request body as JSON:', e);
     return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
