@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
+  let token: string; // Moved token declaration to this scope
 
   try {
     const { contract_id, contract_text } = await req.json();
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
-    const token = authHeader.replace('Bearer ', '');
+    token = authHeader.replace('Bearer ', ''); // Assignment here
     
     // Validate token is not empty or literal strings
     if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
@@ -171,7 +172,7 @@ Deno.serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, Ireland, Malta, Cyprus, EU, US, Canada, Australia), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+          content: `You are a legal contract analysis AI with the expertise of a professional legal practitioner with over 40 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, Ireland, EU, US, Canada, Australia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
