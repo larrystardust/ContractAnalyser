@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types'; // Import JurisdictionSummary
+import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Download } from 'lucide-react'; // ADDED Download icon
+import { AlertCircle, Info, FilePlus, Download } from 'lucide-react';
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
-import { supabase } from '../../lib/supabase'; // ADDED: Import supabase client
-import { useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
+import { supabase } from '../../lib/supabase';
+import { useSession } from '@supabase/auth-helpers-react';
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -16,10 +16,9 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  const [isDownloading, setIsDownloading] = useState(false); // ADDED: State for download loading
-  const session = useSession(); // ADDED: Get user session
+  const [isDownloading, setIsDownloading] = useState(false);
+  const session = useSession();
 
-  // Use jurisdictionSummaries directly from analysisResult
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
   const filteredFindings = selectedJurisdiction === 'all' 
@@ -38,12 +37,22 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
-  // ADDED: handleDownloadReport function
   const handleDownloadReport = async () => {
     if (!session?.access_token) {
       alert('You must be logged in to download reports.');
       return;
     }
+
+    // --- START: Added validation and logging ---
+    if (!analysisResult || !analysisResult.contract_id) {
+      console.error('Download Error: analysisResult or contract_id is missing.', { analysisResult });
+      alert('Cannot download report: Contract ID is missing. Please try selecting the contract again or contact support.');
+      return;
+    }
+
+    console.log('Attempting to download report for contractId:', analysisResult.contract_id);
+    console.log('Type of contractId:', typeof analysisResult.contract_id);
+    // --- END: Added validation and logging ---
 
     setIsDownloading(true);
     try {
@@ -63,7 +72,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       }
 
       if (data && data.url) {
-        window.open(data.url, '_blank'); // Open the signed URL in a new tab
+        window.open(data.url, '_blank');
       } else {
         alert('Failed to get report download link.');
       }
@@ -78,7 +87,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-4"> {/* MODIFIED: Added flex container */}
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
           <Button
             variant="outline"
@@ -143,7 +152,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         </div>
       </div>
       
-      {/* Jurisdiction Filter */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setSelectedJurisdiction('all')}
@@ -157,7 +165,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         </button>
         
         {jurisdictions.map((jurisdiction) => {
-          // Only show jurisdictions that have findings
           if (jurisdictionSummaries[jurisdiction].keyFindings.length === 0) {
             return null;
           }
@@ -178,7 +185,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         })}
       </div>
       
-      {/* Findings */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-800">
           {selectedJurisdiction === 'all' 
@@ -251,7 +257,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         )}
       </div>
       
-      {/* Data Protection Impact */}
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Data Protection Impact</h2>
