@@ -14,7 +14,7 @@ import mammoth from 'mammoth';
 
 // CHANGE: Set the worker source for pdfjs-dist using new URL() for Vite
 // This approach is often more compatible with pdfjs-dist in development mode
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 interface ContractUploadProps { // Define props interface
   onUploadStatusChange: (status: boolean) => void;
