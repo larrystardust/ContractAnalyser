@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a legal contract analysis AI with the expertise of a professional legal practitioner with over 40 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, Ireland, EU, US, Canada, Australia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+          content: `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, Ireland, Malta, Cyprus, EU, US, Canada, Australia), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
@@ -257,7 +257,7 @@ NOTES:
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : 'No executive summary provided.';
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
-    const findings = Array.isArray(analysisData.findings) ? analysisData.findings : []; // CORRECTED: This line now correctly assigns the array
+    const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
     const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
@@ -267,8 +267,14 @@ NOTES:
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        // Removed contractName and analysisResult from the body.
-        // The generate-analysis-report function will now fetch these from the DB.
+        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
+        analysisResult: {
+          executive_summary: executiveSummary,
+          data_protection_impact: dataProtectionImpact,
+          compliance_score: complianceScore,
+          jurisdiction_summaries: jurisdictionSummaries,
+          findings: findings,
+        },
       },
       headers: {
         // Pass the current user's token for authorization within generate-analysis-report
