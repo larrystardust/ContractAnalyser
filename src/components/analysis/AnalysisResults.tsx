@@ -62,9 +62,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: {
+        // MODIFIED: Explicitly JSON.stringify the body
+        body: JSON.stringify({
           contractId: analysisResult.contract_id,
-        },
+        }),
       });
 
       if (error) {
