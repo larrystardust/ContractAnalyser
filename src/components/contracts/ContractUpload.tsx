@@ -12,11 +12,9 @@ import { useSubscription } from '../../hooks/useSubscription';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
-// MODIFIED: Import the PDF worker as a URL using Vite's ?url suffix
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-// Set the worker source for pdfjs-dist
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// CHANGE: Set the worker source for pdfjs-dist using new URL() for Vite
+// This approach is often more compatible with pdfjs-dist in development mode
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 interface ContractUploadProps { // Define props interface
   onUploadStatusChange: (status: boolean) => void;
@@ -167,7 +165,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         const contractText = await extractTextFromFile(file);
         
         // Pass the extracted text along with other data
-        const newContractId = await addContract({ file, jurisdictions: selectedJurisdictions, contractText });
+        const newContractId = await addContract({ file, jurisdictions: selectedJurisdicted, contractText });
         
         alert('Contract uploaded and analysis initiated!');
         refetchContracts(); // Call refetchContracts after alert is dismissed
@@ -207,8 +205,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
               {subscription && currentFileCount >= maxAllowedFiles ? (
                 <p>
-                  You have reached your file storage limit of {maxAllowedFiles} files for your current plan ({subscription.price_id ? subscription.price_id.split('_')[0] : 'N/A'}).
-                  To add more files, please delete old files from your <a href="/contracts" className="font-medium underline">Contracts page</a>.
+                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <a href="/contracts" className="font-medium underline">Contracts page</a>.
                 </p>
               ) : (
                 <p>
