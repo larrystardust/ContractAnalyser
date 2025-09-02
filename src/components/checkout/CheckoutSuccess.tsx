@@ -19,7 +19,7 @@ const CheckoutSuccess: React.FC = () => {
           Thank you for your purchase. Your payment has been processed successfully.
         </p>
         
-        <Link to="/dashboard">
+        <Link to="/upload">
           <Button variant="primary" size="lg" className="w-full">
             Return to Dashboard
           </Button>
