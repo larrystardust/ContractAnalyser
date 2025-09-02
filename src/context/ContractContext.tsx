@@ -41,7 +41,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           *,
           findings (*),
           jurisdiction_summaries,
-          report_file_path // ADDED: Fetch report_file_path
+          report_file_path 
         )
       `)
       .eq('user_id', session.user.id)
