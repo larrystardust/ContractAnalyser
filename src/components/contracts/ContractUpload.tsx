@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'; // MODIFIED: Added useEffect
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
@@ -6,14 +6,17 @@ import { Jurisdiction } from '../../types';
 import { useContracts } from '../../context/ContractContext';
 import { useNavigate } from 'react-router-dom';
 import { useUserOrders } from '../../hooks/useUserOrders';
-import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
+import { useSubscription } from '../../hooks/useSubscription';
 
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
-// CHANGE: Set the worker source for pdfjs-dist using new URL() for Vite
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+// MODIFIED: Import the PDF worker as a URL using Vite's ?url suffix
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
+// Set the worker source for pdfjs-dist
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface ContractUploadProps { // Define props interface
   onUploadStatusChange: (status: boolean) => void;
