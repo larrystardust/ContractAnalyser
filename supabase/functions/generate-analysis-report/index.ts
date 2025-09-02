@@ -6,7 +6,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-// Helper for CORS responses
+// Helper for CORS responses - RE-ADDED
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,7 +20,7 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// Helper function to get a safe risk level string
+// Helper function to get a safe risk level string - RE-ADDED
 function getSafeRiskLevel(riskLevel: string | undefined): string {
   if (typeof riskLevel === 'string' && ['high', 'medium', 'low', 'none'].includes(riskLevel)) {
     return riskLevel;
@@ -40,17 +40,22 @@ Deno.serve(async (req) => {
     }
 
     let requestBody: any = {}; // Initialize as empty object
+    let rawBody = ''; // Declare rawBody here to log it later
+
     try {
-      const rawBody = await req.text(); // Read raw body as text
+      rawBody = await req.text(); // Read raw body as text
+      console.log('generate-analysis-report: Raw request body received:', rawBody); // ADDED LOG
       if (rawBody) { // Only parse as JSON if the raw body is not empty
         requestBody = JSON.parse(rawBody);
       }
+      console.log('generate-analysis-report: Parsed requestBody:', requestBody); // ADDED LOG
     } catch (e) {
-      console.error('Error parsing request body as JSON:', e);
+      console.error('generate-analysis-report: Error parsing request body as JSON:', e);
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
     const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult } = requestBody;
+    console.log('generate-analysis-report: Extracted contractId:', contractId); // ADDED LOG
 
     if (!contractId) {
       return corsResponse({ error: 'Missing contractId' }, 400);
