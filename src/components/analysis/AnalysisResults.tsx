@@ -43,7 +43,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       return;
     }
 
-    // --- START: Added validation and logging ---
     if (!analysisResult || !analysisResult.contract_id) {
       console.error('Download Error: analysisResult or contract_id is missing.', { analysisResult });
       alert('Cannot download report: Contract ID is missing. Please try selecting the contract again or contact support.');
@@ -52,25 +51,27 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
 
     console.log('Attempting to download report for contractId:', analysisResult.contract_id);
     console.log('Type of contractId:', typeof analysisResult.contract_id);
-    // --- END: Added validation and logging ---
 
     setIsDownloading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-analysis-report', {
+      // MODIFIED: Use direct fetch API instead of supabase.functions.invoke
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-analysis-report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        // MODIFIED: Explicitly JSON.stringify the body
         body: JSON.stringify({
           contractId: analysisResult.contract_id,
         }),
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Edge Function returned a non-2xx status code');
       }
+
+      const data = await response.json();
 
       if (data && data.url) {
         window.open(data.url, '_blank');
