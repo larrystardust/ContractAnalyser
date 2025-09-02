@@ -120,6 +120,8 @@ Deno.serve(async (req) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Contract Analysis Report - ${finalContractName}</title>
+          <!-- ADDED: CSP directive to allow styles from self and Supabase Storage -->
+          <meta http-equiv="Content-Security-Policy" content="style-src 'self' https://qexmdkniehdrumcsshvr.supabase.co;">
           <link rel="stylesheet" href="https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/reports/report.css">
       </head>
       <body>
@@ -180,7 +182,7 @@ Deno.serve(async (req) => {
                               <div class="finding-header">
                                   <span class="finding-title">${finding.title}</span>
                                   <span class="risk-badge risk-${getSafeRiskLevel(finding.risk_level)}">${getSafeRiskLevel(finding.risk_level).charAt(0).toUpperCase() + getSafeRiskLevel(finding.risk_level).slice(1)}</span>
-                              </div>
+                                  </div>
                               <p><strong>Jurisdiction:</strong> ${finding.jurisdiction}</p>
                               <p><strong>Category:</strong> ${finding.category}</p>
                               ${finding.clause_reference ? `<p><strong>Clause Reference:</strong> ${finding.clause_reference}</p>` : ''}
