@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types'; // Import JurisdictionSummary
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus } from 'lucide-react';
+import { AlertCircle, Info, FilePlus, Download } from 'lucide-react'; // ADDED Download icon
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
+import { supabase } from '../../lib/supabase'; // ADDED: Import supabase client
+import { useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -14,9 +16,11 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  
+  const [isDownloading, setIsDownloading] = useState(false); // ADDED: State for download loading
+  const session = useSession(); // ADDED: Get user session
+
   // Use jurisdictionSummaries directly from analysisResult
-  const jurisdictionSummaries = analysisResult.jurisdictionSummaries; // MODIFIED
+  const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
   const filteredFindings = selectedJurisdiction === 'all' 
     ? analysisResult.findings 
@@ -32,12 +36,60 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
     }
   };
   
-  const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[]; // Use generated summaries
+  const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
+
+  // ADDED: handleDownloadReport function
+  const handleDownloadReport = async () => {
+    if (!session?.access_token) {
+      alert('You must be logged in to download reports.');
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-analysis-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: {
+          contractId: analysisResult.contract_id,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.url) {
+        window.open(data.url, '_blank'); // Open the signed URL in a new tab
+      } else {
+        alert('Failed to get report download link.');
+      }
+    } catch (error: any) {
+      console.error('Error downloading report:', error);
+      alert(`Failed to download report: ${error.message}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Executive Summary</h2>
+        <div className="flex justify-between items-center mb-4"> {/* MODIFIED: Added flex container */}
+          <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadReport}
+            disabled={isDownloading}
+            icon={<Download className="w-4 h-4" />}
+          >
+            {isDownloading ? 'Generating...' : 'Download Full Report'}
+          </Button>
+        </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -106,7 +158,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         
         {jurisdictions.map((jurisdiction) => {
           // Only show jurisdictions that have findings
-          if (jurisdictionSummaries[jurisdiction].keyFindings.length === 0) { // MODIFIED
+          if (jurisdictionSummaries[jurisdiction].keyFindings.length === 0) {
             return null;
           }
           
