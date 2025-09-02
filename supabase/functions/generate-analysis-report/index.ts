@@ -120,32 +120,7 @@ Deno.serve(async (req) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Contract Analysis Report - ${finalContractName}</title>
-          <meta http-equiv="Content-Security-Policy" content="style-src 'unsafe-inline';"> <!-- ADDED: CSP directive -->
-          <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
-              h1, h2, h3, h4 { color: #0056b3; }
-              .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-              .section { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
-              .summary-box { background: #e6f7ff; border-left: 5px solid #007bff; padding: 15px; margin-bottom: 20px; }
-              .score-box { text-align: center; padding: 10px; border-radius: 5px; font-weight: bold; color: white; }
-              .score-high { background-color: #dc3545; }
-              .score-medium { background-color: #ffc107; }
-              .score-low { background-color: #17a2b8; }
-              .score-none { background-color: #28a745; }
-              .finding { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-              .finding-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-              .finding-title { font-weight: bold; color: #333; }
-              .risk-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.8em; color: white; }
-              .risk-high { background-color: #dc3545; }
-              .risk-medium { background-color: #ffc107; }
-              .risk-low { background-color: #17a2b8; }
-              .risk-none { background-color: #28a745; }
-              ul { list-style-type: disc; margin-left: 20px; }
-              ol { list-style-type: decimal; margin-left: 20px; }
-              .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
-              .jurisdiction-summary { border: 1px solid #cce5ff; background-color: #e0f2ff; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-              .jurisdiction-summary h4 { margin-top: 0; color: #0056b3; }
-          </style>
+          <link rel="stylesheet" href="https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/reports/report.css">
       </head>
       <body>
           <div class="container">
