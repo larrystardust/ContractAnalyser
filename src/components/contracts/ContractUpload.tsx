@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; // MODIFIED: Added useEffect
 import { Upload, X } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
@@ -17,9 +17,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mi
 
 interface ContractUploadProps { // Define props interface
   onUploadStatusChange: (status: boolean) => void;
+  defaultJurisdictions: Jurisdiction[]; // ADDED: New prop for default jurisdictions
 }
 
-const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange }) => { // Accept the prop
+const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => { // Accept the prop
   const { contracts, addContract, loadingContracts, refetchContracts } = useContracts(); // MODIFIED: Destructure contracts
   const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError } = useUserOrders();
   const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use useSubscription
@@ -29,6 +30,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange })
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false); // Keep this for internal button state
   const navigate = useNavigate();
+
+  // ADDED: Effect to set default jurisdictions when component mounts or defaultJurisdictions prop changes
+  useEffect(() => {
+    if (defaultJurisdictions && defaultJurisdictions.length > 0) {
+      setSelectedJurisdictions(defaultJurisdictions);
+    }
+  }, [defaultJurisdictions]);
+
 
   // Determine current file count
   const currentFileCount = contracts.length;
