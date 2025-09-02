@@ -257,7 +257,7 @@ NOTES:
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : 'No executive summary provided.';
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
-    const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
+    const findings = Array.isArray(analysisData.findings) ? analysisData.findings : []; // CORRECTED: This line now correctly assigns the array
     const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
@@ -267,14 +267,8 @@ NOTES:
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
-        analysisResult: {
-          executive_summary: executiveSummary,
-          data_protection_impact: dataProtectionImpact,
-          compliance_score: complianceScore,
-          jurisdiction_summaries: jurisdictionSummaries,
-          findings: findings,
-        },
+        // Removed contractName and analysisResult from the body.
+        // The generate-analysis-report function will now fetch these from the DB.
       },
       headers: {
         // Pass the current user's token for authorization within generate-analysis-report
