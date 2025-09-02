@@ -11,10 +11,10 @@ import { useSubscription } from '../../hooks/useSubscription';
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
-// CHANGE: Set the worker source for pdfjs-dist using new URL() for Vite
-// This approach is often more compatible with pdfjs-dist in development mode
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
+// Set the worker source for pdfjs-dist using Vite's ?url suffix
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface ContractUploadProps { // Define props interface
   onUploadStatusChange: (status: boolean) => void;
