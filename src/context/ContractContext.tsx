@@ -40,7 +40,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         analysis_results (
           *,
           findings (*),
-          jurisdiction_summaries
+          jurisdiction_summaries,
+          report_file_path // ADDED: Fetch report_file_path
         )
       `)
       .eq('user_id', session.user.id)
@@ -88,7 +89,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               created_at: dbFinding.created_at,
               updated_at: dbFinding.updated_at,
             })),
-            jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {} // ADDED
+            jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
+            reportFilePath: analysisResultData.report_file_path || null, // ADDED: Map report_file_path
           } : undefined,
         };
       });
@@ -151,7 +153,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
           processing_progress: 0,
-          // REMOVED: subscription_id will be set by the Edge Function
         })
         .select()
         .single();
@@ -216,17 +217,46 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     setLoadingContracts(true);
     setErrorContracts(null);
     try {
-      // 1. Delete file from Supabase Storage
+      // 1. Fetch analysis result to get report_file_path
+      const { data: analysisResultData, error: fetchAnalysisError } = await supabase
+        .from('analysis_results')
+        .select('report_file_path')
+        .eq('contract_id', contractId)
+        .maybeSingle();
+
+      if (fetchAnalysisError) {
+        console.error('Error fetching analysis result for deletion:', fetchAnalysisError);
+        // Don't throw, try to delete other files anyway
+      }
+
+      const reportFilePath = analysisResultData?.report_file_path;
+
+      // 2. Delete original contract file from Supabase Storage
       const { error: storageError } = await supabase.storage
         .from('contracts')
         .remove([filePath]);
 
       if (storageError) {
-        console.error('Error deleting file from storage:', storageError);
-        throw storageError;
+        console.error('Error deleting original contract file from storage:', storageError);
+        // Don't throw, try to delete other files anyway
+      } else {
+        console.log(`Successfully deleted original contract file: ${filePath}`);
       }
 
-      // 2. Delete contract record from 'contracts' table
+      // 3. Delete report file from Supabase Storage if it exists
+      if (reportFilePath) {
+        const { error: reportStorageError } = await supabase.storage
+          .from('reports')
+          .remove([reportFilePath]);
+
+        if (reportStorageError) {
+          console.error('Error deleting report file from storage:', reportStorageError);
+        } else {
+          console.log(`Successfully deleted report file: ${reportFilePath}`);
+        }
+      }
+
+      // 4. Delete contract record from 'contracts' table
       // This should cascade delete analysis_results and findings due to foreign key constraints
       const { error: dbError } = await supabase
         .from('contracts')
@@ -234,13 +264,13 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         .eq('id', contractId);
 
       if (dbError) {
-        console.error('Error deleting contract from database:', dbError);
+        console.error('Error deleting contract record from database:', dbError);
         throw dbError;
       }
 
       // Optimistically update UI or rely on real-time subscription
       setContracts(prevContracts => prevContracts.filter(contract => contract.id !== contractId));
-      console.log(`Contract ${contractId} and its file deleted successfully.`);
+      console.log(`Contract ${contractId} and its associated files deleted successfully.`);
     } catch (error: any) {
       console.error('Error deleting contract:', error);
       setErrorContracts(error);
