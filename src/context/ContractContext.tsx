@@ -52,9 +52,9 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         // Sort analysis_results client-side to get the latest one
         const sortedAnalysisResults = dbContract.analysis_results
           ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          : [];
-        
-        const analysisResultData = sortedAnalysisResults.length > 0
+          : undefined; // Changed to undefined if no results
+
+        const analysisResultData = sortedAnalysisResults && sortedAnalysisResults.length > 0
           ? sortedAnalysisResults[0]
           : undefined;
 
