@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail, RefreshCw } from 'lucide-react'; // ADDED RefreshCw icon
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw } from 'lucide-react';
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
-import { useContracts } from '../../context/ContractContext'; // ADDED: Import useContracts
+import { useContracts } from '../../context/ContractContext';
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -19,10 +19,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
-  const [isReanalyzing, setIsReanalyzing] = useState(false); // ADDED: State for re-analysis loading
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
-  const { reanalyzeContract } = useContracts(); // ADDED: Use reanalyzeContract from context
+  const { reanalyzeContract } = useContracts();
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -127,7 +127,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
     }
   };
 
-  // ADDED: New handler for re-analysis
   const handleReanalyze = async () => {
     if (!analysisResult?.contract_id) {
       alert('No contract selected for re-analysis.');
@@ -136,9 +135,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
     setIsReanalyzing(true);
     try {
       await reanalyzeContract(analysisResult.contract_id);
-    } catch (error) {
-      // Error handling is already in reanalyzeContract, just log here
+      alert('Re-analysis started. Please check your dashboard for updates.'); // Success message here
+    } catch (error: any) {
       console.error('Re-analysis failed:', error);
+      alert(`Failed to re-analyze contract: ${error.message}`); // Error message here
     } finally {
       setIsReanalyzing(false);
     }
@@ -149,7 +149,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
-          <div className="flex space-x-2"> {/* Group buttons */}
+          <div className="flex space-x-2">
             <Button
               variant="outline"
               size="sm"
@@ -160,9 +160,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
               {isEmailing ? 'Emailing...' : 'Email Full Report'}
             </Button>
             <Button
-              variant="secondary" // Changed variant for distinction
+              variant="secondary"
               size="sm"
-              onClick={handleReanalyze} // ADDED: Re-analyze button
+              onClick={handleReanalyze}
               disabled={isReanalyzing}
               icon={<RefreshCw className="w-4 h-4" />}
             >
