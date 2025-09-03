@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail } from 'lucide-react'; // Changed Download to Mail
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw } from 'lucide-react'; // ADDED RefreshCw icon
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
-import { useUserProfile } from '../../hooks/useUserProfile'; // ADDED: Import useUserProfile
+import { useUserProfile } from '../../hooks/useUserProfile';
+import { useContracts } from '../../context/ContractContext'; // ADDED: Import useContracts
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -17,9 +18,11 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  const [isEmailing, setIsEmailing] = useState(false); // Changed isDownloading to isEmailing
+  const [isEmailing, setIsEmailing] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false); // ADDED: State for re-analysis loading
   const session = useSession();
-  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile(); // ADDED: Fetch user profile for email_reports_enabled
+  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
+  const { reanalyzeContract } = useContracts(); // ADDED: Use reanalyzeContract from context
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -39,7 +42,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
-  // MODIFIED: Renamed handleDownloadReport to handleEmailReport
   const handleEmailReport = async () => {
     if (!session?.access_token || !session?.user?.id || !session?.user?.email) {
       alert('You must be logged in to email reports.');
@@ -52,9 +54,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       return;
     }
 
-    setIsEmailing(true); // Set emailing state
+    setIsEmailing(true);
     try {
-      // Fetch user's full name and email_reports_enabled preference
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('full_name, email_reports_enabled')
@@ -75,10 +76,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         return;
       }
 
-      // Get the signed URL for the stored HTML report
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('reports')
-        .createSignedUrl(analysisResult.reportFilePath, 3600); // URL valid for 1 hour
+        .createSignedUrl(analysisResult.reportFilePath, 3600);
 
       if (signedUrlError) {
         console.error('Error creating signed URL for report:', signedUrlError);
@@ -88,7 +88,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
 
       const reportLink = signedUrlData.signedUrl;
 
-      // Fetch the HTML content of the stored report
       const { data: htmlBlob, error: fetchHtmlError } = await supabase.storage
         .from('reports')
         .download(analysisResult.reportFilePath);
@@ -99,9 +98,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         return;
       }
 
-      const reportHtmlContent = await htmlBlob.text(); // Convert Blob to text
+      const reportHtmlContent = await htmlBlob.text();
 
-      // Call the trigger-report-email Edge Function
       const { data, error } = await supabase.functions.invoke('trigger-report-email', {
         body: {
           userId: session.user.id,
@@ -116,7 +114,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       });
 
       if (error) {
-        const errorData = await error.context.json(); // Assuming error.context.json() exists for Edge Function errors
+        const errorData = await error.context.json();
         throw new Error(errorData.error || 'Edge Function returned an error');
       }
 
@@ -125,7 +123,24 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       console.error('Error emailing report:', error);
       alert(`Failed to email report: ${error.message}`);
     } finally {
-      setIsEmailing(false); // Reset emailing state
+      setIsEmailing(false);
+    }
+  };
+
+  // ADDED: New handler for re-analysis
+  const handleReanalyze = async () => {
+    if (!analysisResult?.contract_id) {
+      alert('No contract selected for re-analysis.');
+      return;
+    }
+    setIsReanalyzing(true);
+    try {
+      await reanalyzeContract(analysisResult.contract_id);
+    } catch (error) {
+      // Error handling is already in reanalyzeContract, just log here
+      console.error('Re-analysis failed:', error);
+    } finally {
+      setIsReanalyzing(false);
     }
   };
 
@@ -134,15 +149,26 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleEmailReport} // MODIFIED: Call handleEmailReport
-            disabled={isEmailing} // MODIFIED: Use isEmailing state
-            icon={<Mail className="w-4 h-4" />} // Changed icon
-          >
-            {isEmailing ? 'Emailing...' : 'Email Full Report'} {/* MODIFIED: Button text */}
-          </Button>
+          <div className="flex space-x-2"> {/* Group buttons */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEmailReport}
+              disabled={isEmailing}
+              icon={<Mail className="w-4 h-4" />}
+            >
+              {isEmailing ? 'Emailing...' : 'Email Full Report'}
+            </Button>
+            <Button
+              variant="secondary" // Changed variant for distinction
+              size="sm"
+              onClick={handleReanalyze} // ADDED: Re-analyze button
+              disabled={isReanalyzing}
+              icon={<RefreshCw className="w-4 h-4" />}
+            >
+              {isReanalyzing ? 'Re-analyzing...' : 'Re-analyze Contract'}
+            </Button>
+          </div>
         </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
         
