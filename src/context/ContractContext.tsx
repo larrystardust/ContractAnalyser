@@ -39,7 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
-        analysis_results (*, order=created_at.desc.limit.1)
+        analysis_results (*, order=created_at.desc, limit=1)
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
@@ -49,7 +49,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
-        // Ensure we pick the first (and only, due to limit.1) analysis result
         const analysisResultData = dbContract.analysis_results && dbContract.analysis_results.length > 0
           ? dbContract.analysis_results[0]
           : undefined;
