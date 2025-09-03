@@ -332,14 +332,14 @@ NOTES:
 
     const { error: updateContractError } = await supabase
       .from('contracts')
-      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId })
+      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false
       .eq('id', contractId);
 
     if (updateContractError) {
       console.error(`Error updating contract status to completed for ID ${contractId}:`, updateContractError);
       await supabase
         .from('contracts')
-        .update({ status: 'failed', processing_progress: 0 })
+        .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on failure
         .eq('id', contractId);
       throw new Error(`Failed to finalize contract status: ${updateContractError.message}`);
     }
@@ -385,7 +385,7 @@ NOTES:
     console.error(`Error during analysis for contract ID ${contractId}:`, error.message);
     await supabase
       .from('contracts')
-      .update({ status: 'failed', processing_progress: 0 })
+      .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on error
       .eq('id', contractId);
     return corsResponse({ error: error.message }, 500);
   }
