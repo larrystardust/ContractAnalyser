@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom'; // MODIFIED: Added useLocation, useNavigate, useNavigationType
-// REMOVED: import Header from './components/layout/Header';
+import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import Dashboard from './components/dashboard/Dashboard';
 import PricingSection from './components/pricing/PricingSection';
 import CheckoutSuccess from './components/checkout/CheckoutSuccess';
@@ -25,8 +24,6 @@ import DisclaimerPage from './pages/DisclaimerPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import HelpPage from './pages/HelpPage';
-// REMOVED: import Modal from './components/ui/Modal';
-// REMOVED: import DashboardHelpModal from './components/dashboard/DashboardHelpModal';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import { useTheme } from './hooks/useTheme';
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -39,27 +36,25 @@ import AdminReportsPage from './pages/AdminReportsPage';
 
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
-import MfaChallengePage from './pages/MfaChallengePage'; // ADDED: Import MfaChallengePage
-import { useSession } from '@supabase/auth-helpers-react'; // MODIFIED: Import useSession
+import MfaChallengePage from './pages/MfaChallengePage';
+import { useSession } from '@supabase/auth-helpers-react';
+import ReportViewerPage from './pages/ReportViewerPage';
+import PublicReportViewerPage from './pages/PublicReportViewerPage'; // ADDED: Import PublicReportViewerPage
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
-  const location = useLocation(); // MODIFIED
-  const navigate = useNavigate(); // MODIFIED
-  const navigationType = useNavigationType(); // MODIFIED
-  const session = useSession(); // MODIFIED
+  const location = useLocation();
+  const navigate = useNavigate();
+  const navigationType = useNavigationType();
+  const session = useSession();
 
   useTheme();
 
-  // MODIFIED: Effect to handle back button redirection after logout
   useEffect(() => {
-    // If there's no session (user is logged out)
-    // AND the navigation type is 'POP' (browser back/forward button)
-    // AND the current path is not the landing page
     if (!session && navigationType === 'POP' && location.pathname !== '/') {
-      navigate('/', { replace: true }); // Redirect to landing page and replace the history entry
+      navigate('/', { replace: true });
     }
-  }, [location, navigationType, session, navigate]); // Dependencies for the effect
+  }, [location, navigationType, session, navigate]);
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
@@ -75,7 +70,8 @@ function App() {
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
-          <Route path="/mfa-challenge" element={<MfaChallengePage />} /> {/* ADDED: MFA Challenge Route */}
+          <Route path="/mfa-challenge" element={<MfaChallengePage />} />
+          <Route path="/public-report-view" element={<PublicReportViewerPage />} /> {/* ADDED: New public route */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
@@ -90,6 +86,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/pricing" element={<PricingSection />} />
+            <Route path="/reports/view/:contractId" element={<ReportViewerPage />} />
 
             {/* Protected Routes - wrapped with AuthGuard */}
             <Route element={<AuthGuard />}>
