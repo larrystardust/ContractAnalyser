@@ -39,7 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
-        analysis_results (*, order=created_at.desc, limit=1)
+        analysis_results (*) // Fetch all analysis results for client-side sorting
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
@@ -49,8 +49,13 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
-        const analysisResultData = dbContract.analysis_results && dbContract.analysis_results.length > 0
-          ? dbContract.analysis_results[0]
+        // Sort analysis_results client-side to get the latest one
+        const sortedAnalysisResults = dbContract.analysis_results
+          ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          : [];
+        
+        const analysisResultData = sortedAnalysisResults.length > 0
+          ? sortedAnalysisResults[0]
           : undefined;
 
         return {
