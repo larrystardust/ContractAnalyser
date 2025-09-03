@@ -134,7 +134,9 @@ const Dashboard: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedContract && selectedContract.status !== 'completed'
-                    ? `Analyzing "${selectedContract.name}"... (${selectedContract.processing_progress || 0}%)`
+                    ? (selectedContract.isReanalyzing // MODIFIED: Check isReanalyzing flag
+                        ? 'Your contract is being re-analyzed and will be ready shortly.'
+                        : `Analyzing "${selectedContract.name}"... (${selectedContract.processing_progress || 0}%)`)
                     : 'No Contract Selected'}
                 </h2>
                 <p className="text-gray-600 mb-6">
