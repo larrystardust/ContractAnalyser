@@ -10,6 +10,7 @@ export interface Contract {
   analysisResult?: AnalysisResult;
   created_at: string; // Changed from uploadDate
   updated_at: string; // Added
+  isReanalyzing?: boolean; // ADDED: New property to indicate re-analysis in progress
 }
 
 export type Jurisdiction = 'UK' | 'EU' | 'Ireland' | 'US' | 'Canada' | 'Australia' | 'Others'; // MODIFIED: Updated Jurisdiction type
