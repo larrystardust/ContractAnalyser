@@ -38,7 +38,7 @@ import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
-import PublicReportViewerPage from './pages/PublicReportViewerPage'; // Keep PublicReportViewerPage
+import PublicReportViewerPage from './pages/PublicReportViewerPage';
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -50,7 +50,9 @@ function App() {
   useTheme();
 
   useEffect(() => {
-    if (!session && navigationType === 'POP' && location.pathname !== '/') {
+    // Exclude /public-report-view from the session-based redirect
+    const publicPaths = ['/', '/public-report-view'];
+    if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
       navigate('/', { replace: true });
     }
   }, [location, navigationType, session, navigate]);
