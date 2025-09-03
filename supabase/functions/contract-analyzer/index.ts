@@ -2,7 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0'; // Use the correct version
 
-// Initialize Supabase client
+// Initialize Supabase client with service role key for elevated privileges
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -332,14 +332,14 @@ NOTES:
 
     const { error: updateContractError } = await supabase
       .from('contracts')
-      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false
+      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId })
       .eq('id', contractId);
 
     if (updateContractError) {
       console.error(`Error updating contract status to completed for ID ${contractId}:`, updateContractError);
       await supabase
         .from('contracts')
-        .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on failure
+        .update({ status: 'failed', processing_progress: 0 })
         .eq('id', contractId);
       throw new Error(`Failed to finalize contract status: ${updateContractError.message}`);
     }
@@ -385,7 +385,7 @@ NOTES:
     console.error(`Error during analysis for contract ID ${contractId}:`, error.message);
     await supabase
       .from('contracts')
-      .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on failure
+      .update({ status: 'failed', processing_progress: 0 })
       .eq('id', contractId);
     return corsResponse({ error: error.message }, 500);
   }
