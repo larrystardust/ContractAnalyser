@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect, useRef, ReactNode, useCallback } from 'react';
-import { Contract, AnalysisResult, Jurisdiction } from '../types';
 import { supabase } from '../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { Contract, AnalysisResult, Jurisdiction } from '../types'; // Ensure these types are correctly imported
 
 interface ContractContextType {
   contracts: Contract[];
@@ -26,7 +26,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const fetchContracts = useCallback(async () => {
     setLoadingContracts(true);
-    setErrorContracts(null);
+    setErrorContracts(null); // Clear any previous errors when fetching
     if (!session?.user?.id) {
       setContracts([]);
       setLoadingContracts(false);
@@ -290,7 +290,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       throw new Error('User not authenticated.');
     }
     setLoadingContracts(true);
-    setErrorContracts(null);
+    // DO NOT set setErrorContracts here, let the calling component handle the specific error message
+    // setErrorContracts(null); // This line is removed
 
     try {
       const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
@@ -301,21 +302,25 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       });
 
       if (error) {
+        console.error('ContractContext: Error from re-analyze-contract:', error); // Log the full error object
+
         // Check if the error is a FunctionsHttpError with a 403 status
         if (error.name === 'FunctionsHttpError' && error.context && error.context.status === 403) {
-          let errorMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
+          const userFriendlyMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
           try {
-            // Attempt to read the response body for a more specific message from the Edge Function
+            // Attempt to read the response body for more specific logging, but the user-facing message is fixed for 403
             const errorBody = await error.context.json();
-            if (errorBody && errorBody.error) {
-              errorMessage = errorBody.error; // Use the specific message from the Edge Function
-            }
+            console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
+            // We are NOT using errorBody.error for the user-facing message here,
+            // to ensure consistency as per user's request.
           } catch (parseError) {
-            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body:', parseError);
+            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body for logging:', parseError);
           }
-          throw new Error(errorMessage); // Throw the user-friendly message
+          // ALWAYS throw the specific user-friendly message for a 403
+          throw new Error(userFriendlyMessage);
         }
-        throw error; // Re-throw other types of errors
+        // For any other type of error or status code, re-throw the original error
+        throw error;
       }
 
       console.log('Re-analysis initiated:', data);
@@ -324,11 +329,13 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           contract.id === contractId ? { ...contract, status: 'analyzing', processing_progress: 0 } : contract
         )
       );
-      alert('Re-analysis started. Please check your dashboard for updates.');
+      // DO NOT alert here, let the calling component handle the success message
+      // alert('Re-analysis started. Please check your dashboard for updates.'); // This line is removed
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
-      setErrorContracts(error);
-      alert(`Failed to re-analyze contract: ${error.message}`); // Display the user-friendly message
+      // DO NOT set setErrorContracts here, let the calling component handle the specific error message
+      // setErrorContracts(error); // This line is removed
+      throw error; // Re-throw the error so the calling component can catch it
     } finally {
       setLoadingContracts(false);
     }
