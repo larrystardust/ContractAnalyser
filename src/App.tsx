@@ -38,7 +38,6 @@ import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
-import ReportViewerPage from './pages/ReportViewerPage';
 import PublicReportViewerPage from './pages/PublicReportViewerPage'; // ADDED: Import PublicReportViewerPage
 
 function App() {
