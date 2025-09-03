@@ -22,7 +22,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
-  const { reanalyzeContract } = useContracts();
+  const { reanalyzeContract, refetchContracts } = useContracts(); // MODIFIED: Destructure refetchContracts
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -135,7 +135,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
     setIsReanalyzing(true);
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      alert('Re-analysis started. Please check your dashboard for updates.'); // Success message here
+      // MODIFIED: Remove alert and explicitly refetch contracts
+      await refetchContracts(); // Force a refetch to get the latest status and analysis result
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`); // Error message here
