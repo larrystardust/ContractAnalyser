@@ -51,7 +51,7 @@ function App() {
 
   useEffect(() => {
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
-    const publicPaths = ['/', '/public-report-view', '/checkout/cancel']; // MODIFIED
+    const publicPaths = ['/', '/public-report-view', '/checkout-cancel']; // MODIFIED
     if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
       navigate('/', { replace: true });
     }
@@ -70,7 +70,7 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+          <Route path="/checkout-cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
           <Route path="/public-report-view" element={<PublicReportViewerPage />} />
 
