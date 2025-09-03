@@ -29,15 +29,15 @@ function getSafeRiskLevel(riskLevel: string | undefined): string {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return corsResponse(null, 204);
+  }
+
+  if (req.method !== 'POST') {
+    return corsResponse({ error: 'Method not allowed' }, 405);
+  }
+
   try {
-    if (req.method === 'OPTIONS') {
-      return corsResponse(null, 204);
-    }
-
-    if (req.method !== 'POST') {
-      return corsResponse({ error: 'Method not allowed' }, 405);
-    }
-
     let requestBody: any = {};
     let rawBody = '';
 
@@ -233,7 +233,8 @@ Deno.serve(async (req) => {
 
     // Upload HTML to Supabase Storage
     const fileName = `report-${contractId}-${Date.now()}.html`;
-    const filePath = `reports/${fileName}`; // Store in a 'reports' bucket
+    // CORRECTED LINE: Store directly in the 'reports' bucket, not in a subfolder named 'reports'
+    const filePath = fileName; 
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('reports') // Ensure you have a bucket named 'reports'
