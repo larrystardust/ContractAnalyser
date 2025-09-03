@@ -1,14 +1,13 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { Resend } from 'npm:resend@6.0.1'; // Import Resend
+import { Resend } from 'npm:resend@6.0.1';
 
-// Initialize Supabase client with service role key for elevated privileges
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY')); // Initialize Resend
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 // Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
@@ -34,16 +33,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // MODIFIED: Accept reportHtmlContent and reportLink
     const { recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink } = await req.json();
 
     if (!recipientEmail || !subject || !message || !reportHtmlContent || !reportLink) {
       return corsResponse({ error: 'Missing required email parameters: recipientEmail, subject, message, reportHtmlContent, reportLink' }, 400);
     }
 
-    // Authenticate the request to ensure it's coming from an authorized source
-    // This function is now called internally by trigger-report-email, which handles auth.
-    // We still keep this check for robustness if it were ever called directly.
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header missing' }, 401);
@@ -57,19 +52,23 @@ Deno.serve(async (req) => {
 
     console.log(`Attempting to send analysis report email to ${recipientEmail}.`);
 
+    // Construct the URL for the new public report viewer page
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+    const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${encodeURIComponent(reportLink)}`; // MODIFIED: Link to new public page
+
     // --- START: Email Service Integration ---
     try {
       const { data, error } = await resend.emails.send({
-        from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // IMPORTANT: Replace with your verified sender email in Resend
+        from: 'ContractAnalyser <noreply@mail.contractanalyser.com>',
         to: [recipientEmail],
-        subject: subject, // Use the subject passed from trigger-report-email
+        subject: subject,
         html: `
           <p>Hello ${recipientName || 'User'},</p>
           <p>Your legal contract analysis is complete!</p>
           <p><strong>Executive Summary:</strong></p>
           <p>${message}</p>
           <p>You can view the full report and detailed findings directly below, or click the link to view it in your browser:</p>
-          <p><a href="${reportLink}">View Full Report in Browser</a></p>
+          <p><a href="${publicReportViewerUrl}">View Full Report in Browser</a></p> <!-- MODIFIED: Use the new public viewer URL -->
           <hr/>
           ${reportHtmlContent}
           <hr/>
@@ -85,7 +84,7 @@ Deno.serve(async (req) => {
       console.log('Email sent successfully via Resend:', data);
     } catch (emailSendError: any) {
       console.error('Caught error during email sending:', emailSendError);
-      throw emailSendError; // Re-throw to indicate failure in email sending
+      throw emailSendError;
     }
     // --- END: Email Service Integration ---
 
