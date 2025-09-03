@@ -201,11 +201,16 @@ Deno.serve(async (req) => {
               <div class="section">
                   <h2>Detailed Findings</h2>
                   ${finalAnalysisResult.findings && finalAnalysisResult.findings.length > 0 ?
-                      finalAnalysisResult.findings.map((finding: any) => `
+                      finalAnalysisResult.findings.map((finding: any) => {
+                          // MODIFIED: Prioritize risk_level (snake_case from DB) then riskLevel (camelCase from AI output)
+                          const currentRiskLevel = finding.risk_level || finding.riskLevel;
+                          return `
                           <div class="finding">
                               <div class="finding-header">
                                   <span class="finding-title">${finding.title}</span>
-                                  <span class="risk-badge risk-${getSafeRiskLevel(finding.risk_level)}">${getSafeRiskLevel(finding.risk_level).charAt(0).toUpperCase() + getSafeRiskLevel(finding.risk_level).slice(1)}</span>
+                                  ${currentRiskLevel && getSafeRiskLevel(currentRiskLevel) !== 'none' ? `
+                                      <span class="risk-badge risk-${getSafeRiskLevel(currentRiskLevel)}">${getSafeRiskLevel(currentRiskLevel).charAt(0).toUpperCase() + getSafeRiskLevel(currentRiskLevel).slice(1)}</span>
+                                  ` : ''}
                               </div>
                               <p><strong>Jurisdiction:</strong> ${finding.jurisdiction}</p>
                               <p><strong>Category:</strong> ${finding.category}</p>
@@ -218,7 +223,8 @@ Deno.serve(async (req) => {
                                   </ul>
                               ` : ''}
                           </div>
-                      `).join('')
+                          `;
+                      }).join('')
                   : '<p>No detailed findings available.</p>'}
               </div>
 
