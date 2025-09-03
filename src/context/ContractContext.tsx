@@ -9,6 +9,7 @@ interface ContractContextType {
   addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
+  reanalyzeContract: (contractId: string) => Promise<void>; // ADDED: New function for re-analysis
   loadingContracts: boolean;
   errorContracts: Error | null;
   refetchContracts: () => Promise<void>;
@@ -37,6 +38,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       .select(`
         *,
         subscription_id,
+        contract_content, -- ADDED: Fetch contract_content
         analysis_results (
           *,
           findings (*),
@@ -68,6 +70,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           created_at: dbContract.created_at,
           updated_at: dbContract.updated_at,
           subscription_id: dbContract.subscription_id,
+          contract_content: dbContract.contract_content, // ADDED: Map contract_content
           analysisResult: analysisResultData ? {
             id: analysisResultData.id,
             contract_id: analysisResultData.contract_id,
@@ -153,6 +156,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
           processing_progress: 0,
+          contract_content: newContractData.contractText, // ADDED: Store contract_content
         })
         .select()
         .single();
@@ -232,16 +236,19 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       const reportFilePath = analysisResultData?.report_file_path;
 
       // 2. Delete original contract file from Supabase Storage
-      const { error: storageError } = await supabase.storage
-        .from('contracts')
-        .remove([filePath]);
+      if (filePath) { // Ensure filePath is not null/undefined
+        const { error: storageError } = await supabase.storage
+          .from('contracts')
+          .remove([filePath]);
 
-      if (storageError) {
-        console.error('Error deleting original contract file from storage:', storageError);
-        // Don't throw, try to delete other files anyway
-      } else {
-        console.log(`Successfully deleted original contract file: ${filePath}`);
+        if (storageError) {
+          console.error('Error deleting original contract file from storage:', storageError);
+          // Don't throw, try to delete the DB record anyway
+        } else {
+          console.log(`Successfully deleted original contract file: ${filePath}`);
+        }
       }
+
 
       // 3. Delete report file from Supabase Storage if it exists
       if (reportFilePath) {
@@ -280,12 +287,51 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, []);
 
+  // ADDED: New function to reanalyze a contract
+  const reanalyzeContract = useCallback(async (contractId: string) => {
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated.');
+    }
+    setLoadingContracts(true); // Indicate loading for the whole contract list
+    setErrorContracts(null);
+
+    try {
+      // Call the new Edge Function to re-trigger analysis
+      const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
+        body: { contract_id: contractId },
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Re-analysis initiated:', data);
+      // Optimistically update the contract status to 'analyzing'
+      setContracts(prevContracts =>
+        prevContracts.map(contract =>
+          contract.id === contractId ? { ...contract, status: 'analyzing', processing_progress: 0 } : contract
+        )
+      );
+      alert('Re-analysis started. Please check your dashboard for updates.');
+    } catch (error: any) {
+      console.error('Error re-analyzing contract:', error);
+      setErrorContracts(error);
+      alert(`Failed to re-analyze contract: ${error.message}`);
+    } finally {
+      setLoadingContracts(false);
+    }
+  }, [session?.user?.id]);
+
+
   const refetchContracts = useCallback(async () => {
     await fetchContracts();
   }, [fetchContracts]);
 
   return (
-    <ContractContext.Provider value={{ contracts, addContract, updateContract, deleteContract, loadingContracts, errorContracts, refetchContracts }}>
+    <ContractContext.Provider value={{ contracts, addContract, updateContract, deleteContract, reanalyzeContract, loadingContracts, errorContracts, refetchContracts }}>
       {children}
     </ContractContext.Provider>
   );
