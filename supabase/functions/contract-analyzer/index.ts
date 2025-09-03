@@ -287,6 +287,9 @@ NOTES:
       // Do not throw, allow analysis to complete, but report path will be null
     }
     const reportFilePath = reportData?.filePath || null; // Get the file path from the response
+    const reportHtmlContent = reportData?.htmlContent || null; // ADDED: Get the HTML content
+    const reportLink = reportData?.url || null; // ADDED: Get the signed URL
+
     // --- END: Generate and Store Report HTML ---
 
     const { data: analysisResult, error: analysisError } = await supabase
@@ -354,28 +357,25 @@ NOTES:
       }
     }
 
-    const sendEmailReport = userNotificationSettings['analysis-complete']?.email === true;
+    // MODIFIED: Call trigger-report-email instead of send-analysis-report-email directly
+    // The trigger-report-email function will handle fetching user preferences and sending the email
+    const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
+      body: {
+        userId: userId,
+        contractId: contractId,
+        reportSummary: executiveSummary,
+        reportLink: reportLink, // Pass the signed URL
+        reportHtmlContent: reportHtmlContent, // Pass the full HTML content
+      },
+      headers: {
+        'Authorization': `Bearer ${token}`, // Pass the current user's token
+      },
+    });
 
-    if (sendEmailReport) {
-      console.log(`User ${userId} has email reports enabled for analysis complete. Triggering email send.`);
-      
-      const { data: emailFnData, error: emailFnError } = await supabase.functions.invoke('send-analysis-report-email', {
-        body: {
-          userId: userId,
-          contractId: contractId,
-          recipientEmail: userEmail,
-          reportSummary: executiveSummary,
-          reportLink: `${Deno.env.get('APP_BASE_URL')}/dashboard?contractId=${contractId}`,
-          userName: userName,
-          sendEmail: true,
-        },
-      });
-
-      if (emailFnError) {
-        console.error('Error invoking send-analysis-report-email Edge Function:', emailFnError);
-      } else {
-        console.log('send-analysis-report-email Edge Function invoked successfully:', emailFnData);
-      }
+    if (emailTriggerError) {
+      console.error('Error invoking trigger-report-email Edge Function:', emailTriggerError);
+    } else {
+      console.log('trigger-report-email Edge Function invoked successfully:', emailTriggerData);
     }
 
     console.log(`Analysis completed for contract ID: ${contractId}`);
