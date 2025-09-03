@@ -385,7 +385,7 @@ NOTES:
     console.error(`Error during analysis for contract ID ${contractId}:`, error.message);
     await supabase
       .from('contracts')
-      .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on error
+      .update({ status: 'failed', processing_progress: 0, isReanalyzing: false }) // MODIFIED: Set isReanalyzing to false on failure
       .eq('id', contractId);
     return corsResponse({ error: error.message }, 500);
   }
