@@ -1,15 +1,15 @@
-import React, { createContext, useState, useContext, useEffect, useRef, ReactNode, useCallback } from 'react'; // Import useRef
+import React, { createContext, useState, useContext, useEffect, useRef, ReactNode, useCallback } from 'react';
 import { Contract, AnalysisResult, Jurisdiction } from '../types';
-import { supabase } from '../lib/supabase'; // Import your Supabase client
-import { useSession } from '@supabase/auth-helpers-react'; // To get the current user session
-import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel type
+import { supabase } from '../lib/supabase';
+import { useSession } from '@supabase/auth-helpers-react';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface ContractContextType {
   contracts: Contract[];
   addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
-  reanalyzeContract: (contractId: string) => Promise<void>; // ADDED: New function for re-analysis
+  reanalyzeContract: (contractId: string) => Promise<void>;
   loadingContracts: boolean;
   errorContracts: Error | null;
   refetchContracts: () => Promise<void>;
@@ -22,7 +22,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [loadingContracts, setLoadingContracts] = useState(true);
   const [errorContracts, setErrorContracts] = useState<Error | null>(null);
   const session = useSession();
-  const contractSubscriptionRef = useRef<RealtimeChannel | null>(null); // Use useRef for the channel
+  const contractSubscriptionRef = useRef<RealtimeChannel | null>(null);
 
   const fetchContracts = useCallback(async () => {
     setLoadingContracts(true);
@@ -43,7 +43,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           *,
           findings (*),
           jurisdiction_summaries,
-          report_file_path 
+          report_file_path
         )
       `)
       .eq('user_id', session.user.id)
@@ -70,7 +70,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           created_at: dbContract.created_at,
           updated_at: dbContract.updated_at,
           subscription_id: dbContract.subscription_id,
-          contract_content: dbContract.contract_content, // ADDED: Map contract_content
+          contract_content: dbContract.contract_content,
           analysisResult: analysisResultData ? {
             id: analysisResultData.id,
             contract_id: analysisResultData.contract_id,
@@ -93,7 +93,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               updated_at: dbFinding.updated_at,
             })),
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
-            reportFilePath: analysisResultData.report_file_path || null, // ADDED: Map report_file_path
+            reportFilePath: analysisResultData.report_file_path || null,
           } : undefined,
         };
       });
@@ -111,15 +111,14 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         fetchContracts();
       })
       .subscribe();
-    contractSubscriptionRef.current = newContractSubscription; // Assign to ref
+    contractSubscriptionRef.current = newContractSubscription;
 
     return () => {
-      // Defensive check: Only remove if the channel is defined and still active
       const currentChannel = contractSubscriptionRef.current;
       if (currentChannel && (currentChannel.state === 'joined' || currentChannel.state === 'joining')) {
         supabase.removeChannel(currentChannel);
       }
-      contractSubscriptionRef.current = null; // Clear the ref
+      contractSubscriptionRef.current = null;
     };
   }, [fetchContracts]);
 
@@ -156,7 +155,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
           processing_progress: 0,
-          contract_content: newContractData.contractText, // ADDED: Store contract_content
+          contract_content: newContractData.contractText,
         })
         .select()
         .single();
@@ -236,7 +235,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       const reportFilePath = analysisResultData?.report_file_path;
 
       // 2. Delete original contract file from Supabase Storage
-      if (filePath) { // Ensure filePath is not null/undefined
+      if (filePath) {
         const { error: storageError } = await supabase.storage
           .from('contracts')
           .remove([filePath]);
@@ -248,7 +247,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           console.log(`Successfully deleted original contract file: ${filePath}`);
         }
       }
-
 
       // 3. Delete report file from Supabase Storage if it exists
       if (reportFilePath) {
@@ -287,16 +285,14 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, []);
 
-  // ADDED: New function to reanalyze a contract
   const reanalyzeContract = useCallback(async (contractId: string) => {
     if (!session?.user?.id) {
       throw new Error('User not authenticated.');
     }
-    setLoadingContracts(true); // Indicate loading for the whole contract list
+    setLoadingContracts(true);
     setErrorContracts(null);
 
     try {
-      // Call the new Edge Function to re-trigger analysis
       const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
         body: { contract_id: contractId },
         headers: {
@@ -305,11 +301,24 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       });
 
       if (error) {
-        throw error;
+        // Check if the error is a FunctionsHttpError with a 403 status
+        if (error.name === 'FunctionsHttpError' && error.context && error.context.status === 403) {
+          let errorMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
+          try {
+            // Attempt to read the response body for a more specific message from the Edge Function
+            const errorBody = await error.context.json();
+            if (errorBody && errorBody.error) {
+              errorMessage = errorBody.error; // Use the specific message from the Edge Function
+            }
+          } catch (parseError) {
+            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body:', parseError);
+          }
+          throw new Error(errorMessage); // Throw the user-friendly message
+        }
+        throw error; // Re-throw other types of errors
       }
 
       console.log('Re-analysis initiated:', data);
-      // Optimistically update the contract status to 'analyzing'
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId ? { ...contract, status: 'analyzing', processing_progress: 0 } : contract
@@ -319,7 +328,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
       setErrorContracts(error);
-      alert(`Failed to re-analyze contract: ${error.message}`);
+      alert(`Failed to re-analyze contract: ${error.message}`); // Display the user-friendly message
     } finally {
       setLoadingContracts(false);
     }
