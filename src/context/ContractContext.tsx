@@ -38,7 +38,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       .select(`
         *,
         subscription_id,
-        contract_content, -- ADDED: Fetch contract_content
+        contract_content,
         analysis_results (
           *,
           findings (*),
