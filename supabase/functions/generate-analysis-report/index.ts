@@ -6,7 +6,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-// Helper for CORS responses - RE-ADDED
+// Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,7 +20,7 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// Helper function to get a safe risk level string - RE-ADDED
+// Helper function to get a safe risk level string
 function getSafeRiskLevel(riskLevel: string | undefined): string {
   if (typeof riskLevel === 'string' && ['high', 'medium', 'low', 'none'].includes(riskLevel)) {
     return riskLevel;
@@ -29,7 +29,6 @@ function getSafeRiskLevel(riskLevel: string | undefined): string {
 }
 
 Deno.serve(async (req) => {
-  // Start of the main try block for the entire function handler
   try {
     if (req.method === 'OPTIONS') {
       return corsResponse(null, 204);
@@ -39,23 +38,23 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    let requestBody: any = {}; // Initialize as empty object
-    let rawBody = ''; // Declare rawBody here to log it later
+    let requestBody: any = {};
+    let rawBody = '';
 
     try {
-      rawBody = await req.text(); // Read raw body as text
-      console.log('generate-analysis-report: Raw request body received:', rawBody); // ADDED LOG
-      if (rawBody) { // Only parse as JSON if the raw body is not empty
+      rawBody = await req.text();
+      console.log('generate-analysis-report: Raw request body received:', rawBody);
+      if (rawBody) {
         requestBody = JSON.parse(rawBody);
       }
-      console.log('generate-analysis-report: Parsed requestBody:', requestBody); // ADDED LOG
+      console.log('generate-analysis-report: Parsed requestBody:', requestBody);
     } catch (e) {
       console.error('generate-analysis-report: Error parsing request body as JSON:', e);
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
     const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult } = requestBody;
-    console.log('generate-analysis-report: Extracted contractId:', contractId); // ADDED LOG
+    console.log('generate-analysis-report: Extracted contractId:', contractId);
 
     if (!contractId) {
       return corsResponse({ error: 'Missing contractId' }, 400);
@@ -112,6 +111,33 @@ Deno.serve(async (req) => {
       finalAnalysisResult = contractData.analysis_results[0]; // Assuming one analysis result per contract
     }
 
+    // Embedded CSS content from public/report.css
+    const embeddedCss = `
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
+      h1, h2, h3, h4 { color: #0056b3; }
+      .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+      .section { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
+      .summary-box { background: #e6f7ff; border-left: 5px solid #007bff; padding: 15px; margin-bottom: 20px; }
+      .score-box { text-align: center; padding: 10px; border-radius: 5px; font-weight: bold; color: white; }
+      .score-high { background-color: #dc3545; }
+      .score-medium { background-color: #ffc107; }
+      .score-low { background-color: #17a2b8; }
+      .score-none { background-color: #28a745; }
+      .finding { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+      .finding-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+      .finding-title { font-weight: bold; color: #333; }
+      .risk-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.8em; color: white; }
+      .risk-high { background-color: #dc3545; }
+      .risk-medium { background-color: #ffc107; }
+      .risk-low { background-color: #17a2b8; }
+      .risk-none { background-color: #28a745; }
+      ul { list-style-type: disc; margin-left: 20px; }
+      ol { list-style-type: decimal; margin-left: 20px; }
+      .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
+      .jurisdiction-summary { border: 1px solid #cce5ff; background-color: #e0f2ff; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+      .jurisdiction-summary h4 { margin-top: 0; color: #0056b3; }
+    `;
+
     // Generate HTML report content
     let htmlContent = `
       <!DOCTYPE html>
@@ -120,9 +146,7 @@ Deno.serve(async (req) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Contract Analysis Report - ${finalContractName}</title>
-          <!-- ADDED: CSP directive to allow styles from self and Supabase Storage -->
-          <meta http-equiv="Content-Security-Policy" content="style-src 'self' https://qexmdkniehdrumcsshvr.supabase.co;">
-          <link rel="stylesheet" href="https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/reports/report.css">
+          <style>${embeddedCss}</style>
       </head>
       <body>
           <div class="container">
@@ -182,7 +206,7 @@ Deno.serve(async (req) => {
                               <div class="finding-header">
                                   <span class="finding-title">${finding.title}</span>
                                   <span class="risk-badge risk-${getSafeRiskLevel(finding.risk_level)}">${getSafeRiskLevel(finding.risk_level).charAt(0).toUpperCase() + getSafeRiskLevel(finding.risk_level).slice(1)}</span>
-                                  </div>
+                              </div>
                               <p><strong>Jurisdiction:</strong> ${finding.jurisdiction}</p>
                               <p><strong>Category:</strong> ${finding.category}</p>
                               ${finding.clause_reference ? `<p><strong>Clause Reference:</strong> ${finding.clause_reference}</p>` : ''}
@@ -233,8 +257,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to get downloadable link for report.' }, 500);
     }
 
-    return corsResponse({ url: signedUrlData.signedUrl, filePath: filePath });
-  } catch (error: any) { // This catch now correctly closes the main try block
+    return corsResponse({ url: signedUrlData.signedUrl, filePath: filePath, htmlContent: htmlContent });
+  } catch (error: any) {
     console.error('Error in generate-analysis-report Edge Function:', error);
     return corsResponse({ error: error.message }, 500);
   }
