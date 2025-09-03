@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     const { data: contract, error: fetchContractError } = await supabase
       .from('contracts')
       .select('contract_content, user_id')
-      .eq('id', contract_id)
+      .eq('id', contractId) // CORRECTED: Changed from contract_id to contractId
       .single();
 
     if (fetchContractError) {
@@ -88,23 +88,23 @@ Deno.serve(async (req) => {
 
     // Ensure the authenticated user owns this contract
     if (contract.user_id !== user.id) {
-      console.warn(`re-analyze-contract: Forbidden: User ${user.id} does not own contract ${contract_id}.`);
+      console.warn(`re-analyze-contract: Forbidden: User ${user.id} does not own contract ${contractId}.`);
       return corsResponse({ error: 'Forbidden: You do not own this contract.' }, 403);
     }
     console.log('re-analyze-contract: User owns the contract.');
 
     if (!contract.contract_content) {
-      console.warn(`re-analyze-contract: Contract content not found for contract ${contract_id}.`);
+      console.warn(`re-analyze-contract: Contract content not found for contract ${contractId}.`);
       return corsResponse({ error: 'Contract content not found for re-analysis.' }, 404);
     }
     console.log('re-analyze-contract: Contract content found.');
 
     // Update contract status to 'analyzing' and reset progress
-    console.log(`re-analyze-contract: Updating contract ${contract_id} status to 'analyzing'.`);
+    console.log(`re-analyze-contract: Updating contract ${contractId} status to 'analyzing'.`);
     const { error: updateStatusError } = await supabase
       .from('contracts')
       .update({ status: 'analyzing', processing_progress: 0 })
-      .eq('id', contract_id);
+      .eq('id', contractId);
 
     if (updateStatusError) {
       console.error('re-analyze-contract: Error updating contract status for re-analysis:', updateStatusError);
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     console.log('re-analyze-contract: Invoking contract-analyzer Edge Function.');
     const { data: analysisResponse, error: analysisError } = await supabase.functions.invoke('contract-analyzer', {
       body: {
-        contract_id: contract_id,
+        contract_id: contractId,
         contract_text: contract.contract_content,
       },
       headers: {
