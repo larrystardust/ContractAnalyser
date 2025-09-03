@@ -302,17 +302,21 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       });
 
       if (error) {
+        console.error('ContractContext: Error from re-analyze-contract:', error); // Log the full error object
+
         // Check if the error is a FunctionsHttpError with a 403 status
         if (error.name === 'FunctionsHttpError' && error.context && error.context.status === 403) {
           let errorMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
           try {
             // Attempt to read the response body for a more specific message from the Edge Function
             const errorBody = await error.context.json();
+            console.log('ContractContext: Parsed 403 error body:', errorBody); // Log parsed body
             if (errorBody && errorBody.error) {
               errorMessage = errorBody.error; // Use the specific message from the Edge Function
             }
           } catch (parseError) {
             console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body:', parseError);
+            // Fallback to the default user-friendly message if parsing fails
           }
           throw new Error(errorMessage); // Throw the user-friendly message
         }
