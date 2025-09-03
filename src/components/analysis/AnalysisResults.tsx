@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Download } from 'lucide-react';
+import { AlertCircle, Info, FilePlus, Mail } from 'lucide-react'; // Changed Download to Mail
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
+import { useUserProfile } from '../../hooks/useUserProfile'; // ADDED: Import useUserProfile
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -16,8 +17,9 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false); // Changed isDownloading to isEmailing
   const session = useSession();
+  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile(); // ADDED: Fetch user profile for email_reports_enabled
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -37,59 +39,93 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
-  const handleDownloadReport = async () => {
-    if (!session?.access_token) {
-      alert('You must be logged in to download reports.');
+  // MODIFIED: Renamed handleDownloadReport to handleEmailReport
+  const handleEmailReport = async () => {
+    if (!session?.access_token || !session?.user?.id || !session?.user?.email) {
+      alert('You must be logged in to email reports.');
       return;
     }
 
-    if (!analysisResult || !analysisResult.contract_id) {
-      console.error('Download Error: analysisResult or contract_id is missing.', { analysisResult });
-      alert('Cannot download report: Contract ID is missing. Please try selecting the contract again or contact support.');
+    if (!analysisResult || !analysisResult.contract_id || !analysisResult.executiveSummary || !analysisResult.reportFilePath) {
+      console.error('Email Error: analysisResult or required fields are missing.', { analysisResult });
+      alert('Cannot email report: Analysis data is incomplete. Please try again later or contact support.');
       return;
     }
 
-    console.log('Attempting to download report for contractId:', analysisResult.contract_id);
-    console.log('Type of contractId:', typeof analysisResult.contract_id);
-
-    setIsDownloading(true);
+    setIsEmailing(true); // Set emailing state
     try {
-      // MODIFIED: Use direct fetch API instead of supabase.functions.invoke
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-analysis-report`, {
-        method: 'POST',
+      // Fetch user's full name and email_reports_enabled preference
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, email_reports_enabled')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error fetching user profile for email preference:', profileError);
+        alert('Failed to fetch user email preferences. Please try again.');
+        return;
+      }
+
+      const userName = profileData?.full_name || session.user.email;
+      const sendEmail = profileData?.email_reports_enabled || false;
+
+      if (!sendEmail) {
+        alert('Your email reports setting is currently disabled. Please enable it in your Application Preferences to receive reports via email.');
+        return;
+      }
+
+      // Get the signed URL for the stored HTML report
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from('reports')
+        .createSignedUrl(analysisResult.reportFilePath, 3600); // URL valid for 1 hour
+
+      if (signedUrlError) {
+        console.error('Error creating signed URL for report:', signedUrlError);
+        alert('Failed to generate a link for the report. Please try again.');
+        return;
+      }
+
+      const reportLink = signedUrlData.signedUrl;
+
+      // Fetch the HTML content of the stored report
+      const { data: htmlBlob, error: fetchHtmlError } = await supabase.storage
+        .from('reports')
+        .download(analysisResult.reportFilePath);
+
+      if (fetchHtmlError) {
+        console.error('Error downloading HTML report from storage:', fetchHtmlError);
+        alert('Failed to retrieve report content. Please try again.');
+        return;
+      }
+
+      const reportHtmlContent = await htmlBlob.text(); // Convert Blob to text
+
+      // Call the trigger-report-email Edge Function
+      const { data, error } = await supabase.functions.invoke('trigger-report-email', {
+        body: {
+          userId: session.user.id,
+          contractId: analysisResult.contract_id,
+          reportSummary: analysisResult.executiveSummary,
+          reportLink: reportLink,
+          reportHtmlContent: reportHtmlContent,
+        },
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          contractId: analysisResult.contract_id,
-        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Edge Function returned a non-2xx status code');
+      if (error) {
+        const errorData = await error.context.json(); // Assuming error.context.json() exists for Edge Function errors
+        throw new Error(errorData.error || 'Edge Function returned an error');
       }
 
-      const data = await response.json();
-
-      if (data && data.url) {
-        // MODIFIED: Instead of opening in a new tab, trigger a download
-        const link = document.createElement('a');
-        link.href = data.url;
-        link.download = `ContractAnalysisReport-${analysisResult.contract_id}.html`; // Suggest a filename
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        alert('Report download initiated!'); // Inform the user
-      } else {
-        alert('Failed to get report download link.');
-      }
+      alert('Report email sent successfully!');
     } catch (error: any) {
-      console.error('Error downloading report:', error);
-      alert(`Failed to download report: ${error.message}`);
+      console.error('Error emailing report:', error);
+      alert(`Failed to email report: ${error.message}`);
     } finally {
-      setIsDownloading(false);
+      setIsEmailing(false); // Reset emailing state
     }
   };
 
@@ -101,11 +137,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
           <Button
             variant="outline"
             size="sm"
-            onClick={handleDownloadReport}
-            disabled={isDownloading}
-            icon={<Download className="w-4 h-4" />}
+            onClick={handleEmailReport} // MODIFIED: Call handleEmailReport
+            disabled={isEmailing} // MODIFIED: Use isEmailing state
+            icon={<Mail className="w-4 h-4" />} // Changed icon
           >
-            {isDownloading ? 'Generating...' : 'Download Full Report'}
+            {isEmailing ? 'Emailing...' : 'Email Full Report'} {/* MODIFIED: Button text */}
           </Button>
         </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
