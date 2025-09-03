@@ -51,7 +51,7 @@ function App() {
 
   useEffect(() => {
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
-    const publicPaths = ['/', '/public-report-view', '/checkout/cancel']; // MODIFIED
+    const publicPaths = ['/', '/public-report-view', '/checkout-cancel']; // MODIFIED
     if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
       navigate('/', { replace: true });
     }
