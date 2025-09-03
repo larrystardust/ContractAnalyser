@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import { useContracts } from '../../context/ContractContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // MODIFIED: Added Link import
 import { useUserOrders } from '../../hooks/useUserOrders';
 import { useSubscription } from '../../hooks/useSubscription';
 
@@ -205,11 +205,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
               {subscription && currentFileCount >= maxAllowedFiles ? (
                 <p>
-                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <a href="/contracts" className="font-medium underline">Contracts page</a>.
+                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>. {/* MODIFIED */}
                 </p>
               ) : (
                 <p>
-                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <a href="/pricing" className="font-medium underline">Pricing page</a> to start uploading and analyzing contracts.
+                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <Link to="/pricing" className="font-medium underline">Pricing page</Link> to start uploading and analyzing contracts. {/* MODIFIED */}
                 </p>
               )}
             </div>
@@ -223,7 +223,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         <p className="text-sm">
           For single-use purchases, your uploaded contracts and their analysis results will be automatically deleted after 30 days.
           For active subscription plans, your data will be retained for the duration of your subscription plus a 30 day grace period.
-          The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. To add more files after reaching your limit, please delete old files from your <a href="/contracts" className="font-medium underline">Contracts page</a>.
+          The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. To add more files after reaching your limit, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>. {/* MODIFIED */}
         </p>
       </div>
 
