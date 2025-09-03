@@ -39,7 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
-        analysis_results (*) // Fetch all analysis results for client-side sorting
+        analysis_results (*, findings(*)) // Fetch all analysis results and their nested findings
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
