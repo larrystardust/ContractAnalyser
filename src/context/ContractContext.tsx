@@ -95,6 +95,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
             reportFilePath: analysisResultData.report_file_path || null,
           } : undefined,
+          isReanalyzing: dbContract.isReanalyzing, // ADDED: Map isReanalyzing from DB
         };
       });
       setContracts(fetchedContracts);
@@ -156,6 +157,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           status: 'pending',
           processing_progress: 0,
           contract_content: newContractData.contractText,
+          isReanalyzing: false, // ADDED: Initialize as false for new contracts
         })
         .select()
         .single();
@@ -298,7 +300,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined } // Clear old analysisResult
+            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined, isReanalyzing: true } // MODIFIED: Set isReanalyzing to true
             : contract
         )
       );
@@ -363,7 +365,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'failed', processing_progress: 0 } // Or revert to original status if known
+            ? { ...contract, status: 'failed', processing_progress: 0, isReanalyzing: false } // MODIFIED: Set isReanalyzing to false on error
             : contract
         )
       );
