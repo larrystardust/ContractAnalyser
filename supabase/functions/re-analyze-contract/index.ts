@@ -21,34 +21,59 @@ function corsResponse(body: string | object | null, status = 200) {
 }
 
 Deno.serve(async (req) => {
+  console.log('re-analyze-contract: Function started.'); // Log function start
+
   if (req.method === 'OPTIONS') {
+    console.log('re-analyze-contract: OPTIONS request received.');
     return corsResponse(null, 204);
   }
 
   if (req.method !== 'POST') {
+    console.log(`re-analyze-contract: Method not allowed: ${req.method}`);
     return corsResponse({ error: 'Method not allowed' }, 405);
   }
 
-  try {
-    const { contract_id } = await req.json();
+  let contractId: string;
+  let token: string;
 
-    if (!contract_id) {
+  try {
+    let requestBody;
+    try {
+      const rawBody = await req.text();
+      console.log('re-analyze-contract: Raw request body:', rawBody);
+      requestBody = JSON.parse(rawBody);
+    } catch (jsonParseError) {
+      console.error('re-analyze-contract: JSON parsing error:', jsonParseError);
+      return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
+    }
+
+    contractId = requestBody.contract_id;
+    console.log('re-analyze-contract: Extracted contract_id:', contractId);
+
+    if (!contractId) {
+      console.log('re-analyze-contract: Missing contract_id in request body.');
       return corsResponse({ error: 'Missing contract_id' }, 400);
     }
 
     // Authenticate the user making the request
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.log('re-analyze-contract: Authorization header missing.');
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
-    const token = authHeader.replace('Bearer ', '');
+    token = authHeader.replace('Bearer ', '');
+    console.log('re-analyze-contract: Token extracted.');
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('re-analyze-contract: Unauthorized: Invalid or missing user token:', userError?.message);
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
+    console.log('re-analyze-contract: User authenticated:', user.id);
 
     // Fetch the contract details, including contract_content
+    console.log(`re-analyze-contract: Fetching contract ${contractId} from database.`);
     const { data: contract, error: fetchContractError } = await supabase
       .from('contracts')
       .select('contract_content, user_id')
@@ -56,31 +81,39 @@ Deno.serve(async (req) => {
       .single();
 
     if (fetchContractError) {
-      console.error('Error fetching contract:', fetchContractError);
+      console.error('re-analyze-contract: Error fetching contract:', fetchContractError);
       return corsResponse({ error: 'Contract not found or failed to fetch content.' }, 404);
     }
+    console.log('re-analyze-contract: Contract fetched successfully.');
 
     // Ensure the authenticated user owns this contract
     if (contract.user_id !== user.id) {
+      console.warn(`re-analyze-contract: Forbidden: User ${user.id} does not own contract ${contract_id}.`);
       return corsResponse({ error: 'Forbidden: You do not own this contract.' }, 403);
     }
+    console.log('re-analyze-contract: User owns the contract.');
 
     if (!contract.contract_content) {
+      console.warn(`re-analyze-contract: Contract content not found for contract ${contract_id}.`);
       return corsResponse({ error: 'Contract content not found for re-analysis.' }, 404);
     }
+    console.log('re-analyze-contract: Contract content found.');
 
     // Update contract status to 'analyzing' and reset progress
+    console.log(`re-analyze-contract: Updating contract ${contract_id} status to 'analyzing'.`);
     const { error: updateStatusError } = await supabase
       .from('contracts')
       .update({ status: 'analyzing', processing_progress: 0 })
       .eq('id', contract_id);
 
     if (updateStatusError) {
-      console.error('Error updating contract status for re-analysis:', updateStatusError);
+      console.error('re-analyze-contract: Error updating contract status for re-analysis:', updateStatusError);
       // Continue, but log the error
     }
+    console.log('re-analyze-contract: Contract status updated.');
 
     // Invoke the main contract-analyzer Edge Function
+    console.log('re-analyze-contract: Invoking contract-analyzer Edge Function.');
     const { data: analysisResponse, error: analysisError } = await supabase.functions.invoke('contract-analyzer', {
       body: {
         contract_id: contract_id,
@@ -92,14 +125,16 @@ Deno.serve(async (req) => {
     });
 
     if (analysisError) {
-      console.error('Error invoking contract-analyzer for re-analysis:', analysisError);
+      console.error('re-analyze-contract: Error invoking contract-analyzer for re-analysis:', analysisError);
       return corsResponse({ error: `Failed to re-analyze contract: ${analysisError.message}` }, 500);
     }
+    console.log('re-analyze-contract: contract-analyzer invoked successfully.');
 
+    console.log('re-analyze-contract: Re-analysis initiated successfully.');
     return corsResponse({ message: 'Re-analysis initiated successfully', analysis_response: analysisResponse });
 
   } catch (error: any) {
-    console.error('Error in re-analyze-contract Edge Function:', error);
+    console.error('re-analyze-contract: Unhandled error in Edge Function:', error);
     return corsResponse({ error: error.message }, 500);
   }
 });
