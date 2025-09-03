@@ -22,7 +22,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
-  const { reanalyzeContract, refetchContracts } = useContracts(); // MODIFIED: Destructure refetchContracts
+  const { reanalyzeContract, refetchContracts } = useContracts();
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -76,17 +76,24 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
         return;
       }
 
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('reports')
-        .createSignedUrl(analysisResult.reportFilePath, 3600);
+      // MODIFIED: Call new Edge Function to get signed URL
+      const { data: signedUrlResponse, error: signedUrlError } = await supabase.functions.invoke('get-signed-report-url', {
+        body: {
+          contractId: analysisResult.contract_id,
+          reportFilePath: analysisResult.reportFilePath,
+        },
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
 
       if (signedUrlError) {
-        console.error('Error creating signed URL for report:', signedUrlError);
-        alert('Failed to generate a link for the report. Please try again.');
+        console.error('Error invoking get-signed-report-url Edge Function:', signedUrlError);
+        alert(`Failed to generate a link for the report: ${signedUrlError.message}. Please try again.`);
         return;
       }
 
-      const reportLink = signedUrlData.signedUrl;
+      const reportLink = signedUrlResponse.url; // Get the URL from the Edge Function response
 
       const { data: htmlBlob, error: fetchHtmlError } = await supabase.storage
         .from('reports')
@@ -135,11 +142,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
     setIsReanalyzing(true);
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      // MODIFIED: Remove alert and explicitly refetch contracts
-      await refetchContracts(); // Force a refetch to get the latest status and analysis result
+      await refetchContracts();
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
-      alert(`Failed to re-analyze contract: ${error.message}`); // Error message here
+      alert(`Failed to re-analyze contract: ${error.message}`);
     } finally {
       setIsReanalyzing(false);
     }
