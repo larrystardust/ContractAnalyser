@@ -39,12 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
-        analysis_results (
-          *,
-          findings (*),
-          jurisdiction_summaries,
-          report_file_path
-        )
+        analysis_results (*, order=created_at.desc.limit.1)
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
@@ -54,6 +49,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
+        // Ensure we pick the first (and only, due to limit.1) analysis result
         const analysisResultData = dbContract.analysis_results && dbContract.analysis_results.length > 0
           ? dbContract.analysis_results[0]
           : undefined;
@@ -294,6 +290,15 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     // setErrorContracts(null); // This line is removed
 
     try {
+      // Optimistically update the contract status and clear analysisResult
+      setContracts(prevContracts =>
+        prevContracts.map(contract =>
+          contract.id === contractId
+            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined } // Clear old analysisResult
+            : contract
+        )
+      );
+
       const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
         body: { contract_id: contractId },
         headers: {
@@ -346,17 +351,18 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
 
       console.log('Re-analysis initiated:', data);
-      setContracts(prevContracts =>
-        prevContracts.map(contract =>
-          contract.id === contractId ? { ...contract, status: 'analyzing', processing_progress: 0 } : contract
-        )
-      );
-      // DO NOT alert here, let the calling component handle the success message
-      // alert('Re-analysis started. Please check your dashboard for updates.'); // This line is removed
+      // The real-time listener will handle updating the contract to 'completed' with new analysisResult
+      // No need to update local state here beyond the optimistic update above.
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
-      // DO NOT set setErrorContracts here, let the calling component handle the specific error message
-      // setErrorContracts(error); // This line is removed
+      // If an error occurs, revert the optimistic update to 'failed' or original status
+      setContracts(prevContracts =>
+        prevContracts.map(contract =>
+          contract.id === contractId
+            ? { ...contract, status: 'failed', processing_progress: 0 } // Or revert to original status if known
+            : contract
+        )
+      );
       throw error; // Re-throw the error so the calling component can catch it
     } finally {
       setLoadingContracts(false);
