@@ -38,7 +38,7 @@ import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
-import PublicReportViewerPage from './pages/PublicReportViewerPage'; // ADDED: Import PublicReportViewerPage
+import PublicReportViewerPage from './pages/PublicReportViewerPage'; // Keep PublicReportViewerPage
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -70,7 +70,7 @@ function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
-          <Route path="/public-report-view" element={<PublicReportViewerPage />} /> {/* ADDED: New public route */}
+          <Route path="/public-report-view" element={<PublicReportViewerPage />} />
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
@@ -85,7 +85,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/pricing" element={<PricingSection />} />
-            <Route path="/reports/view/:contractId" element={<ReportViewerPage />} />
+            {/* REMOVED: <Route path="/reports/view/:contractId" element={<ReportViewerPage />} /> */}
 
             {/* Protected Routes - wrapped with AuthGuard */}
             <Route element={<AuthGuard />}>
