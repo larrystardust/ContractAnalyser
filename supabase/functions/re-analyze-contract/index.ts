@@ -1,3 +1,4 @@
+// supabase/functions/re-analyze-contract/index.ts
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
@@ -77,7 +78,7 @@ Deno.serve(async (req) => {
     const { data: contract, error: fetchContractError } = await supabase
       .from('contracts')
       .select('contract_content, user_id')
-      .eq('id', contractId) // CORRECTED: Changed from contract_id to contractId
+      .eq('id', contractId)
       .single();
 
     if (fetchContractError) {
@@ -126,6 +127,22 @@ Deno.serve(async (req) => {
 
     if (analysisError) {
       console.error('re-analyze-contract: Error invoking contract-analyzer for re-analysis:', analysisError);
+
+      // Check if the error is a FunctionsHttpError with a 403 status
+      if (analysisError.name === 'FunctionsHttpError' && analysisError.context && analysisError.context.status === 403) {
+        let errorMessage = 'Forbidden: You do not have permission to perform this action.';
+        try {
+          // Attempt to read the response body for a more specific message
+          const errorBody = await analysisError.context.json();
+          if (errorBody && errorBody.error) {
+            errorMessage = errorBody.error;
+          }
+        } catch (parseError) {
+          console.warn('re-analyze-contract: Could not parse contract-analyzer 403 error response body:', parseError);
+        }
+        return corsResponse({ error: errorMessage }, 403); // Propagate the 403 with specific message
+      }
+
       return corsResponse({ error: `Failed to re-analyze contract: ${analysisError.message}` }, 500);
     }
     console.log('re-analyze-contract: contract-analyzer invoked successfully.');
