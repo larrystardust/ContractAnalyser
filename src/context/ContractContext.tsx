@@ -304,23 +304,45 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (error) {
         console.error('ContractContext: Error from re-analyze-contract:', error); // Log the full error object
 
-        // Check if the error is a FunctionsHttpError with a 403 status
-        if (error.name === 'FunctionsHttpError' && error.context && error.context.status === 403) {
-          const userFriendlyMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
-          try {
-            // Attempt to read the response body for more specific logging, but the user-facing message is fixed for 403
-            const errorBody = await error.context.json();
-            console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
-            // We are NOT using errorBody.error for the user-facing message here,
-            // to ensure consistency as per user's request.
-          } catch (parseError) {
-            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body for logging:', parseError);
+        let userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.'; // Default generic message
+
+        // Check if the error is a FunctionsHttpError
+        if (error.name === 'FunctionsHttpError' && error.context) {
+          // Case 1: Specific 403 for credit issues
+          if (error.context.status === 403) {
+            userFacingMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
+            // Log the original error body for debugging, but don't use it for the user message
+            try {
+              const errorBody = await error.context.json();
+              console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
+            } catch (parseError) {
+              console.warn('ContractContext: Could not parse 403 error response body for logging:', parseError);
+            }
           }
-          // ALWAYS throw the specific user-friendly message for a 403
-          throw new Error(userFriendlyMessage);
+          // Case 2: Other non-2xx FunctionsHttpError (e.g., 500, 404, etc.)
+          // Check if the error.message is the generic one from Supabase client
+          else if (error.message.includes('Edge Function returned a non-2xx status code')) {
+            // This is the specific technical message we want to replace
+            userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.';
+            // Log the original error body for debugging
+            try {
+              const errorBody = await error.context.json();
+              console.log('ContractContext: Parsed non-403 FunctionsHttpError body for logging:', errorBody);
+            } catch (parseError) {
+              console.warn('ContractContext: Could not parse non-403 FunctionsHttpError response body for logging:', parseError);
+            }
+          }
+          // Case 3: FunctionsHttpError with a specific message already in error.context.error (from Edge Function)
+          else if (error.context.error) {
+            userFacingMessage = error.context.error;
+          }
         }
-        // For any other type of error or status code, re-throw the original error
-        throw error;
+        // Case 4: Any other type of error (network, generic JS error, etc.)
+        else if (error.message) {
+          userFacingMessage = error.message;
+        }
+
+        throw new Error(userFacingMessage);
       }
 
       console.log('Re-analysis initiated:', data);
