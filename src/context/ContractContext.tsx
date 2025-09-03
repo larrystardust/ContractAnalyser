@@ -306,21 +306,21 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         // Check if the error is a FunctionsHttpError with a 403 status
         if (error.name === 'FunctionsHttpError' && error.context && error.context.status === 403) {
-          let errorMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
+          const userFriendlyMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
           try {
-            // Attempt to read the response body for a more specific message from the Edge Function
-            // This part is for logging/debugging, but the thrown error will use the hardcoded message
+            // Attempt to read the response body for more specific logging, but the user-facing message is fixed for 403
             const errorBody = await error.context.json();
-            console.log('ContractContext: Parsed 403 error body:', errorBody); // Log parsed body
-            // If errorBody.error exists and is more specific, we could use it,
-            // but for this specific user request, we want the *exact* message.
-            // So, we'll stick to the hardcoded errorMessage for the thrown error.
+            console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
+            // We are NOT using errorBody.error for the user-facing message here,
+            // to ensure consistency as per user's request.
           } catch (parseError) {
-            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body:', parseError);
+            console.warn('ContractContext: Could not parse re-analyze-contract 403 error response body for logging:', parseError);
           }
-          throw new Error(errorMessage); // Always throw the specific user-friendly message
+          // ALWAYS throw the specific user-friendly message for a 403
+          throw new Error(userFriendlyMessage);
         }
-        throw error; // Re-throw other types of errors
+        // For any other type of error or status code, re-throw the original error
+        throw error;
       }
 
       console.log('Re-analysis initiated:', data);
