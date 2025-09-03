@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect, useRef, ReactNode, useCallback } from 'react';
-import { Contract, AnalysisResult, Jurisdiction } from '../types';
 import { supabase } from '../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { Contract, AnalysisResult, Jurisdiction } from '../types'; // Ensure these types are correctly imported
 
 interface ContractContextType {
   contracts: Contract[];
@@ -26,7 +26,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const fetchContracts = useCallback(async () => {
     setLoadingContracts(true);
-    setErrorContracts(null);
+    setErrorContracts(null); // Clear any previous errors when fetching
     if (!session?.user?.id) {
       setContracts([]);
       setLoadingContracts(false);
@@ -290,7 +290,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       throw new Error('User not authenticated.');
     }
     setLoadingContracts(true);
-    setErrorContracts(null);
+    // DO NOT set setErrorContracts here, let the calling component handle the specific error message
+    // setErrorContracts(null); // This line is removed
 
     try {
       const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
@@ -324,11 +325,13 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           contract.id === contractId ? { ...contract, status: 'analyzing', processing_progress: 0 } : contract
         )
       );
-      alert('Re-analysis started. Please check your dashboard for updates.');
+      // DO NOT alert here, let the calling component handle the success message
+      // alert('Re-analysis started. Please check your dashboard for updates.'); // This line is removed
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
-      setErrorContracts(error);
-      alert(`Failed to re-analyze contract: ${error.message}`); // Display the user-friendly message
+      // DO NOT set setErrorContracts here, let the calling component handle the specific error message
+      // setErrorContracts(error); // This line is removed
+      throw error; // Re-throw the error so the calling component can catch it
     } finally {
       setLoadingContracts(false);
     }
