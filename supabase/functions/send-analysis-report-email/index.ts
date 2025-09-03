@@ -34,32 +34,45 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, contractId, recipientEmail, reportSummary, reportLink, userName, sendEmail } = await req.json(); // MODIFIED: Added sendEmail
+    // MODIFIED: Accept reportHtmlContent and reportLink
+    const { recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink } = await req.json();
 
-    if (!userId || !contractId || !recipientEmail || !reportSummary || !reportLink || typeof sendEmail !== 'boolean') { // MODIFIED: Added sendEmail check
-      return corsResponse({ error: 'Missing required email parameters' }, 400);
+    if (!recipientEmail || !subject || !message || !reportHtmlContent || !reportLink) {
+      return corsResponse({ error: 'Missing required email parameters: recipientEmail, subject, message, reportHtmlContent, reportLink' }, 400);
     }
 
-    if (!sendEmail) { // ADDED: Check if email sending is explicitly disabled
-      console.log(`Email sending for contract ${contractId} skipped due to user preference.`);
-      return corsResponse({ message: 'Email sending skipped due to user preference' });
+    // Authenticate the request to ensure it's coming from an authorized source
+    // This function is now called internally by trigger-report-email, which handles auth.
+    // We still keep this check for robustness if it were ever called directly.
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return corsResponse({ error: 'Authorization header missing' }, 401);
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
-    console.log(`Attempting to send analysis report email to ${recipientEmail} for contract ${contractId}`);
+    console.log(`Attempting to send analysis report email to ${recipientEmail}.`);
 
     // --- START: Email Service Integration ---
     try {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // IMPORTANT: Replace with your verified sender email in Resend
         to: [recipientEmail],
-        subject: `Your Contract Analysis Report for ${contractId} is Ready!`,
+        subject: subject, // Use the subject passed from trigger-report-email
         html: `
-          <p>Hello ${userName || 'User'},</p>
-          <p>Your legal contract analysis for <strong>${contractId}</strong> is complete!</p>
+          <p>Hello ${recipientName || 'User'},</p>
+          <p>Your legal contract analysis is complete!</p>
           <p><strong>Executive Summary:</strong></p>
-          <p>${reportSummary}</p>
-          <p>You can view the full report and detailed findings here:</p>
-          <p><a href="${reportLink}">View Full Report</a></p>
+          <p>${message}</p>
+          <p>You can view the full report and detailed findings directly below, or click the link to view it in your browser:</p>
+          <p><a href="${reportLink}">View Full Report in Browser</a></p>
+          <hr/>
+          ${reportHtmlContent}
+          <hr/>
           <p>Thank you for using ContractAnalyser.</p>
           <p>The ContractAnalyser Team</p>
         `,
