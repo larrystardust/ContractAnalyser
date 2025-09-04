@@ -6,6 +6,7 @@ import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 const AcceptInvitationPage: React.FC = () => {
+  console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href); // ADDED LOG
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
@@ -16,6 +17,7 @@ const AcceptInvitationPage: React.FC = () => {
 
   useEffect(() => {
     const invitationToken = searchParams.get('token');
+    console.log('AcceptInvitationPage: invitationToken from searchParams:', invitationToken); // ADDED LOG
 
     const handleAcceptInvitation = async () => {
       if (!invitationToken) {
@@ -26,8 +28,9 @@ const AcceptInvitationPage: React.FC = () => {
 
       if (!session) {
         // If user is not logged in, redirect to signup with a message
-        // MODIFIED: Redirect to /signup instead of /login
-        navigate(`/signup?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        const redirectUrl = `/signup?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+        console.log('AcceptInvitationPage: User not logged in. Redirecting to:', redirectUrl); // ADDED LOG
+        navigate(redirectUrl);
         setMessage('Please sign up or log in to accept the invitation.');
         return;
       }
@@ -86,7 +89,7 @@ const AcceptInvitationPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
             {!session && (
-              <Link to="/signup"> {/* MODIFIED: Link to signup */}
+              <Link to="/signup">
                 <Button variant="primary" size="lg" className="w-full mb-4">
                   Sign Up
                 </Button>
