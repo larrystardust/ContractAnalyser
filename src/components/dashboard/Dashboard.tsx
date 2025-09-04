@@ -8,18 +8,17 @@ import { useSearchParams } from 'react-router-dom';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
-import { useSessionContext } from '@supabase/auth-helpers-react';
-import { Loader2 } from 'lucide-react'; // This import is now only for the initial dashboard loading spinner
+import { useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Import useSessionContext
 
 const Dashboard: React.FC = () => {
-  const { contracts, loadingContracts, errorContracts } = useContracts();
+  const { contracts, loadingContracts, errorContracts } = useContracts(); // MODIFIED: Added errorContracts
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
 
-  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
-  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
-  const { isLoading: isSessionLoading } = useSessionContext();
+  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription(); // MODIFIED: Added errorSubscription
+  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders(); // MODIFIED: Added errorOrders
+  const { isLoading: isSessionLoading } = useSessionContext(); // ADDED: Get session loading state
 
   useEffect(() => {
     const contractIdFromUrl = searchParams.get('contractId');
@@ -63,15 +62,15 @@ const Dashboard: React.FC = () => {
   const hasUserContracts = contracts.length > 0;
 
   // Show loading indicator while checking authentication, payment status and contracts
-  if (isSessionLoading || loadingSubscription || loadingOrders || loadingContracts) {
+  if (isSessionLoading || loadingSubscription || loadingOrders || loadingContracts) { // MODIFIED: Added isSessionLoading
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900 mx-auto"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
       </div>
     );
   }
 
-  // Handle errors from data fetching hooks
+  // ADDED: Handle errors from data fetching hooks
   if (errorContracts || errorSubscription || errorOrders) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -103,7 +102,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ContractList />
+            <ContractList /> {/* ContractList will use useContracts internally */}
           </div>
           
           {/* Main Content */}
@@ -119,6 +118,7 @@ const Dashboard: React.FC = () => {
                 <div className="mt-8">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Pass the original contract jurisdictions to JurisdictionSummary */}
                     {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                       <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
                     ))}
@@ -128,24 +128,17 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                  {selectedContract && selectedContract.status === 'analyzing' ? (
-                    // THIS IS THE DIRECT REPLACEMENT: Text instead of the spinning Loader2
-                    <p className="text-blue-900 text-2xl font-extrabold">Analyzing...</p>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  )}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  {selectedContract && selectedContract.status === 'analyzing'
-                    ? 'Contract is being analyzed.' // Generic message for analyzing state
-                    : selectedContract && selectedContract.status === 'pending'
-                      ? `Contract "${selectedContract.name}" is pending analysis.` // Specific for pending
-                      : 'No Contract Selected'}
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  {selectedContract && selectedContract.status !== 'completed'
+                    ? `Analyzing "${selectedContract.name}"... (${selectedContract.processing_progress || 0}%)`
+                    : 'No Contract Selected'}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {selectedContract && (selectedContract.status === 'analyzing' || selectedContract.status === 'pending')
+                  {selectedContract && selectedContract.status !== 'completed'
                     ? 'Please wait while the analysis is in progress.'
                     : 'Select a completed contract from the list or upload a new one to begin analysis.'}
                 </p>
