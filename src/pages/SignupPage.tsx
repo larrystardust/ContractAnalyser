@@ -128,20 +128,16 @@ const SignupPage: React.FC = () => {
     const redirectParam = searchParams.get('redirect');
     console.log('SignupPage: Value of redirectParam from searchParams:', redirectParam);
     
-    const emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
+    let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
-    // MODIFIED: Construct absoluteRedirectTo to match the old working pattern
-    let absoluteRedirectTo: string | undefined;
+    // REVERTED: If a redirect parameter exists, append it to the emailRedirectTo URL
     if (redirectParam) {
-      absoluteRedirectTo = `${emailRedirectToUrl}?redirect=${encodeURIComponent(redirectParam)}`;
-    } else {
-      absoluteRedirectTo = undefined; // Or a default dashboard path if no redirect is needed
+      emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
     }
-    console.log('SignupPage: Value of absoluteRedirectTo before signUp:', absoluteRedirectTo);
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
-      redirectTo: absoluteRedirectTo,
+      // REMOVED: redirectTo: absoluteRedirectTo, // This option is now removed
       data: {
         full_name: fullName,
         business_name: businessName,
@@ -154,8 +150,8 @@ const SignupPage: React.FC = () => {
       email,
       password,
       options: {
-        emailRedirectTo: emailRedirectToUrl,
-        redirectTo: absoluteRedirectTo, // Pass the absolute URL here
+        emailRedirectTo: emailRedirectToUrl, // MODIFIED: Use the constructed URL
+        // REMOVED: redirectTo: absoluteRedirectTo, // This option is now removed
         data: {
           full_name: fullName,
           business_name: businessName,
@@ -307,7 +303,7 @@ const SignupPage: React.FC = () => {
                   name="password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
