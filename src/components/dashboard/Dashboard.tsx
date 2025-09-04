@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
           {errorOrders && <p className="text-sm text-red-500">Orders Error: {errorOrders.message}</p>}
           <p className="text-sm text-gray-500 mt-4">
             Please check your Supabase RLS policies and database logs for more details.
-          </p>
+            </p>
         </div>
       </div>
     );
