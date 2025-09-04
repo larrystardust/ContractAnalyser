@@ -144,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   className="p-1"
                   onClick={handleNotificationsClick}
                 >
-                  <Bell className="w-5 h-5 text-gray-600" />
+                  <Bell className="w-5 h-5 text-blue-500" />
                 </Button>
                 {/* ADDED Help Button */}
                 <Button
@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   className="p-1"
                   onClick={onOpenHelpModal}
                 >
-                  <HelpCircle className="w-5 h-5 text-gray-600" />
+                  <HelpCircle className="w-5 h-5 text-blue-500" />
                 </Button>
                 <Button
                   variant="text"
@@ -161,7 +161,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   className="p-1"
                   onClick={handleLogout}
                 >
-                  <LogOut className="w-5 h-5 text-gray-600" />
+                  <LogOut className="w-5 h-5 text-blue-500" />
                 </Button>
               </>
             ) : (
