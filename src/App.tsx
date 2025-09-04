@@ -39,7 +39,8 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
-import SampleDashboardContent from './components/dashboard/SampleDashboardContent'; // ADDED: Import SampleDashboardContent
+// REMOVED: import SampleDashboardContent from './components/dashboard/SampleDashboardContent';
+import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard'; // ADDED: Import LandingPageSampleDashboard
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -52,7 +53,7 @@ function App() {
 
   useEffect(() => {
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
-    const publicPaths = ['/', '/public-report-view', '/checkout/cancel', '/sample-dashboard']; // MODIFIED: Added /sample-dashboard
+    const publicPaths = ['/', '/public-report-view', '/checkout/cancel', '/sample-dashboard'];
     if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
       navigate('/', { replace: true });
     }
@@ -88,7 +89,8 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/pricing" element={<PricingSection />} />
-            <Route path="/sample-dashboard" element={<SampleDashboardContent />} /> {/* ADDED: New route for sample dashboard */}
+            {/* MODIFIED: Use LandingPageSampleDashboard for the sample dashboard route */}
+            <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
             {/* REMOVED: <Route path="/reports/view/:contractId" element={<ReportViewerPage />} /> */}
 
             {/* Protected Routes - wrapped with AuthGuard */}
