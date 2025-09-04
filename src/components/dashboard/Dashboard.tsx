@@ -9,7 +9,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
+import { Loader2 } from 'lucide-react'; // This import is now only for the initial dashboard loading spinner
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                   {selectedContract && selectedContract.status === 'analyzing' ? (
-                    // THIS IS THE CHANGE: Replaced the spinning Loader2 component with text.
+                    // THIS IS THE DIRECT REPLACEMENT: Text instead of the spinning Loader2
                     <p className="text-blue-900 text-2xl font-extrabold">Analyzing...</p>
                   ) : (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
