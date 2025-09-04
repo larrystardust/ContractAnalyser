@@ -31,6 +31,12 @@ const LandingPage: React.FC = () => {
                 Explore Pricing
               </Button>
             </Link>
+            {/* ADDED: Link to Sample Dashboard */}
+            <Link to="/sample-dashboard">
+              <Button variant="outline" size="lg" className="shadow-lg">
+                View Sample Analysis
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
