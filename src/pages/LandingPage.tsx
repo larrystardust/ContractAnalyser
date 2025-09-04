@@ -42,19 +42,6 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ADDED: OCR Limitation Section */}
-      <section className="py-8 bg-yellow-50 border-b-4 border-yellow-300 text-yellow-800">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-2">Important: Document Format Requirement</h2>
-          <p className="text-lg">
-            ContractAnalyser processes text directly from your documents. We currently **do not support Optical Character Recognition (OCR)** for scanned documents or images.
-          </p>
-          <p className="text-lg mt-2">
-            Please ensure your uploaded PDF, DOCX, or DOC files contain **selectable (clear) text**. If your document is a scan or an image, you must perform OCR on it manually before uploading to ensure accurate analysis.
-          </p>
-        </div>
-      </section>
-
       {/* The Problem Section */}
       <section className="py-16 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4 text-center">
