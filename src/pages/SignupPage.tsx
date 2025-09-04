@@ -97,6 +97,7 @@ const countryCodes = [
 
 
 const SignupPage: React.FC = () => {
+  console.log('SignupPage: Component rendered. Current URL:', window.location.href); // ADDED LOG
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -126,18 +127,17 @@ const SignupPage: React.FC = () => {
 
     // ADDED: Get the redirect parameter from the URL
     const redirectParam = searchParams.get('redirect');
-    let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
-
-    // If a redirect parameter exists, append it to the emailRedirectTo URL
-    if (redirectParam) {
-      emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
-    }
+    console.log('SignupPage: redirectParam from searchParams:', redirectParam); // ADDED LOG
+    
+    // MODIFIED: Simplify emailRedirectTo and use redirectTo option
+    const emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: emailRedirectToUrl, // MODIFIED: Use the constructed URL
+        emailRedirectTo: emailRedirectToUrl,
+        redirectTo: redirectParam || undefined, // Pass the redirectParam directly here
         data: {
           full_name: fullName,
           business_name: businessName, // ADDED: Pass business name
