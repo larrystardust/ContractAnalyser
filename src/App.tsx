@@ -39,8 +39,9 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
-// REMOVED: import SampleDashboardContent from './components/dashboard/SampleDashboardContent';
-import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard'; // ADDED: Import LandingPageSampleDashboard
+import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
+// ADDED: Import the new LandingPagePricingSection
+import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -53,7 +54,7 @@ function App() {
 
   useEffect(() => {
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
-    const publicPaths = ['/', '/public-report-view', '/checkout/cancel', '/sample-dashboard'];
+    const publicPaths = ['/', '/public-report-view', '/checkout/cancel', '/sample-dashboard', '/landing-pricing']; // MODIFIED: Added /landing-pricing
     if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
       navigate('/', { replace: true });
     }
@@ -89,9 +90,9 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/pricing" element={<PricingSection />} />
-            {/* MODIFIED: Use LandingPageSampleDashboard for the sample dashboard route */}
             <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
-            {/* REMOVED: <Route path="/reports/view/:contractId" element={<ReportViewerPage />} /> */}
+            {/* ADDED: New route for landing page specific pricing */}
+            <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
 
             {/* Protected Routes - wrapped with AuthGuard */}
             <Route element={<AuthGuard />}>
