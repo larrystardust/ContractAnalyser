@@ -96,7 +96,8 @@ const AdminGuard: React.FC = () => {
   // If not loading, check if a user session exists.
   if (!session || !session.user) {
     console.log('AdminGuard: No active user session found. Redirecting to login page.');
-    return <Navigate to="/login" replace />;
+    // MODIFIED: Pass current path and search as redirect parameter
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // Admin specific check
