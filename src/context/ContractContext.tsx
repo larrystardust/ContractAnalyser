@@ -52,9 +52,9 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         // Sort analysis_results client-side to get the latest one
         const sortedAnalysisResults = dbContract.analysis_results
           ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          : [];
-        
-        const analysisResultData = sortedAnalysisResults.length > 0
+          : undefined; // Changed to undefined if no results
+
+        const analysisResultData = sortedAnalysisResults && sortedAnalysisResults.length > 0
           ? sortedAnalysisResults[0]
           : undefined;
 
@@ -95,6 +95,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
             reportFilePath: analysisResultData.report_file_path || null,
           } : undefined,
+          isReanalyzing: dbContract.isReanalyzing, // ADDED: Map isReanalyzing from DB
         };
       });
       setContracts(fetchedContracts);
@@ -156,6 +157,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           status: 'pending',
           processing_progress: 0,
           contract_content: newContractData.contractText,
+          isReanalyzing: false, // ADDED: Initialize as false for new contracts
         })
         .select()
         .single();
@@ -298,7 +300,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined } // Clear old analysisResult
+            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined, isReanalyzing: true } // ADDED: Set isReanalyzing to true
             : contract
         )
       );
@@ -363,7 +365,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'failed', processing_progress: 0 } // Or revert to original status if known
+            ? { ...contract, status: 'failed', processing_progress: 0, isReanalyzing: false } // ADDED: Set isReanalyzing to false on error
             : contract
         )
       );
