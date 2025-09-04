@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'; // ADDED useSearchParams
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
-import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react'; // ADDED Briefcase icon
+import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -97,12 +97,12 @@ const countryCodes = [
 
 
 const SignupPage: React.FC = () => {
-  console.log('SignupPage: Component rendered. Current URL:', window.location.href); // ADDED LOG
+  console.log('SignupPage: Component rendered. Current URL:', window.location.href);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [businessName, setBusinessName] = useState(''); // ADDED: New state for business name
+  const [businessName, setBusinessName] = useState('');
   const [mobilePhoneNumber, setMobilePhoneNumber] = useState('');
   const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodes[0].code);
   const [showPassword, setShowPassword] = useState(false);
@@ -112,7 +112,7 @@ const SignupPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { isLoading } = useSessionContext();
-  const [searchParams] = useSearchParams(); // ADDED: Get search params
+  const [searchParams] = useSearchParams();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,11 +125,13 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    // ADDED: Get the redirect parameter from the URL
     const redirectParam = searchParams.get('redirect');
-    console.log('SignupPage: redirectParam from searchParams:', redirectParam); // ADDED LOG
+    console.log('SignupPage: redirectParam from searchParams:', redirectParam);
     
-    // MODIFIED: Simplify emailRedirectTo and use redirectTo option
+    // MODIFIED: Construct an absolute URL for redirectTo
+    const absoluteRedirectTo = redirectParam ? `${window.location.origin}${redirectParam}` : undefined;
+    console.log('SignupPage: absoluteRedirectTo for Supabase:', absoluteRedirectTo);
+
     const emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -137,10 +139,10 @@ const SignupPage: React.FC = () => {
       password,
       options: {
         emailRedirectTo: emailRedirectToUrl,
-        redirectTo: redirectParam || undefined, // Pass the redirectParam directly here
+        redirectTo: absoluteRedirectTo, // Pass the absolute URL here
         data: {
           full_name: fullName,
-          business_name: businessName, // ADDED: Pass business name
+          business_name: businessName,
           mobile_phone_number: mobilePhoneNumber,
           country_code: selectedCountryCode,
         },
@@ -156,7 +158,7 @@ const SignupPage: React.FC = () => {
             body: {
               userId: signUpData.user.id,
               fullName: fullName,
-              businessName: businessName, // ADDED: Pass business name
+              businessName: businessName,
               mobilePhoneNumber: mobilePhoneNumber,
               countryCode: selectedCountryCode,
             },
@@ -166,7 +168,7 @@ const SignupPage: React.FC = () => {
           console.error('Error initiating profile creation from SignupPage:', profileError);
         }
       }
-      localStorage.setItem('signup_email', email); // ADDED: Save email to local storage
+      localStorage.setItem('signup_email', email);
       navigate('/auth/email-sent');
     }
     
@@ -177,7 +179,6 @@ const SignupPage: React.FC = () => {
     return null;
   }
 
-  // ADDED: Get the redirect parameter to pass to login link
   const loginLink = searchParams.get('redirect') ? `/login?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/login';
 
   return (
@@ -197,9 +198,9 @@ const SignupPage: React.FC = () => {
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  type="text"
                   id="fullName"
                   name="fullName"
-                  type="text"
                   autoComplete="name"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -216,9 +217,9 @@ const SignupPage: React.FC = () => {
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  type="text"
                   id="businessName"
                   name="businessName"
-                  type="text"
                   autoComplete="organization"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Business Name"
@@ -233,9 +234,9 @@ const SignupPage: React.FC = () => {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  type="email"
                   id="email"
                   name="email"
-                  type="email"
                   autoComplete="email"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -266,9 +267,9 @@ const SignupPage: React.FC = () => {
                 <div className="relative flex-grow">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
+                    type="tel"
                     id="mobilePhoneNumber"
                     name="mobilePhoneNumber"
-                    type="tel"
                     autoComplete="tel"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -285,9 +286,9 @@ const SignupPage: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  type={showPassword ? 'text' : 'password'}
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -310,9 +311,9 @@ const SignupPage: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
+                  type={showConfirmPassword ? 'text' : 'password'}
                   id="confirm-password"
                   name="confirm-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -350,7 +351,7 @@ const SignupPage: React.FC = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to={loginLink} className="font-medium text-blue-600 hover:text-blue-500"> {/* MODIFIED */}
+              <Link to={loginLink} className="font-medium text-blue-600 hover:text-blue-500">
                 Log In
               </Link>
             </p>
