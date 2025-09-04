@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'; // ADDED useLocation
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -10,32 +10,49 @@ const AuthCallbackPage: React.FC = () => {
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(); // Keep for other potential query params
+  const location = useLocation(); // ADDED: To access hash
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Processing authentication...');
 
-  const processingRef = useRef(false); // ADDED: Ref to prevent multiple executions
+  const processingRef = useRef(false); // Ref to prevent multiple executions
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
+    console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
-    // Get the 'redirect' query parameter
-    const redirectParam = searchParams.get('redirect');
+    let finalRedirectPath: string | null = null;
+
+    // 1. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
+    const queryRedirectParam = searchParams.get('redirect');
+    if (queryRedirectParam) {
+      finalRedirectPath = decodeURIComponent(queryRedirectParam);
+      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
+    }
+
+    // 2. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
+    // This takes precedence if found, as it's the direct instruction from Supabase.
+    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
+    const hashRedirectTo = hashParams.get('redirect_to');
+    if (hashRedirectTo) {
+      finalRedirectPath = decodeURIComponent(hashRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectPath);
+    }
+
+    // Check if the finalRedirectPath contains an invitation token
     let invitationToken: string | null = null;
-
-    // Check if the redirect URL contains an invitation token
-    if (redirectParam) {
+    if (finalRedirectPath) {
       try {
-        const url = new URL(redirectParam, window.location.origin);
+        const url = new URL(finalRedirectPath, window.location.origin); // Use origin as base for relative paths
         const tokenParam = url.searchParams.get('token');
         if (url.pathname === '/accept-invitation' && tokenParam) {
           invitationToken = tokenParam;
-          console.log('AuthCallbackPage: Found invitation token in redirect URL:', invitationToken);
+          console.log('AuthCallbackPage: Found invitation token in final redirect path:', invitationToken);
         }
       } catch (e) {
-        console.error('AuthCallbackPage: Error parsing redirect URL:', e);
+        console.error('AuthCallbackPage: Error parsing final redirect path URL for token:', e);
       }
     }
 
@@ -43,7 +60,6 @@ const AuthCallbackPage: React.FC = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      // ADDED: Prevent multiple executions of the core logic
       if (processingRef.current) {
         console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
         return;
@@ -59,11 +75,11 @@ const AuthCallbackPage: React.FC = () => {
           const storedFullName = currentSession.user.user_metadata.full_name || null;
           const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
           const storedCountryCode = currentSession.user.user_metadata.country_code || null;
-          const storedBusinessName = currentSession.user.user_metadata.business_name || null; // ADDED: Extract business_name
+          const storedBusinessName = currentSession.user.user_metadata.business_name || null;
 
           console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
             storedFullName,
-            storedBusinessName, // ADDED: Log business_name
+            storedBusinessName,
             storedMobilePhoneNumber,
             storedCountryCode,
           });
@@ -72,7 +88,7 @@ const AuthCallbackPage: React.FC = () => {
             body: {
               userId: currentSession.user.id,
               fullName: storedFullName,
-              businessName: storedBusinessName, // ADDED: Pass business_name
+              businessName: storedBusinessName,
               mobilePhoneNumber: storedMobilePhoneNumber,
               countryCode: storedCountryCode,
             },
@@ -80,10 +96,8 @@ const AuthCallbackPage: React.FC = () => {
 
           if (profileEdgeFunctionError) {
             console.error('AuthCallbackPage: Error calling create-user-profile Edge Function:', profileEdgeFunctionError);
-            // Don't stop here, try to proceed with invitation if any, but log the profile error
           } else {
             console.log('AuthCallbackPage: Profile created/updated successfully via Edge Function.');
-            // Update login_at timestamp after successful profile creation/update
             try {
               await supabase
                 .from('profiles')
@@ -109,23 +123,22 @@ const AuthCallbackPage: React.FC = () => {
               console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
               setStatus('error');
               setMessage(`Failed to accept invitation: ${inviteError.message}`);
-              processingRef.current = false; // Reset flag on error
-              setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on error
-              return; // Stop here if invitation acceptance fails
+              processingRef.current = false;
+              setTimeout(() => { navigate('/login'); }, 3000);
+              return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
-              setMessage('Authentication and invitation successful! Redirecting to dashboard...');
+              setMessage('Authentication and invitation successful! Redirecting...');
             }
           } else {
-            setMessage('Authentication successful! Redirecting to dashboard...');
+            setMessage('Authentication successful! Redirecting...');
           }
 
           setStatus('success');
-          // Determine where to redirect based on admin status
-          // MODIFIED: Prioritize redirectParam if it exists
-          if (redirectParam) {
-            console.log('AuthCallbackPage: Redirecting to original destination:', redirectParam);
-            navigate(redirectParam);
+          // Determine where to redirect based on finalRedirectPath or admin status
+          if (finalRedirectPath) {
+            console.log('AuthCallbackPage: Redirecting to final destination:', finalRedirectPath);
+            navigate(finalRedirectPath);
           } else {
             const { data: profileData, error: profileCheckError } = await supabase
               .from('profiles')
@@ -135,7 +148,7 @@ const AuthCallbackPage: React.FC = () => {
 
             if (profileCheckError) {
               console.error('Error checking admin status for redirection:', profileCheckError);
-              navigate('/dashboard'); // Default to dashboard on error
+              navigate('/dashboard');
             } else if (profileData?.is_admin) {
               navigate('/admin');
             } else {
@@ -147,25 +160,25 @@ const AuthCallbackPage: React.FC = () => {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(`An unexpected error occurred: ${overallError.message}`);
-          setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on error
+          setTimeout(() => { navigate('/login'); }, 3000);
         } finally {
-          processingRef.current = false; // Always reset flag
+          processingRef.current = false;
         }
       } else if (event === 'SIGNED_OUT') {
         setStatus('error');
         setMessage('Your session has ended. Please log in again.');
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on SIGNED_OUT error
+        setTimeout(() => { navigate('/login'); }, 3000);
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
         setMessage('Authentication failed or no active session. Please sign up or try again.');
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
-        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on INITIAL_SESSION error
+        setTimeout(() => { navigate('/login'); }, 3000);
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage('Email not confirmed. Please check your email for a confirmation link.');
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        setTimeout(() => { navigate('/login'); }, 3000); // ADDED: Redirect to login on unconfirmed email error
+        setTimeout(() => { navigate('/login'); }, 3000);
       }
     });
 
@@ -174,9 +187,10 @@ const AuthCallbackPage: React.FC = () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
       authListener?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams]);
+  }, [navigate, supabase.auth, searchParams, location.hash]); // ADDED location.hash to dependencies
 
   const renderContent = () => {
+    // ... (rest of the renderContent function remains the same)
     switch (status) {
       case 'loading':
         return (
