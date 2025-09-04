@@ -25,10 +25,10 @@ const AcceptInvitationPage: React.FC = () => {
       }
 
       if (!session) {
-        // If user is not logged in, redirect to login with a message
-        // MODIFIED: Pass the current path and query params as the redirect target
-        navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-        setMessage('Please log in to accept the invitation.');
+        // If user is not logged in, redirect to signup with a message
+        // MODIFIED: Redirect to /signup instead of /login
+        navigate(`/signup?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        setMessage('Please sign up or log in to accept the invitation.');
         return;
       }
 
@@ -86,9 +86,9 @@ const AcceptInvitationPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
             {!session && (
-              <Link to="/login">
+              <Link to="/signup"> {/* MODIFIED: Link to signup */}
                 <Button variant="primary" size="lg" className="w-full mb-4">
-                  Log In
+                  Sign Up
                 </Button>
               </Link>
             )}
