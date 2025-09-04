@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ContractList from '../contracts/ContractList';
+// MODIFIED: Import SampleContractList instead of ContractList
+import SampleContractList from '../contracts/SampleContractList'; 
 // MODIFIED: Import SampleAnalysisResults instead of AnalysisResults
 import SampleAnalysisResults from '../analysis/SampleAnalysisResults'; 
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
@@ -40,7 +41,8 @@ const LandingPageSampleDashboard: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Back to Landing Page Link */}
-      <div className="lg:col-span-3 mb-6">
+      {/* MODIFIED: Added text-center to center the link */}
+      <div className="lg:col-span-3 mb-6 text-center"> 
         <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Landing Page
@@ -50,8 +52,8 @@ const LandingPageSampleDashboard: React.FC = () => {
       {/* Sidebar for Sample Contracts */}
       <div className="lg:col-span-1 space-y-6">
         {/* REMOVED: Upgrade Now banner */}
-        {/* Pass the handleSelectContract function to ContractList */}
-        <ContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
+        {/* MODIFIED: Use SampleContractList instead of ContractList */}
+        <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
       </div>
       
       {/* Main Content for Sample Analysis */}
