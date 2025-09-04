@@ -122,19 +122,25 @@ const AuthCallbackPage: React.FC = () => {
 
           setStatus('success');
           // Determine where to redirect based on admin status
-          const { data: profileData, error: profileCheckError } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileCheckError) {
-            console.error('Error checking admin status for redirection:', profileCheckError);
-            navigate('/dashboard'); // Default to dashboard on error
-          } else if (profileData?.is_admin) {
-            navigate('/admin');
+          // MODIFIED: Prioritize redirectParam if it exists
+          if (redirectParam) {
+            console.log('AuthCallbackPage: Redirecting to original destination:', redirectParam);
+            navigate(redirectParam);
           } else {
-            navigate('/dashboard');
+            const { data: profileData, error: profileCheckError } = await supabase
+              .from('profiles')
+              .select('is_admin')
+              .eq('id', currentSession.user.id)
+              .maybeSingle();
+
+            if (profileCheckError) {
+              console.error('Error checking admin status for redirection:', profileCheckError);
+              navigate('/dashboard'); // Default to dashboard on error
+            } else if (profileData?.is_admin) {
+              navigate('/admin');
+            } else {
+              navigate('/dashboard');
+            }
           }
 
         } catch (overallError: any) {
@@ -186,6 +192,19 @@ const AuthCallbackPage: React.FC = () => {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {!session && (
+              <Link to="/login">
+                <Button variant="primary" size="lg" className="w-full mb-4">
+                  Log In
+                </Button>
+              </Link>
+            )}
+            <Link to="/">
+              <Button variant="outline" size="lg" className="w-full">
+                Return to Home
+              </Button>
+            </Link>
           </>
         );
       case 'error':
