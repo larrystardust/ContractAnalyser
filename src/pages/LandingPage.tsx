@@ -26,7 +26,8 @@ const LandingPage: React.FC = () => {
                 Start Your Instant Analysis Now!
               </Button>
             </Link>
-            <Link to="/pricing">
+            {/* MODIFIED: Link to new landing-page-specific pricing page */}
+            <Link to="/landing-pricing">
               <Button variant="secondary" size="lg" className="shadow-lg">
                 Explore Pricing
               </Button>
@@ -228,7 +229,8 @@ const LandingPage: React.FC = () => {
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
                 Upgrade, downgrade, or cancel your subscription anytime, directly from your dashboard.
               </p>
-              <Link to="/pricing">
+              {/* MODIFIED: Link to new landing-page-specific pricing page */}
+              <Link to="/landing-pricing">
                 <Button variant="primary" size="lg">
                   View All Plans
                 </Button>
@@ -243,7 +245,8 @@ const LandingPage: React.FC = () => {
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
                 Get a full, detailed analysis report without a recurring subscription.
               </p>
-              <Link to="/pricing">
+              {/* MODIFIED: Link to new landing-page-specific pricing page */}
+              <Link to="/landing-pricing">
                 <Button variant="secondary" size="lg">
                   Get a Single Analysis
                 </Button>
@@ -258,7 +261,8 @@ const LandingPage: React.FC = () => {
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
                 Benefit from multi-user unlimited access, higher analysis limits, and priority support.
               </p>
-              <Link to="/pricing">
+              {/* MODIFIED: Link to new landing-page-specific pricing page */}
+              <Link to="/landing-pricing">
                 <Button variant="primary" size="lg">
                   Choose Your Plan
                 </Button>
