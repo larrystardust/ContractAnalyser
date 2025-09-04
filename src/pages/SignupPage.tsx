@@ -126,14 +126,20 @@ const SignupPage: React.FC = () => {
     }
 
     const redirectParam = searchParams.get('redirect');
-    console.log('SignupPage: Value of redirectParam from searchParams:', redirectParam); // NEW LOG
+    console.log('SignupPage: Value of redirectParam from searchParams:', redirectParam);
     
-    const absoluteRedirectTo = redirectParam ? `${window.location.origin}${redirectParam}` : undefined;
-    console.log('SignupPage: Value of absoluteRedirectTo before signUp:', absoluteRedirectTo); // NEW LOG
-
     const emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
-    console.log('SignupPage: Options passed to supabase.auth.signUp:', { // NEW LOG
+    // MODIFIED: Construct absoluteRedirectTo to match the old working pattern
+    let absoluteRedirectTo: string | undefined;
+    if (redirectParam) {
+      absoluteRedirectTo = `${emailRedirectToUrl}?redirect=${encodeURIComponent(redirectParam)}`;
+    } else {
+      absoluteRedirectTo = undefined; // Or a default dashboard path if no redirect is needed
+    }
+    console.log('SignupPage: Value of absoluteRedirectTo before signUp:', absoluteRedirectTo);
+
+    console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
       redirectTo: absoluteRedirectTo,
       data: {
