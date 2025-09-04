@@ -54,11 +54,29 @@ function App() {
 
   useEffect(() => {
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
-    const publicPaths = ['/', '/public-report-view', '/checkout/cancel', '/sample-dashboard', '/landing-pricing']; // MODIFIED: Added /landing-pricing
-    if (!session && navigationType === 'POP' && !publicPaths.includes(location.pathname)) {
+    const publicPaths = [
+      '/',
+      '/public-report-view',
+      '/checkout/cancel',
+      '/sample-dashboard',
+      '/landing-pricing',
+      '/login',
+      '/signup',
+      '/password-reset',
+      '/auth/callback',
+      '/accept-invitation',
+      '/auth/email-sent',
+      '/mfa-challenge'
+    ];
+    
+    // MODIFIED: Removed navigationType === 'POP' condition
+    // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
+    // Also, ensure we only check the base path for inclusion.
+    const currentPathBase = location.pathname.split('?')[0].split('#')[0]; // Get path without query or hash
+    if (!session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, navigationType, session, navigate]);
+  }, [location, session, navigate]); // Removed navigationType from dependencies as it's no longer used in condition
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
