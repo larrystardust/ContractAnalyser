@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContractList from '../contracts/ContractList';
-import AnalysisResults from '../analysis/AnalysisResults';
+// MODIFIED: Import SampleAnalysisResults instead of AnalysisResults
+import SampleAnalysisResults from '../analysis/SampleAnalysisResults'; 
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import { sampleContracts } from '../../data/sampleData'; // Import sample data
 import { Contract } from '../../types';
@@ -59,8 +60,8 @@ const LandingPageSampleDashboard: React.FC = () => {
           <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-900">Sample Contract Analysis: {selectedContract.name}</h1>
             
-            {/* Analysis Results */}
-            <AnalysisResults analysisResult={selectedContract.analysisResult} />
+            {/* MODIFIED: Use SampleAnalysisResults instead of AnalysisResults */}
+            <SampleAnalysisResults analysisResult={selectedContract.analysisResult} />
             
             {/* Jurisdiction Summaries */}
             <div className="mt-8">
