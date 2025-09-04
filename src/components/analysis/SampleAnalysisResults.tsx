@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus } from 'lucide-react'; // REMOVED: Mail, RefreshCw
-// REMOVED: Imports for supabase, useSession, useUserProfile, useContracts as they are not needed for a static sample view
+import { AlertCircle, Info, FilePlus } from 'lucide-react';
+// ADDED: Import utility functions from riskUtils
+import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
+import { getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // Ensure this is also present
 
 interface SampleAnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -19,7 +21,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
     ? analysisResult.findings 
     : analysisResult.findings.filter(finding => finding.jurisdiction === selectedJurisdiction);
   
-  const riskCounts = countFindingsByRisk(analysisResult.findings); // Assuming countFindingsByRisk is a utility function
+  const riskCounts = countFindingsByRisk(analysisResult.findings);
   
   const toggleFindingExpanded = (findingId: string) => {
     if (expandedFindings.includes(findingId)) {
@@ -31,14 +33,11 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
-  // REMOVED: handleEmailReport and handleReanalyze functions as they are not needed here
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
-          {/* REMOVED: Email Full Report and Re-analyze Contract buttons */}
         </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
         
@@ -183,11 +182,10 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                     )}
                   </div>
                   
-                  {/* Removed the Button component as it's not needed for static sample */}
                   <button
-                    type="button" // Ensure it's a button
+                    type="button"
                     onClick={() => toggleFindingExpanded(finding.id)}
-                    className="ml-4 text-blue-600 hover:underline text-sm" // Basic styling for a link-like button
+                    className="ml-4 text-blue-600 hover:underline text-sm"
                   >
                     {expandedFindings.includes(finding.id) ? 'Hide Details' : 'Show Details'}
                   </button>
