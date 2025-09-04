@@ -80,10 +80,10 @@ const LandingPageSampleDashboard: React.FC = () => {
                 </svg>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                No Sample Contract Selected
+                No Completed Sample Contract Selected
               </h2>
               <p className="text-gray-600 mb-6">
-                Select a sample contract from the list to view its analysis.
+                Select a completed sample contract from the list to view its analysis.
               </p>
             </div>
           )}
