@@ -79,7 +79,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // If not loading and MFA check is complete, evaluate redirection
   if (!session || !session.user) {
     console.log('AuthGuard: No active user session found. Redirecting to login page.');
-    return <Navigate to="/login" replace />;
+    // MODIFIED: Pass current path and search as redirect parameter
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   if (targetAal === 'aal1') {
