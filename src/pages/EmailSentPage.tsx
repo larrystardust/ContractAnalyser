@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const EmailSentPage: React.FC = () => {
+  const [searchParams] = useSearchParams(); // ADDED
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [redirectParam, setRedirectParam] = useState<string | null>(null); // ADDED
 
   useEffect(() => {
     // Attempt to retrieve the email from local storage
@@ -23,7 +25,13 @@ const EmailSentPage: React.FC = () => {
       // For now, we'll just set a generic message
       setUserEmail('your email address');
     }
-  }, []);
+
+    // ADDED: Retrieve redirect parameter from URL
+    const param = searchParams.get('redirect');
+    if (param) {
+      setRedirectParam(param);
+    }
+  }, [searchParams]); // ADDED searchParams to dependency array
 
   const handleResendEmail = async () => {
     setLoading(true);
@@ -37,9 +45,18 @@ const EmailSentPage: React.FC = () => {
     }
 
     try {
+      let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
+      // ADDED: If a redirect parameter exists, append it to the emailRedirectTo URL
+      if (redirectParam) {
+        emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
+      }
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: userEmail,
+        options: { // ADDED options object
+          emailRedirectTo: emailRedirectToUrl, // MODIFIED: Use the constructed URL
+        }
       });
 
       if (error) {
@@ -99,7 +116,7 @@ const EmailSentPage: React.FC = () => {
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Mail className="h-5 w-5 mr-2" />
               )}
