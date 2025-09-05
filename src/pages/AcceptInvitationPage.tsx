@@ -49,6 +49,8 @@ const AcceptInvitationPage: React.FC = () => {
 
         setStatus('success');
         setMessage(data.message || 'Invitation accepted successfully!');
+        // MODIFIED: Automatically navigate to dashboard on success
+        navigate('/dashboard', { replace: true });
       } catch (err: any) {
         console.error('Error accepting invitation:', err);
         setStatus('error');
@@ -75,11 +77,7 @@ const AcceptInvitationPage: React.FC = () => {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
-            <Link to="/dashboard">
-              <Button variant="primary" size="lg" className="w-full">
-                Go to Dashboard
-              </Button>
-            </Link>
+            {/* Removed the "Go to Dashboard" button as it's now automatic */}
           </>
         );
       case 'error':
