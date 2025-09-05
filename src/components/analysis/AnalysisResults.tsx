@@ -13,9 +13,10 @@ import { useContracts } from '../../context/ContractContext';
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
+  isSample?: boolean; // ADDED: New prop
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => {
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false }) => { // MODIFIED: Default isSample to false
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -156,26 +157,29 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult }) => 
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEmailReport}
-              disabled={isEmailing}
-              icon={<Mail className="w-4 h-4" />}
-            >
-              {isEmailing ? 'Emailing...' : 'Email Full Report'}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleReanalyze}
-              disabled={isReanalyzing}
-              icon={<RefreshCw className="w-4 h-4" />}
-            >
-              {isReanalyzing ? 'Re-analyzing...' : 'Re-analyze Contract'}
-            </Button>
-          </div>
+          {/* MODIFIED: Conditionally render buttons */}
+          {!isSample && (
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEmailReport}
+                disabled={isEmailing}
+                icon={<Mail className="w-4 h-4" />}
+              >
+                {isEmailing ? 'Emailing...' : 'Email Full Report'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleReanalyze}
+                disabled={isReanalyzing}
+                icon={<RefreshCw className="w-4 h-4" />}
+              >
+                {isReanalyzing ? 'Re-analyzing...' : 'Re-analyze Contract'}
+              </Button>
+            </div>
+          )}
         </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
         
