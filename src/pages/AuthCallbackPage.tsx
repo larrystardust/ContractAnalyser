@@ -38,7 +38,7 @@ const AuthCallbackPage: React.FC = () => {
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
@@ -138,20 +138,25 @@ const AuthCallbackPage: React.FC = () => {
           }
 
           setStatus('success');
-          // If no invitation token was processed, determine where to redirect based on admin status
-          const { data: profileData, error: profileCheckError } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileCheckError) {
-            console.error('Error checking admin status for redirection:', profileCheckError);
-            navigate('/dashboard', { replace: true });
-          } else if (profileData?.is_admin) {
-            navigate('/admin', { replace: true });
+          // MODIFIED: Prioritize finalRedirectPath
+          if (finalRedirectPath) {
+            navigate(finalRedirectPath, { replace: true });
           } else {
-            navigate('/dashboard', { replace: true });
+            // If no invitation token was processed, determine where to redirect based on admin status
+            const { data: profileData, error: profileCheckError } = await supabase
+              .from('profiles')
+              .select('is_admin')
+              .eq('id', currentSession.user.id)
+              .maybeSingle();
+
+            if (profileCheckError) {
+              console.error('Error checking admin status for redirection:', profileCheckError);
+              navigate('/dashboard', { replace: true });
+            } else if (profileData?.is_admin) {
+              navigate('/admin', { replace: true });
+            } else {
+              navigate('/dashboard', { replace: true });
+            }
           }
 
 
