@@ -29,8 +29,8 @@ const PasswordResetPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
-    // Construct the redirect URL with the correct path
-    const redirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/update-password`;
+    // Use a direct redirect URL that points to your update password page
+    const redirectToUrl = `${window.location.origin}/update-password`;
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectToUrl,
@@ -39,7 +39,7 @@ const PasswordResetPage: React.FC = () => {
     if (resetError) {
       setError(resetError.message);
     } else {
-      setMessage('Password reset email sent! Please check your inbox.');
+      setMessage('Password reset email sent! Please check your inbox. The link will direct you to update your password.');
     }
     setLoading(false);
   };
