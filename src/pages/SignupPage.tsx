@@ -130,7 +130,7 @@ const SignupPage: React.FC = () => {
     
     let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
-    // REVERTED: If a redirect parameter exists, append it to the emailRedirectTo URL
+    // If a redirect parameter exists, append it to the emailRedirectTo URL
     if (redirectParam) {
       emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
     }
@@ -181,7 +181,8 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      navigate('/auth/email-sent');
+      // MODIFIED: Pass redirectParam to EmailSentPage
+      navigate(`/auth/email-sent${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`);
     }
     
     setLoading(false);
@@ -303,7 +304,7 @@ const SignupPage: React.FC = () => {
                   name="password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
