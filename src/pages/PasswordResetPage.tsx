@@ -29,19 +29,11 @@ const PasswordResetPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
-    // Start building the redirectTo URL, mimicking the SignupPage's pattern
-    let redirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
-
-    // For password reset, the target path is fixed to /update-password.
-    // There are no invitation tokens or chained redirects in this specific flow.
-    const targetPath = '/update-password';
-
-    // Append the constructed targetPath as a 'redirect' query parameter.
-    // This part is identical in logic to the signup page's final step.
-    redirectToUrl += `?redirect=${encodeURIComponent(targetPath)}`;
+    // Construct the redirect URL with the correct path
+    const redirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/update-password`;
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectToUrl, // Use the constructed URL
+      redirectTo: redirectToUrl,
     });
 
     if (resetError) {
