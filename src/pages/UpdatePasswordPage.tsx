@@ -19,12 +19,43 @@ const UpdatePasswordPage: React.FC = () => {
   const fromPasswordReset = location.state?.fromPasswordReset;
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkAndRestoreSession = async () => {
       try {
-        // Wait for session to be established
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // First, check if we have a stored session from password reset
+        const storedSession = localStorage.getItem('passwordResetSession');
         
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        if (storedSession && fromPasswordReset) {
+          const { accessToken, refreshToken, timestamp } = JSON.parse(storedSession);
+          
+          // Check if the stored session is recent (within 5 minutes)
+          if (Date.now() - timestamp < 5 * 60 * 1000) {
+            console.log('UpdatePasswordPage: Restoring session from localStorage');
+            
+            const { data: { session: restoredSession }, error: restoreError } = 
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+            if (restoreError) {
+              console.error('UpdatePasswordPage: Error restoring session:', restoreError);
+              localStorage.removeItem('passwordResetSession');
+            } else if (restoredSession) {
+              console.log('UpdatePasswordPage: Session restored successfully');
+              localStorage.removeItem('passwordResetSession');
+              return; // Session restored, exit early
+            }
+          } else {
+            console.log('UpdatePasswordPage: Stored session expired');
+            localStorage.removeItem('passwordResetSession');
+          }
+        }
+
+        // If no stored session or restore failed, check current session
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { data: { session: currentSession }, error: sessionError } = 
+          await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('UpdatePasswordPage: Error getting session:', sessionError);
@@ -47,7 +78,7 @@ const UpdatePasswordPage: React.FC = () => {
       }
     };
 
-    checkSession();
+    checkAndRestoreSession();
   }, [supabase.auth, fromPasswordReset]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -85,6 +116,8 @@ const UpdatePasswordPage: React.FC = () => {
         setError(updateError.message);
       } else {
         setMessage('Password updated successfully! Redirecting to login...');
+        // Clear any stored session data
+        localStorage.removeItem('passwordResetSession');
         // Sign out after password update
         await supabase.auth.signOut();
         setTimeout(() => navigate('/login'), 2000);
