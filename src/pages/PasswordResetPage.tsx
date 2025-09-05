@@ -40,7 +40,7 @@ const PasswordResetPage: React.FC = () => {
     if (resetError) {
       setError(resetError.message);
     } else {
-      setMessage('Password reset email sent! Please check your inbox.');
+      setMessage('Password reset email sent! Please check your inbox. The link will direct you to update your password.');
     }
     setLoading(false);
   };
