@@ -18,7 +18,8 @@ const AuthCallbackPage: React.FC = () => {
   const [message, setMessage] = useState<string>('Processing authentication...');
 
   const processingRef = useRef(false);
-  const hashRef = useRef(location.hash); // CAPTURE THE HASH ON INITIAL RENDER
+  const hashRef = useRef(location.hash);
+  const hasRedirectedRef = useRef(false); // ADDED: Prevent multiple redirects
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
@@ -26,16 +27,20 @@ const AuthCallbackPage: React.FC = () => {
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
+    // ADDED: Early return if already redirected
+    if (hasRedirectedRef.current) {
+      console.log('AuthCallbackPage: Already redirected, skipping processing.');
+      return;
+    }
+
     let finalRedirectPath: string | null = null;
 
-    // 1. Try to get 'redirect' from query parameters
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
       console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
-    // 2. Use the CAPTURED hash from initial render, not the current one
     const hashParams = new URLSearchParams(hashRef.current.substring(1));
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
@@ -43,7 +48,6 @@ const AuthCallbackPage: React.FC = () => {
       console.log('AuthCallbackPage: Found redirect_to in initial hash:', hashRedirectTo);
     }
 
-    // Check if the finalRedirectPath contains an invitation token
     let invitationToken: string | null = null;
     if (finalRedirectPath) {
       try {
@@ -88,6 +92,7 @@ const AuthCallbackPage: React.FC = () => {
 
           if (session) {
             console.log('AuthCallbackPage: Session set successfully from hash tokens');
+            hasRedirectedRef.current = true; // MARK AS REDIRECTED
             navigate('/update-password', { replace: true });
             return;
           }
@@ -99,8 +104,8 @@ const AuthCallbackPage: React.FC = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      if (processingRef.current) {
-        console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
+      if (processingRef.current || hasRedirectedRef.current) {
+        console.log('AuthCallbackPage: Already processing or redirected, skipping.');
         return;
       }
 
@@ -112,6 +117,7 @@ const AuthCallbackPage: React.FC = () => {
         setStatus('success');
         setMessage('Password reset verified! Redirecting to update your password...');
         
+        hasRedirectedRef.current = true; // MARK AS REDIRECTED
         navigate('/update-password', { replace: true });
         processingRef.current = false;
         return;
@@ -181,6 +187,7 @@ const AuthCallbackPage: React.FC = () => {
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage('Authentication and invitation successful! Redirecting...');
+              hasRedirectedRef.current = true; // MARK AS REDIRECTED
               navigate('/dashboard', { replace: true });
               return;
             }
@@ -195,8 +202,10 @@ const AuthCallbackPage: React.FC = () => {
               currentSession.user.aud === 'authenticated' &&
               !currentSession.user.email_confirmed_at) {
             console.log('AuthCallbackPage: Password reset flow detected, redirecting to update-password');
+            hasRedirectedRef.current = true; // MARK AS REDIRECTED
             navigate('/update-password', { replace: true });
           } else if (finalRedirectPath) {
+            hasRedirectedRef.current = true; // MARK AS REDIRECTED
             navigate(finalRedirectPath, { replace: true });
           } else {
             const { data: profileData, error: profileCheckError } = await supabase
@@ -207,10 +216,13 @@ const AuthCallbackPage: React.FC = () => {
 
             if (profileCheckError) {
               console.error('Error checking admin status for redirection:', profileCheckError);
+              hasRedirectedRef.current = true; // MARK AS REDIRECTED
               navigate('/dashboard', { replace: true });
             } else if (profileData?.is_admin) {
+              hasRedirectedRef.current = true; // MARK AS REDIRECTED
               navigate('/admin', { replace: true });
             } else {
+              hasRedirectedRef.current = true; // MARK AS REDIRECTED
               navigate('/dashboard', { replace: true });
             }
           }
@@ -243,8 +255,9 @@ const AuthCallbackPage: React.FC = () => {
     const checkExistingSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+        if (session && !hasRedirectedRef.current) {
           console.log('AuthCallbackPage: Existing session found:', session);
+          hasRedirectedRef.current = true; // MARK AS REDIRECTED
           navigate('/update-password', { replace: true });
         }
       } catch (error) {
