@@ -8,17 +8,29 @@ import { useSearchParams } from 'react-router-dom';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
-import { useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Import useSessionContext
+import { useSessionContext } from '@supabase/auth-helpers-react';
 
 const Dashboard: React.FC = () => {
-  const { contracts, loadingContracts, errorContracts } = useContracts(); // MODIFIED: Added errorContracts
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null); // MODIFIED: Initialized with null
+  const { contracts, loadingContracts, errorContracts } = useContracts();
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
 
-  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription(); // MODIFIED: Added errorSubscription
-  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders(); // MODIFIED: Added errorOrders
-  const { isLoading: isSessionLoading } = useSessionContext(); // ADDED: Get session loading state
+  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
+  const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
+  const { session, isLoading: isSessionLoading } = useSessionContext();
+
+  // Temporary log for debugging
+  useEffect(() => {
+    console.log('Dashboard Render Check:');
+    console.log('  isSessionLoading:', isSessionLoading);
+    console.log('  session:', session);
+    console.log('  session?.user?.id:', session?.user?.id);
+    console.log('  loadingSubscription:', loadingSubscription);
+    console.log('  loadingOrders:', loadingOrders);
+    console.log('  loadingContracts:', loadingContracts);
+  }, [isSessionLoading, session, loadingSubscription, loadingOrders, loadingContracts]);
+
 
   useEffect(() => {
     const contractIdFromUrl = searchParams.get('contractId');
@@ -62,7 +74,8 @@ const Dashboard: React.FC = () => {
   const hasUserContracts = contracts.length > 0;
 
   // Show loading indicator while checking authentication, payment status and contracts
-  if (isSessionLoading || loadingSubscription || loadingOrders || loadingContracts) { // MODIFIED: Added isSessionLoading
+  // CRITICAL MODIFICATION: Ensure session.user.id is available before rendering content
+  if (isSessionLoading || loadingSubscription || loadingOrders || loadingContracts || !session?.user?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
