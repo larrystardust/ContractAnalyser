@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'; // ADDED useLocation
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -38,7 +38,7 @@ const AuthCallbackPage: React.FC = () => {
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectPath);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
@@ -124,11 +124,14 @@ const AuthCallbackPage: React.FC = () => {
               setStatus('error');
               setMessage(`Failed to accept invitation: ${inviteError.message}`);
               processingRef.current = false;
-              setTimeout(() => { navigate('/login'); }, 3000);
+              navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage('Authentication and invitation successful! Redirecting...');
+              // MODIFIED: Redirect directly to dashboard after successful invitation acceptance
+              navigate('/dashboard', { replace: true });
+              return; // Exit early after successful invitation and redirect
             }
           } else {
             setMessage('Authentication successful! Redirecting...');
@@ -160,7 +163,7 @@ const AuthCallbackPage: React.FC = () => {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(`An unexpected error occurred: ${overallError.message}`);
-          setTimeout(() => { navigate('/login'); }, 3000);
+          navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
         } finally {
           processingRef.current = false;
         }
@@ -168,17 +171,17 @@ const AuthCallbackPage: React.FC = () => {
         setStatus('error');
         setMessage('Your session has ended. Please log in again.');
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        setTimeout(() => { navigate('/login'); }, 3000);
+        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
         setMessage('Authentication failed or no active session. Please sign up or try again.');
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
-        setTimeout(() => { navigate('/login'); }, 3000);
+        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage('Email not confirmed. Please check your email for a confirmation link.');
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        setTimeout(() => { navigate('/login'); }, 3000);
+        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
       }
     });
 
@@ -207,13 +210,12 @@ const AuthCallbackPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600">{message}</p>
             {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {!session && (
-              <Link to="/login">
-                <Button variant="primary" size="lg" className="w-full mb-4">
-                  Log In
-                </Button>
-              </Link>
-            )}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
+            <Link to="/login">
+              <Button variant="primary" size="lg" className="w-full mb-4">
+                Log In
+              </Button>
+            </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
                 Return to Home
@@ -228,13 +230,12 @@ const AuthCallbackPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600">{message}</p>
             {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {!session && (
-              <Link to="/login">
-                <Button variant="primary" size="lg" className="w-full mb-4">
-                  Log In
-                </Button>
-              </Link>
-            )}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
+            <Link to="/login">
+              <Button variant="primary" size="lg" className="w-full mb-4">
+                Log In
+              </Button>
+            </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
                 Return to Home
