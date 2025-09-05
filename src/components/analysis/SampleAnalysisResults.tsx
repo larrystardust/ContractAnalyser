@@ -9,9 +9,10 @@ import { getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // Ensure 
 
 interface SampleAnalysisResultsProps {
   analysisResult: AnalysisResult;
+  isSample?: boolean; // ADDED: New prop, though not strictly used here for conditional rendering
 }
 
-const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisResult }) => {
+const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisResult, isSample = true }) => { // MODIFIED: Default isSample to true
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   
@@ -38,6 +39,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
+          {/* REMOVED: Email and Re-analyze buttons */}
         </div>
         <p className="text-gray-700">{analysisResult.executiveSummary}</p>
         
