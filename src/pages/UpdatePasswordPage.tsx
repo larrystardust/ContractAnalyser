@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Lock } from 'lucide-react';
@@ -14,21 +14,52 @@ const UpdatePasswordPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [checkingSession, setCheckingSession] = useState(true);
+  const fromPasswordReset = location.state?.fromPasswordReset;
 
   useEffect(() => {
-    // Redirect if no active session (user didn't come from a valid reset link)
-    if (!session) {
-      setError('Invalid or expired reset link. Please request a new password reset.');
-    }
-  }, [session]);
+    const checkSession = async () => {
+      try {
+        // Wait for session to be established
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('UpdatePasswordPage: Error getting session:', sessionError);
+          setError('Error verifying your session. Please try again.');
+        } else if (!currentSession) {
+          console.log('UpdatePasswordPage: No session found');
+          if (fromPasswordReset) {
+            setError('Your reset link may have expired. Please request a new password reset.');
+          } else {
+            setError('Please log in to update your password.');
+          }
+        } else {
+          console.log('UpdatePasswordPage: Valid session found');
+        }
+      } catch (err) {
+        console.error('UpdatePasswordPage: Error checking session:', err);
+        setError('An unexpected error occurred. Please try again.');
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    checkSession();
+  }, [supabase.auth, fromPasswordReset]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    if (!session) {
-      setError('No active session. Please request a new password reset.');
+    // Double-check session before proceeding
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    
+    if (!currentSession) {
+      setError('Your session has expired. Please request a new password reset.');
       setLoading(false);
       return;
     }
@@ -45,22 +76,44 @@ const UpdatePasswordPage: React.FC = () => {
       return;
     }
 
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: password
-    });
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password
+      });
 
-    if (updateError) {
-      setError(updateError.message);
-    } else {
-      setMessage('Password updated successfully! Redirecting to login...');
-      // Sign out after password update to ensure clean state
-      await supabase.auth.signOut();
-      setTimeout(() => navigate('/login'), 2000);
+      if (updateError) {
+        setError(updateError.message);
+      } else {
+        setMessage('Password updated successfully! Redirecting to login...');
+        // Sign out after password update
+        await supabase.auth.signOut();
+        setTimeout(() => navigate('/login'), 2000);
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while updating your password');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  if (!session) {
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+        <Card className="max-w-md w-full">
+          <CardBody className="text-center">
+            <div className="animate-pulse">
+              <div className="h-12 w-12 bg-blue-200 rounded-full mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            </div>
+            <p className="text-gray-600 mt-4">Verifying your reset link...</p>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error && !session) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -69,8 +122,11 @@ const UpdatePasswordPage: React.FC = () => {
           </CardHeader>
           <CardBody className="text-center">
             <p className="text-sm text-red-600 mb-4">{error}</p>
-            <Button onClick={() => navigate('/forgot-password')} variant="primary">
+            <Button onClick={() => navigate('/forgot-password')} variant="primary" className="w-full mb-2">
               Request New Reset Link
+            </Button>
+            <Button onClick={() => navigate('/login')} variant="outline" className="w-full">
+              Back to Login
             </Button>
           </CardBody>
         </Card>
