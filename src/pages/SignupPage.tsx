@@ -113,6 +113,17 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
+  const [invitationToken, setInvitationToken] = useState<string | null>(null); // State to store invitation token
+
+  useEffect(() => {
+    // Check for invitation_token in URL query parameters
+    const tokenFromUrl = searchParams.get('invitation_token');
+    if (tokenFromUrl) {
+      setInvitationToken(tokenFromUrl);
+      // Optionally, remove it from URL to keep it clean, but ensure it's stored
+      // navigate(location.pathname, { replace: true }); // This would remove it from the URL
+    }
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,19 +136,31 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    const redirectParam = searchParams.get('redirect');
-    console.log('SignupPage: Value of redirectParam from searchParams:', redirectParam);
-    
+    // Start building the emailRedirectTo URL
     let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
 
-    // If a redirect parameter exists, append it to the emailRedirectTo URL
-    if (redirectParam) {
-      emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
+    // Add the original 'redirect' parameter if it exists (e.g., from AuthGuard)
+    const originalRedirectParam = searchParams.get('redirect');
+    if (originalRedirectParam) {
+      emailRedirectToUrl += `?redirect=${encodeURIComponent(originalRedirectParam)}`;
+    }
+
+    // If an invitation token exists, append it to the redirect URL for AuthCallbackPage.
+    // AuthCallbackPage will then pick this up from the 'redirect_to' hash parameter.
+    // We append it as a 'redirect' parameter to the AuthCallbackPage's URL.
+    if (invitationToken) {
+      const invitationRedirectPath = `/accept-invitation?token=${encodeURIComponent(invitationToken)}`;
+      if (originalRedirectParam) {
+        // If there's already an original redirect, append the invitation redirect to it
+        emailRedirectToUrl += `&redirect=${encodeURIComponent(invitationRedirectPath)}`;
+      } else {
+        // If no original redirect, make the invitation redirect the primary one
+        emailRedirectToUrl += `?redirect=${encodeURIComponent(invitationRedirectPath)}`;
+      }
     }
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
-      // REMOVED: redirectTo: absoluteRedirectTo, // This option is now removed
       data: {
         full_name: fullName,
         business_name: businessName,
@@ -150,8 +173,7 @@ const SignupPage: React.FC = () => {
       email,
       password,
       options: {
-        emailRedirectTo: emailRedirectToUrl, // MODIFIED: Use the constructed URL
-        // REMOVED: redirectTo: absoluteRedirectTo, // This option is now removed
+        emailRedirectTo: emailRedirectToUrl,
         data: {
           full_name: fullName,
           business_name: businessName,
@@ -181,8 +203,8 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      // MODIFIED: Pass redirectParam to EmailSentPage
-      navigate(`/auth/email-sent${redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : ''}`);
+      // Navigate to EmailSentPage, preserving any original redirect parameter
+      navigate(`/auth/email-sent${originalRedirectParam ? `?redirect=${encodeURIComponent(originalRedirectParam)}` : ''}`);
     }
     
     setLoading(false);
@@ -329,7 +351,7 @@ const SignupPage: React.FC = () => {
                   name="confirm-password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
