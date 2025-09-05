@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // MODIFIED: Added useEffect
 import { Link } from 'react-router-dom';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Added useSessionContext
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail } from 'lucide-react';
@@ -11,6 +11,18 @@ const PasswordResetPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
+  const { session } = useSessionContext(); // MODIFIED: Get session context
+
+  // MODIFIED: Add useEffect to sign out user if already logged in
+  useEffect(() => {
+    const signOutIfLoggedIn = async () => {
+      if (session) {
+        console.log('PasswordResetPage: User already logged in, signing out for clean reset process.');
+        await supabase.auth.signOut();
+      }
+    };
+    signOutIfLoggedIn();
+  }, [session, supabase.auth]); // Run when session changes
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +31,7 @@ const PasswordResetPage: React.FC = () => {
     setMessage(null);
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      // MODIFIED: Redirect to AuthCallbackPage, passing /update-password as a redirect parameter
+      // Redirect to AuthCallbackPage, passing /update-password as a redirect parameter
       redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent('/update-password')}`,
     });
 
