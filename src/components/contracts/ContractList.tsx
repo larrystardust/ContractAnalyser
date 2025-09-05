@@ -11,9 +11,10 @@ import Button from '../ui/Button';
 interface ContractListProps {
   contractsToDisplay?: Contract[];
   onSelectContract?: (contractId: string) => void;
+  isSample?: boolean; // ADDED: New prop
 }
 
-const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract }) => {
+const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract, isSample = false }) => { // MODIFIED: Default isSample to false
   const { contracts, deleteContract } = useContracts();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
@@ -167,24 +168,30 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         ></div>
                       </div>
                     )}
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => handleDownload(contract.file_path, contract.name, e)}
-                      icon={<Download className="h-4 w-4" />}
-                      title="Download Contract"
-                      className="mt-2" 
-                    >
-                      Download
-                    </Button>
+                    {/* MODIFIED: Conditionally render download button */}
+                    {!isSample && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={(e) => handleDownload(contract.file_path, contract.name, e)}
+                        icon={<Download className="h-4 w-4" />}
+                        title="Download Contract"
+                        className="mt-2" 
+                      >
+                        Download
+                      </Button>
+                    )}
                   </div>
-                  <button
-                    onClick={(e) => handleDelete(contract.id, contract.file_path, e)}
-                    className="p-2 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    title="Delete Contract"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  {/* MODIFIED: Conditionally render delete button */}
+                  {!isSample && (
+                    <button
+                      onClick={(e) => handleDelete(contract.id, contract.file_path, e)}
+                      className="p-2 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      title="Delete Contract"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </CardBody>
             </Card>
