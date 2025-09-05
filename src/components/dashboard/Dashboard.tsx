@@ -12,7 +12,7 @@ import { useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Impo
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts(); // MODIFIED: Added errorContracts
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(selectedContractId);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
 
@@ -102,7 +102,8 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ContractList /> {/* ContractList will use useContracts internally */}
+            {/* MODIFIED: Pass isSample={false} */}
+            <ContractList isSample={false} /> {/* ContractList will use useContracts internally */}
           </div>
           
           {/* Main Content */}
@@ -112,7 +113,8 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
-                <AnalysisResults analysisResult={selectedContract.analysisResult} />
+                {/* MODIFIED: Pass isSample={false} */}
+                <AnalysisResults analysisResult={selectedContract.analysisResult} isSample={false} />
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
