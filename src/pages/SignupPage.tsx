@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
-import Card, { CardBody, CardHeader } from '../components/ui/Card';
+import Card, { CardBody, CardHeader } => '../components/ui/Card';
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
 
 // A simplified list of country codes for demonstration.
@@ -138,25 +138,33 @@ const SignupPage: React.FC = () => {
 
     // Start building the emailRedirectTo URL
     let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
+    let redirectParamForEmailSentPage = ''; // This will hold the final redirect param for EmailSentPage
 
-    // Add the original 'redirect' parameter if it exists (e.g., from AuthGuard)
     const originalRedirectParam = searchParams.get('redirect');
-    if (originalRedirectParam) {
-      emailRedirectToUrl += `?redirect=${encodeURIComponent(originalRedirectParam)}`;
+    
+    let targetRedirectPath = '';
+
+    // Prioritize invitation token redirect if it exists
+    if (invitationToken) {
+      targetRedirectPath = `/accept-invitation?token=${encodeURIComponent(invitationToken)}`;
     }
 
-    // If an invitation token exists, append it to the redirect URL for AuthCallbackPage.
-    // AuthCallbackPage will then pick this up from the 'redirect_to' hash parameter.
-    // We append it as a 'redirect' parameter to the AuthCallbackPage's URL.
-    if (invitationToken) {
-      const invitationRedirectPath = `/accept-invitation?token=${encodeURIComponent(invitationToken)}`;
-      if (originalRedirectParam) {
-        // If there's already an original redirect, append the invitation redirect to it
-        emailRedirectToUrl += `&redirect=${encodeURIComponent(invitationRedirectPath)}`;
+    // If there's an original redirect, combine it with the invitation redirect if both exist
+    // Otherwise, use the original redirect as the target
+    if (originalRedirectParam) {
+      if (targetRedirectPath) {
+        // If both exist, chain them. The AuthCallbackPage will handle this.
+        // Example: /original-path?param=value&redirect=/accept-invitation?token=xyz
+        targetRedirectPath = `${originalRedirectParam}&redirect=${encodeURIComponent(targetRedirectPath)}`;
       } else {
-        // If no original redirect, make the invitation redirect the primary one
-        emailRedirectToUrl += `?redirect=${encodeURIComponent(invitationRedirectPath)}`;
+        targetRedirectPath = originalRedirectParam;
       }
+    }
+
+    // Append the constructed targetRedirectPath to the emailRedirectToUrl
+    if (targetRedirectPath) {
+      emailRedirectToUrl += `?redirect=${encodeURIComponent(targetRedirectPath)}`;
+      redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
@@ -203,8 +211,8 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      // Navigate to EmailSentPage, preserving any original redirect parameter
-      navigate(`/auth/email-sent${originalRedirectParam ? `?redirect=${encodeURIComponent(originalRedirectParam)}` : ''}`);
+      // Navigate to EmailSentPage, passing the correctly constructed redirectParamForEmailSentPage
+      navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
     
     setLoading(false);
