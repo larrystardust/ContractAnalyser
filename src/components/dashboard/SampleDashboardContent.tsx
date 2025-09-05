@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ContractList from '../contracts/ContractList';
-import AnalysisResults from '../analysis/AnalysisResults';
+import SampleAnalysisResults from '../analysis/SampleAnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import { sampleContracts } from '../../data/sampleData'; // Import sample data
 import { Contract } from '../../types';
@@ -51,7 +51,8 @@ const SampleDashboardContent: React.FC = () => {
           </Link>
         </div>
         {/* Pass the handleSelectContract function to ContractList */}
-        <ContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
+        {/* MODIFIED: Pass isSample={true} */}
+        <ContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
       </div>
       
       {/* Main Content for Sample Analysis */}
@@ -60,8 +61,8 @@ const SampleDashboardContent: React.FC = () => {
           <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-900">Sample Contract Analysis: {selectedContract.name}</h1>
             
-            {/* Analysis Results */}
-            <AnalysisResults analysisResult={selectedContract.analysisResult} />
+            {/* MODIFIED: Pass isSample={true} */}
+            <SampleAnalysisResults analysisResult={selectedContract.analysisResult} isSample={true} />
             
             {/* Jurisdiction Summaries */}
             <div className="mt-8">
@@ -81,10 +82,10 @@ const SampleDashboardContent: React.FC = () => {
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No Sample Contract Selected
+              No Completed Sample Contract Selected
             </h2>
             <p className="text-gray-600 mb-6">
-              Select a sample contract from the list to view its analysis.
+              Select a completed sample contract from the list to view its analysis.
             </p>
             <Link to="/pricing">
               <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
