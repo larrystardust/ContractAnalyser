@@ -1,65 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { useSession } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 const AcceptInvitationPage: React.FC = () => {
-  console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href); // ADDED LOG
+  console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const supabase = useSupabaseClient();
-  const session = useSession();
+  const session = useSession(); // Keep session for conditional rendering/redirection logic
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
     const invitationToken = searchParams.get('token');
-    console.log('AcceptInvitationPage: invitationToken from searchParams:', invitationToken); // ADDED LOG
+    console.log('AcceptInvitationPage: invitationToken from searchParams:', invitationToken);
 
-    const handleAcceptInvitation = async () => {
-      if (!invitationToken) {
+    if (!invitationToken) {
+      setStatus('error');
+      setMessage('No invitation token found in the URL. Please ensure you are using the full invitation link.');
+      return;
+    }
+
+    // MODIFIED: Redirect to AuthCallbackPage to centralize invitation processing
+    // This ensures that authentication and invitation acceptance happen in one place.
+    const redirectToAuthCallback = () => {
+      const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
+      if (!appBaseUrl) {
+        console.error('VITE_APP_BASE_URL is not defined. Cannot construct redirect URL.');
         setStatus('error');
-        setMessage('No invitation token found in the URL.');
+        setMessage('Application base URL is not configured. Please contact support.');
         return;
       }
-
-      if (!session) {
-        // If user is not logged in, redirect to signup with a message
-        const redirectUrl = `/signup?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-        console.log('AcceptInvitationPage: User not logged in. Redirecting to:', redirectUrl); // ADDED LOG
-        navigate(redirectUrl);
-        setMessage('Please sign up or log in to accept the invitation.');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke('accept-invitation', {
-          body: { invitation_token: invitationToken },
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setStatus('success');
-        setMessage(data.message || 'Invitation accepted successfully!');
-        // MODIFIED: Automatically navigate to dashboard on success
-        navigate('/dashboard', { replace: true });
-      } catch (err: any) {
-        console.error('Error accepting invitation:', err);
-        setStatus('error');
-        setMessage(err.message || 'Failed to accept invitation. Please try again.');
-      }
+      // Construct the URL for AuthCallbackPage, passing the current path and query as a redirect_to hash parameter
+      const currentPathAndQuery = window.location.pathname + window.location.search;
+      const authCallbackUrl = `${appBaseUrl}/auth/callback#redirect_to=${encodeURIComponent(currentPathAndQuery)}`;
+      console.log('AcceptInvitationPage: Attempting to redirect to AuthCallbackPage:', authCallbackUrl);
+      window.location.href = authCallbackUrl; // Perform full page reload/redirect
     };
 
-    handleAcceptInvitation();
-  }, [searchParams, session, navigate, supabase]);
+    // Use a small timeout to ensure the component has rendered before attempting the redirect.
+    // This can sometimes help with race conditions or browser rendering quirks.
+    const redirectTimer = setTimeout(() => {
+      redirectToAuthCallback();
+    }, 100); // 100ms delay
+
+    // Cleanup the timer if the component unmounts before the redirect
+    return () => clearTimeout(redirectTimer);
+
+  }, [searchParams]); // Only re-run if searchParams change, as session changes are handled by AuthCallbackPage
 
   const renderContent = () => {
     switch (status) {
@@ -67,17 +58,16 @@ const AcceptInvitationPage: React.FC = () => {
         return (
           <>
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Accepting Invitation...</h2>
-            <p className="text-gray-600">Please wait while we process your invitation.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing Invitation...</h2>
+            <p className="text-gray-600">{message}</p>
           </>
         );
-      case 'success':
+      case 'success': // This state should ideally not be reached directly anymore, as AuthCallbackPage redirects
         return (
           <>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
-            {/* Removed the "Go to Dashboard" button as it's now automatic */}
           </>
         );
       case 'error':
@@ -86,10 +76,11 @@ const AcceptInvitationPage: React.FC = () => {
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
-            {!session && (
+            {/* Provide options to go home or sign up/login if not authenticated */}
+            {!session && ( // Use the session from useSession hook
               <Link to="/signup">
                 <Button variant="primary" size="lg" className="w-full mb-4">
-                  Sign Up
+                  Sign Up / Log In
                 </Button>
               </Link>
             )}
