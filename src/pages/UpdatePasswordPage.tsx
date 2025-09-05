@@ -16,6 +16,7 @@ const UpdatePasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [checkingSession, setCheckingSession] = useState(true);
+  const [hasValidSession, setHasValidSession] = useState(false);
   const fromPasswordReset = location.state?.fromPasswordReset;
 
   useEffect(() => {
@@ -43,6 +44,8 @@ const UpdatePasswordPage: React.FC = () => {
             } else if (restoredSession) {
               console.log('UpdatePasswordPage: Session restored successfully');
               localStorage.removeItem('passwordResetSession');
+              setHasValidSession(true);
+              setCheckingSession(false);
               return; // Session restored, exit early
             }
           } else {
@@ -69,6 +72,7 @@ const UpdatePasswordPage: React.FC = () => {
           }
         } else {
           console.log('UpdatePasswordPage: Valid session found');
+          setHasValidSession(true);
         }
       } catch (err) {
         console.error('UpdatePasswordPage: Error checking session:', err);
@@ -129,6 +133,12 @@ const UpdatePasswordPage: React.FC = () => {
     }
   };
 
+  // Check if form is valid for submission
+  const isFormValid = password.length >= 6 && 
+                     confirmPassword.length >= 6 && 
+                     password === confirmPassword &&
+                     hasValidSession;
+
   if (checkingSession) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
@@ -146,7 +156,7 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  if (error && !session) {
+  if (error && !hasValidSession) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -229,11 +239,17 @@ const UpdatePasswordPage: React.FC = () => {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                disabled={loading || !session}
+                disabled={loading || !isFormValid}
               >
                 {loading ? 'Updating Password...' : 'Update Password'}
               </Button>
             </div>
+
+            {!hasValidSession && (
+              <p className="text-sm text-yellow-600 text-center">
+                Session validation in progress. Please wait...
+              </p>
+            )}
           </form>
         </CardBody>
       </Card>
