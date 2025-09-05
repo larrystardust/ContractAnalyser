@@ -29,8 +29,7 @@ const PasswordResetPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
-    // Use the Supabase auth callback URL which will properly handle the token exchange
-    // The callback page should then redirect to the update-password page
+    // CRITICAL: Use this exact format for the redirect URL
     const redirectToUrl = `${window.location.origin}/auth/callback?redirect=/update-password`;
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
