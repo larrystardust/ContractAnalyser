@@ -11,42 +11,43 @@ const AuthCallbackPage: React.FC = () => {
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Keep for other potential query params
-  const location = useLocation(); // ADDED: To access hash
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Processing authentication...');
 
-  const processingRef = useRef(false); // Ref to prevent multiple executions
+  const processingRef = useRef(false);
+  const hashRef = useRef(location.hash); // CAPTURE THE HASH ON INITIAL RENDER
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
+    console.log('AuthCallbackPage: Initial URL hash:', hashRef.current);
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
     let finalRedirectPath: string | null = null;
 
-    // 1. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
+    // 1. Try to get 'redirect' from query parameters
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
       console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
-    // 2. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
-    // This takes precedence if found, as it's the direct instruction from Supabase.
-    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
+    // 2. Use the CAPTURED hash from initial render, not the current one
+    const hashParams = new URLSearchParams(hashRef.current.substring(1));
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in initial hash:', hashRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
     let invitationToken: string | null = null;
     if (finalRedirectPath) {
       try {
-        const url = new URL(finalRedirectPath, window.location.origin); // Use origin as base for relative paths
+        const url = new URL(finalRedirectPath, window.location.origin);
         const tokenParam = url.searchParams.get('token');
         if (url.pathname === '/accept-invitation' && tokenParam) {
           invitationToken = tokenParam;
@@ -57,7 +58,44 @@ const AuthCallbackPage: React.FC = () => {
       }
     }
 
-    // Listen for auth state changes to detect when the session is set by the redirect
+    // MANUALLY PROCESS THE TOKENS FROM THE HASH
+    const processHashTokens = async () => {
+      if (hashRef.current && hashRef.current.includes('access_token')) {
+        console.log('AuthCallbackPage: Processing tokens from hash');
+        
+        const hashParams = new URLSearchParams(hashRef.current.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const tokenType = hashParams.get('token_type');
+        const expiresIn = hashParams.get('expires_in');
+        const type = hashParams.get('type');
+
+        if (accessToken && refreshToken && type === 'recovery') {
+          console.log('AuthCallbackPage: Password recovery tokens found');
+          
+          // Set the session manually using the tokens from the hash
+          const { data: { session }, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            console.error('AuthCallbackPage: Error setting session from hash tokens:', error);
+            setStatus('error');
+            setMessage('Failed to process reset link. Please request a new password reset.');
+            return;
+          }
+
+          if (session) {
+            console.log('AuthCallbackPage: Session set successfully from hash tokens');
+            navigate('/update-password', { replace: true });
+            return;
+          }
+        }
+      }
+    };
+
+    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
@@ -66,7 +104,7 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
-      // ADDED: Handle password recovery event
+      // Handle password recovery event
       if (event === 'PASSWORD_RECOVERY') {
         console.log('AuthCallbackPage: Password recovery event detected');
         processingRef.current = true;
@@ -74,14 +112,13 @@ const AuthCallbackPage: React.FC = () => {
         setStatus('success');
         setMessage('Password reset verified! Redirecting to update your password...');
         
-        // For password recovery, redirect directly to update-password
         navigate('/update-password', { replace: true });
         processingRef.current = false;
         return;
       }
 
       if (event === 'SIGNED_IN' && currentSession) {
-        processingRef.current = true; // Set flag to true
+        processingRef.current = true;
 
         console.log('AuthCallbackPage: User SIGNED_IN. Attempting profile creation and invitation acceptance.');
 
@@ -144,9 +181,8 @@ const AuthCallbackPage: React.FC = () => {
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage('Authentication and invitation successful! Redirecting...');
-              // After successful invitation acceptance, always redirect to the dashboard
               navigate('/dashboard', { replace: true });
-              return; // Exit early after successful invitation and redirect
+              return;
             }
           } else {
             setMessage('Authentication successful! Redirecting...');
@@ -154,17 +190,15 @@ const AuthCallbackPage: React.FC = () => {
 
           setStatus('success');
           
-          // MODIFIED: Check if this is a password reset flow (no email confirmation required)
+          // Check if this is a password reset flow
           if (currentSession.user.app_metadata.provider === 'email' && 
               currentSession.user.aud === 'authenticated' &&
               !currentSession.user.email_confirmed_at) {
-            // This is likely a password reset flow, redirect to update password
             console.log('AuthCallbackPage: Password reset flow detected, redirecting to update-password');
             navigate('/update-password', { replace: true });
           } else if (finalRedirectPath) {
             navigate(finalRedirectPath, { replace: true });
           } else {
-            // If no invitation token was processed, determine where to redirect based on admin status
             const { data: profileData, error: profileCheckError } = await supabase
               .from('profiles')
               .select('is_admin')
@@ -200,16 +234,31 @@ const AuthCallbackPage: React.FC = () => {
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
         navigate('/login', { replace: true });
       }
-      // REMOVED: The email confirmation check since password reset doesn't require email confirmation
     });
 
-    // Cleanup the listener when the component unmounts
+    // Try to process tokens from hash immediately
+    processHashTokens();
+
+    // Also try to get the session immediately in case the event already fired
+    const checkExistingSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log('AuthCallbackPage: Existing session found:', session);
+          navigate('/update-password', { replace: true });
+        }
+      } catch (error) {
+        console.error('AuthCallbackPage: Error checking existing session:', error);
+      }
+    };
+
+    checkExistingSession();
+
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
-      // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams, location.hash]);
+  }, [navigate, supabase, searchParams, location.hash]);
 
   const renderContent = () => {
     switch (status) {
