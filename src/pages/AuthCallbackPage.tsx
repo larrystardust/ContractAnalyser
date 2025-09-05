@@ -124,12 +124,12 @@ const AuthCallbackPage: React.FC = () => {
               setStatus('error');
               setMessage(`Failed to accept invitation: ${inviteError.message}`);
               processingRef.current = false;
-              navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
+              navigate('/login', { replace: true });
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage('Authentication and invitation successful! Redirecting...');
-              // MODIFIED: Redirect directly to dashboard after successful invitation acceptance
+              // After successful invitation acceptance, always redirect to the dashboard
               navigate('/dashboard', { replace: true });
               return; // Exit early after successful invitation and redirect
             }
@@ -138,32 +138,28 @@ const AuthCallbackPage: React.FC = () => {
           }
 
           setStatus('success');
-          // Determine where to redirect based on finalRedirectPath or admin status
-          if (finalRedirectPath) {
-            console.log('AuthCallbackPage: Redirecting to final destination:', finalRedirectPath);
-            navigate(finalRedirectPath);
-          } else {
-            const { data: profileData, error: profileCheckError } = await supabase
-              .from('profiles')
-              .select('is_admin')
-              .eq('id', currentSession.user.id)
-              .maybeSingle();
+          // If no invitation token was processed, determine where to redirect based on admin status
+          const { data: profileData, error: profileCheckError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', currentSession.user.id)
+            .maybeSingle();
 
-            if (profileCheckError) {
-              console.error('Error checking admin status for redirection:', profileCheckError);
-              navigate('/dashboard');
-            } else if (profileData?.is_admin) {
-              navigate('/admin');
-            } else {
-              navigate('/dashboard');
-            }
+          if (profileCheckError) {
+            console.error('Error checking admin status for redirection:', profileCheckError);
+            navigate('/dashboard', { replace: true });
+          } else if (profileData?.is_admin) {
+            navigate('/admin', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
           }
+
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(`An unexpected error occurred: ${overallError.message}`);
-          navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
+          navigate('/login', { replace: true });
         } finally {
           processingRef.current = false;
         }
@@ -171,29 +167,29 @@ const AuthCallbackPage: React.FC = () => {
         setStatus('error');
         setMessage('Your session has ended. Please log in again.');
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
+        navigate('/login', { replace: true });
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
         setMessage('Authentication failed or no active session. Please sign up or try again.');
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
-        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
+        navigate('/login', { replace: true });
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage('Email not confirmed. Please check your email for a confirmation link.');
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        navigate('/login', { replace: true }); // MODIFIED: Direct navigate, removed setTimeout
+        navigate('/login', { replace: true });
       }
     });
 
     // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
-      authListener?.unsubscribe();
+      // FIX: Correctly call unsubscribe on the subscription object
+      authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams, location.hash]); // ADDED location.hash to dependencies
+  }, [navigate, supabase.auth, searchParams, location.hash]);
 
   const renderContent = () => {
-    // ... (rest of the renderContent function remains the same)
     switch (status) {
       case 'loading':
         return (
