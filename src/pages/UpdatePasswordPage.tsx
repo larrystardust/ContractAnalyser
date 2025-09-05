@@ -19,13 +19,16 @@ const UpdatePasswordPage: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Extract access_token from URL hash
+    // Extract access_token and refresh_token from URL hash
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token'); // ADDED: Extract refresh_token
+
+    console.log('UpdatePasswordPage: Extracted tokens from URL hash:', { accessToken, refreshToken }); // ADDED: Log extracted tokens
 
     if (accessToken) {
-      // Set the session with the access token
-      supabase.auth.setSession({ access_token: accessToken })
+      // Set the session with both access and refresh tokens
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }) // MODIFIED: Pass refresh_token
         .then(({ error }) => {
           if (error) {
             console.error('Error setting session:', error);
