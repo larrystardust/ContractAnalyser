@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'; // MODIFIED: Added useEffect
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Added useSessionContext
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail } from 'lucide-react';
@@ -11,9 +11,8 @@ const PasswordResetPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
-  const { session } = useSessionContext(); // MODIFIED: Get session context
+  const { session } = useSessionContext();
 
-  // MODIFIED: Add useEffect to sign out user if already logged in
   useEffect(() => {
     const signOutIfLoggedIn = async () => {
       if (session) {
@@ -22,7 +21,7 @@ const PasswordResetPage: React.FC = () => {
       }
     };
     signOutIfLoggedIn();
-  }, [session, supabase.auth]); // Run when session changes
+  }, [session, supabase.auth]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +29,19 @@ const PasswordResetPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
+    // Start building the redirectTo URL, mimicking the SignupPage's pattern
+    let redirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
+
+    // For password reset, the target path is fixed to /update-password.
+    // There are no invitation tokens or chained redirects in this specific flow.
+    const targetPath = '/update-password';
+
+    // Append the constructed targetPath as a 'redirect' query parameter.
+    // This part is identical in logic to the signup page's final step.
+    redirectToUrl += `?redirect=${encodeURIComponent(targetPath)}`;
+
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      // Redirect to AuthCallbackPage, passing /update-password as a redirect parameter
-      redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent('/update-password')}`,
+      redirectTo: redirectToUrl, // Use the constructed URL
     });
 
     if (resetError) {
