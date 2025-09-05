@@ -70,6 +70,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
   };
 
   const handleDownload = async (filePath: string, fileName: string, event: React.MouseEvent) => {
+    event.preventDefault(); // ADDED: Prevent default button behavior
     event.stopPropagation();
     try {
       const { data, error } = await supabase.storage
