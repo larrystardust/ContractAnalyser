@@ -136,6 +136,14 @@ const SignupPage: React.FC = () => {
       return;
     }
 
+    // ADDED: Client-side validation for mobile phone number
+    const phoneRegex = /^[0-9]+$/; // Only allow digits
+    if (mobilePhoneNumber && !phoneRegex.test(mobilePhoneNumber)) {
+      setError('Mobile phone number can only contain digits.');
+      setLoading(false);
+      return;
+    }
+
     // Start building the emailRedirectTo URL
     let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
     let redirectParamForEmailSentPage = ''; // This will hold the final redirect param for EmailSentPage
@@ -312,7 +320,8 @@ const SignupPage: React.FC = () => {
                   <input
                     id="mobilePhoneNumber"
                     name="mobilePhoneNumber"
-                    type="tel"
+                    type="tel" // Use type="tel" for mobile keyboards
+                    pattern="[0-9]*" // ADDED: Pattern to restrict to digits
                     autoComplete="tel"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
