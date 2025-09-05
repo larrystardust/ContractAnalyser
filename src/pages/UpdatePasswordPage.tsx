@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Added useSessionContext
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
