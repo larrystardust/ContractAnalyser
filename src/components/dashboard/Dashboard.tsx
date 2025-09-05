@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedContract && selectedContract.status !== 'completed'
                     ? `Analyzing "${selectedContract.name}"... (${selectedContract.processing_progress || 0}%)`
-                    : 'No Contract Selected'}
+                    : 'No Completed Contract Selected'}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {selectedContract && selectedContract.status !== 'completed'
