@@ -87,6 +87,14 @@ const AuthCallbackPage: React.FC = () => {
 
           if (session) {
             console.log('AuthCallbackPage: Session set successfully from hash tokens');
+            
+            // Store session data in localStorage to persist across redirect
+            localStorage.setItem('passwordResetSession', JSON.stringify({
+              accessToken,
+              refreshToken,
+              timestamp: Date.now()
+            }));
+            
             hasRedirectedRef.current = true;
             navigate('/update-password', { 
               replace: true,
@@ -109,6 +117,15 @@ const AuthCallbackPage: React.FC = () => {
       if (event === 'PASSWORD_RECOVERY') {
         console.log('AuthCallbackPage: Password recovery event detected');
         processingRef.current = true;
+        
+        // Store session info for the UpdatePasswordPage
+        if (currentSession) {
+          localStorage.setItem('passwordResetSession', JSON.stringify({
+            accessToken: currentSession.access_token,
+            refreshToken: currentSession.refresh_token,
+            timestamp: Date.now()
+          }));
+        }
         
         setStatus('success');
         setMessage('Password reset verified! Redirecting to update your password...');
