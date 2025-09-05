@@ -1,118 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import Button from '../components/ui/Button';
-import Card, { CardBody } from '../components/ui/Card';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const AcceptInvitationPage: React.FC = () => {
   console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const supabase = useSupabaseClient();
-  const session = useSession();
-
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState<string>('Processing your invitation...');
 
   useEffect(() => {
     const invitationToken = searchParams.get('token');
     console.log('AcceptInvitationPage: invitationToken from searchParams:', invitationToken);
 
-    const handleAcceptInvitation = async () => {
-      if (!invitationToken) {
-        setStatus('error');
-        setMessage('No invitation token found in the URL. Please ensure you are using the full invitation link.');
-        return;
-      }
-
-      if (!session) {
-        // If user is not logged in, prompt them to log in or sign up
-        setStatus('error');
-        setMessage('You must be logged in to accept this invitation. Please log in or sign up.');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke('accept-invitation', {
-          body: { invitation_token: invitationToken },
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setStatus('success');
-        setMessage(data.message || 'Invitation accepted successfully!');
-      } catch (err: any) {
-        console.error('Error accepting invitation:', err);
-        setStatus('error');
-        setMessage(err.message || 'Failed to accept invitation. Please try again.');
-      }
-    };
-
-    handleAcceptInvitation();
-  }, [searchParams, session, supabase]); // Re-run if searchParams, session, or supabase client changes
-
-  const renderContent = () => {
-    switch (status) {
-      case 'loading':
-        return (
-          <>
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing Invitation...</h2>
-            <p className="text-gray-600">{message}</p>
-          </>
-        );
-      case 'success':
-        return (
-          <>
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
-            <p className="text-gray-600 mb-6">{message}</p>
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              onClick={() => navigate('/dashboard')} // Navigate to dashboard
-            >
-              Go to Dashboard
-            </Button>
-          </>
-        );
-      case 'error':
-        return (
-          <>
-            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
-            <p className="text-gray-600 mb-6">{message}</p>
-            {!session && ( // Only show signup/login if not authenticated
-              <Link to="/signup">
-                <Button variant="primary" size="lg" className="w-full mb-4">
-                  Sign Up / Log In
-                </Button>
-              </Link>
-            )}
-            <Link to="/">
-              <Button variant="outline" size="lg" className="w-full">
-                Return to Home
-              </Button>
-            </Link>
-          </>
-        );
+    if (invitationToken) {
+      // Redirect to the signup page, passing the invitation token as a query parameter
+      console.log('AcceptInvitationPage: Redirecting to signup page with invitation token.');
+      navigate(`/signup?invitation_token=${encodeURIComponent(invitationToken)}`, { replace: true });
+    } else {
+      // If no token, redirect to home or show an error (for robustness)
+      console.log('AcceptInvitationPage: No invitation token found. Redirecting to home.');
+      navigate('/', { replace: true });
     }
-  };
+  }, [searchParams, navigate]); // Depend on searchParams and navigate
 
+  // This page should ideally not render much, as it immediately redirects
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <Card className="max-w-md w-full">
-        <CardBody className="text-center">
-          {renderContent()}
-        </CardBody>
-      </Card>
+      <div className="text-center">
+        <p className="text-gray-600">Redirecting to signup page...</p>
+      </div>
     </div>
   );
 };
