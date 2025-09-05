@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import Button from '../components/ui/Button';
 import { Database } from '../types/supabase';
 
 const AuthCallbackPage: React.FC = () => {
@@ -65,10 +66,24 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
-      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
+      // ADDED: Handle password recovery event
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('AuthCallbackPage: Password recovery event detected');
+        processingRef.current = true;
+        
+        setStatus('success');
+        setMessage('Password reset verified! Redirecting to update your password...');
+        
+        // For password recovery, redirect directly to update-password
+        navigate('/update-password', { replace: true });
+        processingRef.current = false;
+        return;
+      }
+
+      if (event === 'SIGNED_IN' && currentSession) {
         processingRef.current = true; // Set flag to true
 
-        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
+        console.log('AuthCallbackPage: User SIGNED_IN. Attempting profile creation and invitation acceptance.');
 
         try {
           // 1. Create/Update User Profile
@@ -138,8 +153,15 @@ const AuthCallbackPage: React.FC = () => {
           }
 
           setStatus('success');
-          // MODIFIED: Prioritize finalRedirectPath
-          if (finalRedirectPath) {
+          
+          // MODIFIED: Check if this is a password reset flow (no email confirmation required)
+          if (currentSession.user.app_metadata.provider === 'email' && 
+              currentSession.user.aud === 'authenticated' &&
+              !currentSession.user.email_confirmed_at) {
+            // This is likely a password reset flow, redirect to update password
+            console.log('AuthCallbackPage: Password reset flow detected, redirecting to update-password');
+            navigate('/update-password', { replace: true });
+          } else if (finalRedirectPath) {
             navigate(finalRedirectPath, { replace: true });
           } else {
             // If no invitation token was processed, determine where to redirect based on admin status
@@ -159,7 +181,6 @@ const AuthCallbackPage: React.FC = () => {
             }
           }
 
-
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
@@ -178,12 +199,8 @@ const AuthCallbackPage: React.FC = () => {
         setMessage('Authentication failed or no active session. Please sign up or try again.');
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
         navigate('/login', { replace: true });
-      } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
-        setStatus('error');
-        setMessage('Email not confirmed. Please check your email for a confirmation link.');
-        console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        navigate('/login', { replace: true });
       }
+      // REMOVED: The email confirmation check since password reset doesn't require email confirmation
     });
 
     // Cleanup the listener when the component unmounts
@@ -210,18 +227,6 @@ const AuthCallbackPage: React.FC = () => {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600">{message}</p>
-            {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {/* Removed the automatic redirect, so these buttons are now relevant */}
-            <Link to="/login">
-              <Button variant="primary" size="lg" className="w-full mb-4">
-                Log In
-              </Button>
-            </Link>
-            <Link to="/">
-              <Button variant="outline" size="lg" className="w-full">
-                Return to Home
-              </Button>
-            </Link>
           </>
         );
       case 'error':
@@ -230,8 +235,6 @@ const AuthCallbackPage: React.FC = () => {
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600">{message}</p>
-            {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
                 Log In
