@@ -17,6 +17,8 @@ const UpdatePasswordPage: React.FC = () => {
   const location = useLocation();
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasValidSession, setHasValidSession] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const fromPasswordReset = location.state?.fromPasswordReset;
 
   useEffect(() => {
@@ -26,16 +28,20 @@ const UpdatePasswordPage: React.FC = () => {
         const storedSession = localStorage.getItem('passwordResetSession');
         
         if (storedSession && fromPasswordReset) {
-          const { accessToken, refreshToken, timestamp } = JSON.parse(storedSession);
+          const { accessToken: storedAccessToken, refreshToken: storedRefreshToken, timestamp } = JSON.parse(storedSession);
           
           // Check if the stored session is recent (within 5 minutes)
           if (Date.now() - timestamp < 5 * 60 * 1000) {
             console.log('UpdatePasswordPage: Restoring session from localStorage');
             
+            // Store the tokens for later use
+            setAccessToken(storedAccessToken);
+            setRefreshToken(storedRefreshToken);
+            
             const { data: { session: restoredSession }, error: restoreError } = 
               await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
+                access_token: storedAccessToken,
+                refresh_token: storedRefreshToken,
               });
 
             if (restoreError) {
@@ -89,6 +95,23 @@ const UpdatePasswordPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Try to use the stored tokens first if available
+    if (accessToken && refreshToken) {
+      console.log('UpdatePasswordPage: Using stored tokens for session');
+      const { data: { session: currentSession }, error: sessionError } = 
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+      if (sessionError || !currentSession) {
+        console.error('UpdatePasswordPage: Error setting session from stored tokens:', sessionError);
+        setError('Your session has expired. Please request a new password reset.');
+        setLoading(false);
+        return;
+      }
+    }
 
     // Double-check session before proceeding
     const { data: { session: currentSession } } = await supabase.auth.getSession();
