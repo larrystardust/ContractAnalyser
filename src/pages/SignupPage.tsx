@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
-import Card, { CardBody, CardHeader } => '../components/ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card'; // FIX: Changed '=' to 'from'
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
 
 // A simplified list of country codes for demonstration.
