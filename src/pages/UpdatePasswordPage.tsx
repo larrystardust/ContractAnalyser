@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react'; // MODIFIED: Removed useSessionContext
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
@@ -9,7 +9,6 @@ const UpdatePasswordPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const location = useLocation(); // To get hash from URL
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: Use session context
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,24 +19,38 @@ const UpdatePasswordPage: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // MODIFIED: Rely on AuthCallbackPage to set the session.
-    // This page now just checks if a session is active.
-    if (isSessionLoading) {
-      // Still loading session, do nothing yet
-      return;
-    }
+    // Extract access_token and refresh_token from URL hash
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
 
-    if (!session) {
-      // No session found, redirect to login
-      console.log('UpdatePasswordPage: No active session found, redirecting to login.');
-      setError('No active session found. Please use the link from your email to reset your password.');
-      // Optionally, redirect after a delay or show a button
-      // navigate('/login', { replace: true });
+    console.log('UpdatePasswordPage: Extracted tokens from URL hash:', { accessToken, refreshToken });
+
+    if (accessToken) {
+      // Set the session with both access and refresh tokens
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error: setSessionError }) => {
+          if (setSessionError) {
+            console.error('Error setting session:', setSessionError);
+            setError('Failed to set session. The link may be invalid or expired.');
+          } else {
+            setMessage('Please enter your new password.');
+            // Use a small timeout to allow auth-helpers-react to finish internal processing
+            // before signing out the temporary session. This prevents the TypeError.
+            setTimeout(async () => {
+              await supabase.auth.signOut();
+              console.log('UpdatePasswordPage: Temporary session cleared after delay.');
+            }, 50); // 50ms delay
+          }
+        })
+        .catch(err => {
+          console.error('Unexpected error setting session:', err);
+          setError('An unexpected error occurred. Please try again.');
+        });
     } else {
-      // Session is active, user can proceed to update password
-      setMessage('Please enter your new password.');
+      setError('No access token found. Please use the link from your email.');
     }
-  }, [session, isSessionLoading, navigate]); // MODIFIED: Dependencies
+  }, [location.hash, supabase.auth]); // MODIFIED: Removed session, isLoading from dependencies
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,14 +93,9 @@ const UpdatePasswordPage: React.FC = () => {
     }
   };
 
-  // MODIFIED: Show loading state while session is being determined
-  if (isSessionLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-      </div>
-    );
-  }
+  // MODIFIED: Removed loading state based on isSessionLoading
+  // The page will now always render, and the useEffect handles session setting.
+  // If no token is found, an error message will be displayed.
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
