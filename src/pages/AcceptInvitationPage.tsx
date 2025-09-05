@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useSession } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -9,48 +9,53 @@ const AcceptInvitationPage: React.FC = () => {
   console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const session = useSession(); // Keep session for conditional rendering/redirection logic
+  const supabase = useSupabaseClient();
+  const session = useSession();
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState<string>('');
+  const [message, setMessage] = useState<string>('Processing your invitation...');
 
   useEffect(() => {
     const invitationToken = searchParams.get('token');
     console.log('AcceptInvitationPage: invitationToken from searchParams:', invitationToken);
 
-    if (!invitationToken) {
-      setStatus('error');
-      setMessage('No invitation token found in the URL. Please ensure you are using the full invitation link.');
-      return;
-    }
-
-    // MODIFIED: Redirect to AuthCallbackPage to centralize invitation processing
-    // This ensures that authentication and invitation acceptance happen in one place.
-    const redirectToAuthCallback = () => {
-      const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
-      if (!appBaseUrl) {
-        console.error('VITE_APP_BASE_URL is not defined. Cannot construct redirect URL.');
+    const handleAcceptInvitation = async () => {
+      if (!invitationToken) {
         setStatus('error');
-        setMessage('Application base URL is not configured. Please contact support.');
+        setMessage('No invitation token found in the URL. Please ensure you are using the full invitation link.');
         return;
       }
-      // Construct the URL for AuthCallbackPage, passing the current path and query as a redirect_to hash parameter
-      const currentPathAndQuery = window.location.pathname + window.location.search;
-      const authCallbackUrl = `${appBaseUrl}/auth/callback#redirect_to=${encodeURIComponent(currentPathAndQuery)}`;
-      console.log('AcceptInvitationPage: Attempting to redirect to AuthCallbackPage:', authCallbackUrl);
-      window.location.href = authCallbackUrl; // Perform full page reload/redirect
+
+      if (!session) {
+        // If user is not logged in, prompt them to log in or sign up
+        setStatus('error');
+        setMessage('You must be logged in to accept this invitation. Please log in or sign up.');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('accept-invitation', {
+          body: { invitation_token: invitationToken },
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setStatus('success');
+        setMessage(data.message || 'Invitation accepted successfully!');
+      } catch (err: any) {
+        console.error('Error accepting invitation:', err);
+        setStatus('error');
+        setMessage(err.message || 'Failed to accept invitation. Please try again.');
+      }
     };
 
-    // Use a small timeout to ensure the component has rendered before attempting the redirect.
-    // This can sometimes help with race conditions or browser rendering quirks.
-    const redirectTimer = setTimeout(() => {
-      redirectToAuthCallback();
-    }, 100); // 100ms delay
-
-    // Cleanup the timer if the component unmounts before the redirect
-    return () => clearTimeout(redirectTimer);
-
-  }, [searchParams]); // Only re-run if searchParams change, as session changes are handled by AuthCallbackPage
+    handleAcceptInvitation();
+  }, [searchParams, session, supabase]); // Re-run if searchParams, session, or supabase client changes
 
   const renderContent = () => {
     switch (status) {
@@ -62,12 +67,20 @@ const AcceptInvitationPage: React.FC = () => {
             <p className="text-gray-600">{message}</p>
           </>
         );
-      case 'success': // This state should ideally not be reached directly anymore, as AuthCallbackPage redirects
+      case 'success':
         return (
           <>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              onClick={() => navigate('/dashboard')} // Navigate to dashboard
+            >
+              Go to Dashboard
+            </Button>
           </>
         );
       case 'error':
@@ -76,8 +89,7 @@ const AcceptInvitationPage: React.FC = () => {
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600 mb-6">{message}</p>
-            {/* Provide options to go home or sign up/login if not authenticated */}
-            {!session && ( // Use the session from useSession hook
+            {!session && ( // Only show signup/login if not authenticated
               <Link to="/signup">
                 <Button variant="primary" size="lg" className="w-full mb-4">
                   Sign Up / Log In
