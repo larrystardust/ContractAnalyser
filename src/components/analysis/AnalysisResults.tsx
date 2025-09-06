@@ -15,11 +15,12 @@ import { useContracts } from '../../context/ContractContext';
 interface AnalysisResultsProps {
   analysisResult?: AnalysisResult; // MODIFIED: Made optional
   isSample?: boolean;
-  // REMOVED: contractStatus prop, as modal logic is moved
   onReanalyzeInitiated?: () => void; // ADDED: Callback for when re-analysis is initiated
+  onReanalyzeCompleted?: () => void; // ADDED: Callback for when re-analysis is completed
+  onReanalyzeFailed?: () => void; // ADDED: Callback for when re-analysis fails
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated }) => {
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, onReanalyzeCompleted, onReanalyzeFailed }) => {
   // ADDED: Defensive check for analysisResult
   if (!analysisResult) {
     // This case should ideally not be hit if Dashboard.tsx renders correctly,
@@ -41,8 +42,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
-
-  // REMOVED: showAnalysisModal and contractBeingAnalyzedId states
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -166,16 +165,19 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     }
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      // The parent component (Dashboard) will handle modal visibility based on contract status changes
+      if (onReanalyzeCompleted) {
+        onReanalyzeCompleted(); // Notify parent that re-analysis is completed
+      }
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`);
+      if (onReanalyzeFailed) {
+        onReanalyzeFailed(); // Notify parent that re-analysis failed
+      }
     } finally {
       setIsReanalyzing(false); // Reset button loading state
     }
   };
-
-  // REMOVED: useEffect to monitor contract status and close modal, as it's moved to Dashboard
 
   return (
     <div className="space-y-6">
