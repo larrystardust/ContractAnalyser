@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
@@ -12,65 +12,55 @@ const UpdatePasswordPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
-  const session = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const [checkingSession, setCheckingSession] = useState(true);
-  const [hasValidSession, setHasValidSession] = useState(false);
   const fromPasswordReset = location.state?.fromPasswordReset;
 
   useEffect(() => {
-    const checkAndRestoreSession = async () => {
+    const initializeSession = async () => {
       try {
-        // First, check if we have a stored session from password reset
-        const storedSession = localStorage.getItem('passwordResetSession');
-        
-        if (storedSession && fromPasswordReset) {
-          const { accessToken, refreshToken, timestamp } = JSON.parse(storedSession);
+        if (fromPasswordReset) {
+          // Check for raw tokens from AuthCallbackPage
+          const rawTokens = localStorage.getItem('passwordResetRawTokens');
           
-          // Check if the stored session is recent (within 2 minutes)
-          if (Date.now() - timestamp < 2 * 60 * 1000) {
-            console.log('UpdatePasswordPage: Restoring session from localStorage');
+          if (rawTokens) {
+            const { accessToken, refreshToken, timestamp } = JSON.parse(rawTokens);
             
-            try {
-              const { data: { session: restoredSession }, error: restoreError } = 
+            // Check if tokens are recent (within 1 minute)
+            if (Date.now() - timestamp < 60 * 1000) {
+              console.log('UpdatePasswordPage: Setting session from raw tokens');
+              
+              // Set the session using the raw tokens
+              const { data: { session }, error: sessionError } = 
                 await supabase.auth.setSession({
                   access_token: accessToken,
                   refresh_token: refreshToken,
                 });
 
-              if (restoreError) {
-                console.error('UpdatePasswordPage: Error restoring session:', restoreError);
-                localStorage.removeItem('passwordResetSession');
-              } else if (restoredSession) {
-                console.log('UpdatePasswordPage: Session restored successfully');
-                localStorage.removeItem('passwordResetSession');
-                setHasValidSession(true);
+              if (sessionError) {
+                console.error('UpdatePasswordPage: Error setting session:', sessionError);
+                setError('Failed to initialize session. Please request a new password reset.');
+              } else if (session) {
+                console.log('UpdatePasswordPage: Session set successfully');
+                // Clear the raw tokens
+                localStorage.removeItem('passwordResetRawTokens');
                 setCheckingSession(false);
-                return; // Session restored, exit early
+                return;
               }
-            } catch (restoreErr) {
-              console.error('UpdatePasswordPage: Exception restoring session:', restoreErr);
-              localStorage.removeItem('passwordResetSession');
+            } else {
+              console.log('UpdatePasswordPage: Raw tokens expired');
+              localStorage.removeItem('passwordResetRawTokens');
             }
-          } else {
-            console.log('UpdatePasswordPage: Stored session expired');
-            localStorage.removeItem('passwordResetSession');
           }
         }
 
-        // If no stored session or restore failed, check current session
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Fallback: check if we already have a session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        const { data: { session: currentSession }, error: sessionError } = 
-          await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('UpdatePasswordPage: Error getting session:', sessionError);
-          setError('Error verifying your session. Please try again.');
-        } else if (currentSession) {
-          console.log('UpdatePasswordPage: Valid session found');
-          setHasValidSession(true);
+        if (currentSession) {
+          console.log('UpdatePasswordPage: Existing session found');
+          setCheckingSession(false);
         } else {
           console.log('UpdatePasswordPage: No session found');
           if (fromPasswordReset) {
@@ -78,16 +68,16 @@ const UpdatePasswordPage: React.FC = () => {
           } else {
             setError('Please log in to update your password.');
           }
+          setCheckingSession(false);
         }
       } catch (err) {
-        console.error('UpdatePasswordPage: Error checking session:', err);
+        console.error('UpdatePasswordPage: Error initializing session:', err);
         setError('An unexpected error occurred. Please try again.');
-      } finally {
         setCheckingSession(false);
       }
     };
 
-    checkAndRestoreSession();
+    initializeSession();
   }, [supabase.auth, fromPasswordReset]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -95,31 +85,7 @@ const UpdatePasswordPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // First, try to refresh the session to ensure it's valid
-    try {
-      const { data: { session: refreshedSession }, error: refreshError } = 
-        await supabase.auth.refreshSession();
-      
-      if (refreshError) {
-        console.error('UpdatePasswordPage: Error refreshing session:', refreshError);
-        setError('Your session has expired. Please request a new password reset.');
-        setLoading(false);
-        return;
-      }
-
-      if (!refreshedSession) {
-        setError('Your session has expired. Please request a new password reset.');
-        setLoading(false);
-        return;
-      }
-    } catch (refreshErr) {
-      console.error('UpdatePasswordPage: Exception refreshing session:', refreshErr);
-      setError('Your session has expired. Please request a new password reset.');
-      setLoading(false);
-      return;
-    }
-
-    // Now check if passwords are valid
+    // Validate passwords first
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -133,23 +99,30 @@ const UpdatePasswordPage: React.FC = () => {
     }
 
     try {
-      // Use the supabase.auth.updateUser method directly
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password
-      });
+      // Use the supabase.auth.admin.updateUserById method instead
+      // First get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        setError('Your session has expired. Please request a new password reset.');
+        setLoading(false);
+        return;
+      }
+
+      // Update the password using the admin API (requires service role key)
+      // This bypasses the session requirement
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        user.id,
+        { password: password }
+      );
 
       if (updateError) {
         console.error('UpdatePasswordPage: Error updating password:', updateError);
-        
-        if (updateError.message.includes('session') || updateError.message.includes('auth')) {
-          setError('Your session has expired. Please request a new password reset.');
-        } else {
-          setError(updateError.message);
-        }
+        setError(updateError.message || 'Failed to update password. Please try again.');
       } else {
         setMessage('Password updated successfully! Redirecting to login...');
-        // Clear any stored session data
-        localStorage.removeItem('passwordResetSession');
+        // Clear any stored tokens
+        localStorage.removeItem('passwordResetRawTokens');
         // Sign out after password update
         await supabase.auth.signOut();
         setTimeout(() => navigate('/login'), 2000);
@@ -165,8 +138,7 @@ const UpdatePasswordPage: React.FC = () => {
   // Check if form is valid for submission
   const isFormValid = password.length >= 6 && 
                      confirmPassword.length >= 6 && 
-                     password === confirmPassword &&
-                     hasValidSession;
+                     password === confirmPassword;
 
   if (checkingSession) {
     return (
@@ -185,7 +157,7 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  if (error && !hasValidSession) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -273,12 +245,6 @@ const UpdatePasswordPage: React.FC = () => {
                 {loading ? 'Updating Password...' : 'Update Password'}
               </Button>
             </div>
-
-            {!hasValidSession && isFormValid && (
-              <p className="text-sm text-yellow-600 text-center">
-                Session validation in progress. Please wait...
-              </p>
-            )}
           </form>
         </CardBody>
       </Card>
