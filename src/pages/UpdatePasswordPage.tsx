@@ -22,7 +22,7 @@ const UpdatePasswordPage: React.FC = () => {
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  // Helper for debug logging
+  // Debug info helper
   const refreshDebugInfo = async () => {
     const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
     const tokens = stored ? JSON.parse(stored) : null;
@@ -56,18 +56,27 @@ const UpdatePasswordPage: React.FC = () => {
         }
 
         try {
+          console.log('Setting Supabase session...');
           const { data, error: setSessionError } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
 
-          if (setSessionError) console.error('Error setting Supabase session:', setSessionError.message);
-          else {
-            console.log('Supabase session successfully set.');
+          if (setSessionError) {
+            console.error('Error setting Supabase session:', setSessionError.message);
+          } else {
+            console.log('Supabase setSession succeeded, checking session now...');
             const { data: sessionData } = await supabase.auth.getSession();
-            if (sessionData?.session) setIsSessionValid(true);
-            // Clean URL now
-            window.history.replaceState(null, '', location.pathname + '#');
+
+            if (sessionData?.session) {
+              console.log('Session confirmed active.');
+              setIsSessionValid(true);
+
+              // ✅ Only now clean the URL hash
+              window.history.replaceState(null, '', location.pathname + '#');
+            } else {
+              console.warn('Session not ready yet, leaving hash intact.');
+            }
           }
         } catch (err) {
           console.error('Exception while setting Supabase session:', err);
