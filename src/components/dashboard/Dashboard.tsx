@@ -9,6 +9,8 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
+import Modal from '../ui/Modal'; // ADDED: Import Modal
+import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -19,6 +21,10 @@ const Dashboard: React.FC = () => {
   const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
   const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
   const { session, isLoading: isSessionLoading } = useSessionContext();
+
+  // ADDED: State for the re-analysis modal
+  const [showReanalysisModal, setShowReanalysisModal] = useState(false);
+  const [reanalyzingContractName, setReanalyzingContractName] = useState<string | null>(null);
 
   // Temporary log for debugging
   useEffect(() => {
@@ -65,6 +71,25 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedContractId, contracts]);
 
+  // ADDED: Effect to manage the re-analysis modal visibility
+  useEffect(() => {
+    if (selectedContract) {
+      if (selectedContract.status === 'analyzing') {
+        setShowReanalysisModal(true);
+        setReanalyzingContractName(selectedContract.name);
+      } else if (selectedContract.status === 'completed' && showReanalysisModal) {
+        // Only close if it was previously open for this contract
+        setShowReanalysisModal(false);
+        setReanalyzingContractName(null);
+      }
+    } else if (!selectedContract && showReanalysisModal) {
+      // If no contract is selected but modal is open (e.g., after deletion or navigation)
+      setShowReanalysisModal(false);
+      setReanalyzingContractName(null);
+    }
+  }, [selectedContract?.status, selectedContract?.name, selectedContract, showReanalysisModal]);
+
+
   // Determine if the user is a paying customer based on subscription/orders
   const isPayingCustomerByPlan = (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) ||
                                  (membership && membership.status === 'active') ||
@@ -106,6 +131,14 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Callback to be passed to AnalysisResults when re-analysis is initiated
+  const handleReanalyzeInitiated = () => {
+    setShowReanalysisModal(true);
+    if (selectedContract) {
+      setReanalyzingContractName(selectedContract.name);
+    }
+  };
+
   // Conditional rendering:
   // If the user has their own contracts OR is identified as a paying customer by plan, show their real dashboard.
   // Otherwise, show the sample dashboard content.
@@ -126,11 +159,11 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
-                {/* MODIFIED: Pass isSample={false} and contractStatus */}
+                {/* MODIFIED: Pass onReanalyzeInitiated prop */}
                 <AnalysisResults
                   analysisResult={selectedContract.analysisResult}
                   isSample={false}
-                  contractStatus={selectedContract.status} // ADDED: Pass the contract status
+                  onReanalyzeInitiated={handleReanalyzeInitiated} // ADDED: Pass the callback
                 />
                 
                 {/* Jurisdiction Summaries */}
@@ -165,6 +198,24 @@ const Dashboard: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* ADDED: Re-analysis Modal (managed by Dashboard) */}
+        {showReanalysisModal && (
+          <Modal
+            isOpen={showReanalysisModal}
+            onClose={() => setShowReanalysisModal(false)} // Allow manual close if needed
+            title="Contract Analysis In Progress"
+            className="max-w-sm" // Make modal smaller
+          >
+            <div className="text-center py-4">
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-700 text-lg">
+                {reanalyzingContractName ? `"${reanalyzingContractName}" is being analyzed` : 'The contract is being analyzed'} and will be ready shortly.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">This may take a few minutes depending on contract size.</p>
+            </div>
+          </Modal>
+        )}
       </div>
     );
   } else {
