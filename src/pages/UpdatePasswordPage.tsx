@@ -146,8 +146,8 @@ const UpdatePasswordPage: React.FC = () => {
                      password === confirmPassword;
 
   // Determine what to display based on initial check and current session status
-  if (!initialCheckComplete || isAuthSessionLoading) { // Still processing hash or auth-helpers is loading
-    console.log('UpdatePasswordPage: Initial check not complete or auth session loading. Displaying loading state.');
+  if (!initialCheckComplete) { // Simplified: only check initialCheckComplete
+    console.log('UpdatePasswordPage: Initial check not complete. Displaying loading state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -164,9 +164,9 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If initial check is complete, and either the initial check failed OR the current session is null
-  if (!isSessionValidForUpdate || !currentAuthSession) {
-    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update or currentAuthSession is null. Displaying error state.');
+  // If initial check is complete, and either the initial check failed
+  if (!isSessionValidForUpdate) { // Simplified: only check isSessionValidForUpdate
+    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update. Displaying error state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
