@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Lock } from 'lucide-react';
@@ -14,10 +14,47 @@ const UpdatePasswordPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const { session, isLoading: isSessionLoading } = useSessionContext(); // Use isLoading from context
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // This useEffect is no longer needed as useSessionContext handles session loading
-  // and the UI directly reacts to `session` and `isSessionLoading`.
-  // useEffect(() => { ... }, [...]);
+  useEffect(() => {
+    const handlePasswordResetCallback = async () => {
+      console.log('UpdatePasswordPage: useEffect triggered for session handling.');
+      console.log('UpdatePasswordPage: Current URL hash:', window.location.hash);
+
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const type = hashParams.get('type'); // Should be 'recovery' for password reset
+
+      if (accessToken && refreshToken && type === 'recovery') {
+        console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash.');
+        try {
+          // Proactively set the session using the tokens from the URL hash
+          const { data: { session: newSession }, error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (setSessionError) {
+            console.error('UpdatePasswordPage: Error setting session from URL hash:', setSessionError);
+            setError('Failed to verify reset link. Please request a new password reset.');
+          } else if (newSession) {
+            console.log('UpdatePasswordPage: Session successfully set from URL hash.');
+            // Clear the URL hash to prevent re-processing and clean up the URL
+            navigate(location.pathname, { replace: true });
+          }
+        } catch (err: any) {
+          console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
+          setError('An unexpected error occurred. Please request a new password reset.');
+        }
+      } else {
+        console.log('UpdatePasswordPage: No password recovery tokens found in URL hash or type is not recovery.');
+      }
+    };
+
+    // Only run this effect once on mount to process the URL hash
+    handlePasswordResetCallback();
+  }, [supabase, navigate, location.pathname]); // Dependencies to ensure it runs correctly
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +112,7 @@ const UpdatePasswordPage: React.FC = () => {
 
   // Render loading state while session is being determined by auth-helpers-react
   if (isSessionLoading) {
+    console.log('UpdatePasswordPage: isSessionLoading is true. Displaying loading state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -93,6 +131,7 @@ const UpdatePasswordPage: React.FC = () => {
 
   // If not loading and no session is found, display the "Invalid Reset Link" error
   if (!session) {
+    console.log('UpdatePasswordPage: isSessionLoading is false, but session is null. Displaying error state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -114,6 +153,7 @@ const UpdatePasswordPage: React.FC = () => {
   }
 
   // If not loading and a session is present, display the password update form
+  console.log('UpdatePasswordPage: Session found. Displaying password update form.');
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
@@ -136,7 +176,7 @@ const UpdatePasswordPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="New Password (min. 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -155,7 +195,7 @@ const UpdatePasswordPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
