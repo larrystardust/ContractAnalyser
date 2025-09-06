@@ -10,15 +10,16 @@ import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
-import Modal from '../ui/Modal';
+// REMOVED: import Modal from '../ui/Modal'; // Modal is now handled by Dashboard
 
 interface AnalysisResultsProps {
   analysisResult?: AnalysisResult; // MODIFIED: Made optional
   isSample?: boolean;
-  contractStatus?: string;
+  // REMOVED: contractStatus prop, as modal logic is moved
+  onReanalyzeInitiated?: () => void; // ADDED: Callback for when re-analysis is initiated
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, contractStatus }) => {
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated }) => {
   // ADDED: Defensive check for analysisResult
   if (!analysisResult) {
     // This case should ideally not be hit if Dashboard.tsx renders correctly,
@@ -36,13 +37,12 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
-  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false); // Keep this for button loading state
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
 
-  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const [contractBeingAnalyzedId, setContractBeingAnalyzedId] = useState<string | null>(null);
+  // REMOVED: showAnalysisModal and contractBeingAnalyzedId states
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -156,34 +156,26 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   };
 
   const handleReanalyze = async () => {
-    if (!analysisResult.contract_id) { // analysisResult is guaranteed to be defined here due to the check at the top
+    if (!analysisResult.contract_id) {
       alert('No contract selected for re-analysis.');
       return;
     }
-    setIsReanalyzing(true);
-    setShowAnalysisModal(true);
-    setContractBeingAnalyzedId(analysisResult.contract_id);
+    setIsReanalyzing(true); // Set button loading state
+    if (onReanalyzeInitiated) {
+      onReanalyzeInitiated(); // Notify parent that re-analysis has started
+    }
     try {
       await reanalyzeContract(analysisResult.contract_id);
+      // The parent component (Dashboard) will handle modal visibility based on contract status changes
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`);
-      setShowAnalysisModal(false);
-      setContractBeingAnalyzedId(null);
     } finally {
-      setIsReanalyzing(false);
+      setIsReanalyzing(false); // Reset button loading state
     }
   };
 
-  useEffect(() => {
-    // The null check for analysisResult is now handled at the top of the component.
-    // This effect will only run if analysisResult is defined.
-    if (contractBeingAnalyzedId && contractStatus === 'completed' && analysisResult.contract_id === contractBeingAnalyzedId) {
-      setShowAnalysisModal(false);
-      setContractBeingAnalyzedId(null);
-      refetchContracts();
-    }
-  }, [contractStatus, contractBeingAnalyzedId, analysisResult.contract_id, refetchContracts]);
+  // REMOVED: useEffect to monitor contract status and close modal, as it's moved to Dashboard
 
   return (
     <div className="space-y-6">
@@ -376,22 +368,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Data Protection Impact</h2>
           <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p>
         </div>
-      )}
-
-      {/* ADDED: Analysis in Progress Modal */}
-      {showAnalysisModal && (
-        <Modal
-          isOpen={showAnalysisModal}
-          onClose={() => setShowAnalysisModal(false)} // Allow manual close, though it should auto-close
-          title="Contract Analysis In Progress"
-          className="max-w-sm" // Make modal smaller
-        >
-          <div className="text-center py-4">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <p className="text-gray-700 text-lg">The contract is being analyzed and will be ready shortly.</p>
-            <p className="text-sm text-gray-500 mt-2">This may take a few minutes depending on contract size.</p>
-          </div>
-        </Modal>
       )}
     </div>
   );
