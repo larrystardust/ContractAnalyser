@@ -10,7 +10,7 @@ import SettingsPage from './pages/SettingsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import PasswordResetPage from './pages/PasswordResetPage';
+import PasswordResetPage from './pages/PasswordResetPage'; // This is the original PasswordResetPage.tsx
 import EmailConfirmationPage from './pages/EmailConfirmationPage';
 import EmailSentPage from './pages/EmailSentPage';
 import AuthGuard from './components/AuthGuard';
@@ -40,9 +40,8 @@ import MfaChallengePage from './pages/MfaChallengePage';
 import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
-// ADDED: Import the new LandingPagePricingSection
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
-import UpdatePasswordPage from './pages/UpdatePasswordPage'; // ADDED: Import UpdatePasswordPage
+import ResetPassword from './pages/ResetPassword'; // MODIFIED: Import the renamed ResetPassword component
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -63,12 +62,12 @@ function App() {
       '/landing-pricing',
       '/login',
       '/signup',
-      '/password-reset',
+      '/password-reset', // MODIFIED: Keep this for the initial password reset request page
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
       '/mfa-challenge',
-      '/update-password' // ADDED: Exclude update-password from redirect
+      // REMOVED: '/update-password'
     ];
     
     // MODIFIED: Removed navigationType === 'POP' condition
@@ -89,14 +88,14 @@ function App() {
           {/* Routes without Header (truly no header) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="/password-reset" element={<PasswordResetPage />} /> {/* This is the initial password reset request page */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
           <Route path="/public-report-view" element={<PublicReportViewerPage />} />
-          <Route path="/update-password" element={<UpdatePasswordPage />} /> {/* ADDED: New route for password update */}
+          <Route path="/reset-password" element={<ResetPassword />} /> {/* MODIFIED: New route for the actual password reset form */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
@@ -112,7 +111,6 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/pricing" element={<PricingSection />} />
             <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
-            {/* ADDED: New route for landing page specific pricing */}
             <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
 
             {/* Protected Routes - wrapped with AuthGuard */}
