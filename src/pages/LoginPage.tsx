@@ -3,8 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'; // ADDED Loader2
 import { Database } from '../types/supabase';
+import { useAuth } from '../context/AuthContext'; // ADDED: Import useAuth
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,10 +13,14 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null); // ADDED: For success messages
+  const [showForgotPassword, setShowForgotPassword] = useState(false); // ADDED: State for forgot password form
+  
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
+  const { sendPasswordResetEmail } = useAuth(); // ADDED: Use sendPasswordResetEmail from AuthContext
 
   const redirectToDashboard = async (user_id: string) => {
     const { data, error: profileError } = await supabase
@@ -35,27 +40,22 @@ const LoginPage: React.FC = () => {
   };
 
   useEffect(() => {
-    // This useEffect handles redirection based on the session context updating
     if (!isSessionLoading && session?.user) {
-      // If session is already aal2, or no MFA factors are enrolled, proceed to dashboard
       if (session.aal === 'aal2') {
         redirectToDashboard(session.user.id);
       } else {
-        // If aal1, check for MFA factors and redirect to MFA challenge if needed
         const checkMfaFactors = async () => {
           const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
           if (factorsError) {
             console.error('Error listing MFA factors:', factorsError);
-            redirectToDashboard(session.user.id); // Proceed to dashboard on error
+            redirectToDashboard(session.user.id);
             return;
           }
 
           if (factors.totp.length > 0) {
-            // User has MFA enrolled but session is aal1, redirect to MFA challenge
             const redirectPath = searchParams.get('redirect') || '/dashboard';
             navigate(`/mfa-challenge?redirect=${encodeURIComponent(redirectPath)}`);
           } else {
-            // No MFA factors enrolled, proceed to dashboard
             redirectToDashboard(session.user.id);
           }
         };
@@ -68,6 +68,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null); // Clear messages on new attempt
 
     const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -87,12 +88,34 @@ const LoginPage: React.FC = () => {
         } catch (updateLoginError) {
           console.error('LoginPage: Error updating login_at:', updateLoginError);
         }
-
-        // After successful password login, check aal.
-        // The useEffect will handle the redirection based on the updated session.
       }
     }
     setLoading(false);
+  };
+
+  // ADDED: Handle forgot password submission
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
+    if (!email) {
+      setError('Please enter your email address.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(email, `${window.location.origin}/reset-password`); // Pass redirectTo URL
+      setMessage('Password reset instructions sent to your email!');
+      setShowForgotPassword(false); // Go back to login form
+      setEmail(''); // Clear email field
+    } catch (err: any) {
+      setError(err.message || 'Failed to send password reset email.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isSessionLoading) {
@@ -106,83 +129,136 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Log In to ContractAnalyser</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {showForgotPassword ? 'Reset Your Password' : 'Log In to ContractAnalyser'}
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Welcome back! Please enter your credentials.
+            {showForgotPassword ? 'Enter your email to receive reset instructions.' : 'Welcome back! Please enter your credentials.'}
           </p>
         </CardHeader>
         <CardBody>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
+          {error && (
+            <p className="text-sm text-red-600 text-center mb-4">{error}</p>
+          )}
+          {message && (
+            <p className="text-sm text-green-600 text-center mb-4">{message}</p>
+          )}
 
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+          {showForgotPassword ? (
+            <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="sr-only">Email address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Send Reset Instructions'}
+                </Button>
+              </div>
+              <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="font-medium text-blue-600 hover:text-blue-500 text-sm"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  Back to Login
                 </button>
               </div>
-            </div>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="sr-only">Email address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
 
-            {error && (
-              <p className="text-sm text-red-600 text-center">{error}</p>
-            )}
+              <div>
+                <label htmlFor="password" className="sr-only">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
 
-            <div>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? 'Logging In...' : 'Log In'}
-              </Button>
-            </div>
-          </form>
+              <div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? 'Logging In...' : 'Log In'}
+                </Button>
+              </div>
+            </form>
+          )}
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            {!showForgotPassword && (
+              <p className="mt-2 text-sm text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
+                  Forgot password?
+                </button>
+              </p>
+            )}
+            <p className="text-sm text-gray-600 mt-2">
               Don't have an account?{' '}
               <Link to={signupLink} className="font-medium text-blue-600 hover:text-blue-500">
                 Sign Up
-              </Link>
-            </p>
-            <p className="mt-2 text-sm text-gray-600">
-              <Link to="/password-reset" className="font-medium text-blue-600 hover:text-blue-500">
-                Forgot password?
               </Link>
             </p>
           </div>
