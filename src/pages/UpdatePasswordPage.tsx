@@ -8,11 +8,11 @@ import { Lock } from 'lucide-react';
 const UpdatePasswordPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false); // For form submission loading
-  const [error, setError] = useState<string | null>(null); // For form submission errors
-  const [message, setMessage] = useState<string | null>(null); // For form submission success messages
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
-  const { session: currentAuthSession, isLoading: isAuthSessionLoading } = useSessionContext(); // Get session from context
+  const { session: currentAuthSession } = useSessionContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +27,7 @@ const UpdatePasswordPage: React.FC = () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
-      const type = hashParams.get('type'); // Should be 'recovery' for password reset
+      const type = hashParams.get('type'); // Should be 'recovery'
 
       if (accessToken && refreshToken && type === 'recovery') {
         console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash. Attempting to set session.');
@@ -38,48 +38,45 @@ const UpdatePasswordPage: React.FC = () => {
           });
 
           if (setSessionError) {
-            console.error('UpdatePasswordPage: Error setting session from URL hash:', setSessionError);
+            console.error('UpdatePasswordPage: Error setting session:', setSessionError);
             setError('Failed to verify reset link. Please request a new password reset.');
             setIsSessionValidForUpdate(false);
           } else if (newSession) {
-            console.log('UpdatePasswordPage: Session successfully set from URL hash. Setting isSessionValidForUpdate to true.');
-            // Add a small delay to allow session to persist
-            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
-            const { data: sessionAfterDelay, error: errorAfterDelay } = await supabase.auth.getSession();
-            console.log('UpdatePasswordPage: Session state after delay:', sessionAfterDelay, 'Error:', errorAfterDelay);
+            console.log('UpdatePasswordPage: Session successfully set from URL hash.');
+            await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+            const { data: sessionAfterDelay } = await supabase.auth.getSession();
+            console.log('UpdatePasswordPage: Session after delay:', sessionAfterDelay);
             setIsSessionValidForUpdate(true);
-            // Re-enable hash cleaning to ensure a clean URL
-            navigate(location.pathname, { replace: true });
+
+            // ✅ FIX: Preserve the full hash fragment when replacing the URL
+            navigate(`${location.pathname}${window.location.hash}`, { replace: true });
           }
         } catch (err: any) {
-          console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
+          console.error('UpdatePasswordPage: Unexpected error:', err);
           setError('An unexpected error occurred. Please request a new password reset.');
           setIsSessionValidForUpdate(false);
         }
       } else {
-        console.log('UpdatePasswordPage: No password recovery tokens in hash or not recovery type. Checking current session directly.');
-        // If no tokens in hash, check if there's an existing session (e.g., user navigated here directly while logged in)
+        console.log('UpdatePasswordPage: No tokens in hash. Checking current session.');
         const { data: { session: currentSession }, error: getSessionError } = await supabase.auth.getSession();
         if (getSessionError || !currentSession) {
-          console.log('UpdatePasswordPage: No valid session found after checking hash and direct session.');
-          setError('Invalid or expired password reset link. Please request a new password reset.');
+          setError('Invalid or expired password reset link. Please request a new one.');
           setIsSessionValidForUpdate(false);
         } else {
-          console.log('UpdatePasswordPage: Valid session found directly. Setting isSessionValidForUpdate to true.');
           setIsSessionValidForUpdate(true);
         }
       }
-      setInitialCheckComplete(true); // Mark initial check as complete
+      setInitialCheckComplete(true);
     };
 
     processAuthCallback();
-  }, [supabase, navigate, location.pathname]); // Dependencies for this effect
+  }, [supabase, navigate, location.pathname]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setMessage(null); // Clear previous success messages on new attempt
+    setMessage(null);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -95,54 +92,33 @@ const UpdatePasswordPage: React.FC = () => {
 
     let sessionToUse = null;
 
-    // Step 1: Try to get the session from the current context
     if (currentAuthSession) {
-      console.log('UpdatePasswordPage: Session found in currentAuthSession.');
       sessionToUse = currentAuthSession;
     } else {
-      // Step 2: If not in context, try to refresh the session
-      console.log('UpdatePasswordPage: No session in context. Attempting to refresh session.');
       const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
-        console.error('UpdatePasswordPage: Error refreshing session:', refreshError);
-        // Step 3: If refresh fails, try to re-set from hash (which is now preserved)
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         if (accessToken && refreshToken) {
-          console.log('UpdatePasswordPage: Refresh failed, attempting to re-set session from hash.');
-          const { data: { session: reSetSession }, error: reSetError } = await supabase.auth.setSession({
+          const { data: { session: reSetSession } } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
-          if (reSetError) {
-            console.error('UpdatePasswordPage: Error re-setting session from hash:', reSetError);
-          } else if (reSetSession) {
-            sessionToUse = reSetSession;
-            console.log('UpdatePasswordPage: Session successfully re-set from hash.');
-          }
+          if (reSetSession) sessionToUse = reSetSession;
         }
       } else if (refreshData?.session) {
         sessionToUse = refreshData.session;
-        console.log('UpdatePasswordPage: Session successfully refreshed.');
       }
     }
 
-    // Step 4: Final fallback - try to get session directly
     if (!sessionToUse) {
-      console.log('UpdatePasswordPage: Still no session after refresh/re-set. Attempting to get session directly.');
-      const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
+      const { data: currentSessionData } = await supabase.auth.getSession();
       sessionToUse = currentSessionData?.session;
-      if (getSessionError) {
-        console.error('UpdatePasswordPage: Error getting session directly:', getSessionError);
-      } else if (sessionToUse) {
-        console.log('UpdatePasswordPage: Session successfully retrieved directly.');
-      }
     }
 
     if (!sessionToUse) {
-      console.error('UpdatePasswordPage: Failed to get any active session before update.');
-      setError('No active session found. Please log in or request a new password reset.');
+      setError('No active session found. Please log in or request a new reset.');
       setLoading(false);
       return;
     }
@@ -153,29 +129,25 @@ const UpdatePasswordPage: React.FC = () => {
       });
 
       if (updateError) {
-        console.error('UpdatePasswordPage: Error updating password:', updateError);
         setError(updateError.message || 'Failed to update password. Please try again.');
       } else {
         setMessage('Password updated successfully! Redirecting to login...');
-        // Sign out after password update to force re-login with new password
         await supabase.auth.signOut();
         setTimeout(() => navigate('/login'), 2000);
       }
     } catch (err: any) {
-      console.error('UpdatePasswordPage: Exception updating password:', err);
       setError(err.message || 'An error occurred while updating your password');
     } finally {
       setLoading(false);
     }
   };
 
-  const isFormValid = password.length >= 6 &&
-                     confirmPassword.length >= 6 &&
-                     password === confirmPassword;
+  const isFormValid =
+    password.length >= 6 &&
+    confirmPassword.length >= 6 &&
+    password === confirmPassword;
 
-  // Determine what to display based on initial check and current session status
-  if (!initialCheckComplete) { // Simplified: only check initialCheckComplete
-    console.log('UpdatePasswordPage: Initial check not complete. Displaying loading state.');
+  if (!initialCheckComplete) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -192,9 +164,7 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If initial check is complete, and either the initial check failed
-  if (!isSessionValidForUpdate) { // Simplified: only check isSessionValidForUpdate
-    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update. Displaying error state.');
+  if (!isSessionValidForUpdate) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -202,7 +172,7 @@ const UpdatePasswordPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
           </CardHeader>
           <CardBody className="text-center">
-            <p className="text-sm text-red-600 mb-4">{error || 'Your session has expired. Please request a new password reset.'}</p>
+            <p className="text-sm text-red-600 mb-4">{error || 'Your session has expired. Please request a new reset link.'}</p>
             <Button onClick={() => navigate('/password-reset')} variant="primary" className="w-full mb-2">
               Request New Reset Link
             </Button>
@@ -215,16 +185,12 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If initial check is complete AND session is valid, display the form
-  console.log('UpdatePasswordPage: Session valid for update. Displaying password update form.');
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">Set New Password</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Please enter your new password below.
-          </p>
+          <p className="mt-2 text-sm text-gray-600">Please enter your new password below.</p>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleUpdatePassword} className="space-y-6">
@@ -266,12 +232,8 @@ const UpdatePasswordPage: React.FC = () => {
               </div>
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600 text-center">{error}</p>
-            )}
-            {message && (
-              <p className="text-sm text-green-600 text-center">{message}</p>
-            )}
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+            {message && <p className="text-sm text-green-600 text-center">{message}</p>}
 
             <div>
               <Button
