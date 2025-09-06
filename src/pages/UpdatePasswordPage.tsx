@@ -22,7 +22,7 @@ const UpdatePasswordPage: React.FC = () => {
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  // Debug info helper
+  // Refresh debug info for live panel
   const refreshDebugInfo = async () => {
     const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
     const tokens = stored ? JSON.parse(stored) : null;
@@ -39,57 +39,64 @@ const UpdatePasswordPage: React.FC = () => {
     });
   };
 
+  // Process URL hash and set Supabase session
   useEffect(() => {
     const processAuthCallback = async () => {
       console.log('=== processAuthCallback START ===');
       console.log('[URL DEBUG] Initial page load:', window.location.href);
 
-      const hash = window.location.hash;
+      let access_token: string | null = null;
+      let refresh_token: string | null = null;
 
+      // 1️⃣ Try hash first
+      const hash = window.location.hash;
       if (hash && hash.includes('access_token')) {
         const params = new URLSearchParams(hash.replace(/^#/, ''));
-        const access_token = params.get('access_token');
-        const refresh_token = params.get('refresh_token');
-
+        access_token = params.get('access_token');
+        refresh_token = params.get('refresh_token');
         if (access_token && refresh_token) {
           sessionStorage.setItem(RECOVERY_TOKENS_KEY, JSON.stringify({ access_token, refresh_token }));
         }
+      }
 
+      // 2️⃣ Try sessionStorage fallback
+      if (!access_token || !refresh_token) {
+        const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
+        if (stored) {
+          const tokens = JSON.parse(stored);
+          access_token = tokens.access_token;
+          refresh_token = tokens.refresh_token;
+        }
+      }
+
+      // 3️⃣ Attempt to set Supabase session
+      if (access_token && refresh_token) {
         try {
-          console.log('Setting Supabase session...');
-          const { data, error: setSessionError } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-
+          console.log('Attempting supabase.auth.setSession with token...');
+          const { data, error: setSessionError } = await supabase.auth.setSession({ access_token, refresh_token });
           if (setSessionError) {
-            console.error('Error setting Supabase session:', setSessionError.message);
+            console.error('Supabase setSession error:', setSessionError.message);
+            setError('Failed to set session. Token may be expired.');
           } else {
-            console.log('Supabase setSession succeeded, checking session now...');
+            // Wait for Supabase to persist session
             const { data: sessionData } = await supabase.auth.getSession();
-
             if (sessionData?.session) {
               console.log('Session confirmed active.');
               setIsSessionValid(true);
-
-              // ✅ Only now clean the URL hash
+              // ✅ Now safe to clean hash
               window.history.replaceState(null, '', location.pathname + '#');
             } else {
-              console.warn('Session not ready yet, leaving hash intact.');
+              console.warn('Session not active after setSession. Token may be invalid/expired.');
+              setError('Invalid or expired password reset link. Please request a new reset.');
             }
           }
         } catch (err) {
-          console.error('Exception while setting Supabase session:', err);
+          console.error('Exception during setSession:', err);
+          setError('Unexpected error while setting session.');
         }
       } else {
-        // Try restoring from sessionStorage
-        const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
-        if (stored) {
-          const { access_token, refresh_token } = JSON.parse(stored);
-          await supabase.auth.setSession({ access_token, refresh_token }).catch(console.error);
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData?.session) setIsSessionValid(true);
-        }
+        console.warn('No token found in hash or sessionStorage.');
+        setError('No token found. Please request a new password reset.');
       }
 
       setInitialCheckComplete(true);
@@ -100,6 +107,7 @@ const UpdatePasswordPage: React.FC = () => {
     processAuthCallback();
   }, [supabase, location.pathname]);
 
+  // Handle password update
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -147,7 +155,7 @@ const UpdatePasswordPage: React.FC = () => {
         <Card>
           <CardHeader><h2>Invalid Reset Link</h2></CardHeader>
           <CardBody>
-            <p>{error || 'Your session has expired. Please request a new password reset.'}</p>
+            <p>{error}</p>
             <Button onClick={() => navigate('/password-reset')}>Request New Reset Link</Button>
             <Button onClick={() => navigate('/login')} variant="outline">Back to Login</Button>
           </CardBody>
