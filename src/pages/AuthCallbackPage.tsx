@@ -37,14 +37,13 @@ const AuthCallbackPage: React.FC = () => {
 
     // 2. Parse tokens and redirect_to from the captured initial hash
     const hashParams = new URLSearchParams(initialHashRef.current.substring(1));
-    const hashRedirectTo = hashParams.get('redirect_to');
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
     const tokenType = hashParams.get('token_type');
     const type = hashParams.get('type'); // e.g., 'recovery' for password reset
 
-    if (hashRedirectTo) {
-      finalRedirectPath = decodeURIComponent(hashRedirectTo);
+    if (hashParams.get('redirect_to')) { // Use hashParams for redirect_to
+      finalRedirectPath = decodeURIComponent(hashParams.get('redirect_to')!);
       console.log('AuthCallbackPage: Found redirect_to in initial hash:', finalRedirectPath);
     }
 
