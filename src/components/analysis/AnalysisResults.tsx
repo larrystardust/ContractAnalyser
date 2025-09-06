@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail, RefreshCw } from 'lucide-react';
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2 } from 'lucide-react'; // ADDED Loader2
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -10,13 +10,15 @@ import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
+import Modal from '../ui/Modal'; // ADDED Modal import
 
 interface AnalysisResultsProps {
   analysisResult: AnalysisResult;
-  isSample?: boolean; // ADDED: New prop
+  isSample?: boolean;
+  contractStatus?: string; // ADDED: New prop to monitor contract status
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false }) => { // MODIFIED: Default isSample to false
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, contractStatus }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -24,6 +26,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
+
+  // ADDED: State for the analysis modal
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [contractBeingAnalyzedId, setContractBeingAnalyzedId] = useState<string | null>(null);
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -141,16 +147,31 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       return;
     }
     setIsReanalyzing(true);
+    setShowAnalysisModal(true); // ADDED: Show modal when re-analysis starts
+    setContractBeingAnalyzedId(analysisResult.contract_id); // ADDED: Track which contract is being analyzed
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      await refetchContracts();
+      // The modal will be closed by the useEffect below when contractStatus changes to 'completed'
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`);
+      setShowAnalysisModal(false); // ADDED: Hide modal on error
+      setContractBeingAnalyzedId(null); // ADDED: Clear tracking on error
     } finally {
       setIsReanalyzing(false);
     }
   };
+
+  // ADDED: useEffect to monitor contract status and close modal
+  useEffect(() => {
+    if (contractBeingAnalyzedId && contractStatus === 'completed' && analysisResult.contract_id === contractBeingAnalyzedId) {
+      setShowAnalysisModal(false);
+      setContractBeingAnalyzedId(null);
+      // Optionally refetch contracts to ensure the latest analysis result is displayed
+      // (though ContractContext's real-time listener should handle this)
+      refetchContracts();
+    }
+  }, [contractStatus, contractBeingAnalyyzedId, analysisResult.contract_id, refetchContracts]);
 
   return (
     <div className="space-y-6">
@@ -344,6 +365,22 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Data Protection Impact</h2>
           <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p>
         </div>
+      )}
+
+      {/* ADDED: Analysis in Progress Modal */}
+      {showAnalysisModal && (
+        <Modal
+          isOpen={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)} // Allow manual close, though it should auto-close
+          title="Contract Analysis In Progress"
+          className="max-w-sm" // Make modal smaller
+        >
+          <div className="text-center py-4">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-700 text-lg">The contract is being analyzed and will be ready shortly.</p>
+            <p className="text-sm text-gray-500 mt-2">This may take a few minutes depending on contract size.</p>
+          </div>
+        </Modal>
       )}
     </div>
   );
