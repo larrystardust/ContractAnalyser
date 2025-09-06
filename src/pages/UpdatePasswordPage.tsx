@@ -1,122 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import React, { useState, useEffect } from 'react';
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Button from '../components/ui/Button';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
+import { Lock } from 'lucide-react';
 
 const RECOVERY_TOKENS_KEY = "RECOVERY_TOKENS";
 
 const UpdatePasswordPage: React.FC = () => {
+  const supabase = useSupabaseClient();
+  const { session: currentAuthSession } = useSessionContext();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  // Debug state
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isSessionValid, setIsSessionValid] = useState(false);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
-  const logUrlContext = (label: string) => {
-    console.log(`[URL DEBUG] ${label}:`, window.location.href);
-  };
-
-  useEffect(() => {
-    processAuthCallback();
-    refreshDebugInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const processAuthCallback = async () => {
-    console.log("=== processAuthCallback START ===");
-    logUrlContext("Initial page load");
-
-    const hash = window.location.hash;
-
-    if (hash && hash.includes("access_token")) {
-      console.log("Found recovery tokens in URL hash:", hash);
-
-      const params = new URLSearchParams(hash.replace(/^#/, ""));
-      const access_token = params.get("access_token");
-      const refresh_token = params.get("refresh_token");
-
-      console.log("Parsed tokens:", {
-        access_token: access_token ? access_token.substring(0, 6) + "..." : null,
-        refresh_token: refresh_token ? refresh_token.substring(0, 6) + "..." : null,
-      });
-
-      if (access_token && refresh_token) {
-        sessionStorage.setItem(
-          RECOVERY_TOKENS_KEY,
-          JSON.stringify({ access_token, refresh_token })
-        );
-      }
-
-      try {
-        console.log("Setting Supabase session with parsed tokens...");
-        const { data, error } = await supabase.auth.setSession({
-          access_token,
-          refresh_token,
-        });
-
-        if (error) {
-          console.error("Error setting Supabase session:", error.message);
-        } else {
-          console.log("Supabase session successfully set.");
-          logUrlContext("After supabase.auth.setSession");
-
-          const { data: sessionData } = await supabase.auth.getSession();
-          if (sessionData?.session) {
-            console.log("Confirmed active session:", sessionData.session);
-
-            // ✅ Now safe to clean tokens from URL
-            window.history.replaceState(null, "", window.location.pathname + "#");
-            logUrlContext("After cleaning URL");
-          } else {
-            console.warn("No active session after setSession!");
-          }
-        }
-      } catch (err) {
-        console.error("Exception while setting Supabase session:", err);
-      }
-    } else {
-      console.log("No recovery tokens in URL hash. Checking sessionStorage...");
-
-      const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
-      if (stored) {
-        console.log("Found stored tokens in sessionStorage");
-        const { access_token, refresh_token } = JSON.parse(stored);
-
-        try {
-          const { error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-
-          if (error) {
-            console.error(
-              "Error restoring session from stored tokens:",
-              error.message
-            );
-          } else {
-            console.log("Session restored from sessionStorage.");
-          }
-        } catch (err) {
-          console.error("Exception restoring session from storage:", err);
-        }
-      } else {
-        console.log("No tokens available in sessionStorage.");
-      }
-    }
-
-    console.log("=== processAuthCallback END ===");
-  };
-
+  // Helper for debug logging
   const refreshDebugInfo = async () => {
     const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
     const tokens = stored ? JSON.parse(stored) : null;
-
     const { data: sessionData } = await supabase.auth.getSession();
-
     setDebugInfo({
       url: window.location.href,
       tokens: tokens
@@ -129,84 +39,167 @@ const UpdatePasswordPage: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    const processAuthCallback = async () => {
+      console.log('=== processAuthCallback START ===');
+      console.log('[URL DEBUG] Initial page load:', window.location.href);
+
+      const hash = window.location.hash;
+
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.replace(/^#/, ''));
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+
+        if (access_token && refresh_token) {
+          sessionStorage.setItem(RECOVERY_TOKENS_KEY, JSON.stringify({ access_token, refresh_token }));
+        }
+
+        try {
+          const { data, error: setSessionError } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+
+          if (setSessionError) console.error('Error setting Supabase session:', setSessionError.message);
+          else {
+            console.log('Supabase session successfully set.');
+            const { data: sessionData } = await supabase.auth.getSession();
+            if (sessionData?.session) setIsSessionValid(true);
+            // Clean URL now
+            window.history.replaceState(null, '', location.pathname + '#');
+          }
+        } catch (err) {
+          console.error('Exception while setting Supabase session:', err);
+        }
+      } else {
+        // Try restoring from sessionStorage
+        const stored = sessionStorage.getItem(RECOVERY_TOKENS_KEY);
+        if (stored) {
+          const { access_token, refresh_token } = JSON.parse(stored);
+          await supabase.auth.setSession({ access_token, refresh_token }).catch(console.error);
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session) setIsSessionValid(true);
+        }
+      }
+
+      setInitialCheckComplete(true);
+      await refreshDebugInfo();
+      console.log('=== processAuthCallback END ===');
+    };
+
+    processAuthCallback();
+  }, [supabase, location.pathname]);
+
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg(null);
-    setSuccessMsg(null);
+    setLoading(true);
+    setError(null);
+    setMessage(null);
 
     if (password !== confirmPassword) {
-      setErrorMsg("Passwords do not match.");
+      setError('Passwords do not match');
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData?.session) {
-        setErrorMsg("No active session found. Please request a new reset link.");
+        setError('No active session found. Please request a new reset link.');
+        setLoading(false);
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
 
-      setSuccessMsg("Password updated successfully. Redirecting to login...");
-      setTimeout(() => {
-        navigate("/login");
-        logUrlContext("After navigate to /login");
-      }, 1500);
+      setMessage('Password updated successfully! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setError(err.message || 'Failed to update password.');
     } finally {
       setLoading(false);
-      refreshDebugInfo();
+      await refreshDebugInfo();
     }
   };
 
-  return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
-      <h1 className="text-xl font-bold mb-4">Update Your Password</h1>
-
-      <form onSubmit={handleUpdatePassword} className="space-y-4">
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border px-3 py-2 rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border px-3 py-2 rounded"
-          required
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded"
-        >
-          {loading ? "Updating..." : "Update Password"}
-        </button>
-      </form>
-
-      {errorMsg && <p className="text-red-600 mt-4">{errorMsg}</p>}
-      {successMsg && <p className="text-green-600 mt-4">{successMsg}</p>}
-
-      {/* Debug panel */}
-      <div className="mt-6 p-4 border rounded bg-gray-50 text-xs">
-        <h2 className="font-bold mb-2">Debug Info (Live)</h2>
-        <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
-        <button
-          onClick={refreshDebugInfo}
-          className="mt-2 px-2 py-1 bg-gray-200 rounded"
-        >
-          Refresh Debug Info
-        </button>
+  if (!initialCheckComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Verifying your reset link...</p>
       </div>
+    );
+  }
+
+  if (!isSessionValid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card>
+          <CardHeader><h2>Invalid Reset Link</h2></CardHeader>
+          <CardBody>
+            <p>{error || 'Your session has expired. Please request a new password reset.'}</p>
+            <Button onClick={() => navigate('/password-reset')}>Request New Reset Link</Button>
+            <Button onClick={() => navigate('/login')} variant="outline">Back to Login</Button>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <Card className="max-w-md w-full">
+        <CardHeader className="text-center">
+          <h2 className="text-2xl font-bold">Set New Password</h2>
+        </CardHeader>
+        <CardBody>
+          <form onSubmit={handleUpdatePassword} className="space-y-6">
+            <div>
+              <label htmlFor="password" className="sr-only">New Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="New Password"
+                  className="w-full pl-10 pr-3 py-2 border rounded"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm Password"
+                  className="w-full pl-10 pr-3 py-2 border rounded"
+                />
+              </div>
+            </div>
+            {error && <p className="text-red-600 text-center">{error}</p>}
+            {message && <p className="text-green-600 text-center">{message}</p>}
+            <Button type="submit" disabled={loading || password.length < 6 || password !== confirmPassword}>
+              {loading ? 'Updating...' : 'Update Password'}
+            </Button>
+          </form>
+
+          {/* Debug panel */}
+          <div className="mt-6 p-4 border rounded bg-gray-50 text-xs">
+            <h2 className="font-bold mb-2">Debug Info (Live)</h2>
+            <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
+            <Button onClick={refreshDebugInfo}>Refresh Debug Info</Button>
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 };
