@@ -109,7 +109,7 @@ const LoginPage: React.FC = () => {
     try {
       // MODIFIED: Removed redirectTo argument
       await sendPasswordResetEmail(email); 
-      setMessage('Password reset instructions sent to your email!');
+      setMessage('Password reset email sent! Please check your inbox. The link will direct you to update your password.');
       setShowForgotPassword(false); // Go back to login form
       setEmail(''); // Clear email field
     } catch (err: any) {
