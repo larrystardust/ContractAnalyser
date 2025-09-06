@@ -41,7 +41,8 @@ import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 // ADDED: Import the new LandingPagePricingSection
-import LandingPagePricingSection from './components/pricing/LandingPagePricingSection';
+import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
+import UpdatePasswordPage from './pages/UpdatePasswordPage'; // ADDED: Import UpdatePasswordPage
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -66,7 +67,8 @@ function App() {
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
-      '/mfa-challenge',      
+      '/mfa-challenge',
+      '/update-password' // ADDED: Exclude update-password from redirect
     ];
     
     // MODIFIED: Removed navigationType === 'POP' condition
@@ -93,7 +95,8 @@ function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
-          <Route path="/public-report-view" element={<PublicReportViewerPage />} />          
+          <Route path="/public-report-view" element={<PublicReportViewerPage />} />
+          <Route path="/update-password" element={<UpdatePasswordPage />} /> {/* ADDED: New route for password update */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
