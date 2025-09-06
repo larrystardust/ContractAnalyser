@@ -66,8 +66,7 @@ function App() {
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
-      '/mfa-challenge',
-      '/update-password' // ADDED: Exclude update-password from redirect
+      '/mfa-challenge',      
     ];
     
     // MODIFIED: Removed navigationType === 'POP' condition
@@ -94,8 +93,7 @@ function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
-          <Route path="/public-report-view" element={<PublicReportViewerPage />} />
-          <Route path="/update-password" element={<UpdatePasswordPage />} /> {/* ADDED: New route for password update */}
+          <Route path="/public-report-view" element={<PublicReportViewerPage />} />          
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
