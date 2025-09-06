@@ -16,6 +16,9 @@ const UpdatePasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // New state to track if the session has been explicitly checked/set from the URL hash
+  const [sessionCheckedFromHash, setSessionCheckedFromHash] = useState(false);
+
   useEffect(() => {
     const handlePasswordResetCallback = async () => {
       console.log('UpdatePasswordPage: useEffect triggered for session handling.');
@@ -27,7 +30,7 @@ const UpdatePasswordPage: React.FC = () => {
       const type = hashParams.get('type'); // Should be 'recovery' for password reset
 
       if (accessToken && refreshToken && type === 'recovery') {
-        console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash.');
+        console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash. Attempting to set session.');
         try {
           // Proactively set the session using the tokens from the URL hash
           const { data: { session: newSession }, error: setSessionError } = await supabase.auth.setSession({
@@ -38,23 +41,52 @@ const UpdatePasswordPage: React.FC = () => {
           if (setSessionError) {
             console.error('UpdatePasswordPage: Error setting session from URL hash:', setSessionError);
             setError('Failed to verify reset link. Please request a new password reset.');
+            setSessionCheckedFromHash(true); // Mark as checked, even if error
           } else if (newSession) {
             console.log('UpdatePasswordPage: Session successfully set from URL hash.');
             // Clear the URL hash to prevent re-processing and clean up the URL
             navigate(location.pathname, { replace: true });
+            // Do NOT set sessionCheckedFromHash to true immediately here.
+            // We need to wait for `useSessionContext` to update its `session` state.
           }
         } catch (err: any) {
           console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
           setError('An unexpected error occurred. Please request a new password reset.');
+          setSessionCheckedFromHash(true); // Mark as checked, even if error
         }
       } else {
-        console.log('UpdatePasswordPage: No password recovery tokens found in URL hash or type is not recovery.');
+        console.log('UpdatePasswordPage: No password recovery tokens in hash or not recovery type. Relying on useSessionContext.');
+        setSessionCheckedFromHash(true); // No hash to process, so consider it checked
       }
     };
 
-    // Only run this effect once on mount to process the URL hash
+    // Run this effect only once on mount to process the URL hash
     handlePasswordResetCallback();
   }, [supabase, navigate, location.pathname]); // Dependencies to ensure it runs correctly
+
+  // This useEffect watches for changes in session and isLoading from useSessionContext
+  // and updates sessionCheckedFromHash once the session state is stable.
+  useEffect(() => {
+    if (sessionCheckedFromHash) {
+      // If we've already processed the hash and determined the session status,
+      // no further action needed from this effect.
+      return;
+    }
+
+    if (!isSessionLoading) { // Once useSessionContext has finished its initial loading
+      if (session) {
+        console.log('UpdatePasswordPage: useSessionContext reports session is now available. Marking sessionCheckedFromHash true.');
+        setSessionCheckedFromHash(true); // Confirm session is ready
+      } else {
+        // If useSessionContext finishes loading and session is null,
+        // and we haven't confirmed session from hash, then it's truly expired.
+        console.log('UpdatePasswordPage: useSessionContext reports no session after loading. Marking sessionCheckedFromHash true and setting error.');
+        setError('Your session has expired. Please request a new password reset.');
+        setSessionCheckedFromHash(true); // Mark as checked, as no session was found
+      }
+    }
+  }, [session, isSessionLoading, sessionCheckedFromHash]);
+
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,8 +143,9 @@ const UpdatePasswordPage: React.FC = () => {
                      password === confirmPassword;
 
   // Render loading state while session is being determined by auth-helpers-react
-  if (isSessionLoading) {
-    console.log('UpdatePasswordPage: isSessionLoading is true. Displaying loading state.');
+  // OR if our local hash processing is not yet done.
+  if (isSessionLoading || !sessionCheckedFromHash) {
+    console.log(`UpdatePasswordPage: Displaying loading state. isSessionLoading: ${isSessionLoading}, sessionCheckedFromHash: ${sessionCheckedFromHash}`);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -130,8 +163,9 @@ const UpdatePasswordPage: React.FC = () => {
   }
 
   // If not loading and no session is found, display the "Invalid Reset Link" error
+  // This condition is now simplified because sessionCheckedFromHash will be true if we've finished processing.
   if (!session) {
-    console.log('UpdatePasswordPage: isSessionLoading is false, but session is null. Displaying error state.');
+    console.log('UpdatePasswordPage: No session found after all checks. Displaying error state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -139,7 +173,7 @@ const UpdatePasswordPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
           </CardHeader>
           <CardBody className="text-center">
-            <p className="text-sm text-red-600 mb-4">Your session has expired. Please request a new password reset.</p>
+            <p className="text-sm text-red-600 mb-4">{error || 'Your session has expired. Please request a new password reset.'}</p>
             <Button onClick={() => navigate('/password-reset')} variant="primary" className="w-full mb-2">
               Request New Reset Link
             </Button>
@@ -176,7 +210,7 @@ const UpdatePasswordPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="New Password (min. 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -195,7 +229,7 @@ const UpdatePasswordPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
