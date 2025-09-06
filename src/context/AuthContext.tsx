@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (error) throw error;
 
-      alert("Password reset instructions sent to your email!");
+      alert("Password reset email sent! Please check your inbox. The link will direct you to update your password.");
     } catch (error: any) {
       console.error("Password reset email error:", error);
       alert("Failed to send password reset email");
