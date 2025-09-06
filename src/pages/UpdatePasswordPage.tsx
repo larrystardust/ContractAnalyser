@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSupabaseClient } from '@supabase/auth-helpers-react'; // Removed useSessionContext
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
@@ -12,7 +12,7 @@ const UpdatePasswordPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // For form submission errors
   const [message, setMessage] = useState<string | null>(null); // For form submission success messages
   const supabase = useSupabaseClient();
-  // Removed useSessionContext - no longer needed
+  const { session: currentAuthSession, isLoading: isAuthSessionLoading } = useSessionContext(); // Get session from context
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -89,16 +89,34 @@ const UpdatePasswordPage: React.FC = () => {
       return;
     }
 
-    // CRITICAL: Fetch the latest session right before attempting to update
-    // This is the authoritative check for an active session at the point of submission.
-    const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
-    const currentSession = currentSessionData?.session;
+    // CRITICAL: Attempt to refresh the session first
+    let sessionToUse = currentAuthSession; // Start with the session from context
 
-    if (getSessionError || !currentSession) {
-      console.error('UpdatePasswordPage: Failed to get current session before update:', getSessionError);
-      setError('No active session found. Please log in or request a new password reset.');
-      setLoading(false);
-      return;
+    if (!sessionToUse) {
+      console.log('UpdatePasswordPage: No session from context. Attempting to refresh session.');
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      sessionToUse = refreshData?.session;
+
+      if (refreshError) {
+        console.error('UpdatePasswordPage: Error refreshing session:', refreshError);
+        setError('Your session has expired or is invalid. Please request a new password reset.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // If still no session after refresh, try to get it directly (should ideally be covered by refresh)
+    if (!sessionToUse) {
+      console.log('UpdatePasswordPage: Still no session after refresh. Attempting to get session directly.');
+      const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
+      sessionToUse = currentSessionData?.session;
+
+      if (getSessionError || !sessionToUse) {
+        console.error('UpdatePasswordPage: Failed to get current session before update:', getSessionError);
+        setError('No active session found. Please log in or request a new password reset.');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -127,8 +145,9 @@ const UpdatePasswordPage: React.FC = () => {
                      confirmPassword.length >= 6 &&
                      password === confirmPassword;
 
-  if (!initialCheckComplete) {
-    console.log('UpdatePasswordPage: Initial check not complete. Displaying loading state.');
+  // Determine what to display based on initial check and current session status
+  if (!initialCheckComplete || isAuthSessionLoading) { // Still processing hash or auth-helpers is loading
+    console.log('UpdatePasswordPage: Initial check not complete or auth session loading. Displaying loading state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -145,8 +164,9 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  if (!isSessionValidForUpdate) {
-    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update. Displaying error state.');
+  // If initial check is complete, and either the initial check failed OR the current session is null
+  if (!isSessionValidForUpdate || !currentAuthSession) {
+    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update or currentAuthSession is null. Displaying error state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -167,6 +187,7 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
+  // If initial check is complete AND session is valid, display the form
   console.log('UpdatePasswordPage: Session valid for update. Displaying password update form.');
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
