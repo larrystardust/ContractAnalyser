@@ -44,8 +44,8 @@ const UpdatePasswordPage: React.FC = () => {
           } else if (newSession) {
             console.log('UpdatePasswordPage: Session successfully set from URL hash. Setting isSessionValidForUpdate to true.');
             setIsSessionValidForUpdate(true);
-            // Clear the URL hash to prevent re-processing and clean up the URL
-            navigate(location.pathname, { replace: true });
+            // DIAGNOSTIC STEP: Commenting out the line below to keep hash in URL
+            // navigate(location.pathname, { replace: true });
           }
         } catch (err: any) {
           console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
@@ -89,34 +89,58 @@ const UpdatePasswordPage: React.FC = () => {
       return;
     }
 
-    // CRITICAL: Attempt to refresh the session first
-    let sessionToUse = currentAuthSession; // Start with the session from context
+    let sessionToUse = null;
 
-    if (!sessionToUse) {
-      console.log('UpdatePasswordPage: No session from context. Attempting to refresh session.');
+    // Step 1: Try to get the session from the current context
+    if (currentAuthSession) {
+      console.log('UpdatePasswordPage: Session found in currentAuthSession.');
+      sessionToUse = currentAuthSession;
+    } else {
+      // Step 2: If not in context, try to refresh the session
+      console.log('UpdatePasswordPage: No session in context. Attempting to refresh session.');
       const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-      sessionToUse = refreshData?.session;
-
       if (refreshError) {
         console.error('UpdatePasswordPage: Error refreshing session:', refreshError);
-        setError('Your session has expired or is invalid. Please request a new password reset.');
-        setLoading(false);
-        return;
+        // Step 3: If refresh fails, try to re-set from hash (which is now preserved)
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        if (accessToken && refreshToken) {
+          console.log('UpdatePasswordPage: Refresh failed, attempting to re-set session from hash.');
+          const { data: { session: reSetSession }, error: reSetError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (reSetError) {
+            console.error('UpdatePasswordPage: Error re-setting session from hash:', reSetError);
+          } else if (reSetSession) {
+            sessionToUse = reSetSession;
+            console.log('UpdatePasswordPage: Session successfully re-set from hash.');
+          }
+        }
+      } else if (refreshData?.session) {
+        sessionToUse = refreshData.session;
+        console.log('UpdatePasswordPage: Session successfully refreshed.');
       }
     }
 
-    // If still no session after refresh, try to get it directly (should ideally be covered by refresh)
+    // Step 4: Final fallback - try to get session directly
     if (!sessionToUse) {
-      console.log('UpdatePasswordPage: Still no session after refresh. Attempting to get session directly.');
+      console.log('UpdatePasswordPage: Still no session after refresh/re-set. Attempting to get session directly.');
       const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
       sessionToUse = currentSessionData?.session;
-
-      if (getSessionError || !sessionToUse) {
-        console.error('UpdatePasswordPage: Failed to get current session before update:', getSessionError);
-        setError('No active session found. Please log in or request a new password reset.');
-        setLoading(false);
-        return;
+      if (getSessionError) {
+        console.error('UpdatePasswordPage: Error getting session directly:', getSessionError);
+      } else if (sessionToUse) {
+        console.log('UpdatePasswordPage: Session successfully retrieved directly.');
       }
+    }
+
+    if (!sessionToUse) {
+      console.error('UpdatePasswordPage: Failed to get any active session before update.');
+      setError('No active session found. Please log in or request a new password reset.');
+      setLoading(false);
+      return;
     }
 
     try {
