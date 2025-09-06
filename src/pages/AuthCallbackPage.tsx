@@ -63,8 +63,10 @@ const AuthCallbackPage: React.FC = () => {
 
     // Proactively set session if tokens are present in the hash.
     // This will trigger the onAuthStateChange listener.
-    if (accessToken && refreshToken && tokenType) {
-      console.log('AuthCallbackPage: Tokens found in hash. Attempting to set session proactively.');
+    // IMPORTANT: This page will no longer handle 'type=recovery' directly.
+    // Password reset links will now go directly to /update-password.
+    if (accessToken && refreshToken && tokenType && type !== 'recovery') {
+      console.log('AuthCallbackPage: Tokens found in hash (not recovery type). Attempting to set session proactively.');
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -78,24 +80,23 @@ const AuthCallbackPage: React.FC = () => {
           // The onAuthStateChange listener will now handle the rest.
         }
       });
-    } else {
-      console.log('AuthCallbackPage: No tokens found in hash. Waiting for onAuthStateChange events.');
+    } else if (type === 'recovery') {
+      console.log('AuthCallbackPage: Detected recovery type token. This page no longer handles password recovery directly. User should be redirected to /update-password.');
+      // If for some reason a recovery token lands here, redirect to update-password
+      navigate('/update-password', { replace: true });
+      return;
+    }
+    else {
+      console.log('AuthCallbackPage: No tokens found in hash or it is a recovery token. Waiting for onAuthStateChange events.');
     }
 
     // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      // Handle PASSWORD_RECOVERY event (specific for password reset flow)
-      if (event === 'PASSWORD_RECOVERY' && currentSession) {
-        console.log('AuthCallbackPage: Password recovery event detected. Redirecting to update password.');
-        setStatus('success');
-        setMessage('Password reset verified! Redirecting to update your password...');
-        navigate('/update-password', { replace: true });
-        return; // Exit early after handling
-      }
+      // PASSWORD_RECOVERY event is now handled directly by UpdatePasswordPage.tsx
+      // This page only handles SIGNED_IN and INITIAL_SESSION for other flows.
 
-      // Handle SIGNED_IN event (general sign-in, including email confirmation)
       if (event === 'SIGNED_IN' && currentSession) {
         console.log('AuthCallbackPage: User SIGNED_IN. Proceeding with profile creation/update and invitation.');
 
