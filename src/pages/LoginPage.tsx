@@ -107,8 +107,8 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      // THIS IS THE CRITICAL LINE:
-      await sendPasswordResetEmail(email, `${window.location.origin}/reset-password`); // Pass redirectTo URL
+      // MODIFIED: Removed redirectTo argument
+      await sendPasswordResetEmail(email); 
       setMessage('Password reset instructions sent to your email!');
       setShowForgotPassword(false); // Go back to login form
       setEmail(''); // Clear email field
