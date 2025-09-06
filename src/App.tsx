@@ -10,7 +10,7 @@ import SettingsPage from './pages/SettingsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-// REMOVED: import PasswordResetPage from './pages/PasswordResetPage';
+// REMOVED: import PasswordResetPage from './pages/PasswordResetPage'; // This import is no longer needed
 import EmailConfirmationPage from './pages/EmailConfirmationPage';
 import EmailSentPage from './pages/EmailSentPage';
 import AuthGuard from './components/AuthGuard';
@@ -62,11 +62,12 @@ function App() {
       '/landing-pricing',
       '/login',
       '/signup',
-      '/password-reset', // This path is still public for password reset requests
+      // REMOVED: '/password-reset' is no longer a direct public path as LoginPage handles it internally
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
       '/mfa-challenge',
+      '/reset-password', // This is the target for password reset emails, so it must be public
     ];
     
     // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
@@ -86,7 +87,7 @@ function App() {
           {/* Routes without Header (truly no header) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/password-reset" element={<ResetPassword />} /> {/* MODIFIED: Now points to ResetPassword */}
+          {/* REMOVED: <Route path="/password-reset" element={<ResetPassword />} /> */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
