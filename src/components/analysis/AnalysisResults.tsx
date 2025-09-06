@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2 } from 'lucide-react'; // ADDED Loader2
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2 } from 'lucide-react';
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -10,15 +10,29 @@ import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
-import Modal from '../ui/Modal'; // ADDED Modal import
+import Modal from '../ui/Modal';
 
 interface AnalysisResultsProps {
-  analysisResult: AnalysisResult;
+  analysisResult?: AnalysisResult; // MODIFIED: Made optional
   isSample?: boolean;
-  contractStatus?: string; // ADDED: New prop to monitor contract status
+  contractStatus?: string;
 }
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, contractStatus }) => {
+  // ADDED: Defensive check for analysisResult
+  if (!analysisResult) {
+    // This case should ideally not be hit if Dashboard.tsx renders correctly,
+    // but it prevents crashes if analysisResult is unexpectedly undefined.
+    return (
+      <Card>
+        <CardBody className="text-center py-8">
+          <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500">No analysis results available.</p>
+        </CardBody>
+      </Card>
+    );
+  }
+
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -27,7 +41,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
 
-  // ADDED: State for the analysis modal
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [contractBeingAnalyzedId, setContractBeingAnalyzedId] = useState<string | null>(null);
 
@@ -55,7 +68,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       return;
     }
 
-    if (!analysisResult || !analysisResult.contract_id || !analysisResult.executiveSummary || !analysisResult.reportFilePath) {
+    // This check is still valid even if analysisResult is guaranteed by parent,
+    // as it checks for internal completeness of the object.
+    if (!analysisResult.contract_id || !analysisResult.executiveSummary || !analysisResult.reportFilePath) {
       console.error('Email Error: analysisResult or required fields are missing.', { analysisResult });
       alert('Cannot email report: Analysis data is incomplete. Please try again later or contact support.');
       return;
@@ -83,7 +98,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         return;
       }
 
-      // MODIFIED: Call new Edge Function to get signed URL
       const { data: signedUrlResponse, error: signedUrlError } = await supabase.functions.invoke('get-signed-report-url', {
         body: {
           contractId: analysisResult.contract_id,
@@ -100,7 +114,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         return;
       }
 
-      const reportLink = signedUrlResponse.url; // Get the URL from the Edge Function response
+      const reportLink = signedUrlResponse.url;
 
       const { data: htmlBlob, error: fetchHtmlError } = await supabase.storage
         .from('reports')
@@ -142,43 +156,40 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   };
 
   const handleReanalyze = async () => {
-    if (!analysisResult?.contract_id) {
+    if (!analysisResult.contract_id) { // analysisResult is guaranteed to be defined here due to the check at the top
       alert('No contract selected for re-analysis.');
       return;
     }
     setIsReanalyzing(true);
-    setShowAnalysisModal(true); // ADDED: Show modal when re-analysis starts
-    setContractBeingAnalyzedId(analysisResult.contract_id); // ADDED: Track which contract is being analyzed
+    setShowAnalysisModal(true);
+    setContractBeingAnalyzedId(analysisResult.contract_id);
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      // The modal will be closed by the useEffect below when contractStatus changes to 'completed'
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`);
-      setShowAnalysisModal(false); // ADDED: Hide modal on error
-      setContractBeingAnalyzedId(null); // ADDED: Clear tracking on error
+      setShowAnalysisModal(false);
+      setContractBeingAnalyzedId(null);
     } finally {
       setIsReanalyzing(false);
     }
   };
 
-  // ADDED: useEffect to monitor contract status and close modal
   useEffect(() => {
+    // The null check for analysisResult is now handled at the top of the component.
+    // This effect will only run if analysisResult is defined.
     if (contractBeingAnalyzedId && contractStatus === 'completed' && analysisResult.contract_id === contractBeingAnalyzedId) {
       setShowAnalysisModal(false);
       setContractBeingAnalyzedId(null);
-      // Optionally refetch contracts to ensure the latest analysis result is displayed
-      // (though ContractContext's real-time listener should handle this)
       refetchContracts();
     }
-  }, [contractStatus, contractBeingAnalyyzedId, analysisResult.contract_id, refetchContracts]);
+  }, [contractStatus, contractBeingAnalyzedId, analysisResult.contract_id, refetchContracts]);
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
-          {/* MODIFIED: Conditionally render buttons */}
           {!isSample && (
             <div className="flex space-x-2">
               <Button
