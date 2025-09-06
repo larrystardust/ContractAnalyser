@@ -20,6 +20,17 @@ const UpdatePasswordPage: React.FC = () => {
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   useEffect(() => {
+    // ✅ Persist hash into sessionStorage for refresh survival
+    if (window.location.hash) {
+      sessionStorage.setItem('supabaseRecoveryHash', window.location.hash);
+    } else {
+      const storedHash = sessionStorage.getItem('supabaseRecoveryHash');
+      if (storedHash) {
+        console.log('UpdatePasswordPage: Restoring hash from sessionStorage.');
+        window.location.hash = storedHash;
+      }
+    }
+
     const processAuthCallback = async () => {
       console.log('UpdatePasswordPage: Initial check started.');
       console.log('UpdatePasswordPage: Current URL hash:', window.location.hash);
@@ -30,7 +41,7 @@ const UpdatePasswordPage: React.FC = () => {
       const type = hashParams.get('type'); // Should be 'recovery'
 
       if (accessToken && refreshToken && type === 'recovery') {
-        console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash. Attempting to set session.');
+        console.log('UpdatePasswordPage: Found tokens in hash. Setting session...');
         try {
           const { data: { session: newSession }, error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -42,14 +53,13 @@ const UpdatePasswordPage: React.FC = () => {
             setError('Failed to verify reset link. Please request a new password reset.');
             setIsSessionValidForUpdate(false);
           } else if (newSession) {
-            console.log('UpdatePasswordPage: Session successfully set from URL hash.');
+            console.log('UpdatePasswordPage: Session successfully set.');
             await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
-            const { data: sessionAfterDelay } = await supabase.auth.getSession();
-            console.log('UpdatePasswordPage: Session after delay:', sessionAfterDelay);
             setIsSessionValidForUpdate(true);
 
-            // ✅ FIX: Preserve the full hash fragment when replacing the URL
+            // ✅ Keep the full hash in the URL and persist
             navigate(`${location.pathname}${window.location.hash}`, { replace: true });
+            sessionStorage.setItem('supabaseRecoveryHash', window.location.hash);
           }
         } catch (err: any) {
           console.error('UpdatePasswordPage: Unexpected error:', err);
@@ -97,7 +107,8 @@ const UpdatePasswordPage: React.FC = () => {
     } else {
       const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
-        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const storedHash = sessionStorage.getItem('supabaseRecoveryHash') || location.hash;
+        const hashParams = new URLSearchParams(storedHash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         if (accessToken && refreshToken) {
@@ -133,6 +144,7 @@ const UpdatePasswordPage: React.FC = () => {
       } else {
         setMessage('Password updated successfully! Redirecting to login...');
         await supabase.auth.signOut();
+        sessionStorage.removeItem('supabaseRecoveryHash'); // ✅ cleanup after success
         setTimeout(() => navigate('/login'), 2000);
       }
     } catch (err: any) {
