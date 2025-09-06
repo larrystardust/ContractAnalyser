@@ -5,15 +5,15 @@ import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase.ts'; // Import your Supabase client
-import { AuthProvider } from './context/AuthContext.tsx'; // ADDED: Import AuthProvider
+import { AuthProvider } from './context/AuthContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <SessionContextProvider supabaseClient={supabase}>
-        <AuthProvider> {/* ADDED: Wrap App with AuthProvider */}
+        <AuthProvider>
           <App />
-        </AuthProvider> {/* ADDED: Close AuthProvider */}
+        </AuthProvider>
       </SessionContextProvider>
     </BrowserRouter>
   </StrictMode>
