@@ -41,8 +41,7 @@ import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 // ADDED: Import the new LandingPagePricingSection
-import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
-import UpdatePasswordPage from './pages/UpdatePasswordPage'; // ADDED: Import UpdatePasswordPage
+import LandingPagePricingSection from './components/pricing/LandingPagePricingSection';
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
