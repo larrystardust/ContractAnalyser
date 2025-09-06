@@ -126,8 +126,12 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
-                {/* MODIFIED: Pass isSample={false} */}
-                <AnalysisResults analysisResult={selectedContract.analysisResult} isSample={false} />
+                {/* MODIFIED: Pass isSample={false} and contractStatus */}
+                <AnalysisResults
+                  analysisResult={selectedContract.analysisResult}
+                  isSample={false}
+                  contractStatus={selectedContract.status} // ADDED: Pass the contract status
+                />
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
