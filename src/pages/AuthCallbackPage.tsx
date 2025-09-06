@@ -256,25 +256,7 @@ const AuthCallbackPage: React.FC = () => {
     // Try to process tokens from hash immediately
     processHashTokens();
 
-    // Also try to get the session immediately in case the event already fired
-    const checkExistingSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && !hasRedirectedRef.current) {
-          console.log('AuthCallbackPage: Existing session found:', session);
-          hasRedirectedRef.current = true;
-          navigate('/update-password', { 
-            replace: true,
-            state: { fromPasswordReset: true }
-          });
-        }
-      } catch (error) {
-        console.error('AuthCallbackPage: Error checking existing session:', error);
-      }
-    };
-
-    checkExistingSession();
-
+    // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
       authListener.subscription?.unsubscribe();
