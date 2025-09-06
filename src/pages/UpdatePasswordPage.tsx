@@ -69,16 +69,8 @@ const UpdatePasswordPage: React.FC = () => {
     }
   }, [supabase, navigate, location.pathname, hashProcessingComplete]); // Add hashProcessingComplete to dependencies
 
-  // New useEffect to monitor session state after initial loading
-  useEffect(() => {
-    // Only run if hash processing is complete and we initially thought the session was valid
-    if (hashProcessingComplete && isSessionValidForUpdate && !isSessionLoading && !session) {
-      console.log('UpdatePasswordPage: Session became null after initial validation. Resetting state.');
-      setError('Your session has expired. Please request a new password reset.');
-      setIsSessionValidForUpdate(false); // Hide the form
-    }
-  }, [session, isSessionLoading, hashProcessingComplete, isSessionValidForUpdate]);
-
+  // REMOVED: The useEffect that monitors session state after initial loading
+  // This was causing the premature error display due to transient null sessions.
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,9 +90,13 @@ const UpdatePasswordPage: React.FC = () => {
       return;
     }
 
-    // CRITICAL: Check session from useSessionContext at the very beginning of submission
-    if (!session) {
-      console.error('UpdatePasswordPage: No session from useSessionContext at submission.');
+    // CRITICAL: Fetch the latest session right before attempting to update
+    // This is the authoritative check for an active session at the point of submission.
+    const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
+    const currentSession = currentSessionData?.session;
+
+    if (getSessionError || !currentSession) {
+      console.error('UpdatePasswordPage: Failed to get current session before update:', getSessionError);
       setError('No active session found. Please log in or request a new password reset.');
       setLoading(false);
       return;
