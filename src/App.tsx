@@ -10,7 +10,7 @@ import SettingsPage from './pages/SettingsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import PasswordResetPage from './pages/PasswordResetPage'; // This is the original PasswordResetPage.tsx
+// REMOVED: import PasswordResetPage from './pages/PasswordResetPage';
 import EmailConfirmationPage from './pages/EmailConfirmationPage';
 import EmailSentPage from './pages/EmailSentPage';
 import AuthGuard from './components/AuthGuard';
@@ -41,7 +41,7 @@ import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
-import ResetPassword from './pages/ResetPassword'; // MODIFIED: Import the renamed ResetPassword component
+import ResetPassword from './pages/ResetPassword'; // Keep this import for the consolidated ResetPassword component
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -62,22 +62,20 @@ function App() {
       '/landing-pricing',
       '/login',
       '/signup',
-      '/password-reset', // MODIFIED: Keep this for the initial password reset request page
+      '/password-reset', // This path is still public for password reset requests
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
       '/mfa-challenge',
-      // REMOVED: '/update-password'
     ];
     
-    // MODIFIED: Removed navigationType === 'POP' condition
     // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
     // Also, ensure we only check the base path for inclusion.
     const currentPathBase = location.pathname.split('?')[0].split('#')[0]; // Get path without query or hash
     if (!session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, session, navigate]); // Removed navigationType from dependencies as it's no longer used in condition
+  }, [location, session, navigate]);
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
@@ -88,14 +86,14 @@ function App() {
           {/* Routes without Header (truly no header) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/password-reset" element={<PasswordResetPage />} /> {/* This is the initial password reset request page */}
+          <Route path="/password-reset" element={<ResetPassword />} /> {/* MODIFIED: Now points to ResetPassword */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
           <Route path="/public-report-view" element={<PublicReportViewerPage />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> {/* MODIFIED: New route for the actual password reset form */}
+          <Route path="/reset-password" element={<ResetPassword />} /> {/* This route is for the actual password reset form */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
