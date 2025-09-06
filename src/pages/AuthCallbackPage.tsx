@@ -17,9 +17,7 @@ const AuthCallbackPage: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Processing authentication...');
 
-  const processingRef = useRef(false);
-  const hashRef = useRef(location.hash);
-  const hasRedirectedRef = useRef(false);
+  const hashRef = useRef(location.hash); // CAPTURE THE HASH ON INITIAL RENDER
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
@@ -27,19 +25,16 @@ const AuthCallbackPage: React.FC = () => {
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
-    if (hasRedirectedRef.current) {
-      console.log('AuthCallbackPage: Already redirected, skipping processing.');
-      return;
-    }
-
     let finalRedirectPath: string | null = null;
 
+    // 1. Try to get 'redirect' from query parameters
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
       console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
+    // 2. Use the CAPTURED hash from initial render, not the current one
     const hashParams = new URLSearchParams(hashRef.current.substring(1));
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
@@ -47,6 +42,7 @@ const AuthCallbackPage: React.FC = () => {
       console.log('AuthCallbackPage: Found redirect_to in initial hash:', hashRedirectTo);
     }
 
+    // Check if the finalRedirectPath contains an invitation token
     let invitationToken: string | null = null;
     if (finalRedirectPath) {
       try {
@@ -61,78 +57,25 @@ const AuthCallbackPage: React.FC = () => {
       }
     }
 
-    // MANUALLY PROCESS THE TOKENS FROM THE HASH
-    const processHashTokens = async () => {
-      if (hashRef.current && hashRef.current.includes('access_token')) {
-        console.log('AuthCallbackPage: Processing tokens from hash');
-        
-        const hashParams = new URLSearchParams(hashRef.current.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
-
-        if (accessToken && refreshToken && type === 'recovery') {
-          console.log('AuthCallbackPage: Password recovery tokens found');
-          
-          // Store the raw tokens in localStorage for the UpdatePasswordPage to use
-          localStorage.setItem('passwordResetRawTokens', JSON.stringify({
-            accessToken,
-            refreshToken,
-            timestamp: Date.now()
-          }));
-          
-          // Immediately redirect to update-password without trying to set session
-          hasRedirectedRef.current = true;
-          navigate('/update-password', { 
-            replace: true,
-            state: { fromPasswordReset: true }
-          });
-          return;
-        }
-      }
-    };
-
     // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      if (processingRef.current || hasRedirectedRef.current) {
-        console.log('AuthCallbackPage: Already processing or redirected, skipping.');
-        return;
-      }
-
-      // Handle password recovery event
-      if (event === 'PASSWORD_RECOVERY') {
-        console.log('AuthCallbackPage: Password recovery event detected');
-        processingRef.current = true;
-        
-        // Store session info for the UpdatePasswordPage
-        if (currentSession) {
-          localStorage.setItem('passwordResetRawTokens', JSON.stringify({
-            accessToken: currentSession.access_token,
-            refreshToken: currentSession.refresh_token,
-            timestamp: Date.now()
-          }));
-        }
-        
+      // Handle PASSWORD_RECOVERY event
+      if (event === 'PASSWORD_RECOVERY' && currentSession) {
+        console.log('AuthCallbackPage: Password recovery event detected and session is present.');
         setStatus('success');
         setMessage('Password reset verified! Redirecting to update your password...');
-        
-        hasRedirectedRef.current = true;
-        navigate('/update-password', { 
-          replace: true,
-          state: { fromPasswordReset: true }
-        });
-        processingRef.current = false;
-        return;
+        navigate('/update-password', { replace: true });
+        return; // Exit early after handling
       }
 
+      // Handle SIGNED_IN event
       if (event === 'SIGNED_IN' && currentSession) {
-        processingRef.current = true;
-
         console.log('AuthCallbackPage: User SIGNED_IN. Attempting profile creation and invitation acceptance.');
 
         try {
+          // 1. Create/Update User Profile
           const storedFullName = currentSession.user.user_metadata.full_name || null;
           const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
           const storedCountryCode = currentSession.user.user_metadata.country_code || null;
@@ -170,7 +113,7 @@ const AuthCallbackPage: React.FC = () => {
             }
           }
 
-          // Handle Invitation Acceptance (if token exists)
+          // 2. Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
             const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
@@ -184,13 +127,11 @@ const AuthCallbackPage: React.FC = () => {
               console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
               setStatus('error');
               setMessage(`Failed to accept invitation: ${inviteError.message}`);
-              processingRef.current = false;
               navigate('/login', { replace: true });
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage('Authentication and invitation successful! Redirecting...');
-              hasRedirectedRef.current = true;
               navigate('/dashboard', { replace: true });
               return;
             }
@@ -200,17 +141,8 @@ const AuthCallbackPage: React.FC = () => {
 
           setStatus('success');
           
-          if (currentSession.user.app_metadata.provider === 'email' && 
-              currentSession.user.aud === 'authenticated' &&
-              !currentSession.user.email_confirmed_at) {
-            console.log('AuthCallbackPage: Password reset flow detected, redirecting to update-password');
-            hasRedirectedRef.current = true;
-            navigate('/update-password', { 
-              replace: true,
-              state: { fromPasswordReset: true }
-            });
-          } else if (finalRedirectPath) {
-            hasRedirectedRef.current = true;
+          // Determine final redirect path
+          if (finalRedirectPath) {
             navigate(finalRedirectPath, { replace: true });
           } else {
             const { data: profileData, error: profileCheckError } = await supabase
@@ -221,13 +153,10 @@ const AuthCallbackPage: React.FC = () => {
 
             if (profileCheckError) {
               console.error('Error checking admin status for redirection:', profileCheckError);
-              hasRedirectedRef.current = true;
               navigate('/dashboard', { replace: true });
             } else if (profileData?.is_admin) {
-              hasRedirectedRef.current = true;
               navigate('/admin', { replace: true });
             } else {
-              hasRedirectedRef.current = true;
               navigate('/dashboard', { replace: true });
             }
           }
@@ -237,8 +166,6 @@ const AuthCallbackPage: React.FC = () => {
           setStatus('error');
           setMessage(`An unexpected error occurred: ${overallError.message}`);
           navigate('/login', { replace: true });
-        } finally {
-          processingRef.current = false;
         }
       } else if (event === 'SIGNED_OUT') {
         setStatus('error');
@@ -253,15 +180,56 @@ const AuthCallbackPage: React.FC = () => {
       }
     });
 
-    // Try to process tokens from hash immediately
-    processHashTokens();
+    // Manually set session from hash tokens if present, this will trigger onAuthStateChange
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    const type = hashParams.get('type');
 
-    // Cleanup the listener when the component unmounts
+    if (accessToken && refreshToken && type === 'recovery') {
+      console.log('AuthCallbackPage: Password recovery tokens found in hash. Attempting to set session.');
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('AuthCallbackPage: Error setting session from hash tokens:', error);
+          setStatus('error');
+          setMessage('Failed to process reset link. Please request a new password reset.');
+        } else if (session) {
+          console.log('AuthCallbackPage: Session successfully set from hash tokens.');
+          // IMPORTANT: Clear raw tokens from localStorage immediately after successful session set
+          localStorage.removeItem('passwordResetRawTokens');
+          // The PASSWORD_RECOVERY event or SIGNED_IN event will handle navigation
+        }
+      });
+    } else if (accessToken && refreshToken) { // General sign-in tokens
+      console.log('AuthCallbackPage: General sign-in tokens found in hash. Attempting to set session.');
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('AuthCallbackPage: Error setting session from general tokens:', error);
+          setStatus('error');
+          setMessage('Failed to process authentication. Please try again.');
+        } else if (session) {
+          console.log('AuthCallbackPage: Session successfully set from general tokens.');
+          // IMPORTANT: Clear raw tokens from localStorage immediately after successful session set
+          localStorage.removeItem('passwordResetRawTokens');
+          // The SIGNED_IN event will handle navigation
+        }
+      });
+    } else {
+      // If no tokens in hash, and not a password recovery type,
+      // let the onAuthStateChange handle INITIAL_SESSION or other events.
+      console.log('AuthCallbackPage: No tokens found in hash. Waiting for auth state change events.');
+    }
+
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
       authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase, searchParams, location.hash]);
+  }, [navigate, supabase, searchParams, location.hash]); // location.hash is important here for initial hash processing
 
   const renderContent = () => {
     switch (status) {
