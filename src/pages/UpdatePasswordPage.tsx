@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // Use useSessionContext for isLoading
-import { useNavigate } from 'react-router-dom'; // Removed useLocation as fromPasswordReset is gone
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Lock } from 'lucide-react';
@@ -15,7 +15,9 @@ const UpdatePasswordPage: React.FC = () => {
   const { session, isLoading: isSessionLoading } = useSessionContext(); // Use isLoading from context
   const navigate = useNavigate();
 
-  // No more custom useEffect for initializeSession, rely on isSessionLoading from useSessionContext
+  // This useEffect is no longer needed as useSessionContext handles session loading
+  // and the UI directly reacts to `session` and `isSessionLoading`.
+  // useEffect(() => { ... }, [...]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
