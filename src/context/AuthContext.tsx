@@ -2,7 +2,7 @@ import React, { createContext, useContext, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 
 interface AuthContextType {
-  sendPasswordResetEmail: (email: string) => Promise<void>;
+  sendPasswordResetEmail: (email: string, redirectTo: string) => Promise<void>; // MODIFIED: Added redirectTo parameter
   resetPassword: (newPassword: string) => Promise<void>;
 }
 
@@ -19,10 +19,11 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const sendPasswordResetEmail = useCallback(async (email: string) => {
+  // MODIFIED: Added redirectTo parameter
+  const sendPasswordResetEmail = useCallback(async (email: string, redirectTo: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/password-reset`,
+        redirectTo: redirectTo, // MODIFIED: Use the passed redirectTo parameter
       });
 
       if (error) throw error;
