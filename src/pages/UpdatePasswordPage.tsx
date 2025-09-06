@@ -87,9 +87,12 @@ const UpdatePasswordPage: React.FC = () => {
       return;
     }
 
-    // Ensure there's an active session before attempting to update
-    // This check is primarily a safeguard; the UI should prevent this if session is null
-    if (!session) {
+    // CRITICAL: Fetch the latest session right before attempting to update
+    const { data: currentSessionData, error: getSessionError } = await supabase.auth.getSession();
+    const currentSession = currentSessionData?.session;
+
+    if (getSessionError || !currentSession) {
+      console.error('UpdatePasswordPage: Failed to get current session before update:', getSessionError);
       setError('No active session found. Please log in or request a new password reset.');
       setLoading(false);
       return;
