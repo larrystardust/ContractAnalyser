@@ -43,9 +43,13 @@ const UpdatePasswordPage: React.FC = () => {
             setIsSessionValidForUpdate(false);
           } else if (newSession) {
             console.log('UpdatePasswordPage: Session successfully set from URL hash. Setting isSessionValidForUpdate to true.');
+            // Add a small delay to allow session to persist
+            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+            const { data: sessionAfterDelay, error: errorAfterDelay } = await supabase.auth.getSession();
+            console.log('UpdatePasswordPage: Session state after delay:', sessionAfterDelay, 'Error:', errorAfterDelay);
             setIsSessionValidForUpdate(true);
-            // DIAGNOSTIC STEP: Commenting out the line below to keep hash in URL
-            // navigate(location.pathname, { replace: true });
+            // Re-enable hash cleaning to ensure a clean URL
+            navigate(location.pathname, { replace: true });
           }
         } catch (err: any) {
           console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
