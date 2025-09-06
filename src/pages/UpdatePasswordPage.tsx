@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
-import { useNavigate } from 'react-router-dom';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED useSession
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Lock } from 'lucide-react';
@@ -8,16 +8,66 @@ import { Lock } from 'lucide-react';
 const UpdatePasswordPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false); // For form submission loading
-  const [error, setError] = useState<string | null>(null); // For form submission errors
-  const [message, setMessage] = useState<string | null>(null); // For form submission success messages
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // Use isLoading from context
+  const session = useSession(); // Get the session from auth-helpers-react
   const navigate = useNavigate();
+  const location = useLocation();
+  const [checkingSession, setCheckingSession] = useState(true);
+  const fromPasswordReset = location.state?.fromPasswordReset;
 
-  // This useEffect is no longer needed as useSessionContext handles session loading
-  // and the UI directly reacts to `session` and `isSessionLoading`.
-  // useEffect(() => { ... }, [...]);
+  useEffect(() => {
+    const initializeSession = async () => {
+      // If session is already available from auth-helpers-react, we're good
+      if (session) {
+        console.log('UpdatePasswordPage: Session already available from useSession().');
+        setCheckingSession(false);
+        return;
+      }
+
+      // Fallback: If no session from useSession, try to get from localStorage (from AuthCallbackPage)
+      if (fromPasswordReset) {
+        const rawTokens = localStorage.getItem('passwordResetRawTokens');
+        
+        if (rawTokens) {
+          const { accessToken, refreshToken, timestamp } = JSON.parse(rawTokens);
+          
+          // Check if tokens are recent (within 1 minute)
+          if (Date.now() - timestamp < 60 * 1000) {
+            console.log('UpdatePasswordPage: Setting session from raw tokens in localStorage.');
+            
+            const { data: { session: newSession }, error: sessionError } = 
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+            if (sessionError) {
+              console.error('UpdatePasswordPage: Error setting session from raw tokens:', sessionError);
+              setError('Failed to initialize session. Please request a new password reset.');
+            } else if (newSession) {
+              console.log('UpdatePasswordPage: Session set successfully from raw tokens.');
+              localStorage.removeItem('passwordResetRawTokens'); // Clear after use
+              setCheckingSession(false);
+              return;
+            }
+          } else {
+            console.log('UpdatePasswordPage: Raw tokens expired in localStorage.');
+            localStorage.removeItem('passwordResetRawTokens');
+          }
+        }
+      }
+
+      // If still no session after all attempts
+      console.log('UpdatePasswordPage: No active session found after all attempts.');
+      setError('Your session has expired. Please request a new password reset.');
+      setCheckingSession(false);
+    };
+
+    initializeSession();
+  }, [session, supabase.auth, fromPasswordReset]); // Add session to dependencies
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +88,6 @@ const UpdatePasswordPage: React.FC = () => {
     }
 
     // Ensure there's an active session before attempting to update
-    // This check is primarily a safeguard; the UI should prevent this if session is null
     if (!session) {
       setError('No active session found. Please log in or request a new password reset.');
       setLoading(false);
@@ -73,8 +122,7 @@ const UpdatePasswordPage: React.FC = () => {
                      confirmPassword.length >= 6 && 
                      password === confirmPassword;
 
-  // Render loading state while session is being determined by auth-helpers-react
-  if (isSessionLoading) {
+  if (checkingSession) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -91,8 +139,7 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If not loading and no session is found, display the "Invalid Reset Link" error
-  if (!session) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -100,7 +147,7 @@ const UpdatePasswordPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900">Invalid Reset Link</h2>
           </CardHeader>
           <CardBody className="text-center">
-            <p className="text-sm text-red-600 mb-4">Your session has expired. Please request a new password reset.</p>
+            <p className="text-sm text-red-600 mb-4">{error}</p>
             <Button onClick={() => navigate('/password-reset')} variant="primary" className="w-full mb-2">
               Request New Reset Link
             </Button>
@@ -113,7 +160,6 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If not loading and a session is present, display the password update form
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
