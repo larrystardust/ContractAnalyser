@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react'; // Removed useSessionContext
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
@@ -12,18 +12,16 @@ const UpdatePasswordPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // For form submission errors
   const [message, setMessage] = useState<string | null>(null); // For form submission success messages
   const supabase = useSupabaseClient();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // Use isLoading from context
+  // Removed useSessionContext - no longer needed
   const navigate = useNavigate();
   const location = useLocation();
 
-  // New state to explicitly control form visibility after hash processing
   const [isSessionValidForUpdate, setIsSessionValidForUpdate] = useState(false);
-  // New state to track if the hash processing useEffect has completed its initial run
-  const [hashProcessingComplete, setHashProcessingComplete] = useState(false);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   useEffect(() => {
-    const handlePasswordResetCallback = async () => {
-      console.log('UpdatePasswordPage: useEffect triggered for session handling.');
+    const processAuthCallback = async () => {
+      console.log('UpdatePasswordPage: Initial check started.');
       console.log('UpdatePasswordPage: Current URL hash:', window.location.hash);
 
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -34,7 +32,6 @@ const UpdatePasswordPage: React.FC = () => {
       if (accessToken && refreshToken && type === 'recovery') {
         console.log('UpdatePasswordPage: Detected password recovery tokens in URL hash. Attempting to set session.');
         try {
-          // Proactively set the session using the tokens from the URL hash
           const { data: { session: newSession }, error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -43,41 +40,43 @@ const UpdatePasswordPage: React.FC = () => {
           if (setSessionError) {
             console.error('UpdatePasswordPage: Error setting session from URL hash:', setSessionError);
             setError('Failed to verify reset link. Please request a new password reset.');
-            setIsSessionValidForUpdate(false); // Ensure form is not shown
+            setIsSessionValidForUpdate(false);
           } else if (newSession) {
             console.log('UpdatePasswordPage: Session successfully set from URL hash. Setting isSessionValidForUpdate to true.');
-            setIsSessionValidForUpdate(true); // Session is valid, show form
+            setIsSessionValidForUpdate(true);
             // Clear the URL hash to prevent re-processing and clean up the URL
             navigate(location.pathname, { replace: true });
           }
         } catch (err: any) {
           console.error('UpdatePasswordPage: Unexpected error during session setting from hash:', err);
           setError('An unexpected error occurred. Please request a new password reset.');
-          setIsSessionValidForUpdate(false); // Ensure form is not shown
+          setIsSessionValidForUpdate(false);
         }
       } else {
-        console.log('UpdatePasswordPage: No password recovery tokens in hash or not recovery type. Assuming invalid link.');
-        setError('Invalid or expired password reset link. Please request a new password reset.');
-        setIsSessionValidForUpdate(false); // Ensure form is not shown
+        console.log('UpdatePasswordPage: No password recovery tokens in hash or not recovery type. Checking current session directly.');
+        // If no tokens in hash, check if there's an existing session (e.g., user navigated here directly while logged in)
+        const { data: { session: currentSession }, error: getSessionError } = await supabase.auth.getSession();
+        if (getSessionError || !currentSession) {
+          console.log('UpdatePasswordPage: No valid session found after checking hash and direct session.');
+          setError('Invalid or expired password reset link. Please request a new password reset.');
+          setIsSessionValidForUpdate(false);
+        } else {
+          console.log('UpdatePasswordPage: Valid session found directly. Setting isSessionValidForUpdate to true.');
+          setIsSessionValidForUpdate(true);
+        }
       }
-      setHashProcessingComplete(true); // Mark hash processing as complete
+      setInitialCheckComplete(true); // Mark initial check as complete
     };
 
-    // Only run this effect once on mount to process the URL hash
-    if (!hashProcessingComplete) { // Ensure it only runs once
-      handlePasswordResetCallback();
-    }
-  }, [supabase, navigate, location.pathname, hashProcessingComplete]); // Add hashProcessingComplete to dependencies
-
-  // REMOVED: The useEffect that monitors session state after initial loading
-  // This was causing the premature error display due to transient null sessions.
+    processAuthCallback();
+  }, [supabase, navigate, location.pathname]); // Dependencies for this effect
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null); // Clear previous success messages on new attempt
 
-    // Validate passwords first
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -103,7 +102,6 @@ const UpdatePasswordPage: React.FC = () => {
     }
 
     try {
-      // Use supabase.auth.updateUser() for client-side password updates
       const { error: updateError } = await supabase.auth.updateUser({
         password: password,
       });
@@ -125,14 +123,12 @@ const UpdatePasswordPage: React.FC = () => {
     }
   };
 
-  // Check if form is valid for submission
-  const isFormValid = password.length >= 6 && 
-                     confirmPassword.length >= 6 && 
+  const isFormValid = password.length >= 6 &&
+                     confirmPassword.length >= 6 &&
                      password === confirmPassword;
 
-  // Render loading state while hash processing is not complete
-  if (!hashProcessingComplete) {
-    console.log('UpdatePasswordPage: Hash processing not complete. Displaying loading state.');
+  if (!initialCheckComplete) {
+    console.log('UpdatePasswordPage: Initial check not complete. Displaying loading state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -149,9 +145,8 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If hash processing is complete, decide what to display
   if (!isSessionValidForUpdate) {
-    console.log('UpdatePasswordPage: Hash processing complete, but session is not valid for update. Displaying error state.');
+    console.log('UpdatePasswordPage: Initial check complete, but session is not valid for update. Displaying error state.');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <Card className="max-w-md w-full">
@@ -172,7 +167,6 @@ const UpdatePasswordPage: React.FC = () => {
     );
   }
 
-  // If hash processing is complete AND session is valid for update, display the form
   console.log('UpdatePasswordPage: Session valid for update. Displaying password update form.');
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
