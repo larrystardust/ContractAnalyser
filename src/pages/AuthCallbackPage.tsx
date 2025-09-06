@@ -61,6 +61,7 @@ const AuthCallbackPage: React.FC = () => {
       }
     }
 
+    // MANUALLY PROCESS THE TOKENS FROM THE HASH
     const processHashTokens = async () => {
       if (hashRef.current && hashRef.current.includes('access_token')) {
         console.log('AuthCallbackPage: Processing tokens from hash');
@@ -73,39 +74,25 @@ const AuthCallbackPage: React.FC = () => {
         if (accessToken && refreshToken && type === 'recovery') {
           console.log('AuthCallbackPage: Password recovery tokens found');
           
-          const { data: { session }, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+          // Store the raw tokens in localStorage for the UpdatePasswordPage to use
+          localStorage.setItem('passwordResetRawTokens', JSON.stringify({
+            accessToken,
+            refreshToken,
+            timestamp: Date.now()
+          }));
+          
+          // Immediately redirect to update-password without trying to set session
+          hasRedirectedRef.current = true;
+          navigate('/update-password', { 
+            replace: true,
+            state: { fromPasswordReset: true }
           });
-
-          if (error) {
-            console.error('AuthCallbackPage: Error setting session from hash tokens:', error);
-            setStatus('error');
-            setMessage('Failed to process reset link. Please request a new password reset.');
-            return;
-          }
-
-          if (session) {
-            console.log('AuthCallbackPage: Session set successfully from hash tokens');
-            
-            // Store session data in localStorage to persist across redirect
-            localStorage.setItem('passwordResetSession', JSON.stringify({
-              accessToken,
-              refreshToken,
-              timestamp: Date.now()
-            }));
-            
-            hasRedirectedRef.current = true;
-            navigate('/update-password', { 
-              replace: true,
-              state: { fromPasswordReset: true }
-            });
-            return;
-          }
+          return;
         }
       }
     };
 
+    // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
@@ -114,13 +101,14 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
+      // Handle password recovery event
       if (event === 'PASSWORD_RECOVERY') {
         console.log('AuthCallbackPage: Password recovery event detected');
         processingRef.current = true;
         
         // Store session info for the UpdatePasswordPage
         if (currentSession) {
-          localStorage.setItem('passwordResetSession', JSON.stringify({
+          localStorage.setItem('passwordResetRawTokens', JSON.stringify({
             accessToken: currentSession.access_token,
             refreshToken: currentSession.refresh_token,
             timestamp: Date.now()
@@ -182,6 +170,7 @@ const AuthCallbackPage: React.FC = () => {
             }
           }
 
+          // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
             const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
@@ -264,8 +253,10 @@ const AuthCallbackPage: React.FC = () => {
       }
     });
 
+    // Try to process tokens from hash immediately
     processHashTokens();
 
+    // Also try to get the session immediately in case the event already fired
     const checkExistingSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
