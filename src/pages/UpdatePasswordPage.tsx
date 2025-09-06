@@ -15,7 +15,9 @@ const UpdatePasswordPage: React.FC = () => {
   const { session, isLoading: isSessionLoading } = useSessionContext(); // Use isLoading from context
   const navigate = useNavigate();
 
-  // No more custom useEffect for initializeSession, rely on isSessionLoading from useSessionContext
+  // This useEffect is no longer needed as useSessionContext handles session loading
+  // and the UI directly reacts to `session` and `isSessionLoading`.
+  // useEffect(() => { ... }, [...]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
