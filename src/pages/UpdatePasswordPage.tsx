@@ -1,14 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const RECOVERY_TOKENS_KEY = "RECOVERY_TOKENS";
 
-const logUrlContext = (label: string) => {
-  console.log(`[URL DEBUG] ${label}:`, window.location.href);
-};
-
-const UpdatePasswordPage = () => {
+const UpdatePasswordPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -20,9 +16,14 @@ const UpdatePasswordPage = () => {
   // Debug state
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
+  const logUrlContext = (label: string) => {
+    console.log(`[URL DEBUG] ${label}:`, window.location.href);
+  };
+
   useEffect(() => {
     processAuthCallback();
     refreshDebugInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const processAuthCallback = async () => {
@@ -195,12 +196,10 @@ const UpdatePasswordPage = () => {
       {errorMsg && <p className="text-red-600 mt-4">{errorMsg}</p>}
       {successMsg && <p className="text-green-600 mt-4">{successMsg}</p>}
 
-      {/* ✅ Debug panel - live mode */}
+      {/* Debug panel */}
       <div className="mt-6 p-4 border rounded bg-gray-50 text-xs">
         <h2 className="font-bold mb-2">Debug Info (Live)</h2>
-        <pre className="whitespace-pre-wrap">
-          {JSON.stringify(debugInfo, null, 2)}
-        </pre>
+        <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
         <button
           onClick={refreshDebugInfo}
           className="mt-2 px-2 py-1 bg-gray-200 rounded"
