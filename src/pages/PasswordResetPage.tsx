@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail } from 'lucide-react';
@@ -11,17 +11,6 @@ const PasswordResetPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const supabase = useSupabaseClient();
-  const { session } = useSessionContext();
-
-  useEffect(() => {
-    const signOutIfLoggedIn = async () => {
-      if (session) {
-        console.log('PasswordResetPage: User already logged in, signing out for clean reset process.');
-        await supabase.auth.signOut();
-      }
-    };
-    signOutIfLoggedIn();
-  }, [session, supabase.auth]);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,17 +18,14 @@ const PasswordResetPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
-    // CRITICAL: Redirect directly to the UpdatePasswordPage
-    const redirectToUrl = `${window.location.origin}/update-password`;
-
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectToUrl,
+      redirectTo: `${window.location.origin}/update-password`, // You might need a dedicated page for password update
     });
 
     if (resetError) {
       setError(resetError.message);
     } else {
-      setMessage('Password reset email sent! Please check your inbox. The link will direct you to update your password.');
+      setMessage('Password reset email sent! Please check your inbox.');
     }
     setLoading(false);
   };
