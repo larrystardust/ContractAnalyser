@@ -1,8 +1,9 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0'; // Use the correct version
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
-// Initialize Supabase client with service role key for elevated privileges
+// Initialize Supabase client
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -139,9 +140,9 @@ Deno.serve(async (req) => {
       .from('stripe_orders')
       .select('id')
       .eq('customer_id', customerId)
-      .eq('is_consumed', false)
       .eq('payment_status', 'paid')
       .eq('status', 'completed')
+      .eq('is_consumed', false) // ADDED: Ensure it's not already consumed
       .limit(1);
 
     if (ordersError) {
@@ -160,6 +161,15 @@ Deno.serve(async (req) => {
   // --- END: Authorization Logic ---
 
   try {
+    // ADDED: Log activity - Analysis Started
+    await logActivity(
+      supabase,
+      userId,
+      'CONTRACT_ANALYSIS_STARTED',
+      `User ${userEmail} started analysis for contract ID: ${contractId}`,
+      { contract_id: contractId }
+    );
+
     await supabase
       .from('contracts')
       .update({ status: 'analyzing', processing_progress: 10 })
@@ -179,12 +189,12 @@ CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):
 2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
 3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
 4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
-5. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
-6. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
-7. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
-8. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
-9. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
-10. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.  
+6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
+7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
+8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
+9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
+10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
+11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.  
 
 COMPLIANCE SCORE RULES (MANDATORY):  
 - Start from 100 points.  
@@ -378,6 +388,15 @@ NOTES:
       console.log('trigger-report-email Edge Function invoked successfully:', emailTriggerData);
     }
 
+    // ADDED: Log activity - Analysis Completed
+    await logActivity(
+      supabase,
+      userId,
+      'CONTRACT_ANALYSIS_COMPLETED',
+      `User ${userEmail} completed analysis for contract ID: ${contractId} with compliance score: ${complianceScore}%`,
+      { contract_id: contractId, compliance_score: complianceScore }
+    );
+
     console.log(`Analysis completed for contract ID: ${contractId}`);
     return corsResponse({ message: 'Analysis completed successfully' });
 
@@ -387,6 +406,16 @@ NOTES:
       .from('contracts')
       .update({ status: 'failed', processing_progress: 0 })
       .eq('id', contractId);
+
+    // ADDED: Log activity - Analysis Failed
+    await logActivity(
+      supabase,
+      userId,
+      'CONTRACT_ANALYSIS_FAILED',
+      `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
+      { contract_id: contractId, error: error.message }
+    );
+
     return corsResponse({ error: error.message }, 500);
   }
 });
