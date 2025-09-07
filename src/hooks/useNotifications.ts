@@ -37,7 +37,7 @@ export function useNotifications() {
 
       console.log('DEBUG: fetchNotifications - Data received from Supabase:', JSON.stringify(data, null, 2));
       setNotifications(data || []);
-      console.log('DEBUG: fetchNotifications - Notifications state after set:', JSON.stringify(data || [], null, 2));
+      console.log('DEBUG: fetchNotifications - Notifications state after set (from fetch):', JSON.stringify(data || [], null, 2));
 
     } catch (err: any) {
       console.error('Error fetching notifications:', err);
@@ -57,7 +57,13 @@ export function useNotifications() {
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },
           (payload) => {
-            setNotifications((prev) => [payload.new as Notification, ...prev]);
+            console.log('DEBUG: Realtime INSERT event received. Payload.new:', JSON.stringify(payload.new, null, 2)); // ADDED LOG
+            setNotifications((prev) => {
+              console.log('DEBUG: Realtime INSERT - Previous notifications state:', JSON.stringify(prev, null, 2)); // ADDED LOG
+              const updatedNotifications = [payload.new as Notification, ...prev];
+              console.log('DEBUG: Realtime INSERT - New notifications state:', JSON.stringify(updatedNotifications, null, 2)); // ADDED LOG
+              return updatedNotifications;
+            });
           }
         )
         .subscribe();
@@ -118,7 +124,7 @@ export function useNotifications() {
   const unreadNotifications = notifications.filter(notif => {
     // Explicitly cast to boolean to ensure correct evaluation
     const isReadBoolean = Boolean(notif.is_read);
-    console.log(`DEBUG: Checking notification ID: ${notif.id}, is_read: ${notif.is_read}, isReadBoolean: ${isReadBoolean}, !isReadBoolean: ${!isReadBoolean}`);
+    console.log(`DEBUG: Filtering notification ID: ${notif.id}, is_read: ${notif.is_read}, isReadBoolean: ${isReadBoolean}, !isReadBoolean: ${!isReadBoolean}`);
     return !isReadBoolean;
   });
   const unreadCount = unreadNotifications.length;
