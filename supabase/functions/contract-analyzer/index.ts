@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
-  let token: string; // Moved token declaration to this scope
+  let token: string;
 
   try {
     const { contract_id, contract_text } = await req.json();
@@ -69,14 +69,12 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
     }
 
-    // Get user ID from the Authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
-    token = authHeader.replace('Bearer ', ''); // Assignment here
+    token = authHeader.replace('Bearer ', '');
     
-    // Validate token is not empty or literal strings
     if (!token || token === 'null' || token === 'undefined' || token.trim() === '') {
       return corsResponse({ error: 'Invalid or empty authentication token' }, 401);
     }
@@ -89,22 +87,16 @@ Deno.serve(async (req) => {
     userId = user.id;
     userEmail = user.email!;
 
-    // MODIFIED: Use retry for fetching profile data
     const { data: profileData, error: profileError } = await retry(async () => {
       return await supabase
         .from('profiles')
         .select('full_name, notification_settings')
         .eq('id', userId)
         .maybeSingle();
-    }, 5, 500); // Retry 5 times with initial 500ms delay, exponential backoff
-
-    // ADDED LOGGING HERE
-    console.log(`DEBUG: Fetched profileData for user ${userId}:`, profileData);
-    console.log(`DEBUG: profileError for user ${userId}:`, profileError);
+    }, 5, 500);
 
     if (profileError) {
       console.warn(`Could not fetch profile for user ${userId}:`, profileError.message);
-      // Default to all notifications enabled if profile fetch fails or settings are null
       userNotificationSettings = {
         'analysis-complete': { email: true, inApp: true },
         'high-risk-findings': { email: true, inApp: true },
@@ -115,7 +107,6 @@ Deno.serve(async (req) => {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      // Use fetched settings, or default if the column is null/empty
       userNotificationSettings = (profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }>) || {
         'analysis-complete': { email: true, inApp: true },
         'high-risk-findings': { email: true, inApp: true },
@@ -135,9 +126,8 @@ Deno.serve(async (req) => {
       console.error(`Error fetching membership for user ${userId}:`, membershipError);
     } else if (membershipData) {
       userSubscriptionId = membershipData.subscription_id;
-      console.log(`User ${userId} is associated with subscription: ${userSubscriptionId} via membership.`);
     } else {
-      console.log(`User ${userId} has no active membership.`);
+      // User has no active membership.
     }
 
   } catch (error) {
@@ -145,16 +135,12 @@ Deno.serve(async (req) => {
     return corsResponse({ error: 'Invalid request or authentication failed' }, 400);
   }
 
-  console.log(`Starting analysis for contract ID: ${contractId} by user: ${userId}`);
-
   let consumedOrderId: number | null = null;
 
   // --- START: Authorization Logic ---
   if (userSubscriptionId) {
-    console.log(`User ${userId} is authorized via active subscription: ${userSubscriptionId}.`);
+    // User is authorized via active subscription.
   } else {
-    console.log(`User ${userId} is not part of a multi-user subscription. Checking for single-use credits.`);
-
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
       .select('customer_id')
@@ -174,7 +160,7 @@ Deno.serve(async (req) => {
       .eq('customer_id', customerId)
       .eq('payment_status', 'paid')
       .eq('status', 'completed')
-      .eq('is_consumed', false) // ADDED: Ensure it's not already consumed
+      .eq('is_consumed', false)
       .limit(1);
 
     if (ordersError) {
@@ -183,17 +169,14 @@ Deno.serve(async (req) => {
     }
 
     if (!unconsumedOrders || unconsumedOrders.length === 0) {
-      console.log(`User ${userId} has no available single-use credits.`);
       return corsResponse({ error: 'No active subscription or available single-use credits. Please purchase a plan to analyze more contracts.' }, 403);
     } else {
       consumedOrderId = unconsumedOrders[0].id;
-      console.log(`User ${userId} authorized via single-use credit: ${consumedOrderId}.`);
     }
   }
   // --- END: Authorization Logic ---
 
   try {
-    // ADDED: Log activity - Analysis Started
     await logActivity(
       supabase,
       userId,
@@ -304,8 +287,6 @@ NOTES:
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
-    // --- START: Generate and Store Report HTML ---
-    // Call the generate-analysis-report function to get the report URL and path
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
@@ -319,20 +300,16 @@ NOTES:
         },
       },
       headers: {
-        // Pass the current user's token for authorization within generate-analysis-report
         'Authorization': `Bearer ${token}`,
       },
     });
 
     if (reportError) {
       console.error('Error invoking generate-analysis-report Edge Function:', reportError);
-      // Do not throw, allow analysis to complete, but report path will be null
     }
-    const reportFilePath = reportData?.filePath || null; // Get the file path from the response
-    const reportHtmlContent = reportData?.htmlContent || null; // ADDED: Get the HTML content
-    const reportLink = reportData?.url || null; // ADDED: Get the signed URL
-
-    // --- END: Generate and Store Report HTML ---
+    const reportFilePath = reportData?.filePath || null;
+    const reportHtmlContent = reportData?.htmlContent || null;
+    const reportLink = reportData?.url || null;
 
     const { data: analysisResult, error: analysisError } = await supabase
       .from('analysis_results')
@@ -342,7 +319,7 @@ NOTES:
         data_protection_impact: dataProtectionImpact,
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
-        report_file_path: reportFilePath, // ADDED: Store the report file path
+        report_file_path: reportFilePath,
       })
       .select()
       .single();
@@ -395,36 +372,32 @@ NOTES:
       if (consumeError) {
         console.error(`Error marking order ${consumedOrderId} as consumed:`, consumeError);
       } else {
-        console.log(`Successfully marked order ${consumedOrderId} as consumed.`);
+        // Successfully marked order as consumed.
       }
     }
 
-    // MODIFIED: Call trigger-report-email instead of send-analysis-report-email directly
-    // The trigger-report-email function will handle fetching user preferences and sending the email
     const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
       body: {
         userId: userId,
         contractId: contractId,
         reportSummary: executiveSummary,
-        reportLink: reportLink, // Pass the signed URL
-        reportHtmlContent: reportHtmlContent, // Pass the full HTML content
+        reportLink: reportLink,
+        reportHtmlContent: reportHtmlContent,
       },
       headers: {
-        'Authorization': `Bearer ${token}`, // Pass the current user's token
+        'Authorization': `Bearer ${token}`,
       },
     });
 
     if (emailTriggerError) {
       console.error('Error invoking trigger-report-email Edge Function:', emailTriggerError);
     } else {
-      console.log('trigger-report-email Edge Function invoked successfully:', emailTriggerData);
+      // trigger-report-email Edge Function invoked successfully.
     }
 
     // --- START: Notification Generation ---
-    console.log(`Notification settings for user ${userId}:`, userNotificationSettings); // ADDED LOG
     // 1. Analysis Complete Notification
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      console.log(`Attempting to insert 'Analysis Complete' notification for user ${userId}.`); // ADDED LOG
       const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
@@ -433,36 +406,30 @@ NOTES:
         type: 'success',
       });
       if (notificationError) {
-        console.error('Error inserting "Analysis Complete" notification:', notificationError); // IMPROVED LOG
+        console.error('Error inserting "Analysis Complete" notification:', notificationError);
       } else {
-        console.log(`Successfully inserted 'Analysis Complete' notification for user ${userId}.`); // ADDED LOG
+        // Successfully inserted 'Analysis Complete' notification.
       }
-    } else {
-      console.log(`'Analysis Complete' in-app notifications are disabled for user ${userId}.`); // ADDED LOG
     }
 
     // 2. High Risk Findings Notification
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      console.log(`Attempting to insert 'High Risk Findings' notification for user ${userId}.`); // ADDED LOG
       const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'High Risk Findings Detected!',
         message: notificationMessage,
-        type: 'error', // Use 'error' type for high risk
+        type: 'error',
       });
       if (notificationError) {
-        console.error('Error inserting "High Risk Findings" notification:', notificationError); // IMPROVED LOG
+        console.error('Error inserting "High Risk Findings" notification:', notificationError);
       } else {
-        console.log(`Successfully inserted 'High Risk Findings' notification for user ${userId}.`); // ADDED LOG
+        // Successfully inserted 'High Risk Findings' notification.
       }
-    } else {
-      console.log(`'High Risk Findings' in-app notifications are disabled or no high risk findings for user ${userId}.`); // ADDED LOG
     }
     // --- END: Notification Generation ---
 
-    // ADDED: Log activity - Analysis Completed
     await logActivity(
       supabase,
       userId,
@@ -471,7 +438,6 @@ NOTES:
       { contract_id: contractId, compliance_score: complianceScore }
     );
 
-    console.log(`Analysis completed for contract ID: ${contractId}`);
     return corsResponse({ message: 'Analysis completed successfully' });
 
   } catch (error: any) {
@@ -481,8 +447,15 @@ NOTES:
       .update({ status: 'failed', processing_progress: 0 })
       .eq('id', contractId);
 
-    // ADDED: Log activity - Analysis Failed
-    if (userNotificationSettings['analysis-complete']?.inApp) { // Re-using this setting for failure too
+    await logActivity(
+      supabase,
+      userId,
+      'CONTRACT_ANALYSIS_FAILED',
+      `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
+      { contract_id: contractId, error: error.message }
+    );
+
+    if (userNotificationSettings['analysis-complete']?.inApp) {
       const notificationMessage = `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
@@ -492,7 +465,6 @@ NOTES:
       });
       if (notificationError) console.error('Error inserting "Analysis Failed" notification:', notificationError);
     }
-    // --- END: Notification on Analysis Failure ---
 
     return corsResponse({ error: error.message }, 500);
   }
