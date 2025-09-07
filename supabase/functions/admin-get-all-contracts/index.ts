@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         marked_for_deletion_by_admin,
         user_id,
         profiles (full_name),
-        auth_users:user_id (email),
+        users (email), // MODIFIED: Changed from auth_users:user_id (email)
         analysis_results (
           id,
           executive_summary,
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         marked_for_deletion_by_admin: contract.marked_for_deletion_by_admin,
         user_id: contract.user_id,
         user_full_name: contract.profiles?.full_name || 'N/A',
-        user_email: contract.auth_users?.email || 'N/A',
+        user_email: contract.users?.email || 'N/A', // MODIFIED: Changed from auth_users?.email
         analysisResult: latestAnalysisResult ? {
           id: latestAnalysisResult.id,
           contract_id: contract.id,
