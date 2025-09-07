@@ -254,7 +254,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               <div className="ml-4">
                 <p className="text-sm text-blue-700">Low Risk Issues</p>
                 <p className="text-2xl font-bold text-blue-800">{riskCounts.low}</p>
-              </div>
+              </p>
             </div>
           </div>
         </div>
