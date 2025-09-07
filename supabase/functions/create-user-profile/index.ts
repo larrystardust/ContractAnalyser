@@ -30,13 +30,39 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, fullName, businessName, mobilePhoneNumber, countryCode } = await req.json(); // MODIFIED: Added businessName
-    console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode }); // ADDED LOG
+    const { userId, fullName, businessName, mobilePhoneNumber, countryCode } = await req.json();
+    console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode });
 
     if (!userId) {
-      console.error('create-user-profile: Missing userId in payload.'); // ADDED LOG
+      console.error('create-user-profile: Missing userId in payload.');
       return corsResponse({ error: 'Missing userId' }, 400);
     }
+
+    // Fetch existing profile to preserve notification_settings if they exist
+    const { data: existingProfile, error: fetchProfileError } = await supabase
+      .from('profiles')
+      .select('notification_settings')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (fetchProfileError) {
+      console.error('create-user-profile: Error fetching existing profile:', fetchProfileError);
+      // Continue, but log the error
+    }
+
+    // Define default notification settings
+    const defaultNotificationSettings = {
+      'analysis-complete': { email: true, inApp: true },
+      'high-risk-findings': { email: true, inApp: true },
+      'weekly-reports': { email: false, inApp: false },
+      'system-updates': { email: false, inApp: true },
+    };
+
+    // Merge existing settings with defaults, prioritizing existing
+    const mergedNotificationSettings = {
+      ...defaultNotificationSettings,
+      ...(existingProfile?.notification_settings || {}),
+    };
 
     // Use upsert to create or update the profile.
     // The service_role key bypasses RLS.
@@ -45,11 +71,11 @@ Deno.serve(async (req) => {
       .upsert(
         {
           id: userId,
-          full_name: fullName || null, // Use provided data or null
-          business_name: businessName || null, // ADDED: Include business_name
-          mobile_phone_number: mobilePhoneNumber || null, // Use provided data or null
-          country_code: countryCode || null, // Use provided data or null
-          // Other columns will use their default values if not provided here
+          full_name: fullName || null,
+          business_name: businessName || null,
+          mobile_phone_number: mobilePhoneNumber || null,
+          country_code: countryCode || null,
+          notification_settings: mergedNotificationSettings, // Set merged settings
         },
         { onConflict: 'id' } // Conflict on 'id' to update if exists
       )
@@ -57,15 +83,15 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      console.error('create-user-profile: Error upserting profile:', error); // MODIFIED LOG
+      console.error('create-user-profile: Error upserting profile:', error);
       return corsResponse({ error: error.message }, 500);
     }
 
-    console.log('create-user-profile: Profile upserted successfully:', data); // ADDED LOG
+    console.log('create-user-profile: Profile upserted successfully:', data);
     return corsResponse({ message: 'Profile created/updated successfully', profile: data });
 
   } catch (error: any) {
-    console.error('create-user-profile: Unhandled error:', error); // MODIFIED LOG
+    console.error('create-user-profile: Unhandled error:', error);
     return corsResponse({ error: error.message }, 500);
   }
 });
