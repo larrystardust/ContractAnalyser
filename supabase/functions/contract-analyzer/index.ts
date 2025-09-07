@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0'; // Use the correct version
-import { logActivity } from '../_shared/logActivity.ts'; // ADDED
+import { logActivity } from '../_shared/logActivity.ts';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -388,6 +388,31 @@ NOTES:
       console.log('trigger-report-email Edge Function invoked successfully:', emailTriggerData);
     }
 
+    // --- START: Notification Generation ---
+    // 1. Analysis Complete Notification
+    if (userNotificationSettings['analysis-complete']?.inApp) {
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: userId,
+        title: 'Analysis Complete!',
+        message: `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`,
+        type: 'success',
+      });
+      if (notificationError) console.error('Error inserting "Analysis Complete" notification:', notificationError);
+    }
+
+    // 2. High Risk Findings Notification
+    const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
+    if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: userId,
+        title: 'High Risk Findings Detected!',
+        message: `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`,
+        type: 'error', // Use 'error' type for high risk
+      });
+      if (notificationError) console.error('Error inserting "High Risk Findings" notification:', notificationError);
+    }
+    // --- END: Notification Generation ---
+
     // ADDED: Log activity - Analysis Completed
     await logActivity(
       supabase,
@@ -415,6 +440,18 @@ NOTES:
       `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
       { contract_id: contractId, error: error.message }
     );
+
+    // --- START: Notification on Analysis Failure ---
+    if (userNotificationSettings['analysis-complete']?.inApp) { // Re-using this setting for failure too
+      const { error: notificationError } = await supabase.from('notifications').insert({
+        user_id: userId,
+        title: 'Analysis Failed!',
+        message: `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`,
+        type: 'error',
+      });
+      if (notificationError) console.error('Error inserting "Analysis Failed" notification:', notificationError);
+    }
+    // --- END: Notification on Analysis Failure ---
 
     return corsResponse({ error: error.message }, 500);
   }
