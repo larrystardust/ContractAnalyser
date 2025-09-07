@@ -22,34 +22,46 @@ export function useAppSettings() {
   const fetchSettings = useCallback(async () => {
     if (!session?.user?.id) {
       setLoading(false);
+      // If no user is logged in, you might want to load default settings
+      // or handle this state appropriately for public-facing pages.
+      // For now, we'll assume authenticated access is required for these settings.
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-get-app-settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      // Directly query the app_settings table
+      const { data, error: fetchError } = await supabase
+        .from('app_settings')
+        .select('*')
+        .eq('id', '00000000-0000-0000-0000-000000000000') // Assuming a single row with this ID
+        .maybeSingle();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch app settings.');
+      if (fetchError) {
+        throw fetchError;
       }
 
-      const data = await response.json();
-      setSettings(data.settings);
+      // If no settings found (e.g., table is empty or not initialized), provide a default fallback
+      if (!data) {
+        setSettings({
+          id: '00000000-0000-0000-0000-000000000000',
+          default_theme: 'system',
+          default_jurisdictions: [],
+          global_email_reports_enabled: true,
+          created_at: new Date().toISOString(), // Placeholder
+          updated_at: new Date().toISOString(), // Placeholder
+        });
+      } else {
+        setSettings(data as AppSettings);
+      }
     } catch (err: any) {
-      console.error('Error fetching app settings:', err);
+      console.error('Error fetching app settings directly:', err);
       setError(err.message || 'Failed to load application settings.');
     } finally {
       setLoading(false);
     }
-  }, [session, supabase]);
+  }, [session?.user?.id, supabase]);
 
   const updateSettings = useCallback(async (updatedData: Partial<AppSettings>) => {
     if (!session?.user?.id) {
@@ -60,6 +72,7 @@ export function useAppSettings() {
     setLoading(true); // Indicate saving process
     setError(null);
     try {
+      // This still calls the admin-only Edge Function, which is correct for updates
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-update-app-settings`, {
         method: 'POST',
         headers: {
