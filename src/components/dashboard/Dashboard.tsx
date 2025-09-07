@@ -9,8 +9,8 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Modal from '../ui/Modal'; // ADDED: Import Modal
-import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
+import Modal from '../ui/Modal';
+import { Loader2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
   // ADDED: State for the re-analysis modal
   const [showReanalysisModal, setShowReanalysisModal] = useState(false);
   const [reanalyzingContractName, setReanalyzingContractName] = useState<string | null>(null);
+  const [contractIdBeingAnalyzed, setContractIdBeingAnalyzed] = useState<string | null>(null); // ADDED: Track contract ID
 
   // Temporary log for debugging
   useEffect(() => {
@@ -71,23 +72,45 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedContractId, contracts]);
 
-  // ADDED: Effect to manage the re-analysis modal visibility
-  useEffect(() => {
+  // Callback to be passed to AnalysisResults when re-analysis is initiated
+  const handleReanalyzeInitiated = (contractName: string) => { // MODIFIED: Receive contract name
+    setShowReanalysisModal(true);
+    setReanalyzingContractName(contractName); // Set the name for the modal
     if (selectedContract) {
-      if (selectedContract.status === 'analyzing') {
-        setShowReanalysisModal(true);
-        setReanalyzingContractName(selectedContract.name);
-      } else if (selectedContract.status === 'completed' && showReanalysisModal) {
-        // Only close if it was previously open for this contract
+      setContractIdBeingAnalyzed(selectedContract.id); // Store the ID of the contract being analyzed
+    }
+  };
+
+  // Callback for when re-analysis is completed
+  const handleReanalyzeCompleted = () => {
+    // This callback is now triggered when the reanalyzeContract promise resolves/rejects
+    // We still need to wait for the UI to update via the real-time listener
+    // The useEffect below will handle closing the modal based on contract status
+  };
+
+  // Callback for when re-analysis fails
+  const handleReanalyzeFailed = () => {
+    // This callback is now triggered when the reanalyzeContract promise resolves/rejects
+    // We still need to wait for the UI to update via the real-time listener
+    // The useEffect below will handle closing the modal based on contract status
+  };
+
+  // ADDED: Effect to monitor the status of the contract being analyzed
+  useEffect(() => {
+    if (contractIdBeingAnalyzed) {
+      const currentContractState = contracts.find(c => c.id === contractIdBeingAnalyzed);
+      if (currentContractState && currentContractState.status === 'completed') {
         setShowReanalysisModal(false);
         setReanalyzingContractName(null);
+        setContractIdBeingAnalyAnalyzed(null);
+      } else if (currentContractState && currentContractState.status === 'failed') {
+        // Also close modal if analysis fails
+        setShowReanalysisModal(false);
+        setReanalyzingContractName(null);
+        setContractIdBeingAnalyAnalyzed(null);
       }
-    } else if (!selectedContract && showReanalysisModal) {
-      // If no contract is selected but modal is open (e.g., after deletion or navigation)
-      setShowReanalysisModal(false);
-      setReanalyzingContractName(null);
     }
-  }, [selectedContract?.status, selectedContract?.name, selectedContract, showReanalysisModal]);
+  }, [contracts, contractIdBeingAnalyzed]);
 
 
   // Determine if the user is a paying customer based on subscription/orders
@@ -131,14 +154,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Callback to be passed to AnalysisResults when re-analysis is initiated
-  const handleReanalyzeInitiated = () => {
-    setShowReanalysisModal(true);
-    if (selectedContract) {
-      setReanalyzingContractName(selectedContract.name);
-    }
-  };
-
   // Conditional rendering:
   // If the user has their own contracts OR is identified as a paying customer by plan, show their real dashboard.
   // Otherwise, show the sample dashboard content.
@@ -148,8 +163,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* MODIFIED: Pass isSample={false} */}
-            <ContractList isSample={false} /> {/* ContractList will use useContracts internally */}
+            <ContractList isSample={false} />
           </div>
           
           {/* Main Content */}
@@ -159,18 +173,18 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
-                {/* MODIFIED: Pass onReanalyzeInitiated prop */}
                 <AnalysisResults
                   analysisResult={selectedContract.analysisResult}
                   isSample={false}
-                  onReanalyzeInitiated={handleReanalyzeInitiated} // ADDED: Pass the callback
+                  onReanalyzeInitiated={handleReanalyzeInitiated}
+                  onReanalyzeCompleted={handleReanalyzeCompleted}
+                  onReanalyzeFailed={handleReanalyzeFailed}
                 />
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Pass the original contract jurisdictions to JurisdictionSummary */}
                     {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                       <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
                     ))}
