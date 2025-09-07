@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -35,6 +36,8 @@ Deno.serve(async (req) => {
 
   let contractId: string;
   let token: string;
+  let userId: string; // ADDED
+  let userEmail: string; // ADDED
 
   try {
     let requestBody;
@@ -70,6 +73,8 @@ Deno.serve(async (req) => {
       console.error('re-analyze-contract: Unauthorized: Invalid or missing user token:', userError?.message);
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
+    userId = user.id; // ADDED
+    userEmail = user.email!; // ADDED
     console.log('re-analyze-contract: User authenticated:', user.id);
 
     // Fetch the contract details, including contract_content
@@ -111,6 +116,15 @@ Deno.serve(async (req) => {
       // Continue, but log the error
     }
     console.log('re-analyze-contract: Contract status updated.');
+
+    // ADDED: Log activity - Re-analysis Initiated
+    await logActivity(
+      supabase,
+      userId,
+      'CONTRACT_REANALYSIS_INITIATED',
+      `User ${userEmail} initiated re-analysis for contract ID: ${contractId}`,
+      { contract_id: contractId }
+    );
 
     // Invoke the main contract-analyzer Edge Function
     console.log('re-analyze-contract: Invoking contract-analyzer Edge Function.');
