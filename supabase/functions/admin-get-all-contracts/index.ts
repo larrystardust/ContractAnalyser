@@ -50,7 +50,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
-    // Fetch all contracts with their associated analysis results, findings, and user details
+    // Fetch all contracts with their associated user details
+    // Temporarily removed nested analysis_results and findings for debugging
     const { data: contractsData, error: fetchContractsError } = await supabase
       .from('contracts')
       .select(`
@@ -66,25 +67,7 @@ Deno.serve(async (req) => {
         marked_for_deletion_by_admin,
         user_id,
         profiles (full_name),
-        users (email), // MODIFIED: Changed from auth_users:user_id (email)
-        analysis_results (
-          id,
-          executive_summary,
-          data_protection_impact,
-          compliance_score,
-          jurisdiction_summaries,
-          report_file_path,
-          findings (
-            id,
-            title,
-            description,
-            risk_level,
-            jurisdiction,
-            category,
-            recommendations,
-            clause_reference
-          )
-        )
+        users (email)
       `)
       .order('created_at', { ascending: false });
 
@@ -95,10 +78,6 @@ Deno.serve(async (req) => {
 
     // Map the data to a more usable format for the frontend
     const formattedContracts = contractsData.map(contract => {
-      const latestAnalysisResult = contract.analysis_results && contract.analysis_results.length > 0
-        ? contract.analysis_results[0] // Assuming the first one is the latest or only one
-        : null;
-
       return {
         id: contract.id,
         name: contract.name,
@@ -112,27 +91,8 @@ Deno.serve(async (req) => {
         marked_for_deletion_by_admin: contract.marked_for_deletion_by_admin,
         user_id: contract.user_id,
         user_full_name: contract.profiles?.full_name || 'N/A',
-        user_email: contract.users?.email || 'N/A', // MODIFIED: Changed from auth_users?.email
-        analysisResult: latestAnalysisResult ? {
-          id: latestAnalysisResult.id,
-          contract_id: contract.id,
-          executiveSummary: latestAnalysisResult.executive_summary,
-          dataProtectionImpact: latestAnalysisResult.data_protection_impact,
-          complianceScore: latestAnalysisResult.compliance_score,
-          jurisdictionSummaries: latestAnalysisResult.jurisdiction_summaries,
-          reportFilePath: latestAnalysisResult.report_file_path,
-          findings: latestAnalysisResult.findings.map(f => ({
-            id: f.id,
-            analysis_result_id: latestAnalysisResult.id,
-            title: f.title,
-            description: f.description,
-            riskLevel: f.risk_level,
-            jurisdiction: f.jurisdiction,
-            category: f.category,
-            recommendations: f.recommendations,
-            clauseReference: f.clause_reference,
-          })),
-        } : null,
+        user_email: contract.users?.email || 'N/A',
+        analysisResult: null, // Set to null as it's not fetched in this debugging step
       };
     });
 
