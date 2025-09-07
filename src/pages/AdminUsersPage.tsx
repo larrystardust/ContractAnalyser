@@ -125,6 +125,7 @@ const AdminUsersPage: React.FC = () => {
   const columns = [
     { key: 'full_name', header: 'Full Name' },
     { key: 'email', header: 'Email' },
+    { key: 'business_name', header: 'Business Name' }, // ADDED: Business Name column
     { key: 'is_admin', header: 'Admin', render: (item: AdminProfile) => (item.is_admin ? 'Yes' : 'No') },
     {
       key: 'subscription_details',
