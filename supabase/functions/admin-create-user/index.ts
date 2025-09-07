@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -101,6 +102,15 @@ Deno.serve(async (req) => {
       await supabase.auth.admin.deleteUser(newUser.user.id);
       return corsResponse({ error: 'Failed to create user profile.' }, 500);
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      user.id, // Admin user performing the action
+      'ADMIN_USER_CREATED',
+      `Admin ${user.email} created new user: ${email}`,
+      { target_user_id: newUser.user.id, target_user_email: email }
+    );
 
     return corsResponse({ message: 'User created successfully', userId: newUser.user.id });
 
