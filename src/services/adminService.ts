@@ -61,6 +61,18 @@ export interface SystemReports {
   };
 }
 
+// ADDED: Type for Audit Log Entry
+export interface AuditLog {
+  id: string;
+  user_id: string | null;
+  user_email: string;
+  user_full_name: string;
+  event_type: string;
+  description: string;
+  metadata: object | null;
+  created_at: string;
+}
+
 const adminService = {
   async getUsers(): Promise<{ users: AdminProfile[]; all_subscriptions: AvailableSubscription[] }> {
     const session = await supabase.auth.getSession();
@@ -336,6 +348,30 @@ const adminService = {
 
     const data = await response.json();
     return data;
+  },
+
+  // ADDED: New function to get audit logs
+  async getAuditLogs(): Promise<AuditLog[]> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      throw new Error('User not authenticated.');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-get-audit-logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch audit logs.');
+    }
+
+    const data = await response.json();
+    return data.audit_logs;
   },
 };
 
