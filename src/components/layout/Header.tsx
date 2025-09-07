@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // ADDED useLocation
-import { Scale, Upload, Search, Bell, Menu, X, LogOut, HelpCircle, LayoutDashboard } from 'lucide-react'; // ADDED LayoutDashboard
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Scale, Upload, Search, Bell, Menu, X, LogOut, HelpCircle, LayoutDashboard } from 'lucide-react';
 import Button from '../ui/Button';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useIsAdmin } from '../../hooks/useIsAdmin'; // ADDED: Import useIsAdmin
-import { useNotifications } from '../../hooks/useNotifications'; // ADDED: Import useNotifications
+import { useIsAdmin } from '../../hooks/useIsAdmin';
+import { useNotifications } from '../../hooks/useNotifications';
 
 interface HeaderProps {
   onOpenHelpModal: () => void;
@@ -16,9 +16,14 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   const { session } = useSessionContext();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const location = useLocation(); // ADDED: Get current location
-  const { isAdmin, loadingAdminStatus } = useIsAdmin(); // ADDED: Use useIsAdmin hook
-  const { unreadCount } = useNotifications(); // ADDED: Get unreadCount
+  const location = useLocation();
+  const { isAdmin, loadingAdminStatus } = useIsAdmin();
+  const { unreadCount } = useNotifications();
+
+  // ADDED: useEffect to log unreadCount changes
+  useEffect(() => {
+    console.log('Header.tsx: useEffect - unreadCount changed to:', unreadCount);
+  }, [unreadCount]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,23 +44,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   const handleLogout = async () => {
     try {
-      // Check current session status before attempting logout
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !sessionData.session) {
-        // No active session found, user is already logged out
         console.info('No active session found, skipping signOut call');
       } else {
-        // Active session exists, proceed with logout
         await supabase.auth.signOut({ scope: 'local' });
       }
-      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag on logout
+      localStorage.removeItem('mfa_passed');
     } catch (error) {
-      // Log any unexpected errors but don't prevent navigation
       console.warn('Logout error:', error);
     }
-    // Always navigate to home page regardless of logout success/failure
-    navigate('/', { replace: true }); // MODIFIED: Use replace: true for back button behavior
+    navigate('/', { replace: true });
   };
 
   const handleSearchClick = () => {
@@ -66,19 +66,17 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
     navigate('/notifications');
   };
 
-  // ADDED: Handle dashboard switch
   const handleDashboardSwitch = () => {
     if (location.pathname.startsWith('/admin')) {
-      navigate('/dashboard');
-    } else {
       navigate('/admin');
+    } else {
+      navigate('/dashboard');
     }
   };
 
-  // ADDED: Determine if login/signup buttons should be shown
   const showAuthButtons = !session?.user && location.pathname !== '/auth/email-sent';
 
-  console.log('Unread count:', unreadCount); // DEBUG LOG ADDED HERE
+  console.log('Header.tsx: Render - unreadCount:', unreadCount); // Changed existing log for clarity
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
@@ -98,7 +96,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Reports</Link>
                 <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Settings</Link>
                 <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Pricing</Link>
-                {/* ADDED: Upload Contract button for desktop */}
                 <Link to="/upload">
                   <Button
                     variant="primary"
@@ -110,7 +107,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 </Link>
               </>
             ) : (
-              // MODIFIED: Conditionally render login/signup links
               showAuthButtons && (
                 <>
                   <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Login</Link>
@@ -123,7 +119,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           <div className="hidden md:flex items-center space-x-4">
             {session?.user ? (
               <>
-                {/* ADDED: Dashboard Switch Button */}
                 {!loadingAdminStatus && isAdmin && (
                   <Button
                     variant="outline"
@@ -145,15 +140,14 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 <Button
                   variant="text"
                   size="sm"
-                  className="p-1 relative" // ADDED: relative for positioning the dot
+                  className="p-1 relative"
                   onClick={handleNotificationsClick}
                 >
                   <Bell className="w-5 h-5 text-blue-500" />
-                  {unreadCount > 0 && ( // ADDED: Conditional red dot
+                  {unreadCount > 0 && (
                     <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />
                   )}
                 </Button>
-                {/* ADDED Help Button */}
                 <Button
                   variant="text"
                   size="sm"
@@ -205,7 +199,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>Settings</Link>
                   <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>Pricing</Link>
                   <div className="pt-2 border-t border-gray-200">
-                    {/* ADDED: Dashboard Switch Button for mobile */}
                     {!loadingAdminStatus && isAdmin && (
                       <Button
                         variant="outline"
@@ -227,7 +220,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                         Upload Contract
                       </Button>
                     </Link>
-                    {/* ADDED Help Button to mobile menu */}
                     <Button
                       variant="outline"
                       size="md"
@@ -249,7 +241,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   </div>
                 </>
               ) : (
-                // MODIFIED: Conditionally render login/signup links for mobile
                 showAuthButtons && (
                   <>
                     <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>Login</Link>
