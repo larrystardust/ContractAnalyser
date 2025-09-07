@@ -17,7 +17,7 @@ export function useNotifications() {
     if (!session?.user?.id) {
       setNotifications([]);
       setLoading(false);
-      console.log('DEBUG: fetchNotifications - No user ID, setting notifications to empty array.'); // ADDED LOG
+      console.log('DEBUG: fetchNotifications - No user ID, setting notifications to empty array.');
       return;
     }
 
@@ -35,8 +35,12 @@ export function useNotifications() {
         throw fetchError;
       }
 
-      console.log('DEBUG: fetchNotifications - Data received from Supabase:', data); // ADDED LOG
+      // MODIFIED: Log the full data object
+      console.log('DEBUG: fetchNotifications - Data received from Supabase:', JSON.stringify(data, null, 2));
       setNotifications(data || []);
+      // ADDED: Log the state after it's set
+      console.log('DEBUG: fetchNotifications - Notifications state after set:', JSON.stringify(data || [], null, 2));
+
     } catch (err: any) {
       console.error('Error fetching notifications:', err);
       setError(err);
