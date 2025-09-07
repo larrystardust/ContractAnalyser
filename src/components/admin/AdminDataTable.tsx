@@ -15,11 +15,11 @@ interface AdminDataTableProps<T> {
   error: string | null;
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
-  // Add props for pagination, sorting, filtering if needed later
+  customActions?: (item: T) => React.ReactNode; // This prop exists
 }
 
 const AdminDataTable = <T extends { id: string | number }>( // T must have an 'id' property
-  { data, columns, loading, error, onEdit, onDelete }: AdminDataTableProps<T>
+  { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
 ) => {
   if (loading) {
     return (
@@ -75,22 +75,28 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex items-center justify-end space-x-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => onEdit(item)}
-                    icon={<Edit className="h-4 w-4" />}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => onDelete(item)}
-                    icon={<Trash2 className="h-4 w-4" />}
-                  >
-                    Delete
-                  </Button>
+                  {customActions ? ( // MODIFIED: Conditionally render custom actions
+                    customActions(item)
+                  ) : (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => onEdit(item)}
+                        icon={<Edit className="h-4 w-4" />}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => onDelete(item)}
+                        icon={<Trash2 className="h-4 w-4" />}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </div>
               </td>
             </tr>
