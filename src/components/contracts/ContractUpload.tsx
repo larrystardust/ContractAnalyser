@@ -36,6 +36,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   useEffect(() => {
     if (defaultJurisdictions && defaultJurisdictions.length > 0) {
       setSelectedJurisdictions(defaultJurisdictions);
+    } else {
+      setSelectedJurisdictions([]); // Clear if no defaults provided
     }
   }, [defaultJurisdictions]);
 
