@@ -125,7 +125,7 @@ const AdminUsersPage: React.FC = () => {
   const columns = [
     { key: 'full_name', header: 'Full Name' },
     { key: 'email', header: 'Email' },
-    { key: 'business_name', header: 'Business Name' }, // ADDED: Business Name column
+    { key: 'business_name', header: 'Business Name' },
     { key: 'is_admin', header: 'Admin', render: (item: AdminProfile) => (item.is_admin ? 'Yes' : 'No') },
     {
       key: 'subscription_details',
@@ -159,6 +159,15 @@ const AdminUsersPage: React.FC = () => {
             <JurisdictionBadge key={j} jurisdiction={j} showLabel={false} />
           ))}
         </div>
+      ),
+    },
+    { // ADDED: Notification Settings column
+      key: 'notification_settings',
+      header: 'Notification Settings',
+      render: (item: AdminProfile) => (
+        <pre className="text-xs overflow-auto max-h-20">
+          {item.notification_settings ? JSON.stringify(item.notification_settings, null, 2) : 'N/A'}
+        </pre>
       ),
     },
     { key: 'auth_created_at', header: 'Joined', render: (item: AdminProfile) => new Date(item.auth_created_at).toLocaleDateString() },
