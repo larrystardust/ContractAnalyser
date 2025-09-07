@@ -3,6 +3,7 @@ import { Database } from '../types/supabase'; // Import your Supabase database t
 import { StripeProduct } from '../stripe-config'; // ADDED: Import StripeProduct type
 import { stripeProducts } from '../stripe-config'; // ADDED: Import stripeProducts array
 import { SubscriptionMembership } from '../hooks/useSubscription'; // ADDED: Import SubscriptionMembership
+import { Contract, AnalysisResult, Finding } from '../types'; // ADDED: Import Contract, AnalysisResult, Finding
 
 // ADDED: Define types for subscription and order details
 type StripeSubscriptionRow = Database['public']['Tables']['stripe_subscriptions']['Row'];
@@ -25,6 +26,14 @@ export type AvailableSubscription = Pick<StripeSubscriptionRow, 'subscription_id
 
 // MODIFIED: Add business_name to AdminProfileUpdate
 export type AdminProfileUpdate = Partial<Omit<AdminProfile, 'id' | 'email' | 'auth_created_at' | 'customer_id' | 'subscription_details' | 'membership_details' | 'single_use_credits'>>;
+
+// ADDED: Type for AdminContract
+export type AdminContract = Contract & {
+  user_full_name: string;
+  user_email: string;
+  marked_for_deletion_by_admin: boolean | null;
+  analysisResult: (AnalysisResult & { findings: Finding[] }) | null;
+};
 
 const adminService = {
   async getUsers(): Promise<{ users: AdminProfile[]; all_subscriptions: AvailableSubscription[] }> {
@@ -209,6 +218,74 @@ const adminService = {
 
     const data = await response.json();
     return data.url;
+  },
+
+  // ADDED: New function to fetch all contracts for admin
+  async getAllContractsForAdmin(): Promise<AdminContract[]> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      throw new Error('User not authenticated.');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-get-all-contracts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch all contracts.');
+    }
+
+    const data = await response.json();
+    return data.contracts;
+  },
+
+  // ADDED: New function to delete a contract as admin
+  async deleteContractAsAdmin(contractId: string): Promise<void> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      throw new Error('User not authenticated.');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-contract`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ contractId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete contract as admin.');
+    }
+  },
+
+  // ADDED: New function to mark a contract for deletion by admin
+  async markContractForDeletionAsAdmin(contractId: string, markedForDeletion: boolean): Promise<void> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      throw new Error('User not authenticated.');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-mark-contract-for-deletion`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+      body: JSON.stringify({ contractId, markedForDeletion }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to mark contract for deletion as admin.');
+    }
   },
 };
 
