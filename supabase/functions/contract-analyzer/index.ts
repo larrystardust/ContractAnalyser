@@ -28,6 +28,20 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
+// Helper for retries
+async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries > 0) {
+      console.warn(`Retry attempt ${retries} failed. Retrying in ${delay}ms...`, error);
+      await new Promise(res => setTimeout(res, delay));
+      return retry(fn, retries - 1, delay * 2); // Exponential backoff
+    }
+    throw error;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsResponse(null, 204);
@@ -75,11 +89,18 @@ Deno.serve(async (req) => {
     userId = user.id;
     userEmail = user.email!;
 
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('full_name, notification_settings')
-      .eq('id', userId)
-      .maybeSingle();
+    // MODIFIED: Use retry for fetching profile data
+    const { data: profileData, error: profileError } = await retry(async () => {
+      return await supabase
+        .from('profiles')
+        .select('full_name, notification_settings')
+        .eq('id', userId)
+        .maybeSingle();
+    }, 5, 500); // Retry 5 times with initial 500ms delay, exponential backoff
+
+    // ADDED LOGGING HERE
+    console.log(`DEBUG: Fetched profileData for user ${userId}:`, profileData);
+    console.log(`DEBUG: profileError for user ${userId}:`, profileError);
 
     if (profileError) {
       console.warn(`Could not fetch profile for user ${userId}:`, profileError.message);
@@ -461,15 +482,6 @@ NOTES:
       .eq('id', contractId);
 
     // ADDED: Log activity - Analysis Failed
-    await logActivity(
-      supabase,
-      userId,
-      'CONTRACT_ANALYSIS_FAILED',
-      `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
-      { contract_id: contractId, error: error.message }
-    );
-
-    // --- START: Notification on Analysis Failure ---
     if (userNotificationSettings['analysis-complete']?.inApp) { // Re-using this setting for failure too
       const notificationMessage = `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
