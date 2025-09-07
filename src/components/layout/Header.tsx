@@ -78,6 +78,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   // ADDED: Determine if login/signup buttons should be shown
   const showAuthButtons = !session?.user && location.pathname !== '/auth/email-sent';
 
+  console.log('Unread count:', unreadCount); // DEBUG LOG ADDED HERE
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
       <div className="container mx-auto px-4">
