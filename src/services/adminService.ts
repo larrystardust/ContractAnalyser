@@ -35,6 +35,32 @@ export type AdminContract = Contract & {
   analysisResult: (AnalysisResult & { findings: Finding[] }) | null;
 };
 
+// ADDED: Type for System Reports
+export interface SystemReports {
+  user_stats: {
+    total_users: number;
+    new_users_last_7_days: number;
+    active_users_last_30_days: number;
+  };
+  contract_stats: {
+    total_contracts: number;
+    completed_contracts: number;
+    failed_contracts: number;
+    contracts_uploaded_last_7_days: number;
+  };
+  support_stats: {
+    total_inquiries: number;
+    new_inquiries_last_7_days: number;
+    total_support_tickets: number;
+    new_support_tickets_last_7_days: number;
+    open_support_tickets: number;
+  };
+  subscription_stats: {
+    active_subscriptions: number;
+    single_use_purchases: number;
+  };
+}
+
 const adminService = {
   async getUsers(): Promise<{ users: AdminProfile[]; all_subscriptions: AvailableSubscription[] }> {
     const session = await supabase.auth.getSession();
@@ -286,6 +312,30 @@ const adminService = {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Failed to mark contract for deletion as admin.');
     }
+  },
+
+  // ADDED: New function to get system reports
+  async getSystemReports(): Promise<SystemReports> {
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      throw new Error('User not authenticated.');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-get-system-reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.data.session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch system reports.');
+    }
+
+    const data = await response.json();
+    return data;
   },
 };
 
