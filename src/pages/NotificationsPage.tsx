@@ -2,10 +2,10 @@ import React from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 import Card, { CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Bell, CheckCircle, XCircle, Info, Trash2, Mail } from 'lucide-react'; // ADDED Mail icon for Mark All As Read button
+import { Bell, CheckCircle, XCircle, Info, Trash2, Mail } from 'lucide-react';
 
 const NotificationsPage: React.FC = () => {
-  const { notifications, loading, error, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, loading, error, unreadCount, markAsRead, markAllAsRead, deleteNotification, fetchNotifications } = useNotifications(); // ADDED fetchNotifications
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -32,6 +32,11 @@ const NotificationsPage: React.FC = () => {
     }).format(date);
   };
 
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead(); // Wait for all notifications to be marked as read in the DB and local state
+    await fetchNotifications(); // Immediately re-fetch notifications to ensure UI is in sync
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
@@ -55,7 +60,7 @@ const NotificationsPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Your Notifications</h1>
         <Button
           variant="secondary"
-          onClick={markAllAsRead}
+          onClick={handleMarkAllAsRead} // Use the new handler
           disabled={unreadCount === 0} // Disable if no unread notifications
           icon={<Mail className="h-4 w-4" />}
         >
