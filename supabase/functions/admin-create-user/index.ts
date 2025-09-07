@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm } = await req.json(); // MODIFIED: Added business_name
+    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm } = await req.json();
 
     if (!email || !password) {
       return corsResponse({ error: 'Email and password are required.' }, 400);
@@ -58,6 +58,19 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
+    // Fetch global app settings to get default theme
+    const { data: appSettings, error: appSettingsError } = await supabase
+      .from('app_settings')
+      .select('default_theme')
+      .eq('id', '00000000-0000-0000-0000-000000000000')
+      .maybeSingle();
+
+    if (appSettingsError) {
+      console.error('Error fetching app settings for default theme:', appSettingsError);
+      // Continue with default 'system' theme if fetching fails
+    }
+    const defaultTheme = appSettings?.default_theme || 'system'; // Fallback to 'system'
+
     // Create the user in Supabase Auth
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
@@ -76,10 +89,10 @@ Deno.serve(async (req) => {
       .insert({
         id: newUser.user.id,
         full_name: full_name || null,
-        business_name: business_name || null, // ADDED: Insert business_name
+        business_name: business_name || null,
         mobile_phone_number: mobile_phone_number || null,
         country_code: country_code || null,
-        // Default notification settings and jurisdictions can be set here or handled by client-side defaults
+        theme_preference: defaultTheme, // Use the fetched default theme
       });
 
     if (insertProfileError) {
