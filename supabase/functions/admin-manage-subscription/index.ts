@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -65,6 +66,10 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
+    // Fetch target user's email for logging
+    const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
+    const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
+
     // 1. Get or Create Stripe Customer for the target user
     let customerId: string | null = null;
     const { data: existingCustomer, error: customerFetchError } = await supabase
@@ -116,6 +121,15 @@ Deno.serve(async (req) => {
       }
       // Also update the contract's subscription_id to null if this user was the primary
       await supabase.from('contracts').update({ subscription_id: null }).eq('user_id', userId);
+
+      // ADDED: Log activity
+      await logActivity(
+        supabase,
+        user.id,
+        'ADMIN_SUBSCRIPTION_REMOVED',
+        `Admin ${user.email} removed user ${targetUserEmail} from all subscriptions.`,
+        { target_user_id: userId, target_user_email: targetUserEmail }
+      );
 
       return corsResponse({ message: 'User removed from subscription successfully.' });
 
@@ -188,6 +202,15 @@ Deno.serve(async (req) => {
       // Update the contract's subscription_id for this user
       // This ensures contracts are linked to the correct subscription for RLS
       await supabase.from('contracts').update({ subscription_id: subscriptionId }).eq('user_id', userId);
+
+      // ADDED: Log activity
+      await logActivity(
+        supabase,
+        user.id,
+        'ADMIN_SUBSCRIPTION_ASSIGNED',
+        `Admin ${user.email} assigned user ${targetUserEmail} to subscription ${subscriptionId} with role ${role}.`,
+        { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: subscriptionId, role: role }
+      );
 
       return corsResponse({ message: 'User assigned to subscription successfully.', membership: upsertedMembership });
     }
