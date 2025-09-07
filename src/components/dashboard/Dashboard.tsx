@@ -9,8 +9,8 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Modal from '../ui/Modal'; // ADDED: Import Modal
-import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
+import Modal from '../ui/Modal';
+import { Loader2 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -71,24 +71,25 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedContractId, contracts]);
 
-  // ADDED: Effect to manage the re-analysis modal visibility
-  useEffect(() => {
+  // Callback to be passed to AnalysisResults when re-analysis is initiated
+  const handleReanalyzeInitiated = () => {
+    setShowReanalysisModal(true);
     if (selectedContract) {
-      if (selectedContract.status === 'analyzing') {
-        setShowReanalysisModal(true);
-        setReanalyzingContractName(selectedContract.name);
-      } else if (selectedContract.status === 'completed' && showReanalysisModal) {
-        // Only close if it was previously open for this contract
-        setShowReanalysisModal(false);
-        setReanalyzingContractName(null);
-      }
-    } else if (!selectedContract && showReanalysisModal) {
-      // If no contract is selected but modal is open (e.g., after deletion or navigation)
-      setShowReanalysisModal(false);
-      setReanalyzingContractName(null);
+      setReanalyzingContractName(selectedContract.name);
     }
-  }, [selectedContract?.status, selectedContract?.name, selectedContract, showReanalysisModal]);
+  };
 
+  // Callback for when re-analysis is completed
+  const handleReanalyzeCompleted = () => {
+    setShowReanalysisModal(false);
+    setReanalyzingContractName(null);
+  };
+
+  // Callback for when re-analysis fails
+  const handleReanalyzeFailed = () => {
+    setShowReanalysisModal(false);
+    setReanalyzingContractName(null);
+  };
 
   // Determine if the user is a paying customer based on subscription/orders
   const isPayingCustomerByPlan = (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) ||
@@ -131,14 +132,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Callback to be passed to AnalysisResults when re-analysis is initiated
-  const handleReanalyzeInitiated = () => {
-    setShowReanalysisModal(true);
-    if (selectedContract) {
-      setReanalyzingContractName(selectedContract.name);
-    }
-  };
-
   // Conditional rendering:
   // If the user has their own contracts OR is identified as a paying customer by plan, show their real dashboard.
   // Otherwise, show the sample dashboard content.
@@ -148,8 +141,7 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* MODIFIED: Pass isSample={false} */}
-            <ContractList isSample={false} /> {/* ContractList will use useContracts internally */}
+            <ContractList isSample={false} />
           </div>
           
           {/* Main Content */}
@@ -159,18 +151,18 @@ const Dashboard: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
-                {/* MODIFIED: Pass onReanalyzeInitiated prop */}
                 <AnalysisResults
                   analysisResult={selectedContract.analysisResult}
                   isSample={false}
-                  onReanalyzeInitiated={handleReanalyzeInitiated} // ADDED: Pass the callback
+                  onReanalyzeInitiated={handleReanalyzeInitiated}
+                  onReanalyzeCompleted={handleReanalyzeCompleted}
+                  onReanalyzeFailed={handleReanalyzeFailed}
                 />
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Pass the original contract jurisdictions to JurisdictionSummary */}
                     {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                       <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
                     ))}
