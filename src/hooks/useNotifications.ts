@@ -48,9 +48,11 @@ export function useNotifications() {
   }, [supabase, session?.user?.id]);
 
   useEffect(() => {
-    fetchNotifications();
-
+    // Initial fetch of notifications when component mounts or session changes
     if (session?.user?.id) {
+      fetchNotifications();
+
+      // Set up real-time listener
       const newNotificationChannel = supabase
         .channel('public:notifications')
         .on(
@@ -58,24 +60,25 @@ export function useNotifications() {
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },
           (payload) => {
             console.log('DEBUG: Realtime INSERT event received. Payload:', JSON.stringify(payload, null, 2));
-            // Trigger a full re-fetch of notifications
-            fetchNotifications();
+            // Directly add the new notification to the state for immediate update
+            setNotifications((prev) => [payload.new as Notification, ...prev]);
           }
         )
         .subscribe();
       notificationChannelRef.current = newNotificationChannel;
-      console.log('DEBUG: Realtime channel subscribed. Current state:', newNotificationChannel.state); // ADDED LOG
+      console.log('DEBUG: Realtime channel subscribed. Current state:', newNotificationChannel.state);
     }
 
+    // Cleanup function: Unsubscribe from the real-time channel when the component unmounts
     return () => {
       const currentChannel = notificationChannelRef.current;
       if (currentChannel && (currentChannel.state === 'joined' || currentChannel.state === 'joining')) {
         supabase.removeChannel(currentChannel);
-        console.log('DEBUG: Realtime channel unsubscribed.'); // ADDED LOG
+        console.log('DEBUG: Realtime channel unsubscribed.');
       }
       notificationChannelRef.current = null;
     };
-  }, [fetchNotifications, session?.user?.id, supabase]);
+  }, [session?.user?.id, supabase, fetchNotifications]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
@@ -96,6 +99,28 @@ export function useNotifications() {
       );
     } catch (err: any) {
       console.error('Error marking notification as read:', err);
+      setError(err);
+    }
+  }, [supabase, session?.user?.id]);
+
+  // ADDED: New function to mark all notifications as read
+  const markAllAsRead = useCallback(async () => {
+    try {
+      const { error: updateError } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', session?.user?.id); // Mark all for the current user
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Update local state to reflect all notifications as read
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, is_read: true }))
+      );
+    } catch (err: any) {
+      console.error('Error marking all notifications as read:', err);
       setError(err);
     }
   }, [supabase, session?.user?.id]);
@@ -129,5 +154,5 @@ export function useNotifications() {
   console.log('DEBUG: Calculated unreadCount:', unreadCount);
 
 
-  return { notifications, loading, error, unreadCount, markAsRead, deleteNotification, fetchNotifications };
+  return { notifications, loading, error, unreadCount, markAsRead, markAllAsRead, deleteNotification, fetchNotifications };
 }
