@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 
@@ -134,6 +135,15 @@ Deno.serve(async (req) => {
         console.log('accept-invitation: Successfully updated invited user profile with business name.');
       }
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      invitedUserId,
+      'SUBSCRIPTION_INVITATION_ACCEPTED',
+      `User ${invitedUserEmail} accepted invitation for membership ID: ${invitation_token}.`,
+      { membership_id: invitation_token, invited_by: membership.invited_by }
+    );
 
     console.log('accept-invitation: Invitation accepted successfully for membership ID:', invitation_token);
     return corsResponse({ message: 'Invitation accepted successfully!' });
