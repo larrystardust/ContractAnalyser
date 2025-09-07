@@ -83,6 +83,9 @@ const Dashboard: React.FC = () => {
   const handleReanalyzeCompleted = () => {
     setShowReanalysisModal(false);
     setReanalyzingContractName(null);
+    // Optionally, refetch contracts here if you want to ensure the UI updates immediately
+    // after the analysis is truly done and data is in DB.
+    // However, the ContractContext's real-time listener should handle this.
   };
 
   // Callback for when re-analysis fails
