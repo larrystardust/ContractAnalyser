@@ -4,6 +4,7 @@ import { Scale, Upload, Search, Bell, Menu, X, LogOut, HelpCircle, LayoutDashboa
 import Button from '../ui/Button';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useIsAdmin } from '../../hooks/useIsAdmin'; // ADDED: Import useIsAdmin
+import { useNotifications } from '../../hooks/useNotifications'; // ADDED: Import useNotifications
 
 interface HeaderProps {
   onOpenHelpModal: () => void;
@@ -17,6 +18,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   const navigate = useNavigate();
   const location = useLocation(); // ADDED: Get current location
   const { isAdmin, loadingAdminStatus } = useIsAdmin(); // ADDED: Use useIsAdmin hook
+  const { unreadCount } = useNotifications(); // ADDED: Get unreadCount
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,10 +143,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 <Button
                   variant="text"
                   size="sm"
-                  className="p-1"
+                  className="p-1 relative" // ADDED: relative for positioning the dot
                   onClick={handleNotificationsClick}
                 >
                   <Bell className="w-5 h-5 text-blue-500" />
+                  {unreadCount > 0 && ( // ADDED: Conditional red dot
+                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />
+                  )}
                 </Button>
                 {/* ADDED Help Button */}
                 <Button
@@ -231,7 +236,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                       Help
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="text"
                       size="md"
                       className="w-full mt-2"
                       icon={<LogOut className="w-4 h-4" />}
