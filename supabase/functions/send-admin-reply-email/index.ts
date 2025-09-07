@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1'; // Corrected Resend version to 6.0.1
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -103,6 +104,16 @@ Deno.serve(async (req) => {
         reply_message: message,
       });
       insertError = error;
+
+      // ADDED: Log activity
+      await logActivity(
+        supabase,
+        user.id,
+        'ADMIN_REPLIED_TO_INQUIRY',
+        `Admin ${adminName || user.email} replied to inquiry ID: ${entityId} (Recipient: ${recipientEmail})`,
+        { inquiry_id: entityId, recipient_email: recipientEmail }
+      );
+
     } else if (replyType === 'support_ticket') {
       const { error } = await supabase.from('support_ticket_replies').insert({
         ticket_id: entityId,
@@ -110,6 +121,15 @@ Deno.serve(async (req) => {
         reply_message: message,
       });
       insertError = error;
+
+      // ADDED: Log activity
+      await logActivity(
+        supabase,
+        user.id,
+        'ADMIN_REPLIED_TO_SUPPORT_TICKET',
+        `Admin ${adminName || user.email} replied to support ticket ID: ${entityId} (Recipient: ${recipientEmail})`,
+        { ticket_id: entityId, recipient_email: recipientEmail }
+      );
     }
 
     if (insertError) {
