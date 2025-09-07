@@ -56,16 +56,14 @@ Deno.serve(async (req) => {
       .select(`
         id,
         full_name,
-        business_name, // ADDED
+        business_name,
         mobile_phone_number,
         country_code,
         theme_preference,
         email_reports_enabled,
-        default_jurisdictions,
-        notification_settings,
         is_admin,
         created_at
-      `)
+      `) // MODIFIED: Removed 'default_jurisdictions' and 'notification_settings'
       .order('created_at', { ascending: false });
 
     if (fetchProfilesError) {
