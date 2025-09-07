@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -70,6 +71,15 @@ Deno.serve(async (req) => {
       console.error('Error inserting inquiry:', insertError);
       return corsResponse({ error: insertError.message || 'Failed to submit inquiry to database.' }, 500);
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      null, // No authenticated user for public inquiry
+      'INQUIRY_SUBMITTED',
+      `New inquiry submitted by ${first_name} ${last_name} (${email}) - Subject: ${subject}`,
+      { inquiry_id: data.id, email: email, subject: subject }
+    );
 
     return corsResponse({ message: 'Inquiry submitted successfully!', inquiry: data });
 
