@@ -83,13 +83,24 @@ Deno.serve(async (req) => {
 
     if (profileError) {
       console.warn(`Could not fetch profile for user ${userId}:`, profileError.message);
+      // Default to all notifications enabled if profile fetch fails or settings are null
+      userNotificationSettings = {
+        'analysis-complete': { email: true, inApp: true },
+        'high-risk-findings': { email: true, inApp: true },
+        'weekly-reports': { email: false, inApp: false },
+        'system-updates': { email: false, inApp: true },
+      };
     } else {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      if (profileData?.notification_settings) {
-        userNotificationSettings = profileData.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
-      }
+      // Use fetched settings, or default if the column is null/empty
+      userNotificationSettings = (profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }>) || {
+        'analysis-complete': { email: true, inApp: true },
+        'high-risk-findings': { email: true, inApp: true },
+        'weekly-reports': { email: false, inApp: false },
+        'system-updates': { email: false, inApp: true },
+      };
     }
 
     const { data: membershipData, error: membershipError } = await supabase
