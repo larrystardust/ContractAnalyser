@@ -15,12 +15,11 @@ import { useContracts } from '../../context/ContractContext';
 interface AnalysisResultsProps {
   analysisResult?: AnalysisResult; // MODIFIED: Made optional
   isSample?: boolean;
-  onReanalyzeInitiated?: () => void; // ADDED: Callback for when re-analysis is initiated
-  onReanalyzeCompleted?: () => void; // ADDED: Callback for when re-analysis is completed
-  onReanalyzeFailed?: () => void; // ADDED: Callback for when re-analysis fails
+  onReanalyzeInitiated?: (contractName: string) => void; // MODIFIED: Pass contract name
+  // REMOVED: onReanalyzeCompleted and onReanalyzeFailed as modal dismissal is handled by parent
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, onReanalyzeCompleted, onReanalyzeFailed }) => {
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated }) => {
   // ADDED: Defensive check for analysisResult
   if (!analysisResult) {
     // This case should ideally not be hit if Dashboard.tsx renders correctly,
@@ -161,19 +160,16 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     }
     setIsReanalyzing(true); // Set button loading state
     if (onReanalyzeInitiated) {
-      onReanalyzeInitiated(); // Notify parent that re-analysis has started
+      onReanalyzeInitiated(analysisResult.name || 'the contract'); // MODIFIED: Pass contract name
     }
     try {
       await reanalyzeContract(analysisResult.contract_id);
-      if (onReanalyzeCompleted) {
-        onReanalyzeCompleted(); // Notify parent that re-analysis is completed
-      }
+      // MODIFIED: Removed onReanalyzeCompleted/Failed calls here.
+      // The parent (Dashboard) will monitor the contract status change.
     } catch (error: any) {
       console.error('Re-analysis failed:', error);
       alert(`Failed to re-analyze contract: ${error.message}`);
-      if (onReanalyzeFailed) {
-        onReanalyzeFailed(); // Notify parent that re-analysis failed
-      }
+      // MODIFIED: Removed onReanalyzeFailed call here.
     } finally {
       setIsReanalyzing(false); // Reset button loading state
     }
