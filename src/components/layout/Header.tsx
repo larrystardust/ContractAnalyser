@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { unreadCount } = useNotifications();
+  const { unreadCount } = useNotifications(); // REMOVED 'notifications' and 'markAsRead'
 
   // ADDED: useEffect to log unreadCount changes
   useEffect(() => {
@@ -63,6 +63,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   };
 
   const handleNotificationsClick = () => {
+    // Simply navigate to the notifications page
     navigate('/notifications');
   };
 
@@ -221,7 +222,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                       </Button>
                     </Link>
                     <Button
-                      variant="outline"
+                      variant="text"
                       size="md"
                       className="w-full mt-2"
                       icon={<HelpCircle className="w-4 h-4" />}
