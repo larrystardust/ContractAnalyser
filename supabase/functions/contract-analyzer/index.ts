@@ -400,27 +400,44 @@ NOTES:
     }
 
     // --- START: Notification Generation ---
+    console.log(`Notification settings for user ${userId}:`, userNotificationSettings); // ADDED LOG
     // 1. Analysis Complete Notification
     if (userNotificationSettings['analysis-complete']?.inApp) {
+      console.log(`Attempting to insert 'Analysis Complete' notification for user ${userId}.`); // ADDED LOG
+      const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'Analysis Complete!',
-        message: `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`,
+        message: notificationMessage,
         type: 'success',
       });
-      if (notificationError) console.error('Error inserting "Analysis Complete" notification:', notificationError);
+      if (notificationError) {
+        console.error('Error inserting "Analysis Complete" notification:', notificationError); // IMPROVED LOG
+      } else {
+        console.log(`Successfully inserted 'Analysis Complete' notification for user ${userId}.`); // ADDED LOG
+      }
+    } else {
+      console.log(`'Analysis Complete' in-app notifications are disabled for user ${userId}.`); // ADDED LOG
     }
 
     // 2. High Risk Findings Notification
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
+      console.log(`Attempting to insert 'High Risk Findings' notification for user ${userId}.`); // ADDED LOG
+      const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'High Risk Findings Detected!',
-        message: `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`,
+        message: notificationMessage,
         type: 'error', // Use 'error' type for high risk
       });
-      if (notificationError) console.error('Error inserting "High Risk Findings" notification:', notificationError);
+      if (notificationError) {
+        console.error('Error inserting "High Risk Findings" notification:', notificationError); // IMPROVED LOG
+      } else {
+        console.log(`Successfully inserted 'High Risk Findings' notification for user ${userId}.`); // ADDED LOG
+      }
+    } else {
+      console.log(`'High Risk Findings' in-app notifications are disabled or no high risk findings for user ${userId}.`); // ADDED LOG
     }
     // --- END: Notification Generation ---
 
@@ -454,10 +471,11 @@ NOTES:
 
     // --- START: Notification on Analysis Failure ---
     if (userNotificationSettings['analysis-complete']?.inApp) { // Re-using this setting for failure too
+      const notificationMessage = `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'Analysis Failed!',
-        message: `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`,
+        message: notificationMessage,
         type: 'error',
       });
       if (notificationError) console.error('Error inserting "Analysis Failed" notification:', notificationError);
