@@ -153,27 +153,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     }
   };
 
-  const handleReanalyze = async () => {
-    if (!analysisResult.contract_id) {
-      alert('No contract selected for re-analysis.');
-      return;
-    }
-    setIsReanalyzing(true); // Set button loading state
-    if (onReanalyzeInitiated) {
-      onReanalyzeInitiated(analysisResult.name || 'the contract'); // MODIFIED: Pass contract name
-    }
-    try {
-      await reanalyzeContract(analysisResult.contract_id);
-      // MODIFIED: Removed onReanalyzeCompleted/Failed calls here.
-      // The parent (Dashboard) will monitor the contract status change.
-    } catch (error: any) {
-      console.error('Re-analysis failed:', error);
-      alert(`Failed to re-analyze contract: ${error.message}`);
-      // MODIFIED: Removed onReanalyzeFailed call here.
-    } finally {
-      setIsReanalyzing(false); // Reset button loading state
-    }
-  };
+  // REMOVED: handleReanalyze function as the button is being removed.
 
   return (
     <div className="space-y-6">
@@ -191,15 +171,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               >
                 {isEmailing ? 'Emailing...' : 'Email Full Report'}
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleReanalyze}
-                disabled={isReanalyzing}
-                icon={<RefreshCw className="w-4 h-4" />}
-              >
-                {isReanalyzing ? 'Re-analyzing...' : 'Re-analyze Contract'}
-              </Button>
+              {/* REMOVED: Re-analyze Contract Button */}
             </div>
           )}
         </div>
