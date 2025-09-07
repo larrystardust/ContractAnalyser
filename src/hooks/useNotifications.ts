@@ -35,10 +35,8 @@ export function useNotifications() {
         throw fetchError;
       }
 
-      // MODIFIED: Log the full data object
       console.log('DEBUG: fetchNotifications - Data received from Supabase:', JSON.stringify(data, null, 2));
       setNotifications(data || []);
-      // ADDED: Log the state after it's set
       console.log('DEBUG: fetchNotifications - Notifications state after set:', JSON.stringify(data || [], null, 2));
 
     } catch (err: any) {
@@ -117,7 +115,16 @@ export function useNotifications() {
     }
   }, [supabase, session?.user?.id]);
 
-  const unreadCount = notifications.filter(notif => !notif.is_read).length;
+  const unreadNotifications = notifications.filter(notif => {
+    // Explicitly cast to boolean to ensure correct evaluation
+    const isReadBoolean = Boolean(notif.is_read);
+    console.log(`DEBUG: Checking notification ID: ${notif.id}, is_read: ${notif.is_read}, isReadBoolean: ${isReadBoolean}, !isReadBoolean: ${!isReadBoolean}`);
+    return !isReadBoolean;
+  });
+  const unreadCount = unreadNotifications.length;
+  console.log('DEBUG: Filtered unread notifications array:', unreadNotifications);
+  console.log('DEBUG: Calculated unreadCount:', unreadCount);
+
 
   return { notifications, loading, error, unreadCount, markAsRead, deleteNotification, fetchNotifications };
 }
