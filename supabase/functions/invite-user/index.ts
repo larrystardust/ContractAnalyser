@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 
@@ -245,6 +246,15 @@ Deno.serve(async (req) => {
     } else {
       console.log('invite-user: send-invitation-email Edge Function invoked successfully.');
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      invitingUserId,
+      'SUBSCRIPTION_INVITATION_SENT',
+      `User ${invitingUserEmail} sent invitation to ${invited_email} for subscription ${subscriptionId}.`,
+      { invited_email: invited_email, subscription_id: subscriptionId, membership_id: membershipRecordId }
+    );
 
     return corsResponse({ message: finalMessage, invitation_link: acceptInvitationUrl });
 
