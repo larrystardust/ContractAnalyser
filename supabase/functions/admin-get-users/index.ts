@@ -63,8 +63,9 @@ Deno.serve(async (req) => {
         email_reports_enabled,
         is_admin,
         created_at,
-        default_jurisdictions
-      `) // MODIFIED: Added 'default_jurisdictions' back
+        default_jurisdictions,
+        notification_settings
+      `) // MODIFIED: Added 'notification_settings' back
       .order('created_at', { ascending: false });
 
     if (fetchProfilesError) {
