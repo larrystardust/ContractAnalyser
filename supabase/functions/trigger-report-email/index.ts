@@ -48,6 +48,25 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token or mismatch.' }, 401);
     }
 
+    // Fetch global app settings to check global email reports enabled status
+    const { data: appSettings, error: appSettingsError } = await supabase
+      .from('app_settings')
+      .select('global_email_reports_enabled')
+      .eq('id', '00000000-0000-0000-0000-000000000000')
+      .maybeSingle();
+
+    if (appSettingsError) {
+      console.error('Error fetching app settings for global email reports:', appSettingsError);
+      // Continue, but log the error. Assume enabled if fetching fails.
+    }
+
+    const globalEmailReportsEnabled = appSettings?.global_email_reports_enabled ?? true; // Default to true
+
+    if (!globalEmailReportsEnabled) {
+      console.log(`Email sending for contract ${contractId} skipped because global email reports are disabled.`);
+      return corsResponse({ message: 'Email sending skipped due to global settings' });
+    }
+
     // Fetch user's email, full name, and email report preference
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -62,7 +81,7 @@ Deno.serve(async (req) => {
 
     const recipientEmail = user.email; // Get email from auth.user
     const userName = profileData?.full_name || user.email; // Fallback to email if no full name
-    const sendEmail = profileData?.email_reports_enabled || false; // Get preference
+    const sendEmail = profileData?.email_reports_enabled || false; // Get individual user preference
 
     if (!sendEmail) {
       console.log(`Email sending for contract ${contractId} skipped due to user preference.`);
