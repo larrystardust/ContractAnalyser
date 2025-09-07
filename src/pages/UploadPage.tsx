@@ -3,22 +3,41 @@ import ContractUpload from '../components/contracts/ContractUpload';
 import { Loader2 } from 'lucide-react'; // Import Loader2
 import { useUserProfile } from '../hooks/useUserProfile'; // ADDED: Import useUserProfile
 import { AlertTriangle } from 'lucide-react'; // ADDED: Import AlertTriangle
+import { useAppSettings } from '../hooks/useAppSettings'; // ADDED: Import useAppSettings
 
 const UploadPage: React.FC = () => {
   console.log('UploadPage component rendered');
   const [isUploading, setIsUploading] = useState(false); // New state for upload progress
-  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile(); // ADDED: Fetch default jurisdictions
+  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile(); // ADDED: Fetch user profile default jurisdictions
+  // ADDED: Fetch app settings for default jurisdictions
+  const { settings: appSettings, loading: loadingAppSettings, error: appSettingsError } = useAppSettings();
 
   const handleUploadStatusChange = (status: boolean) => {
     setIsUploading(status);
   };
 
-  // ADDED: Show loading state while user profile is being fetched
-  if (loadingUserProfile) {
+  // MODIFIED: Combine loading states
+  if (loadingUserProfile || loadingAppSettings) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-        <p className="text-gray-500 mt-4">Loading user profile...</p>
+        <p className="text-gray-500 mt-4">Loading user profile and application settings...</p>
+      </div>
+    );
+  }
+
+  // ADDED: Handle error for app settings
+  if (appSettingsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Settings</h2>
+          <p className="text-gray-600 mb-4">
+            There was a problem fetching application settings. Please try again.
+          </p>
+          <p className="text-sm text-red-500">Error: {appSettingsError}</p>
+        </div>
       </div>
     );
   }
@@ -43,7 +62,8 @@ const UploadPage: React.FC = () => {
 
       <ContractUpload
         onUploadStatusChange={handleUploadStatusChange}
-        defaultJurisdictions={defaultJurisdictions} // ADDED: Pass default jurisdictions
+        // MODIFIED: Pass default jurisdictions from app settings if available, otherwise from user profile
+        defaultJurisdictions={appSettings?.default_jurisdictions || defaultJurisdictions}
       />
 
       {isUploading && (
