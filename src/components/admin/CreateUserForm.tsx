@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../ui/Button';
-import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as UsersIcon, Eye, EyeOff, Briefcase } from 'lucide-react'; // ADDED Briefcase
+import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as UsersIcon, Eye, EyeOff, Briefcase, Sparkles } from 'lucide-react'; // ADDED Sparkles
 import adminService, { AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
@@ -116,6 +116,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
   const [selectedRole, setSelectedRole] = useState<'owner' | 'member' | null>(null);
   const [showPassword, setShowPassword] = useState(false); // ADDED
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // ADDED
+  const [grantSingleUseCredit, setGrantSingleUseCredit] = useState(false); // ADDED: State for single-use credit checkbox
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +191,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         await adminService.manageUserSubscription(userId, selectedSubscriptionId, selectedRole);
       }
 
+      // ADDED: Grant single-use credit if checkbox is checked
+      if (grantSingleUseCredit) {
+        await adminService.grantSingleUseCredit(userId);
+      }
+
       setMessage('User created successfully!');
       setFormData({ // Reset form
         email: '',
@@ -205,6 +211,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       });
       setSelectedSubscriptionId(null);
       setSelectedRole(null);
+      setGrantSingleUseCredit(false); // ADDED: Reset checkbox
       onSuccess();
     } catch (err: any) {
       console.error('Error creating user:', err);
@@ -380,6 +387,23 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </label>
       </div>
 
+      {/* ADDED: Grant Single-Use Credit Checkbox */}
+      <div>
+        <label htmlFor="grant_single_use_credit" className="flex items-center text-sm font-medium text-gray-700">
+          <input
+            type="checkbox"
+            id="grant_single_use_credit"
+            name="grant_single_use_credit"
+            checked={grantSingleUseCredit}
+            onChange={(e) => setGrantSingleUseCredit(e.target.checked)}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <span className="ml-2 flex items-center">
+            Grant Single-Use Credit <Sparkles className="h-4 w-4 ml-1 text-yellow-500" />
+          </span>
+        </label>
+      </div>
+
       {/* Default Jurisdictions */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Default Jurisdictions</label>
@@ -418,7 +442,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
           <option value="">-- No Subscription --</option>
           {allSubscriptions.map((sub) => (
             <option key={sub.subscription_id} value={sub.subscription_id}>
-              {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users} {/* MODIFIED */}
+              {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users}
             </option>
           ))}
         </select>
