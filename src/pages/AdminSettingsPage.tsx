@@ -1,13 +1,13 @@
-// src/pages/AdminSettingsPage.tsx
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Settings, Palette, Globe, Mail } from 'lucide-react';
+import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react'; // ADDED Bell icon
 import Card, { CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { useAppSettings, AppSettings } from '../hooks/useAppSettings'; // Import the new hook
+import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
 import { getAllJurisdictions } from '../utils/jurisdictionUtils';
 import { Jurisdiction } from '../types';
+import Modal from '../components/ui/Modal'; // ADDED Modal import
+import adminService from '../services/adminService'; // ADDED adminService import
 
 const AdminSettingsPage: React.FC = () => {
   const { settings, loading, error, updateSettings } = useAppSettings();
@@ -15,6 +15,15 @@ const AdminSettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // State for System Notification Modal
+  const [showSystemNotificationModal, setShowSystemNotificationModal] = useState(false);
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [sendingNotification, setSendingNotification] = useState(false);
+  const [notificationSendError, setNotificationSendError] = useState<string | null>(null);
+  const [notificationSendSuccess, setNotificationSendSuccess] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (settings) {
@@ -60,6 +69,26 @@ const AdminSettingsPage: React.FC = () => {
       setSaveError('Failed to update settings. Please try again.');
     }
     setIsSaving(false);
+  };
+
+  const handleSendSystemNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSendingNotification(true);
+    setNotificationSendError(null);
+    setNotificationSendSuccess(null);
+
+    try {
+      await adminService.sendSystemNotification(notificationTitle, notificationMessage);
+      setNotificationSendSuccess('System notification sent successfully!');
+      setNotificationTitle('');
+      setNotificationMessage('');
+      setShowSystemNotificationModal(false);
+    } catch (err: any) {
+      console.error('Error sending system notification:', err);
+      setNotificationSendError(err.message || 'Failed to send system notification.');
+    } finally {
+      setSendingNotification(false);
+    }
   };
 
   if (loading) {
@@ -182,6 +211,92 @@ const AdminSettingsPage: React.FC = () => {
           </form>
         </CardBody>
       </Card>
+
+      {/* Send System Notification */}
+      <Card>
+        <CardBody>
+          <h2 className="text-lg font-medium text-gray-900 flex items-center mb-4">
+            <Bell className="h-5 w-5 mr-2 text-blue-900" /> Send System Notification
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Send an in-app notification to all users. Use this for important announcements, new features, or maintenance alerts.
+          </p>
+          {notificationSendSuccess && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+              {notificationSendSuccess}
+            </div>
+          )}
+          {notificationSendError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+              {notificationSendError}
+            </div>
+          )}
+          <Button
+            variant="primary"
+            onClick={() => setShowSystemNotificationModal(true)}
+            icon={<Bell className="w-4 h-4" />}
+          >
+            Send New Notification
+          </Button>
+        </CardBody>
+      </Card>
+
+      {/* System Notification Modal */}
+      <Modal
+        isOpen={showSystemNotificationModal}
+        onClose={() => setShowSystemNotificationModal(false)}
+        title="Send System Notification to All Users"
+      >
+        <form onSubmit={handleSendSystemNotification} className="space-y-4">
+          <div>
+            <label htmlFor="notificationTitle" className="block text-sm font-medium text-gray-700 mb-1">
+              Notification Title
+            </label>
+            <input
+              type="text"
+              id="notificationTitle"
+              name="notificationTitle"
+              value={notificationTitle}
+              onChange={(e) => setNotificationTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              required
+              disabled={sendingNotification}
+            />
+          </div>
+          <div>
+            <label htmlFor="notificationMessage" className="block text-sm font-medium text-gray-700 mb-1">
+              Notification Message
+            </label>
+            <textarea
+              id="notificationMessage"
+              name="notificationMessage"
+              rows={4}
+              value={notificationMessage}
+              onChange={(e) => setNotificationMessage(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              required
+              disabled={sendingNotification}
+            ></textarea>
+          </div>
+          <div className="flex justify-end space-x-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowSystemNotificationModal(false)}
+              disabled={sendingNotification}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={sendingNotification || !notificationTitle || !notificationMessage}
+            >
+              {sendingNotification ? 'Sending...' : 'Send Notification'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
