@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -56,6 +57,10 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
+    // Fetch target user's email for logging
+    const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
+    const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
+
     // Extract profile-specific updates
     const profileUpdates: { [key: string]: any } = {};
     for (const key in updates) {
@@ -76,6 +81,15 @@ Deno.serve(async (req) => {
       console.error('Error updating user profile:', updateProfileError);
       return corsResponse({ error: 'Failed to update user profile' }, 500);
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      user.id, // Admin user performing the action
+      'ADMIN_USER_UPDATED',
+      `Admin ${user.email} updated profile for user: ${targetUserEmail}`,
+      { target_user_id: userId, target_user_email: targetUserEmail, updates: profileUpdates }
+    );
 
     return corsResponse({ message: 'User updated successfully', user: updatedProfile });
 
