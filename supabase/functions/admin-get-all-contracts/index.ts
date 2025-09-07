@@ -65,9 +65,9 @@ Deno.serve(async (req) => {
         updated_at,
         marked_for_deletion_by_admin,
         user_id,
-        users ( // MODIFIED: Select from 'users' view
+        users (
           email,
-          profiles (full_name) // MODIFIED: Select profiles from 'users'
+          profiles (full_name)
         ),
         analysis_results (
           id,
@@ -113,8 +113,8 @@ Deno.serve(async (req) => {
         updated_at: contract.updated_at,
         marked_for_deletion_by_admin: contract.marked_for_deletion_by_admin,
         user_id: contract.user_id,
-        user_full_name: contract.users?.profiles?.full_name || 'N/A', // MODIFIED: Access full_name correctly
-        user_email: contract.users?.email || 'N/A', // MODIFIED: Access email correctly
+        user_full_name: contract.users?.profiles?.full_name || 'N/A',
+        user_email: contract.users?.email || 'N/A',
         analysisResult: latestAnalysisResult ? {
           id: latestAnalysisResult.id,
           contract_id: contract.id,
