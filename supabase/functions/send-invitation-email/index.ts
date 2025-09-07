@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         subject: `You're invited to ContractAnalyser by ${inviterName}!`,
         html: `
           <p>Hello,</p>
-          <p>${inviterName} has invited you to join their ContractAnalyser subscription!</p>
+          <p>${inviterName} has invited you to join and start using their ContractAnalyser subscription!</p>
           <p>Click the link below to accept the invitation and get started:</p>
           <p><a href="${invitationLink}">Accept Invitation</a></p>
           <p>If you don't have an account yet, you will be prompted to sign up first.</p>
