@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { logActivity } from '../_shared/logActivity.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -60,6 +61,10 @@ Deno.serve(async (req) => {
     if (userId === user.id) {
       return corsResponse({ error: 'Admins cannot delete their own account.' }, 403);
     }
+
+    // Fetch target user's email for logging before deletion
+    const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
+    const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
 
     // --- START: Delete associated files from storage ---
     // Fetch all contracts and their analysis results for the user being deleted
@@ -125,6 +130,15 @@ Deno.serve(async (req) => {
       console.error('Error deleting user:', deleteError);
       return corsResponse({ error: 'Failed to delete user' }, 500);
     }
+
+    // ADDED: Log activity
+    await logActivity(
+      supabase,
+      user.id, // Admin user performing the action
+      'ADMIN_USER_DELETED',
+      `Admin ${user.email} deleted user: ${targetUserEmail}`,
+      { target_user_id: userId, target_user_email: targetUserEmail }
+    );
 
     return corsResponse({ message: 'User deleted successfully' });
 
