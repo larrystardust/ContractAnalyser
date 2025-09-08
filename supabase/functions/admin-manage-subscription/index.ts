@@ -2,6 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
 import { logActivity } from '../_shared/logActivity.ts';
+import { insertNotification } from '../_shared/notification_utils.ts'; // MODIFIED IMPORT
+import { stripeProducts } from '../_shared/stripe_products_data.ts'; // To get product name for notification
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -135,13 +137,20 @@ Deno.serve(async (req) => {
         console.error('admin-manage-subscription: Error updating contracts subscription_id to null:', updateContractsError);
       }
 
-      // ADDED: Log activity
       await logActivity(
         supabase,
         user.id,
         'ADMIN_SUBSCRIPTION_REMOVED',
         `Admin ${user.email} removed user ${targetUserEmail} from all subscriptions.`,
         { target_user_id: userId, target_user_email: targetUserEmail }
+      );
+
+      // Send notification to the user that their subscription was removed
+      await insertNotification(
+        userId,
+        'Subscription Removed',
+        `Your subscription access has been removed by an administrator.`,
+        'warning'
       );
 
       return corsResponse({ message: 'User removed from subscription successfully.' });
@@ -157,7 +166,7 @@ Deno.serve(async (req) => {
       // Check subscription details for max_users
       const { data: subscriptionDetails, error: subDetailsError } = await supabase
         .from('stripe_subscriptions')
-        .select('max_users')
+        .select('max_users, price_id') // Fetch price_id to get product name
         .eq('subscription_id', subscriptionId)
         .maybeSingle();
 
@@ -167,6 +176,7 @@ Deno.serve(async (req) => {
       }
 
       const maxUsers = subscriptionDetails.max_users;
+      const priceId = subscriptionDetails.price_id; // Get price_id
       console.log('admin-manage-subscription: Subscription max_users:', maxUsers);
 
       // Count current active/invited members for this subscription
@@ -219,7 +229,6 @@ Deno.serve(async (req) => {
 
       if (upsertError) {
         console.error('admin-manage-subscription: Error upserting membership:', upsertError);
-        // MODIFIED: Log the full error object for detailed debugging
         console.error('admin-manage-subscription: Full upsert error details:', JSON.stringify(upsertError, null, 2));
         return corsResponse({ error: 'Failed to assign user to subscription.' }, 500);
       }
@@ -237,6 +246,22 @@ Deno.serve(async (req) => {
         'ADMIN_SUBSCRIPTION_ASSIGNED',
         `Admin ${user.email} assigned user ${targetUserEmail} to subscription ${subscriptionId} with role ${role}.`,
         { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: subscriptionId, role: role }
+      );
+
+      // Get product name for notification
+      const assignedProduct = stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === priceId ||
+        p.pricing.yearly?.priceId === priceId ||
+        p.pricing.one_time?.priceId === priceId
+      );
+      const productName = assignedProduct?.name || 'a subscription plan';
+
+      // Send notification to the user that their subscription was assigned
+      await insertNotification(
+        userId,
+        'Subscription Assigned!',
+        `An administrator has assigned you to ${productName} with the role of ${role}.`,
+        'success'
       );
 
       return corsResponse({ message: 'User assigned to subscription successfully.', membership: upsertedMembership });
