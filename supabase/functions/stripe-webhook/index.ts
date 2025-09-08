@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { stripeProducts } from '../_shared/stripe_products_data.ts'; // Import stripeProducts
+import { stripeProducts } from '../_shared/stripe_products_data.ts'; // MODIFIED PATH
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -14,7 +14,6 @@ const stripe = new Stripe(stripeSecret, {
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-// ADDED: Helper to insert notification
 async function insertNotification(userId: string, title: string, message: string, type: string) {
   const { error: notificationError } = await supabase.from('notifications').insert({
     user_id: userId,
@@ -29,7 +28,6 @@ async function insertNotification(userId: string, title: string, message: string
 
 Deno.serve(async (req) => {
   try {
-    // Handle OPTIONS request for CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, { status: 204 });
     }
@@ -38,17 +36,14 @@ Deno.serve(async (req) => {
       return new Response('Method not allowed', { status: 405 });
     }
 
-    // get the signature from the header
     const signature = req.headers.get('stripe-signature');
 
     if (!signature) {
       return new Response('No signature found', { status: 400 });
     }
 
-    // get the raw body
     const body = await req.text();
 
-    // verify the webhook signature
     let event: Stripe.Event;
 
     try {
@@ -118,7 +113,7 @@ async function handleEvent(event: Stripe.Event) {
 
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
-          payment_intent_id: payment_intent as string,
+          payment_intent,
           customer_id: customerId,
           amount_subtotal,
           amount_total,
@@ -134,7 +129,6 @@ async function handleEvent(event: Stripe.Event) {
           return;
         }
 
-        // ADDED: Send notification for one-time payment
         const { data: customerUser } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single();
         if (customerUser) {
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
@@ -161,7 +155,6 @@ async function handleEvent(event: Stripe.Event) {
 
 async function syncCustomerFromStripe(customerId: string) {
   try {
-    // Fetch old subscription status before updating
     const { data: oldSubscription, error: oldSubError } = await supabase
       .from('stripe_subscriptions')
       .select('status, price_id')
@@ -170,7 +163,6 @@ async function syncCustomerFromStripe(customerId: string) {
 
     if (oldSubError) {
       console.warn('Error fetching old subscription status:', oldSubError);
-      // Continue, but won't have old status for comparison
     }
 
     const subscriptions = await stripe.subscriptions.list({
@@ -196,18 +188,16 @@ async function syncCustomerFromStripe(customerId: string) {
         console.error('Error updating subscription status:', noSubError);
         throw new Error('Failed to update subscription status in database');
       }
-      // If no active subscription, ensure no membership is active either
       await supabase.from('subscription_memberships')
         .delete()
         .eq('user_id', (await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single()).data?.user_id)
-        .eq('subscription_id', subscriptions.data[0]?.id); // Use the subscription ID if available, otherwise it will be null
+        .eq('subscription_id', subscriptions.data[0]?.id);
       return;
     }
 
     const subscription = subscriptions.data[0];
     const priceId = subscription.items.data[0].price.id;
 
-    // Query the new stripe_product_metadata table for max_users and max_files
     const { data: productMetadata, error: metadataError } = await supabase
       .from('stripe_product_metadata')
       .select('max_users, max_files')
@@ -216,7 +206,6 @@ async function syncCustomerFromStripe(customerId: string) {
 
     if (metadataError) {
       console.error('Error fetching product metadata:', metadataError);
-      // Continue without max_users/max_files if metadata fetch fails
     }
 
     const maxUsers = productMetadata?.max_users ?? null;
@@ -250,7 +239,6 @@ async function syncCustomerFromStripe(customerId: string) {
       throw new Error('Failed to sync subscription in database');
     }
 
-    // MODIFIED: Add/Update subscription_memberships entry for the purchasing user (owner)
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
@@ -259,7 +247,6 @@ async function syncCustomerFromStripe(customerId: string) {
 
     if (customerUserError || !customerUser) {
       console.error(`Could not find user_id for customer ${customerId}:`, customerUserError);
-      // This is a critical error, but we should not block the webhook. Log and continue.
     } else {
       const { error: membershipUpsertError } = await supabase
         .from('subscription_memberships')
@@ -267,12 +254,12 @@ async function syncCustomerFromStripe(customerId: string) {
           {
             user_id: customerUser.user_id,
             subscription_id: subscription.id,
-            role: 'owner', // Assign as owner
+            role: 'owner',
             status: 'active',
-            invited_by: null, // Not invited, they purchased
+            invited_by: null,
             accepted_at: new Date().toISOString(),
           },
-          { onConflict: ['user_id', 'subscription_id'] } // Update if already exists
+          { onConflict: ['user_id', 'subscription_id'] }
         );
 
       if (membershipUpsertError) {
@@ -281,7 +268,6 @@ async function syncCustomerFromStripe(customerId: string) {
         console.info(`Successfully upserted owner membership for user ${customerUser.user_id} and subscription ${subscription.id}`);
       }
 
-      // ADDED: Send notification based on subscription status change
       const newStatus = subscription.status;
       const newPriceId = subscription.items.data[0].price.id;
       const currentProduct = stripeProducts.find(p =>
@@ -310,7 +296,6 @@ async function syncCustomerFromStripe(customerId: string) {
         }
         await insertNotification(customerUser.user_id, title, message, type);
       } else if (oldSubscription?.price_id !== newPriceId && newStatus === 'active') {
-        // Handle plan change within active status
         const oldProduct = stripeProducts.find(p =>
           p.pricing.monthly?.priceId === oldSubscription.price_id ||
           p.pricing.yearly?.priceId === oldSubscription.price_id ||
@@ -325,8 +310,6 @@ async function syncCustomerFromStripe(customerId: string) {
         );
       }
     }
-    // END MODIFIED
-
     console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
     console.error(`Failed to sync subscription for customer ${customerId}:`, error);
