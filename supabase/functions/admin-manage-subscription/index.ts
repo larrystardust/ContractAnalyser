@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
-import { logActivity } from '../_shared/logActivity.ts'; // ADDED
+import { logActivity } from '../_shared/logActivity.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -40,19 +40,23 @@ Deno.serve(async (req) => {
 
   try {
     const { userId, subscriptionId, role } = await req.json();
+    console.log('admin-manage-subscription: Received request with userId:', userId, 'subscriptionId:', subscriptionId, 'role:', role);
 
     if (!userId) {
+      console.error('admin-manage-subscription: Missing userId in request.');
       return corsResponse({ error: 'Missing userId' }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('admin-manage-subscription: Authorization header missing.');
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('admin-manage-subscription: Unauthorized: Invalid or missing user token:', userError?.message);
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
@@ -63,12 +67,14 @@ Deno.serve(async (req) => {
       .single();
 
     if (adminProfileError || !adminProfile?.is_admin) {
+      console.error('admin-manage-subscription: Forbidden: User is not an administrator.', adminProfileError);
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
     // Fetch target user's email for logging
     const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
     const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
+    console.log('admin-manage-subscription: Admin user:', user.email, 'managing user:', targetUserEmail);
 
     // 1. Get or Create Stripe Customer for the target user
     let customerId: string | null = null;
@@ -79,16 +85,18 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (customerFetchError) {
-      console.error('Error fetching existing customer:', customerFetchError);
+      console.error('admin-manage-subscription: Error fetching existing customer:', customerFetchError);
       return corsResponse({ error: 'Failed to fetch customer information.' }, 500);
     }
 
     if (existingCustomer) {
       customerId = existingCustomer.customer_id;
+      console.log('admin-manage-subscription: Found existing customerId:', customerId);
     } else {
-      // Create new Stripe customer
+      console.log('admin-manage-subscription: No existing customer, creating new one.');
       const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(userId);
       if (authUserError || !authUser?.user?.email) {
+        console.error('admin-manage-subscription: Could not retrieve user email to create Stripe customer.', authUserError);
         return corsResponse({ error: 'Could not retrieve user email to create Stripe customer.' }, 500);
       }
       const newStripeCustomer = await stripe.customers.create({
@@ -102,13 +110,15 @@ Deno.serve(async (req) => {
         customer_id: customerId,
       });
       if (insertCustomerError) {
-        console.error('Error inserting new Stripe customer:', insertCustomerError);
+        console.error('admin-manage-subscription: Error inserting new Stripe customer:', insertCustomerError);
         return corsResponse({ error: 'Failed to create Stripe customer record.' }, 500);
       }
+      console.log('admin-manage-subscription: Created new customerId:', customerId);
     }
 
     // 2. Manage Subscription Membership
     if (subscriptionId === null) {
+      console.log('admin-manage-subscription: subscriptionId is null, removing user from all subscriptions.');
       // Remove user from any existing subscription memberships
       const { error: deleteMembershipError } = await supabase
         .from('subscription_memberships')
@@ -116,11 +126,14 @@ Deno.serve(async (req) => {
         .eq('user_id', userId);
 
       if (deleteMembershipError) {
-        console.error('Error deleting membership:', deleteMembershipError);
+        console.error('admin-manage-subscription: Error deleting membership:', deleteMembershipError);
         return corsResponse({ error: 'Failed to remove user from subscription.' }, 500);
       }
       // Also update the contract's subscription_id to null if this user was the primary
-      await supabase.from('contracts').update({ subscription_id: null }).eq('user_id', userId);
+      const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: null }).eq('user_id', userId);
+      if (updateContractsError) {
+        console.error('admin-manage-subscription: Error updating contracts subscription_id to null:', updateContractsError);
+      }
 
       // ADDED: Log activity
       await logActivity(
@@ -134,8 +147,10 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'User removed from subscription successfully.' });
 
     } else {
+      console.log('admin-manage-subscription: subscriptionId is not null, assigning user to subscription.');
       // Assign user to a new/existing subscription
       if (!role) {
+        console.error('admin-manage-subscription: Role is required when assigning a subscription.');
         return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
       }
 
@@ -147,10 +162,12 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (subDetailsError || !subscriptionDetails) {
+        console.error('admin-manage-subscription: Subscription details not found for subscriptionId:', subscriptionId, subDetailsError);
         return corsResponse({ error: 'Subscription details not found.' }, 404);
       }
 
       const maxUsers = subscriptionDetails.max_users;
+      console.log('admin-manage-subscription: Subscription max_users:', maxUsers);
 
       // Count current active/invited members for this subscription
       const { count: currentMembersCount, error: countError } = await supabase
@@ -160,8 +177,10 @@ Deno.serve(async (req) => {
         .in('status', ['active', 'invited']);
 
       if (countError) {
+        console.error('admin-manage-subscription: Could not count current members:', countError);
         return corsResponse({ error: 'Could not count current members.' }, 500);
       }
+      console.log('admin-manage-subscription: Current members count:', currentMembersCount);
 
       // If maxUsers is not unlimited (999999) and limit is reached, prevent adding more
       if (maxUsers !== 999999 && currentMembersCount && currentMembersCount >= maxUsers) {
@@ -174,36 +193,42 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (!existingMembership) {
+          console.warn('admin-manage-subscription: Subscription limit reached. Max users:', maxUsers);
           return corsResponse({ error: `Subscription limit reached. Max users: ${maxUsers}` }, 403);
         }
       }
 
       // Upsert (insert or update) the subscription_memberships record
+      const upsertPayload = {
+        user_id: userId,
+        subscription_id: subscriptionId,
+        role: role,
+        status: 'active', // Admin-assigned memberships are active immediately
+        accepted_at: new Date().toISOString(),
+      };
+      console.log('admin-manage-subscription: Upserting membership with payload:', upsertPayload);
+
       const { data: upsertedMembership, error: upsertError } = await supabase
         .from('subscription_memberships')
         .upsert(
-          {
-            user_id: userId,
-            subscription_id: subscriptionId,
-            role: role,
-            status: 'active', // Admin-assigned memberships are active immediately
-            accepted_at: new Date().toISOString(),
-          },
-          { onConflict: ['user_id', 'subscription_id'] } // Conflict on user_id and subscription_id
+          upsertPayload,
+          { onConflict: ['user_id', 'subscription_id'] }
         )
         .select()
         .single();
 
       if (upsertError) {
-        console.error('Error upserting membership:', upsertError);
+        console.error('admin-manage-subscription: Error upserting membership:', upsertError);
         return corsResponse({ error: 'Failed to assign user to subscription.' }, 500);
       }
+      console.log('admin-manage-subscription: Membership upserted successfully:', upsertedMembership);
 
       // Update the contract's subscription_id for this user
-      // This ensures contracts are linked to the correct subscription for RLS
-      await supabase.from('contracts').update({ subscription_id: subscriptionId }).eq('user_id', userId);
+      const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: subscriptionId }).eq('user_id', userId);
+      if (updateContractsError) {
+        console.error('admin-manage-subscription: Error updating contracts subscription_id:', updateContractsError);
+      }
 
-      // ADDED: Log activity
       await logActivity(
         supabase,
         user.id,
@@ -216,7 +241,7 @@ Deno.serve(async (req) => {
     }
 
   } catch (error: any) {
-    console.error('Error in admin-manage-subscription Edge Function:', error);
+    console.error('admin-manage-subscription: Unhandled error in Edge Function:', error);
     return corsResponse({ error: error.message }, 500);
   }
 });
