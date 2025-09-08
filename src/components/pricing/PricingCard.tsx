@@ -1,8 +1,8 @@
 import React from 'react';
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
 import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import Button from '../ui/Button';
-import { useStripe } from '../../hooks/useStripe'; // MODIFIED: Import new function
+import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
 
 interface PricingCardProps {
@@ -11,7 +11,7 @@ interface PricingCardProps {
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
-  const { createCheckoutSession, createCustomerPortalSession } = useStripe(); // MODIFIED: Destructure new function
+  const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { subscription, loading: loadingSubscription } = useSubscription();
 
   // Determine the current pricing option based on product mode and selected billing period
@@ -54,7 +54,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
 
   const handlePurchase = async () => {
     try {
-      if (isDowngradeOption) { // ADDED: Conditional logic for downgrade
+      if (isDowngradeOption) {
         await createCustomerPortalSession();
       } else {
         await createCheckoutSession(currentPricingOption.priceId, product.mode);
