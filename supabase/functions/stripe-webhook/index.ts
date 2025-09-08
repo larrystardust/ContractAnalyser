@@ -1,7 +1,8 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { stripeProducts } from '../_shared/stripe_products_data.ts'; // MODIFIED PATH
+import { stripeProducts } from '../_shared/stripe_products_data.ts';
+import { insertNotification } from '../_shared/notification_utils.ts'; // MODIFIED IMPORT
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -13,18 +14,6 @@ const stripe = new Stripe(stripeSecret, {
 });
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-
-async function insertNotification(userId: string, title: string, message: string, type: string) {
-  const { error: notificationError } = await supabase.from('notifications').insert({
-    user_id: userId,
-    title: title,
-    message: message,
-    type: type,
-  });
-  if (notificationError) {
-    console.error('Error inserting notification:', notificationError);
-  }
-}
 
 Deno.serve(async (req) => {
   try {
@@ -236,7 +225,7 @@ async function syncCustomerFromStripe(customerId: string) {
 
     if (subError) {
       console.error('Error syncing subscription:', subError);
-      throw new Error('Failed to sync subscription in database');
+      throw new Error('Failed to update subscription status in database');
     }
 
     const { data: customerUser, error: customerUserError } = await supabase
