@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { stripeProducts } from '../../src/stripe-config.js'; // ADDED: Import stripeProducts
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -12,6 +13,19 @@ const stripe = new Stripe(stripeSecret, {
 });
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+// ADDED: Helper to insert notification
+async function insertNotification(userId: string, title: string, message: string, type: string) {
+  const { error: notificationError } = await supabase.from('notifications').insert({
+    user_id: userId,
+    title: title,
+    message: message,
+    type: type,
+  });
+  if (notificationError) {
+    console.error('Error inserting notification:', notificationError);
+  }
+}
 
 Deno.serve(async (req) => {
   try {
@@ -119,6 +133,19 @@ async function handleEvent(event: Stripe.Event) {
           console.error('Error inserting order:', orderError);
           return;
         }
+
+        // ADDED: Send notification for one-time payment
+        const { data: customerUser } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single();
+        if (customerUser) {
+          const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
+          const productName = singleUseProduct?.name || 'Single Use Credit';
+          await insertNotification(
+            customerUser.user_id,
+            'Payment Successful!',
+            `Your one-time payment for ${productName} has been processed successfully.`,
+            'success'
+          );
+        }
         console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
       } catch (error) {
         console.error('Error processing one-time payment:', error);
@@ -134,6 +161,18 @@ async function handleEvent(event: Stripe.Event) {
 
 async function syncCustomerFromStripe(customerId: string) {
   try {
+    // Fetch old subscription status before updating
+    const { data: oldSubscription, error: oldSubError } = await supabase
+      .from('stripe_subscriptions')
+      .select('status, price_id')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (oldSubError) {
+      console.warn('Error fetching old subscription status:', oldSubError);
+      // Continue, but won't have old status for comparison
+    }
+
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -240,6 +279,50 @@ async function syncCustomerFromStripe(customerId: string) {
         console.error('Error upserting subscription membership for owner:', membershipUpsertError);
       } else {
         console.info(`Successfully upserted owner membership for user ${customerUser.user_id} and subscription ${subscription.id}`);
+      }
+
+      // ADDED: Send notification based on subscription status change
+      const newStatus = subscription.status;
+      const newPriceId = subscription.items.data[0].price.id;
+      const currentProduct = stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === newPriceId ||
+        p.pricing.yearly?.priceId === newPriceId ||
+        p.pricing.one_time?.priceId === newPriceId
+      );
+      const productName = currentProduct?.name || 'Subscription';
+
+      if (oldSubscription?.status !== newStatus) {
+        let title = 'Subscription Update';
+        let message = `Your ${productName} subscription status changed to: ${newStatus}.`;
+        let type = 'info';
+
+        if (newStatus === 'active' || newStatus === 'trialing') {
+          title = 'Subscription Active!';
+          message = `Your ${productName} subscription is now active.`;
+          type = 'success';
+        } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
+          title = 'Subscription Alert!';
+          message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
+          type = 'warning';
+          if (newStatus === 'canceled' && subscription.cancel_at_period_end) {
+            message = `Your ${productName} subscription has been cancelled and will end on ${new Date(subscription.current_period_end * 1000).toLocaleDateString()}.`;
+          }
+        }
+        await insertNotification(customerUser.user_id, title, message, type);
+      } else if (oldSubscription?.price_id !== newPriceId && newStatus === 'active') {
+        // Handle plan change within active status
+        const oldProduct = stripeProducts.find(p =>
+          p.pricing.monthly?.priceId === oldSubscription.price_id ||
+          p.pricing.yearly?.priceId === oldSubscription.price_id ||
+          p.pricing.one_time?.priceId === oldSubscription.price_id
+        );
+        const oldProductName = oldProduct?.name || 'previous plan';
+        await insertNotification(
+          customerUser.user_id,
+          'Subscription Plan Changed',
+          `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
+          'info'
+        );
       }
     }
     // END MODIFIED
