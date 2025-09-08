@@ -5,6 +5,7 @@ import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { useSubscription, SubscriptionMembership } from '../../hooks/useSubscription';
 import { Database } from '../../types/supabase';
+import { Link } from 'react-router-dom'; // Import Link
 
 // Extended type for local use with email and full_name
 interface ExtendedSubscriptionMembership extends SubscriptionMembership {
