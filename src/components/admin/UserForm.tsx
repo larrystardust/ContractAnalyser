@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { Mail, User, Phone, Check as Checkbox, CreditCard, Users as UsersIcon, Sparkles, Briefcase } from 'lucide-react'; // ADDED Briefcase
+import { Mail, User, Phone, Check as Checkbox, CreditCard, Users as UsersIcon, Sparkles, Briefcase } from 'lucide-react';
 import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
@@ -180,7 +180,7 @@ const UserForm: React.FC<UserFormProps> = ({
     try {
       await onManageSubscription(user.id, selectedSubscriptionId, selectedRole);
       alert('User subscription updated successfully!');
-      onCancel(); // Close modal and trigger refresh
+      onCancel(); // MODIFIED: Call onCancel to trigger parent refresh
     } catch (error: any) {
       alert(`Failed to update subscription: ${error.message}`);
     } finally {
@@ -197,7 +197,7 @@ const UserForm: React.FC<UserFormProps> = ({
     try {
       await onGrantSingleUse(user.id);
       alert('Single-use credit granted successfully!');
-      onCancel(); // Close modal and trigger refresh
+      onCancel(); // MODIFIED: Call onCancel to trigger parent refresh
     } catch (error: any) {
       alert(`Failed to grant credit: ${error.message}`);
     } finally {
@@ -383,7 +383,7 @@ const UserForm: React.FC<UserFormProps> = ({
             <option value="">-- No Subscription --</option>
             {allSubscriptions.map((sub) => (
               <option key={sub.subscription_id} value={sub.subscription_id}>
-                {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users} {/* MODIFIED */}
+                {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users}
               </option>
             ))}
           </select>
