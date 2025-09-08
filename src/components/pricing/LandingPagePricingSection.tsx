@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // ADDED: Import Link
-import { ArrowLeft } from 'lucide-react'; // ADDED: Import ArrowLeft icon
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
 import PricingCard from './PricingCard';
 
 const LandingPagePricingSection: React.FC = () => {
   console.log('LandingPagePricingSection component rendered');
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly'); // State for toggle
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   return (
-    // MODIFIED: Added mt-16 to push content below the fixed header
     <div className="py-12 bg-gray-50 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ADDED: Back to Landing Page Link */}
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -29,7 +27,6 @@ const LandingPagePricingSection: React.FC = () => {
           </p>
         </div>
         
-        {/* Billing Period Toggle */}
         <div className="flex justify-center mt-8 mb-12">
           <div className="inline-flex rounded-md shadow-sm" role="group">
             <button
