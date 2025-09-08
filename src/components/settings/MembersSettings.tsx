@@ -231,8 +231,8 @@ const MembersSettings: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <p className="text-gray-600 mb-4">You do not have an active subscription that supports multiple users.</p>
-          <Link to="/pricing"> {/* Changed to Link component */}
-            <Button variant="primary" type="button"> {/* type="button" is good practice for buttons inside Link */}
+          <Link to="/pricing"> 
+            <Button variant="primary" type="button"> 
               View Plans
             </Button>
           </Link>
