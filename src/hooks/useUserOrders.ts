@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback, useRef } from 'react'; // Import useRef
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
-import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data';
-import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel type
+import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 export type StripeOrder = Database['public']['Tables']['stripe_orders']['Row'];
 
@@ -12,10 +12,9 @@ export function useUserOrders() {
   const [orders, setOrders] = useState<StripeOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [customerId, setCustomerId] = useState<string | null>(null); // Store customerId
-  const channelRef = useRef<RealtimeChannel | null>(null); // Use useRef for the channel
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
-  // Use useCallback to memoize fetchOrders
   const fetchOrders = useCallback(async (currentCustomerId: string | null) => {
     if (!session?.user?.id || !currentCustomerId) {
       setOrders([]);
@@ -44,9 +43,8 @@ export function useUserOrders() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, session?.user?.id]); // Dependencies for useCallback
+  }, [supabase, session?.user?.id]);
 
-  // Effect to fetch customer ID and initial orders
   useEffect(() => {
     async function getCustomerIdAndInitialOrders() {
       if (!session?.user?.id) {
@@ -71,9 +69,8 @@ export function useUserOrders() {
         }
 
         const fetchedCustomerId = customerData?.customer_id || null;
-        setCustomerId(fetchedCustomerId); // Set customerId state
+        setCustomerId(fetchedCustomerId);
 
-        // Fetch initial orders using the fetched customerId
         if (fetchedCustomerId) {
           await fetchOrders(fetchedCustomerId);
         } else {
@@ -88,44 +85,39 @@ export function useUserOrders() {
     }
 
     getCustomerIdAndInitialOrders();
-  }, [supabase, session?.user?.id, fetchOrders]); // Re-run if session or supabase changes
+  }, [supabase, session?.user?.id, fetchOrders]);
 
-  // Effect for real-time subscription
   useEffect(() => {
-    if (customerId) { // Only subscribe if customerId is available
+    if (customerId) {
       const newChannel = supabase
         .channel(`stripe_orders_for_customer:${customerId}`)
         .on(
           'postgres_changes',
           {
-            event: '*', // Listen for INSERT, UPDATE, DELETE
+            event: '*',
             schema: 'public',
             table: 'stripe_orders',
             filter: `customer_id=eq.${customerId}`,
           },
           (payload) => {
             console.log('Realtime update for stripe_orders:', payload);
-            // Re-fetch orders to get the latest state
             fetchOrders(customerId);
           }
         )
         .subscribe();
-      channelRef.current = newChannel; // Assign the new channel to the ref
+      channelRef.current = newChannel;
     }
 
     return () => {
-      // Defensive check: Only remove if the channel is defined and still active
       const currentChannel = channelRef.current;
       if (currentChannel && (currentChannel.state === 'joined' || currentChannel.state === 'joining')) {
         supabase.removeChannel(currentChannel);
       }
-      channelRef.current = null; // Clear the ref
+      channelRef.current = null;
     };
-  }, [supabase, customerId, fetchOrders]); // Re-subscribe if customerId changes
+  }, [supabase, customerId, fetchOrders]);
 
-  // Helper to check for available single-use credits
   const hasAvailableSingleUse = () => {
-    // Dynamically get the single-use priceId from stripeProducts
     const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
     const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
 
@@ -138,11 +130,10 @@ export function useUserOrders() {
       order.payment_status === 'paid' && 
       order.status === 'completed' && 
       order.is_consumed === false &&
-      order.price_id === singleUsePriceId // MODIFIED: Filter by price_id
+      order.price_id === singleUsePriceId
     );
   };
 
-  // Helper to get the ID of an available single-use order
   const getAvailableSingleUseOrderId = () => {
     const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
     const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
@@ -156,7 +147,7 @@ export function useUserOrders() {
       order.payment_status === 'paid' && 
       order.status === 'completed' && 
       order.is_consumed === false &&
-      order.price_id === singleUsePriceId // MODIFIED: Filter by price_id
+      order.price_id === singleUsePriceId
     );
     return availableOrder ? availableOrder.id : null;
   };
