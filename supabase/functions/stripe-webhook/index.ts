@@ -75,6 +75,7 @@ async function handleEvent(event: Stripe.Event) {
 
   if (event.type === 'checkout.session.completed') {
     const session = stripeData as Stripe.Checkout.Session;
+    console.log('Stripe Webhook: Received checkout.session.completed event. Session:', JSON.stringify(session, null, 2));
 
     isSubscription = session.mode === 'subscription';
 
@@ -84,10 +85,12 @@ async function handleEvent(event: Stripe.Event) {
       console.info(`Starting subscription sync for customer: ${customerId}`);
       await syncCustomerFromStripe(customerId);
     } else if (session.mode === 'payment' && session.payment_status === 'paid') {
+      console.log('Stripe Webhook: Handling one-time payment.');
       try {
         const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
           expand: ['line_items'],
         });
+        console.log('Stripe Webhook: Retrieved full session with line_items:', JSON.stringify(fullSession, null, 2));
 
         const {
           id: checkout_session_id,
@@ -99,10 +102,16 @@ async function handleEvent(event: Stripe.Event) {
         } = fullSession;
 
         const priceId = line_items?.data?.[0]?.price?.id || null;
+        console.log('Stripe Webhook: Extracted priceId:', priceId);
+
+        if (!priceId) {
+          console.error('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.');
+          return;
+        }
 
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
-          payment_intent,
+          payment_intent_id: payment_intent, // MODIFIED: Changed 'payment_intent' to 'payment_intent_id'
           customer_id: customerId,
           amount_subtotal,
           amount_total,
@@ -114,11 +123,18 @@ async function handleEvent(event: Stripe.Event) {
         });
 
         if (orderError) {
-          console.error('Error inserting order:', orderError);
+          console.error('Stripe Webhook: Error inserting order into stripe_orders table:', orderError);
           return;
         }
+        console.log('Stripe Webhook: Order successfully inserted into stripe_orders table.');
 
-        const { data: customerUser } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single();
+        const { data: customerUser, error: customerUserError } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single();
+        if (customerUserError) {
+          console.error('Stripe Webhook: Error fetching user_id from stripe_customers:', customerUserError);
+          return;
+        }
+        console.log('Stripe Webhook: Retrieved customerUser:', JSON.stringify(customerUser, null, 2));
+
         if (customerUser) {
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
           const productName = singleUseProduct?.name || 'Single Use Credit';
@@ -128,10 +144,11 @@ async function handleEvent(event: Stripe.Event) {
             `Your one-time payment for ${productName} has been processed successfully.`,
             'success'
           );
+          console.log('Stripe Webhook: Notification sent for one-time payment.');
         }
         console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
       } catch (error) {
-        console.error('Error processing one-time payment:', error);
+        console.error('Stripe Webhook: Error processing one-time payment:', error);
       }
     }
   } else if (event.type.startsWith('customer.subscription.')) {
