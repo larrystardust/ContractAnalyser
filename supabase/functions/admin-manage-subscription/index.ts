@@ -2,8 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
 import { logActivity } from '../_shared/logActivity.ts';
-import { insertNotification } from '../_shared/notification_utils.ts'; // MODIFIED IMPORT
-import { stripeProducts } from '../_shared/stripe_products_data.ts'; // To get product name for notification
+import { insertNotification } from '../_shared/notification_utils.ts';
+import { stripeProducts } from '../_shared/stripe_products_data.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -41,8 +41,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, subscriptionId, role } = await req.json();
-    console.log('admin-manage-subscription: Received request with userId:', userId, 'subscriptionId:', subscriptionId, 'role:', role);
+    // MODIFIED: Receive priceId instead of subscriptionId
+    const { userId, priceId, role } = await req.json();
+    console.log('admin-manage-subscription: Received request with userId:', userId, 'priceId:', priceId, 'role:', role);
 
     if (!userId) {
       console.error('admin-manage-subscription: Missing userId in request.');
@@ -119,8 +120,10 @@ Deno.serve(async (req) => {
     }
 
     // 2. Manage Subscription Membership
-    if (subscriptionId === null) {
-      console.log('admin-manage-subscription: subscriptionId is null, removing user from all subscriptions.');
+    let newStripeSubscriptionId: string | null = null;
+
+    if (priceId === null) {
+      console.log('admin-manage-subscription: priceId is null, removing user from all subscriptions.');
       // Remove user from any existing subscription memberships
       const { error: deleteMembershipError } = await supabase
         .from('subscription_memberships')
@@ -156,64 +159,75 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'User removed from subscription successfully.' });
 
     } else {
-      console.log('admin-manage-subscription: subscriptionId is not null, assigning user to subscription.');
-      // Assign user to a new/existing subscription
+      console.log('admin-manage-subscription: priceId is not null, assigning user to a new subscription.');
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
         return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
       }
 
-      // Check subscription details for max_users
-      const { data: subscriptionDetails, error: subDetailsError } = await supabase
-        .from('stripe_subscriptions')
-        .select('max_users, price_id') // Fetch price_id to get product name
-        .eq('subscription_id', subscriptionId)
+      // Fetch product details to get max_users for the selected priceId
+      const { data: productMetadata, error: productMetadataError } = await supabase
+        .from('stripe_product_metadata')
+        .select('max_users, product_id')
+        .eq('price_id', priceId)
         .maybeSingle();
 
-      if (subDetailsError || !subscriptionDetails) {
-        console.error('admin-manage-subscription: Subscription details not found for subscriptionId:', subscriptionId, subDetailsError);
-        return corsResponse({ error: 'Subscription details not found.' }, 404);
+      if (productMetadataError || !productMetadata) {
+        console.error('admin-manage-subscription: Product metadata not found for priceId:', priceId, productMetadataError);
+        return corsResponse({ error: 'Product details not found for the selected plan.' }, 404);
       }
 
-      const maxUsers = subscriptionDetails.max_users;
-      const priceId = subscriptionDetails.price_id; // Get price_id
-      console.log('admin-manage-subscription: Subscription max_users:', maxUsers);
-      console.log('admin-manage-subscription: Subscription price_id:', priceId);
+      const maxUsers = productMetadata.max_users;
+      const productId = productMetadata.product_id;
+      console.log('admin-manage-subscription: Product max_users:', maxUsers);
+      console.log('admin-manage-subscription: Product price_id:', priceId);
 
+      // Check if the user already has an active subscription
+      const { data: existingActiveSubscription, error: existingSubError } = await supabase
+        .from('stripe_subscriptions')
+        .select('subscription_id, status')
+        .eq('customer_id', customerId)
+        .in('status', ['active', 'trialing'])
+        .maybeSingle();
 
-      // Count current active/invited members for this subscription
-      const { count: currentMembersCount, error: countError } = await supabase
-        .from('subscription_memberships')
-        .select('id', { count: 'exact' })
-        .eq('subscription_id', subscriptionId)
-        .in('status', ['active', 'invited']);
-
-      if (countError) {
-        console.error('admin-manage-subscription: Could not count current members:', countError);
-        return corsResponse({ error: 'Could not count current members.' }, 500);
+      if (existingSubError) {
+        console.error('admin-manage-subscription: Error checking existing active subscription:', existingSubError);
+        return corsResponse({ error: 'Failed to check existing subscriptions.' }, 500);
       }
-      console.log('admin-manage-subscription: Current members count:', currentMembersCount);
 
-      // If maxUsers is not unlimited (999999) and limit is reached, prevent adding more
-      if (maxUsers !== 999999 && currentMembersCount && currentMembersCount >= maxUsers) {
-        // Allow updating role for existing members, but not adding new ones if limit is reached
-        const { data: existingMembership } = await supabase
-          .from('subscription_memberships')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('subscription_id', subscriptionId)
-          .maybeSingle();
-
-        if (!existingMembership) {
-          console.warn('admin-manage-subscription: Subscription limit reached. Max users:', maxUsers);
-          return corsResponse({ error: `Subscription limit reached. Max users: ${maxUsers}` }, 403);
+      if (existingActiveSubscription) {
+        // If user already has an active subscription, we might want to update it or cancel it first.
+        // For simplicity, let's assume we cancel the old one and create a new one.
+        // In a real scenario, you'd use Stripe's subscription modification API.
+        console.log(`admin-manage-subscription: User ${userId} already has an active subscription (${existingActiveSubscription.subscription_id}). Cancelling it.`);
+        try {
+          await stripe.subscriptions.cancel(existingActiveSubscription.subscription_id);
+          console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveSubscription.subscription_id} cancelled.`);
+          // The webhook will update the DB status for the old subscription.
+        } catch (stripeCancelError: any) {
+          console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
+          // Continue, but log the error.
         }
       }
+
+      // Create a new Stripe Subscription for the user
+      console.log(`admin-manage-subscription: Creating new Stripe subscription for customer ${customerId} with price ${priceId}.`);
+      const newStripeSubscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        collection_method: 'charge_automatically', // Or 'send_invoice' depending on desired flow
+        expand: ['latest_invoice.payment_intent'], // Useful for webhooks
+      });
+      newStripeSubscriptionId = newStripeSubscription.id;
+      console.log('admin-manage-subscription: New Stripe subscription created:', newStripeSubscriptionId);
+
+      // The stripe-webhook will handle populating the stripe_subscriptions table.
+      // We now need to update the subscription_memberships table with this new subscription ID.
 
       // Upsert (insert or update) the subscription_memberships record
       const upsertPayload = {
         user_id: userId,
-        subscription_id: subscriptionId,
+        subscription_id: newStripeSubscriptionId, // Use the NEW Stripe subscription ID
         role: role,
         status: 'active', // Admin-assigned memberships are active immediately
         accepted_at: new Date().toISOString(),
@@ -224,7 +238,7 @@ Deno.serve(async (req) => {
         .from('subscription_memberships')
         .upsert(
           upsertPayload,
-          { onConflict: ['user_id', 'subscription_id'] }
+          { onConflict: ['user_id', 'subscription_id'] } // Conflict on user_id and new_stripe_subscription_id
         )
         .select()
         .single();
@@ -237,7 +251,7 @@ Deno.serve(async (req) => {
       console.log('admin-manage-subscription: Membership upserted successfully:', upsertedMembership);
 
       // Update the contract's subscription_id for this user
-      const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: subscriptionId }).eq('user_id', userId);
+      const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: newStripeSubscriptionId }).eq('user_id', userId);
       if (updateContractsError) {
         console.error('admin-manage-subscription: Error updating contracts subscription_id:', updateContractsError);
       }
@@ -246,8 +260,8 @@ Deno.serve(async (req) => {
         supabase,
         user.id,
         'ADMIN_SUBSCRIPTION_ASSIGNED',
-        `Admin ${user.email} assigned user ${targetUserEmail} to subscription ${subscriptionId} with role ${role}.`,
-        { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: subscriptionId, role: role }
+        `Admin ${user.email} assigned user ${targetUserEmail} to subscription ${newStripeSubscriptionId} with role ${role}.`,
+        { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: newStripeSubscriptionId, role: role, price_id: priceId }
       );
 
       // Get product name for notification
