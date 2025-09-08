@@ -5,14 +5,14 @@ import AdminDataTable from '../components/admin/AdminDataTable';
 import UserForm from '../components/admin/UserForm';
 import CreateUserForm from '../components/admin/CreateUserForm';
 import Modal from '../components/ui/Modal';
-import adminService, { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../services/adminService'; // ADDED AvailableSubscription
+import adminService, { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../services/adminService';
 import Button from '../components/ui/Button';
 import { JurisdictionBadge } from '../components/ui/Badge';
 import { Jurisdiction } from '../types';
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<AdminProfile[]>([]);
-  const [allSubscriptions, setAllSubscriptions] = useState<AvailableSubscription[]>([]); // ADDED
+  const [allSubscriptions, setAllSubscriptions] = useState<AvailableSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -20,23 +20,23 @@ const AdminUsersPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<AdminProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchUsersAndSubscriptions = async () => { // MODIFIED function name
+  const fetchUsersAndSubscriptions = async () => {
     setLoading(true);
     setError(null);
     try {
-      const { users: fetchedUsers, all_subscriptions: fetchedSubscriptions } = await adminService.getUsers(); // MODIFIED
+      const { users: fetchedUsers, all_subscriptions: fetchedSubscriptions } = await adminService.getUsers();
       setUsers(fetchedUsers);
-      setAllSubscriptions(fetchedSubscriptions); // ADDED
+      setAllSubscriptions(fetchedSubscriptions);
     } catch (err: any) {
-      console.error('Error fetching users and subscriptions:', err); // MODIFIED log
-      setError(err.message || 'Failed to load users and subscriptions.'); // MODIFIED error message
+      console.error('Error fetching users and subscriptions:', err);
+      setError(err.message || 'Failed to load users and subscriptions.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsersAndSubscriptions(); // MODIFIED call
+    fetchUsersAndSubscriptions();
   }, []);
 
   const handleEdit = (user: AdminProfile) => {
@@ -63,7 +63,7 @@ const AdminUsersPage: React.FC = () => {
     setIsSaving(true);
     try {
       await adminService.updateUser(selectedUser.id, updates);
-      alert('User profile updated successfully!'); // MODIFIED message
+      alert('User profile updated successfully!');
       setIsEditModalOpen(false);
       setSelectedUser(null);
       fetchUsersAndSubscriptions(); // Refresh the list
@@ -86,7 +86,6 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  // MODIFIED: This function now calls the new adminService.manageUserSubscription
   const handleManageSubscription = async (userId: string, subscriptionId: string | null, role: 'owner' | 'member' | null) => {
     try {
       await adminService.manageUserSubscription(userId, subscriptionId, role);
@@ -111,6 +110,7 @@ const AdminUsersPage: React.FC = () => {
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
     setSelectedUser(null);
+    fetchUsersAndSubscriptions(); // MODIFIED: Ensure data is refreshed when modal closes
   };
 
   const handleCreateUserModalClose = () => {
@@ -161,7 +161,7 @@ const AdminUsersPage: React.FC = () => {
         </div>
       ),
     },
-    { // ADDED: Notification Settings column
+    {
       key: 'notification_settings',
       header: 'Notification Settings',
       render: (item: AdminProfile) => (
@@ -201,12 +201,12 @@ const AdminUsersPage: React.FC = () => {
         <Modal isOpen={isEditModalOpen} onClose={handleEditModalClose} title={`Edit User: ${selectedUser.email}`}>
           <UserForm
             user={selectedUser}
-            allSubscriptions={allSubscriptions} // ADDED
+            allSubscriptions={allSubscriptions}
             onSubmit={handleFormSubmit}
             onCancel={handleEditModalClose}
             isSaving={isSaving}
             onGrantSingleUse={handleGrantSingleUse}
-            onManageSubscription={handleManageSubscription} // MODIFIED
+            onManageSubscription={handleManageSubscription}
             onCreateCustomerPortal={handleCreateCustomerPortal}
           />
         </Modal>
@@ -216,7 +216,7 @@ const AdminUsersPage: React.FC = () => {
         <CreateUserForm
           onSuccess={handleUserCreated}
           onCancel={handleCreateUserModalClose}
-          allSubscriptions={allSubscriptions} // ADDED
+          allSubscriptions={allSubscriptions}
         />
       </Modal>
     </div>
