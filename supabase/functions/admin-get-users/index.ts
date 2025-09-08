@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { stripeProducts } from '../_shared/stripe_products_data.ts'; // MODIFIED PATH
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -103,7 +104,6 @@ Deno.serve(async (req) => {
       console.error('Error fetching Stripe subscriptions:', fetchSubscriptionsError);
       return corsResponse({ error: 'Failed to fetch Stripe subscriptions' }, 500);
     }
-    // MODIFIED: Map subscriptions by subscription_id instead of customer_id
     const allStripeSubscriptionsMap = new Map(subscriptionsData.map(s => [s.subscription_id, s]));
 
     // Fetch all subscription memberships
@@ -142,12 +142,9 @@ Deno.serve(async (req) => {
 
       let subscriptionDetails = null;
 
-      // MODIFIED: Prioritize membership details for subscription lookup
       if (membership && membership.subscription_id) {
         subscriptionDetails = allStripeSubscriptionsMap.get(membership.subscription_id);
       } else if (customerId) {
-        // Fallback to customer_id if no membership or membership has no subscription_id
-        // This handles direct owners who might not have a membership record yet
         const directSubscription = subscriptionsData.find(s => s.customer_id === customerId);
         if (directSubscription) {
           subscriptionDetails = directSubscription;
@@ -159,14 +156,12 @@ Deno.serve(async (req) => {
         email: authUser?.email || null,
         auth_created_at: authUser?.created_at || null,
         customer_id: customerId || null,
-        subscription_details: subscriptionDetails, // Use the determined subscription details
+        subscription_details: subscriptionDetails,
         membership_details: membership || null,
         single_use_credits: customerId ? (unconsumedOrdersCountMap.get(customerId) || 0) : 0
       };
     });
 
-    // Fetch all active subscriptions from stripe_subscriptions table for the dropdown
-    // This part remains the same as it's for populating the dropdown, not for user's current status
     const { data: allSubscriptions, error: allSubscriptionsError } = await supabase
       .from('stripe_subscriptions')
       .select('subscription_id, price_id, status, max_users');
@@ -176,7 +171,21 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to fetch all subscriptions for dropdown' }, 500);
     }
 
-    return corsResponse({ users: combinedUsers, all_subscriptions: allSubscriptions });
+    // Enrich allSubscriptions with product names
+    const enrichedAllSubscriptions = allSubscriptions.map(sub => {
+      const product = stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === sub.price_id ||
+        p.pricing.yearly?.priceId === sub.price_id ||
+        p.pricing.one_time?.priceId === sub.price_id
+      );
+      return {
+        ...sub,
+        product_name: product ? product.name : 'Unknown Product',
+      };
+    });
+
+
+    return corsResponse({ users: combinedUsers, all_subscriptions: enrichedAllSubscriptions });
 
   } catch (error: any) {
     console.error('Error in admin-get-users Edge Function:', error);
