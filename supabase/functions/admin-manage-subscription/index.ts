@@ -178,6 +178,8 @@ Deno.serve(async (req) => {
       const maxUsers = subscriptionDetails.max_users;
       const priceId = subscriptionDetails.price_id; // Get price_id
       console.log('admin-manage-subscription: Subscription max_users:', maxUsers);
+      console.log('admin-manage-subscription: Subscription price_id:', priceId);
+
 
       // Count current active/invited members for this subscription
       const { count: currentMembersCount, error: countError } = await supabase
