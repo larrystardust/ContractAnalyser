@@ -69,9 +69,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   const handleDashboardSwitch = () => {
     if (location.pathname.startsWith('/admin')) {
-      navigate('/admin');
-    } else {
       navigate('/dashboard');
+    } else {
+      navigate('/admin');
     }
   };
 
