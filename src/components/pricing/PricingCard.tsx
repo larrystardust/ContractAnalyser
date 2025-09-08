@@ -1,5 +1,6 @@
 import React from 'react';
-import { stripeProducts, StripeProduct } from '../../stripe-config';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe'; // MODIFIED: Import new function
 import { useSubscription } from '../../hooks/useSubscription';

@@ -3,7 +3,8 @@ import { CreditCard, Download, ExternalLink } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSubscription } from '../../hooks/useSubscription';
-import { stripeProducts, StripeProduct } from '../../stripe-config'; // MODIFIED: Ensure StripeProduct is imported
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import { useContracts } from '../../context/ContractContext';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 

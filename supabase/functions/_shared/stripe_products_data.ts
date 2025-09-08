@@ -1,4 +1,4 @@
-import { StripeProduct } from '../../src/types/index.ts';
+import { StripeProduct } from './stripe_product_types.ts';
 
 export const stripeProducts: StripeProduct[] = [
   {

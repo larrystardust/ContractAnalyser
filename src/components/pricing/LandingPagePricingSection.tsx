@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // ADDED: Import Link
 import { ArrowLeft } from 'lucide-react'; // ADDED: Import ArrowLeft icon
-import { stripeProducts } from '../../stripe-config';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import PricingCard from './PricingCard';
 
 const LandingPagePricingSection: React.FC = () => {

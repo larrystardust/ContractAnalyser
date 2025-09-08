@@ -4,7 +4,7 @@ import { Mail, User, Phone, Checkbox, CreditCard, Users as UsersIcon, Sparkles, 
 import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
-import { stripeProducts } from '../../stripe-config';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [

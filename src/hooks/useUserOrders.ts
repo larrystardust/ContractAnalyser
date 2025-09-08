@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'; // Import useRef
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
-import { stripeProducts } from '../stripe-config';
+import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data';
 import { RealtimeChannel } from '@supabase/supabase-js'; // Import RealtimeChannel type
 
 export type StripeOrder = Database['public']['Tables']['stripe_orders']['Row'];

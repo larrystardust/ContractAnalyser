@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/supabase';
-import { StripeProduct } from '../stripe-config';
-import { stripeProducts } from '../stripe-config';
+import { StripeProduct } from '../../supabase/functions/_shared/stripe_product_types';
+import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data';
 import { SubscriptionMembership } from '../hooks/useSubscription';
 import { Contract, AnalysisResult, Finding } from '../types';
 

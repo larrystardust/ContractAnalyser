@@ -1,5 +1,5 @@
 import React, { useState } from 'react'; // Import useState
-import { stripeProducts } from '../../stripe-config';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import PricingCard from './PricingCard';
 
 const PricingSection: React.FC = () => {
