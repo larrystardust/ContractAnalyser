@@ -7,6 +7,7 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import { useContracts } from '../../context/ContractContext';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { Link } from 'react-router-dom'; // Import Link
 
 // ADDED: Define a type for the combined plan information
 interface CurrentPlanInfo {
@@ -174,9 +175,11 @@ const BillingSettings: React.FC = () => {
           ) : (
             <div className="text-center py-6">
               <p className="text-gray-600 mb-4">You don't have an active subscription.</p>
-              <Button variant="primary" onClick={() => window.location.href = '/pricing'}>
-                View Plans
-              </Button>
+              <Link to="/pricing"> {/* Changed to Link component */}
+                <Button variant="primary" type="button"> {/* type="button" is good practice for buttons inside Link */}
+                  View Plans
+                </Button>
+              </Link>
             </div>
           )}
         </CardBody>
