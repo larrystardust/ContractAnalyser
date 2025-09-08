@@ -1,10 +1,10 @@
-import React, { useState } from 'react'; // Import useState
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import React, { useState } from 'react';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
 import PricingCard from './PricingCard';
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly'); // State for toggle
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   return (
     <div className="py-12 bg-gray-50 mt-16">
@@ -18,7 +18,6 @@ const PricingSection: React.FC = () => {
           </p>
         </div>
         
-        {/* Billing Period Toggle */}
         <div className="flex justify-center mt-8 mb-12">
           <div className="inline-flex rounded-md shadow-sm" role="group">
             <button
