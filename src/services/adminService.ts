@@ -216,7 +216,7 @@ const adminService = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.data.session.access_token}`,
       },
-      body: JSON.stringify({ userId, subscriptionId, role }),
+      body: JSON.stringify({ userId, priceId: subscriptionId, role }),
     });
 
     if (!response.ok) {
