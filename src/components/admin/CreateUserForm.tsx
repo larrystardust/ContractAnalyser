@@ -4,6 +4,7 @@ import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as U
 import adminService, { AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -112,7 +113,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     email_confirm: true, // Option to send email confirmation
     default_jurisdictions: [] as Jurisdiction[],
   });
-  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null); // MODIFIED: Use priceId
   const [selectedRole, setSelectedRole] = useState<'owner' | 'member' | null>(null);
   const [showPassword, setShowPassword] = useState(false); // ADDED
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // ADDED
@@ -144,7 +145,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
   };
 
   const handleSubscriptionDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSubscriptionId(e.target.value === '' ? null : e.target.value);
+    setSelectedPriceId(e.target.value === '' ? null : e.target.value); // MODIFIED: Set priceId
     if (e.target.value !== '' && selectedRole === null) {
       setSelectedRole('member'); // Default to member if subscription selected
     } else if (e.target.value === '') {
@@ -168,7 +169,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       return;
     }
 
-    if (selectedSubscriptionId && !selectedRole) {
+    if (selectedPriceId && !selectedRole) { // MODIFIED: Check selectedPriceId
       setError('Please select a role for the assigned subscription.');
       setLoading(false);
       return;
@@ -185,11 +186,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         is_admin: formData.is_admin,
         email_confirm: formData.email_confirm,
         default_jurisdictions: formData.default_jurisdictions,
+        price_id: selectedPriceId, // MODIFIED: Pass price_id
+        role: selectedRole, // MODIFIED: Pass role
       });
 
-      if (selectedSubscriptionId && selectedRole) {
-        await adminService.manageUserSubscription(userId, selectedSubscriptionId, selectedRole);
-      }
+      // The subscription assignment logic is now handled within adminService.createUser
+      // No need for a separate adminService.manageUserSubscription call here.
 
       // ADDED: Grant single-use credit if checkbox is checked
       if (grantSingleUseCredit) {
@@ -209,7 +211,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         email_confirm: true,
         default_jurisdictions: [],
       });
-      setSelectedSubscriptionId(null);
+      setSelectedPriceId(null); // MODIFIED: Reset priceId
       setSelectedRole(null);
       setGrantSingleUseCredit(false); // ADDED: Reset checkbox
       onSuccess();
@@ -434,21 +436,31 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         <select
           id="assign_subscription"
           name="assign_subscription"
-          value={selectedSubscriptionId || ''}
+          value={selectedPriceId || ''} // MODIFIED: Use selectedPriceId
           onChange={handleSubscriptionDropdownChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           disabled={loading}
         >
           <option value="">-- No Subscription --</option>
-          {allSubscriptions.map((sub) => (
-            <option key={sub.subscription_id} value={sub.subscription_id}>
-              {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users}
-            </option>
+          {stripeProducts.map((product) => ( // MODIFIED: Iterate over stripeProducts
+            <React.Fragment key={product.id}>
+              {product.pricing.monthly && (
+                <option value={product.pricing.monthly.priceId}>
+                  {product.name} (Monthly) - ${product.pricing.monthly.price}
+                </option>
+              )}
+              {product.pricing.yearly && (
+                <option value={product.pricing.yearly.priceId}>
+                  {product.name} (Yearly) - ${product.pricing.yearly.price}
+                </option>
+              )}
+              {/* One-time products are not subscriptions, so don't list them here for assignment */}
+            </React.Fragment>
           ))}
         </select>
       </div>
 
-      {selectedSubscriptionId && (
+      {selectedPriceId && ( // Only show role if a priceId is selected
         <div>
           <label htmlFor="assign_role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
           <select
@@ -457,7 +469,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             value={selectedRole || ''}
             onChange={handleRoleDropdownChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required={selectedSubscriptionId !== null}
+            required={selectedPriceId !== null} // MODIFIED: Required if priceId is selected
             disabled={loading}
           >
             <option value="">-- Select Role --</option>
