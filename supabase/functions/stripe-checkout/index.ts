@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+// No direct import of stripeProducts needed here, as it's handled by price_id
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
@@ -11,7 +12,6 @@ const stripe = new Stripe(stripeSecret, {
   },
 });
 
-// Helper function to create responses with CORS headers
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -19,7 +19,6 @@ function corsResponse(body: string | object | null, status = 200) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
   };
 
-  // For 204 No Content, don't include Content-Type or body
   if (status === 204) {
     return new Response(null, { status, headers });
   }
@@ -89,9 +88,6 @@ Deno.serve(async (req) => {
 
     let customerId;
 
-    /**
-     * In case we don't have a mapping yet, the customer does not exist and we need to create one.
-     */
     if (!customer || !customer.customer_id) {
       const newCustomer = await stripe.customers.create({
         email: user.email,
@@ -110,7 +106,6 @@ Deno.serve(async (req) => {
       if (createCustomerError) {
         console.error('Failed to save customer information in the database', createCustomerError);
 
-        // Try to clean up both the Stripe customer and subscription record
         try {
           await stripe.customers.del(newCustomer.id);
           await supabase.from('stripe_subscriptions').delete().eq('customer_id', newCustomer.id);
@@ -130,7 +125,6 @@ Deno.serve(async (req) => {
         if (createSubscriptionError) {
           console.error('Failed to save subscription in the database', createSubscriptionError);
 
-          // Try to clean up the Stripe customer since we couldn't create the subscription
           try {
             await stripe.customers.del(newCustomer.id);
           } catch (deleteError) {
@@ -148,7 +142,6 @@ Deno.serve(async (req) => {
       customerId = customer.customer_id;
 
       if (mode === 'subscription') {
-        // Verify subscription exists for existing customer
         const { data: subscription, error: getSubscriptionError } = await supabase
           .from('stripe_subscriptions')
           .select('status')
@@ -162,7 +155,6 @@ Deno.serve(async (req) => {
         }
 
         if (!subscription) {
-          // Create subscription record for existing customer if missing
           const { error: createSubscriptionError } = await supabase.from('stripe_subscriptions').insert({
             customer_id: customerId,
             status: 'not_started',
@@ -177,7 +169,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // create Checkout Session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
