@@ -41,7 +41,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // MODIFIED: Receive priceId instead of subscriptionId
     const { userId, priceId, role } = await req.json();
     console.log('admin-manage-subscription: Received request with userId:', userId, 'priceId:', priceId, 'role:', role);
 
@@ -119,7 +118,7 @@ Deno.serve(async (req) => {
       console.log('admin-manage-subscription: Created new customerId:', customerId);
     }
 
-    // 2. Manage Subscription Membership
+    // 2. Manage Subscription
     let newStripeSubscriptionId: string | null = null;
 
     if (priceId === null) {
@@ -196,9 +195,6 @@ Deno.serve(async (req) => {
       }
 
       if (existingActiveSubscription) {
-        // If user already has an active subscription, we might want to update it or cancel it first.
-        // For simplicity, let's assume we cancel the old one and create a new one.
-        // In a real scenario, you'd use Stripe's subscription modification API.
         console.log(`admin-manage-subscription: User ${userId} already has an active subscription (${existingActiveSubscription.subscription_id}). Cancelling it.`);
         try {
           await stripe.subscriptions.cancel(existingActiveSubscription.subscription_id);
@@ -221,40 +217,9 @@ Deno.serve(async (req) => {
       newStripeSubscriptionId = newStripeSubscription.id;
       console.log('admin-manage-subscription: New Stripe subscription created:', newStripeSubscriptionId);
 
-      // The stripe-webhook will handle populating the stripe_subscriptions table.
-      // We now need to update the subscription_memberships table with this new subscription ID.
-
-      // Upsert (insert or update) the subscription_memberships record
-      const upsertPayload = {
-        user_id: userId,
-        subscription_id: newStripeSubscriptionId, // Use the NEW Stripe subscription ID
-        role: role,
-        status: 'active', // Admin-assigned memberships are active immediately
-        accepted_at: new Date().toISOString(),
-      };
-      console.log('admin-manage-subscription: Upserting membership with payload:', upsertPayload);
-
-      const { data: upsertedMembership, error: upsertError } = await supabase
-        .from('subscription_memberships')
-        .upsert(
-          upsertPayload,
-          { onConflict: ['user_id', 'subscription_id'] } // Conflict on user_id and new_stripe_subscription_id
-        )
-        .select()
-        .single();
-
-      if (upsertError) {
-        console.error('admin-manage-subscription: Error upserting membership:', upsertError);
-        console.error('admin-manage-subscription: Full upsert error details:', JSON.stringify(upsertError, null, 2));
-        return corsResponse({ error: 'Failed to assign user to subscription.' }, 500);
-      }
-      console.log('admin-manage-subscription: Membership upserted successfully:', upsertedMembership);
-
-      // Update the contract's subscription_id for this user
-      const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: newStripeSubscriptionId }).eq('user_id', userId);
-      if (updateContractsError) {
-        console.error('admin-manage-subscription: Error updating contracts subscription_id:', updateContractsError);
-      }
+      // The stripe-webhook will handle populating the stripe_subscriptions table
+      // and the subscription_memberships table (for the owner).
+      // We simply return success here.
 
       await logActivity(
         supabase,
@@ -280,7 +245,7 @@ Deno.serve(async (req) => {
         'success'
       );
 
-      return corsResponse({ message: 'User assigned to subscription successfully.', membership: upsertedMembership });
+      return corsResponse({ message: 'User assigned to subscription successfully.', subscription_id: newStripeSubscriptionId });
     }
 
   } catch (error: any) {
