@@ -238,7 +238,7 @@ const NotificationSettings: React.FC = () => {
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            Note: The "Email Reports" setting is managed under "Preferences" for overall email report delivery. You would need to enable it if you want to receive Email Reports.
+            Note: The "Email Reports" setting is managed under "Preferences" for overall email report delivery. You would need to enable it if you prefer to receive Email Reports.
           </p>
         </CardBody>
       </Card>
