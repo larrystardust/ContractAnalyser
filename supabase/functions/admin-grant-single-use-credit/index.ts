@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
-import { stripeProducts } from '../stripe-config.ts'; // Import stripeProducts
+import { stripeProducts } from '../../stripe-config.ts'; // Import stripeProducts
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
