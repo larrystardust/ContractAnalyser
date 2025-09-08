@@ -1,11 +1,10 @@
-import 'dotenv/config'; // Import dotenv/config directly for ESM
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import { stripeProducts } from './supabase/functions/_shared/stripe_products_data.ts'; // Import from shared location
+import { stripeProducts } from './supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Validate that environment variables are set
 if (!SUPABASE_URL) {
   throw new Error('SUPABASE_URL environment variable is not set.');
 }
@@ -21,7 +20,6 @@ async function populateStripeProductMetadata() {
   for (const product of stripeProducts) {
     const productData = [];
 
-    // Handle monthly pricing
     if (product.pricing.monthly) {
       productData.push({
         price_id: product.pricing.monthly.priceId,
@@ -31,7 +29,6 @@ async function populateStripeProductMetadata() {
       });
     }
 
-    // Handle yearly pricing
     if (product.pricing.yearly) {
       productData.push({
         price_id: product.pricing.yearly.priceId,
@@ -41,20 +38,19 @@ async function populateStripeProductMetadata() {
       });
     }
 
-    // Handle one-time pricing
     if (product.pricing.one_time) {
       productData.push({
         price_id: product.pricing.one_time.priceId,
         product_id: product.id,
-        max_users: null, // Single use typically doesn't have a user limit
-        max_files: null, // Single use typically doesn't have a file limit
+        max_users: null,
+        max_files: null,
       });
     }
 
     for (const data of productData) {
       const { error } = await supabase
         .from('stripe_product_metadata')
-        .upsert(data, { onConflict: 'price_id' }); // Use upsert to insert or update
+        .upsert(data, { onConflict: 'price_id' });
 
       if (error) {
         console.error(`Error upserting data for price_id ${data.price_id}:`, error.message);
