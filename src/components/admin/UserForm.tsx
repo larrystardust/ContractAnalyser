@@ -4,7 +4,7 @@ import { Mail, User, Phone, Check as Checkbox, CreditCard, Users as UsersIcon, S
 import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -96,18 +96,18 @@ const countryCodes = [
 
 interface UserFormProps {
   user: AdminProfile;
-  allSubscriptions: AvailableSubscription[];
+  allSubscriptions: AvailableSubscription[]; // This prop is still passed but its content is not used for plan selection
   onSubmit: (updates: AdminProfileUpdate) => void;
   onCancel: () => void;
   isSaving: boolean;
   onGrantSingleUse: (userId: string) => Promise<void>;
-  onManageSubscription: (userId: string, subscriptionId: string | null, role: 'owner' | 'member' | null) => Promise<void>;
+  onManageSubscription: (userId: string, priceId: string | null, role: 'owner' | 'member' | null) => Promise<void>; // MODIFIED: priceId instead of subscriptionId
   onCreateCustomerPortal: (userId: string) => Promise<void>;
 }
 
 const UserForm: React.FC<UserFormProps> = ({
   user,
-  allSubscriptions,
+  allSubscriptions, // Keep this prop, but we'll use stripeProducts for plan selection
   onSubmit,
   onCancel,
   isSaving,
@@ -117,7 +117,7 @@ const UserForm: React.FC<UserFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<AdminProfileUpdate>({
     full_name: user.full_name || '',
-    business_name: user.business_name || '', // ADDED: Initialize business_name
+    business_name: user.business_name || '',
     mobile_phone_number: user.mobile_phone_number || '',
     country_code: user.country_code || countryCodes[0].code,
     is_admin: user.is_admin || false,
@@ -126,7 +126,14 @@ const UserForm: React.FC<UserFormProps> = ({
     default_jurisdictions: user.default_jurisdictions,
     notification_settings: user.notification_settings,
   });
-  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(user.membership_details?.subscription_id || null);
+
+  // MODIFIED: Use priceId for selection, initialize based on user's current price_id if available
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(() => {
+    if (user.subscription_details?.price_id) {
+      return user.subscription_details.price_id;
+    }
+    return null;
+  });
   const [selectedRole, setSelectedRole] = useState<'owner' | 'member' | null>(user.membership_details?.role || null);
 
   const [isGrantingCredit, setIsGrantingCredit] = useState(false);
@@ -136,7 +143,7 @@ const UserForm: React.FC<UserFormProps> = ({
   useEffect(() => {
     setFormData({
       full_name: user.full_name || '',
-      business_name: user.business_name || '', // ADDED: Update business_name on user change
+      business_name: user.business_name || '',
       mobile_phone_number: user.mobile_phone_number || '',
       country_code: user.country_code || countryCodes[0].code,
       is_admin: user.is_admin || false,
@@ -145,7 +152,9 @@ const UserForm: React.FC<UserFormProps> = ({
       default_jurisdictions: user.default_jurisdictions,
       notification_settings: user.notification_settings,
     });
-    setSelectedSubscriptionId(user.membership_details?.subscription_id || null);
+
+    // MODIFIED: Update selectedPriceId on user change
+    setSelectedPriceId(user.subscription_details?.price_id || null);
     setSelectedRole(user.membership_details?.role || null);
   }, [user]);
 
@@ -176,15 +185,16 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleSubscriptionChange = async () => {
-    console.log('UserForm: handleSubscriptionChange triggered.'); // Log invocation
+    console.log('UserForm: handleSubscriptionChange triggered.');
     setIsManagingSubscription(true);
     try {
-      console.log('UserForm: Calling onManageSubscription with:', user.id, selectedSubscriptionId, selectedRole); // Log parameters
-      await onManageSubscription(user.id, selectedSubscriptionId, selectedRole);
+      // MODIFIED: Pass selectedPriceId instead of selectedSubscriptionId
+      console.log('UserForm: Calling onManageSubscription with:', user.id, selectedPriceId, selectedRole);
+      await onManageSubscription(user.id, selectedPriceId, selectedRole);
       alert('User subscription updated successfully!');
-      onCancel(); // MODIFIED: Call onCancel to trigger parent refresh
+      onCancel();
     } catch (error: any) {
-      console.error('UserForm: Error in handleSubscriptionChange:', error); // Log errors
+      console.error('UserForm: Error in handleSubscriptionChange:', error);
       alert(`Failed to update subscription: ${error.message}`);
     } finally {
       setIsManagingSubscription(false);
@@ -192,7 +202,6 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRoleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // If the selected value is an empty string, treat it as null for 'no role'
     setSelectedRole(e.target.value === '' ? null : e.target.value as 'owner' | 'member');
   };
 
@@ -201,7 +210,7 @@ const UserForm: React.FC<UserFormProps> = ({
     try {
       await onGrantSingleUse(user.id);
       alert('Single-use credit granted successfully!');
-      onCancel(); // MODIFIED: Call onCancel to trigger parent refresh
+      onCancel();
     } catch (error: any) {
       alert(`Failed to grant credit: ${error.message}`);
     } finally {
@@ -375,25 +384,35 @@ const UserForm: React.FC<UserFormProps> = ({
       </h3>
       <div className="space-y-3">
         <div>
-          <label htmlFor="subscription_id" className="block text-sm font-medium text-gray-700 mb-1">Assign Subscription:</label>
+          <label htmlFor="subscription_plan" className="block text-sm font-medium text-gray-700 mb-1">Assign Subscription Plan:</label>
           <select
-            id="subscription_id"
-            name="subscription_id"
-            value={selectedSubscriptionId || ''}
-            onChange={(e) => setSelectedSubscriptionId(e.target.value === '' ? null : e.target.value)}
+            id="subscription_plan"
+            name="subscription_plan"
+            value={selectedPriceId || ''} // MODIFIED: Use selectedPriceId
+            onChange={(e) => setSelectedPriceId(e.target.value === '' ? null : e.target.value)} // MODIFIED: Set selectedPriceId
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             disabled={isManagingSubscription}
           >
             <option value="">-- No Subscription --</option>
-            {allSubscriptions.map((sub) => (
-              <option key={sub.subscription_id} value={sub.subscription_id}>
-                {sub.product_name} - Max Users: {sub.max_users === 999999 ? 'Unlimited' : sub.max_users}
-              </option>
+            {stripeProducts.map((product) => ( // MODIFIED: Iterate over stripeProducts
+              <React.Fragment key={product.id}>
+                {product.pricing.monthly && (
+                  <option value={product.pricing.monthly.priceId}>
+                    {product.name} (Monthly) - ${product.pricing.monthly.price}
+                  </option>
+                )}
+                {product.pricing.yearly && (
+                  <option value={product.pricing.yearly.priceId}>
+                    {product.name} (Yearly) - ${product.pricing.yearly.price}
+                  </option>
+                )}
+                {/* One-time products are not subscriptions, so don't list them here for assignment */}
+              </React.Fragment>
             ))}
           </select>
         </div>
 
-        {selectedSubscriptionId && (
+        {selectedPriceId && ( // Only show role if a priceId is selected
           <div>
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
             <select
@@ -404,7 +423,7 @@ const UserForm: React.FC<UserFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isManagingSubscription}
             >
-              <option value="">-- No Role --</option> {/* NEW: Default "No Role" option */}
+              <option value="">-- No Role --</option>
               <option value="owner">Owner</option>
               <option value="member">Member</option>
             </select>
@@ -416,10 +435,11 @@ const UserForm: React.FC<UserFormProps> = ({
             type="button"
             variant="primary"
             onClick={handleSubscriptionChange}
-            disabled={isManagingSubscription || (selectedSubscriptionId !== null && selectedRole === null)}
+            // MODIFIED: Disable if no priceId selected or role is null when priceId is selected
+            disabled={isManagingSubscription || (selectedPriceId !== null && selectedRole === null)}
             icon={<UsersIcon className="h-4 w-4" />}
           >
-            {isManagingSubscription ? 'Updating Subscription...' : 'Update Subscription'}
+            {isManagingSubscription ? 'Updating Subscription...' : 'Assign/Update Subscription'}
           </Button>
           <Button
             type="button"
