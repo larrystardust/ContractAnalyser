@@ -1,6 +1,6 @@
 import 'dotenv/config'; // Import dotenv/config directly for ESM
 import { createClient } from '@supabase/supabase-js';
-import { stripeProducts } from './src/stripe-config.js'; // MODIFIED: Added .js extension
+import { stripeProducts } from './supabase/functions/_shared/stripe_products_data.ts'; // Import from shared location
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
