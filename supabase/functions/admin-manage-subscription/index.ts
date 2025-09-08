@@ -219,6 +219,8 @@ Deno.serve(async (req) => {
 
       if (upsertError) {
         console.error('admin-manage-subscription: Error upserting membership:', upsertError);
+        // MODIFIED: Log the full error object for detailed debugging
+        console.error('admin-manage-subscription: Full upsert error details:', JSON.stringify(upsertError, null, 2));
         return corsResponse({ error: 'Failed to assign user to subscription.' }, 500);
       }
       console.log('admin-manage-subscription: Membership upserted successfully:', upsertedMembership);
