@@ -192,7 +192,8 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleRoleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRole(e.target.value as 'owner' | 'member');
+    // If the selected value is an empty string, treat it as null for 'no role'
+    setSelectedRole(e.target.value === '' ? null : e.target.value as 'owner' | 'member');
   };
 
   const handleGrantCredit = async () => {
@@ -392,6 +393,7 @@ const UserForm: React.FC<UserFormProps> = ({
           </select>
         </div>
 
+        {/* MODIFIED: Added "No Role" option */}
         {selectedSubscriptionId && (
           <div>
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
@@ -403,6 +405,7 @@ const UserForm: React.FC<UserFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isManagingSubscription}
             >
+              <option value="">-- No Role --</option> {/* NEW: Default "No Role" option */}
               <option value="owner">Owner</option>
               <option value="member">Member</option>
             </select>
