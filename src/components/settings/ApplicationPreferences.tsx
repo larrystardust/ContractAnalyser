@@ -264,6 +264,8 @@ const ApplicationPreferences: React.FC = () => {
         </CardHeader>
         <CardBody>
           <div className="space-y-4">
+            {/* Commented out: Default Report Format */}
+            {/*
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Default Report Format</label>
               <select
@@ -276,6 +278,7 @@ const ApplicationPreferences: React.FC = () => {
                 <option value="html">HTML Report</option>
               </select>
             </div>
+            */}
 
             <div className="flex items-center justify-between">
               <div>
