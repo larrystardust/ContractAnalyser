@@ -36,7 +36,7 @@ const HelpPage: React.FC = () => {
         </li>
         <li>
           <strong>What file types do you support?</strong>
-          <p className="ml-4">We currently support PDF, DOCX, and DOC file formats for contract uploads We **do not support OCR** for scanned documents or images. Please ensure your uploaded files contain **selectable (clear) text**. If your document is a scan or an image, you must perform OCR on it manually before uploading.</p>
+          <p className="ml-4">We currently support PDF, DOCX, and DOC file formats for contract uploads. We **do not support OCR** for scanned documents or images. Please ensure your uploaded files contain **selectable (clear) text**. If your document is a scan or an image, you must perform OCR on it manually before uploading.</p>
         </li>
       </ul>
 
