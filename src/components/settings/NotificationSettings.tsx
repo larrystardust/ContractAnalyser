@@ -238,9 +238,7 @@ const NotificationSettings: React.FC = () => {
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            Note: The "Email Reports" setting is managed under "Application Preferences" for overall email report delivery.
-            To enable granular notification preferences (like "Analysis Complete" or "High Risk Findings"),
-            you would need to extend your database schema to store these settings for each user.
+            Note: The "Email Reports" setting is managed under "Preferences" for overall email report delivery. You would need to enable it if you want to receive Email Reports.
           </p>
         </CardBody>
       </Card>
