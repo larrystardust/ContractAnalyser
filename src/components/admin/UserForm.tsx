@@ -176,12 +176,15 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const handleSubscriptionChange = async () => {
+    console.log('UserForm: handleSubscriptionChange triggered.'); // Log invocation
     setIsManagingSubscription(true);
     try {
+      console.log('UserForm: Calling onManageSubscription with:', user.id, selectedSubscriptionId, selectedRole); // Log parameters
       await onManageSubscription(user.id, selectedSubscriptionId, selectedRole);
       alert('User subscription updated successfully!');
       onCancel(); // MODIFIED: Call onCancel to trigger parent refresh
     } catch (error: any) {
+      console.error('UserForm: Error in handleSubscriptionChange:', error); // Log errors
       alert(`Failed to update subscription: ${error.message}`);
     } finally {
       setIsManagingSubscription(false);
