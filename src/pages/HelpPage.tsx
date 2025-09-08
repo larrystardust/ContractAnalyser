@@ -145,6 +145,10 @@ const HelpPage: React.FC = () => {
           <p className="ml-4">Analysis can take some time. If it remains stuck for an unusually long period (e.g., over an hour for a standard contract), please contact our support team.</p>
         </li>
         <li>
+          <strong>Analysis failed or incomplete.</strong>
+          <p className="ml-4">Scanned documents and images with text cannot be properly analyzed. If your document is a scan or an image, you must perform OCR on it manually before uploading.</p>
+        </li>
+        <li>
           <strong>I forgot my password.</strong>
           <p className="ml-4">On the login page, click "Forgot password?" and follow the instructions to reset it.</p>
         </li>
