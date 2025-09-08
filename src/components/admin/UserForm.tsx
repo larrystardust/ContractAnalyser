@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { Mail, User, Phone, Checkbox, CreditCard, Users as UsersIcon, Sparkles, Briefcase } from 'lucide-react'; // ADDED Briefcase
+import { Mail, User, Phone, Check as Checkbox, CreditCard, Users as UsersIcon, Sparkles, Briefcase } from 'lucide-react'; // ADDED Briefcase
 import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
