@@ -393,7 +393,6 @@ const UserForm: React.FC<UserFormProps> = ({
           </select>
         </div>
 
-        {/* MODIFIED: Added "No Role" option */}
         {selectedSubscriptionId && (
           <div>
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
