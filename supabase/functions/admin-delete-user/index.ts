@@ -65,6 +65,23 @@ Deno.serve(async (req) => {
     // Fetch target user's email for logging before deletion
     const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
     const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
+    console.log(`admin-delete-user: Attempting to delete user: ${targetUserEmail} (ID: ${userId})`);
+
+    // --- START: Pre-deletion cleanup for foreign key constraints ---
+    // Explicitly delete stripe_customers entry if it exists, as it does not cascade on auth.users delete
+    console.log(`admin-delete-user: Checking for and deleting stripe_customers entry for user ${userId}`);
+    const { error: deleteCustomerError } = await supabase
+      .from('stripe_customers')
+      .delete()
+      .eq('user_id', userId);
+
+    if (deleteCustomerError) {
+      console.error(`admin-delete-user: Error deleting stripe_customers for user ${userId}:`, deleteCustomerError);
+      // Do not throw, as we still want to attempt to delete the user, but log the error.
+    } else {
+      console.log(`admin-delete-user: Successfully deleted stripe_customers for user ${userId} (if existed).`);
+    }
+    // --- END: Pre-deletion cleanup ---
 
     // --- START: Delete associated files from storage ---
     // Fetch all contracts and their analysis results for the user being deleted
@@ -80,7 +97,7 @@ Deno.serve(async (req) => {
       .eq('user_id', userId);
 
     if (fetchContractsError) {
-      console.error(`Error fetching contracts for user ${userId} for deletion:`, fetchContractsError);
+      console.error(`admin-delete-user: Error fetching contracts for user ${userId} for deletion:`, fetchContractsError);
       // Continue, but log the error.
     } else if (contractsToDelete && contractsToDelete.length > 0) {
       const contractFilePaths: string[] = [];
@@ -102,9 +119,9 @@ Deno.serve(async (req) => {
           .remove(contractFilePaths);
 
         if (storageError) {
-          console.error(`Error deleting contract files for user ${userId}:`, storageError);
+          console.error(`admin-delete-user: Error deleting contract files for user ${userId}:`, storageError);
         } else {
-          console.log(`Successfully deleted ${contractFilePaths.length} contract files for user ${userId}.`);
+          console.log(`admin-delete-user: Successfully deleted ${contractFilePaths.length} contract files for user ${userId}.`);
         }
       }
 
@@ -115,19 +132,22 @@ Deno.serve(async (req) => {
           .remove(reportFilePaths);
 
         if (reportStorageError) {
-          console.error(`Error deleting report files for user ${userId}:`, reportStorageError);
+          console.error(`admin-delete-user: Error deleting report files for user ${userId}:`, reportStorageError);
         } else {
-          console.log(`Successfully deleted ${reportFilePaths.length} report files for user ${userId}.`);
+          console.log(`admin-delete-user: Successfully deleted ${reportFilePaths.length} report files for user ${userId}.`);
         }
       }
     }
     // --- END: Delete associated files from storage ---
 
-    // Delete the user from auth.users, which should cascade to profiles and contracts table
-    const { error: deleteError } = await supabase.auth.admin.deleteUser(userId);
+    // Delete the user from auth.users, which should now cascade to profiles and contracts table
+    // without issues from stripe_customers
+    console.log(`admin-delete-user: Calling supabase.auth.admin.deleteUser for ID: ${userId}`);
+    const { error: deleteUserAuthError } = await supabase.auth.admin.deleteUser(userId);
 
-    if (deleteError) {
-      console.error('Error deleting user:', deleteError);
+    if (deleteUserAuthError) {
+      console.error('admin-delete-user: Error deleting user from auth.users:', deleteUserAuthError);
+      console.error('admin-delete-user: Full deleteUserAuthError object:', JSON.stringify(deleteUserAuthError, null, 2));
       return corsResponse({ error: 'Failed to delete user' }, 500);
     }
 
