@@ -9,7 +9,7 @@ interface ToastProps {
   duration?: number; // in milliseconds, default to 3000
 }
 
-const Toast: React.FC<ToastProps> = ({ id, message, type, onDismiss, duration = 3000 }) => {
+const Toast: React.FC<ToastProps> = ({ id, message, type, onDismiss, duration = 5000 }) => { // MODIFIED: Changed default duration to 5000
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
