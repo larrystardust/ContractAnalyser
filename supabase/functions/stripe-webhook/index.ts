@@ -161,16 +161,18 @@ async function handleEvent(event: Stripe.Event) {
 
 async function syncCustomerFromStripe(customerId: string) {
   try {
-    const { data: oldSubscription, error: oldSubError } = await supabase
+    // 1. Fetch the current state of the subscription from our DB *before* any updates
+    const { data: oldSubscriptionDb, error: oldSubError } = await supabase
       .from('stripe_subscriptions')
       .select('status, price_id')
       .eq('customer_id', customerId)
       .maybeSingle();
 
     if (oldSubError) {
-      console.warn('Error fetching old subscription status:', oldSubError);
+      console.warn('Error fetching old subscription status from DB:', oldSubError);
     }
 
+    // 2. Fetch the latest subscription data from Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -201,9 +203,10 @@ async function syncCustomerFromStripe(customerId: string) {
       return;
     }
 
-    const subscription = subscriptions.data[0];
-    const priceId = subscription.items.data[0].price.id;
+    const stripeSubscription = subscriptions.data[0];
+    const priceId = stripeSubscription.items.data[0].price.id;
 
+    // 3. Fetch product metadata (unchanged)
     const { data: productMetadata, error: metadataError } = await supabase
       .from('stripe_product_metadata')
       .select('max_users, max_files')
@@ -217,21 +220,22 @@ async function syncCustomerFromStripe(customerId: string) {
     const maxUsers = productMetadata?.max_users ?? null;
     const maxFiles = productMetadata?.max_files ?? null;
 
-    const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
+    // 4. UPSERT the subscription data into our database
+    const { error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
       {
-        customer_id: subscription.customer as string,
-        subscription_id: subscription.id,
+        customer_id: stripeSubscription.customer as string,
+        subscription_id: stripeSubscription.id,
         price_id: priceId,
-        current_period_start: subscription.current_period_start,
-        current_period_end: subscription.current_period_end,
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        ...(subscription.default_payment_method && typeof subscription.default_payment_method !== 'string'
+        current_period_start: stripeSubscription.current_period_start,
+        current_period_end: stripeSubscription.current_period_end,
+        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
+        ...(stripeSubscription.default_payment_method && typeof stripeSubscription.default_payment_method !== 'string'
           ? {
-              payment_method_brand: subscription.default_payment_method.card?.brand ?? null,
-              payment_method_last4: subscription.default_payment_method.card?.last4 ?? null,
+              payment_method_brand: stripeSubscription.default_payment_method.card?.brand ?? null,
+              payment_method_last4: stripeSubscription.default_payment_method.card?.last4 ?? null,
             }
           : {}),
-        status: subscription.status,
+        status: stripeSubscription.status, // Use status from Stripe
         max_users: maxUsers,
         max_files: maxFiles,
       },
@@ -240,11 +244,31 @@ async function syncCustomerFromStripe(customerId: string) {
       },
     );
 
-    if (subError) {
-      console.error('Error syncing subscription:', subError);
+    if (subUpsertError) {
+      console.error('Error upserting subscription:', subUpsertError);
       throw new Error('Failed to update subscription status in database');
     }
 
+    // 5. Fetch the *new* state of the subscription from our DB *after* the upsert
+    const { data: newSubscriptionDb, error: newSubFetchError } = await supabase
+      .from('stripe_subscriptions')
+      .select('status, price_id')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (newSubFetchError || !newSubscriptionDb) {
+      console.error('Error fetching new subscription status from DB after upsert:', newSubFetchError);
+      // This is a critical error, but we might still want to proceed with other logic if possible
+      return;
+    }
+
+    // 6. Compare old and new DB states to decide on notifications
+    const oldStatus = oldSubscriptionDb?.status;
+    const newStatus = newSubscriptionDb.status;
+    const oldPriceId = oldSubscriptionDb?.price_id;
+    const newPriceId = newSubscriptionDb.price_id;
+
+    // Fetch user ID for notification
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
@@ -253,68 +277,47 @@ async function syncCustomerFromStripe(customerId: string) {
 
     if (customerUserError || !customerUser) {
       console.error(`Could not find user_id for customer ${customerId}:`, customerUserError);
-    } else {
-      const { error: membershipUpsertError } = await supabase
-        .from('subscription_memberships')
-        .upsert(
-          {
-            user_id: customerUser.user_id,
-            subscription_id: subscription.id,
-            role: 'owner',
-            status: 'active',
-            invited_by: null,
-            accepted_at: new Date().toISOString(),
-          },
-          { onConflict: ['user_id', 'subscription_id'] }
-        );
+      return;
+    }
 
-      if (membershipUpsertError) {
-        console.error('Error upserting subscription membership for owner:', membershipUpsertError);
-      } else {
-        console.info(`Successfully upserted owner membership for user ${customerUser.user_id} and subscription ${subscription.id}`);
-      }
+    const currentProduct = stripeProducts.find(p =>
+      p.pricing.monthly?.priceId === newPriceId ||
+      p.pricing.yearly?.priceId === newPriceId ||
+      p.pricing.one_time?.priceId === newPriceId
+    );
+    const productName = currentProduct?.name || 'Subscription';
 
-      const newStatus = subscription.status;
-      const newPriceId = subscription.items.data[0].price.id;
-      const currentProduct = stripeProducts.find(p =>
-        p.pricing.monthly?.priceId === newPriceId ||
-        p.pricing.yearly?.priceId === newPriceId ||
-        p.pricing.one_time?.priceId === newPriceId
-      );
-      const productName = currentProduct?.name || 'Subscription';
+    if (oldStatus !== newStatus) {
+      let title = 'Subscription Update';
+      let message = `Your ${productName} subscription status changed to: ${newStatus}.`;
+      let type = 'info';
 
-      if (oldSubscription?.status !== newStatus) {
-        let title = 'Subscription Update';
-        let message = `Your ${productName} subscription status changed to: ${newStatus}.`;
-        let type = 'info';
-
-        if (newStatus === 'active' || newStatus === 'trialing') {
-          title = 'Subscription Active!';
-          message = `Your ${productName} subscription is now active.`;
-          type = 'success';
-        } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
-          title = 'Subscription Alert!';
-          message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
-          type = 'warning';
-          if (newStatus === 'canceled' && subscription.cancel_at_period_end) {
-            message = `Your ${productName} subscription has been cancelled and will end on ${new Date(subscription.current_period_end * 1000).toLocaleDateString()}.`;
-          }
+      if (newStatus === 'active' || newStatus === 'trialing') {
+        title = 'Subscription Active!';
+        message = `Your ${productName} subscription is now active.`;
+        type = 'success';
+      } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
+        title = 'Subscription Alert!';
+        message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
+        type = 'warning';
+        if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
+          message = `Your ${productName} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`;
         }
-        await insertNotification(customerUser.user_id, title, message, type);
-      } else if (oldSubscription?.price_id !== newPriceId && newStatus === 'active') {
-        const oldProduct = stripeProducts.find(p =>
-          p.pricing.monthly?.priceId === oldSubscription.price_id ||
-          p.pricing.yearly?.priceId === oldSubscription.price_id ||
-          p.pricing.one_time?.priceId === oldSubscription.price_id
-        );
-        const oldProductName = oldProduct?.name || 'previous plan';
-        await insertNotification(
-          customerUser.user_id,
-          'Subscription Plan Changed',
-          `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
-          'info'
-        );
       }
+      await insertNotification(customerUser.user_id, title, message, type);
+    } else if (oldPriceId !== newPriceId && newStatus === 'active') {
+      const oldProduct = stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === oldPriceId ||
+        p.pricing.yearly?.priceId === oldPriceId ||
+        p.pricing.one_time?.priceId === oldPriceId
+      );
+      const oldProductName = oldProduct?.name || 'previous plan';
+      await insertNotification(
+        customerUser.user_id,
+        'Subscription Plan Changed',
+        `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
+        'info'
+      );
     }
     console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
