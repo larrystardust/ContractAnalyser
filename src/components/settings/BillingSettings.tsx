@@ -16,7 +16,7 @@ interface CurrentPlanInfo {
 }
 
 const BillingSettings: React.FC = () => {
-  const { subscription, loading } = useSubscription();
+  const { subscription, membership, loading } = useSubscription();
   const { contracts, loadingContracts } = useContracts();
   const supabase = useSupabaseClient();
   const session = useSession();
@@ -153,7 +153,8 @@ const BillingSettings: React.FC = () => {
                     </p>
                   </div>
                   
-                  {subscription.payment_method_brand && subscription.payment_method_last4 && (
+                  {/* MODIFIED: Conditionally render payment method based on membership role */}
+                  {membership?.role === 'owner' && subscription.payment_method_brand && subscription.payment_method_last4 && (
                     <div>
                       <p className="text-sm text-gray-500">Payment Method</p>
                       <p className="text-sm font-medium text-gray-900">
