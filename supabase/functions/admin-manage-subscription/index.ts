@@ -125,6 +125,24 @@ Deno.serve(async (req) => {
       p.pricing.one_time?.priceId === priceId
     );
 
+    // --- START: Fetch existing invited_email_address before deletion ---
+    let existingInvitedEmail: string | null = null;
+    const { data: existingMembershipRecord, error: fetchExistingMembershipError } = await supabase
+      .from('subscription_memberships')
+      .select('invited_email_address')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (fetchExistingMembershipError) {
+      console.error('admin-manage-subscription: Error fetching existing membership for invited_email_address:', fetchExistingMembershipError);
+      // Continue, but log the error.
+    } else if (existingMembershipRecord) {
+      existingInvitedEmail = existingMembershipRecord.invited_email_address;
+      console.log('admin-manage-subscription: Found existing invited_email_address:', existingInvitedEmail);
+    }
+    // --- END: Fetch existing invited_email_address before deletion ---
+
+
     // Handle removing user from all subscriptions
     if (priceId === null) {
       console.log('admin-manage-subscription: priceId is null, removing user from all subscriptions.');
@@ -255,6 +273,7 @@ Deno.serve(async (req) => {
             role: role,
             status: 'active',
             accepted_at: new Date().toISOString(),
+            invited_email_address: existingInvitedEmail, // ADDED: Preserve invited_email_address
           },
           { onConflict: ['user_id', 'subscription_id'] }
         );
@@ -319,10 +338,10 @@ Deno.serve(async (req) => {
           }
         } else if (existingActiveSubscription.subscription_id) {
           // If it's a Stripe-managed subscription, cancel it via Stripe API
-          console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveSubscription.subscription_id}). Cancelling it.`);
+          console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`);
           try {
-            await stripe.subscriptions.cancel(existingActiveSubscription.subscription_id);
-            console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveSubscription.subscription_id} cancelled.`);
+            await stripe.subscriptions.cancel(existingActiveStripeSubscription.subscription_id);
+            console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`);
             // The webhook will update the DB status for the old subscription.
           } catch (stripeCancelError: any) {
             console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
