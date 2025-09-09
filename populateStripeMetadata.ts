@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import { stripeProducts } from './supabase/functions/_shared/stripe_products_data.ts'; // MODIFIED: Added .ts extension
+import { stripeProducts } from './supabase/functions/_shared/stripe_products_data.js'; // MODIFIED: Added .js extension
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
