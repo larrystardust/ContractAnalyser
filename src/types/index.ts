@@ -51,3 +51,19 @@ export interface JurisdictionSummary {
 }
 
 // StripeProduct interface moved to supabase/functions/_shared/stripe_product_types.ts
+// This is the correct place for the StripeProduct interface definition
+export interface StripeProduct {
+  id: string;
+  name: string;
+  description: string;
+  mode: 'subscription' | 'payment' | 'admin_assigned';
+  fileRetentionPolicy?: string;
+  maxFiles?: number;
+  max_users?: number; // ADDED: Max users for the plan
+  tier: number;
+  pricing: {
+    monthly?: { priceId: string; price: number; interval: 'month' };
+    yearly?: { priceId: string; price: number; interval: 'year' };
+    one_time?: { priceId: string; price: number; interval: 'one_time' };
+  };
+}
