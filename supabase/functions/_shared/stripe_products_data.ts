@@ -85,7 +85,7 @@ export const stripeProducts: StripeProduct[] = [
     mode: 'admin_assigned', // New mode
     fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
     maxFiles: 1000,
-    max_users: 20, // ADDED: Correct max_users for Admin Free Enterprise
+    max_users: 10, // ADDED: Correct max_users for Admin Free Enterprise
     tier: 3,
     pricing: {
       monthly: { // Using monthly for consistency, but it's not a real Stripe price
