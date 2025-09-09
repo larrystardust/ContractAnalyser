@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
       }
 
       // Get max_users and max_files from the selectedProduct
-      const maxUsers = selectedProduct.maxFiles ?? null; // Corrected to maxFiles
+      const maxUsers = selectedProduct.max_users ?? null; // MODIFIED: Use selectedProduct.max_users
       const maxFiles = selectedProduct.maxFiles ?? null;
 
       // Generate a unique, non-Stripe subscription_id
