@@ -64,7 +64,7 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
-  const customerId = (stripeData as any).customer;
+  const customerId = (stripeData as any).customer || (stripeData as any).id;
 
   if (!customerId || typeof customerId !== 'string') {
     console.error(`No customer ID found in event data: ${JSON.stringify(event)}`);
