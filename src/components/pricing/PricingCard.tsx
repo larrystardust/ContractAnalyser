@@ -35,6 +35,8 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
 
   // Determine if the user's current plan is admin-assigned
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
+  // NEW: Flag to indicate if *any* admin-assigned plan is active for the user
+  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
 
   // Determine if this card's product is the user's current active subscription plan
   const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
@@ -49,23 +51,19 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // NEW LOGIC: Determine if the current card's product should be disabled due to admin assignment
-  const isDisabledByAdminAssignment = isUsersCurrentPlanAdminAssigned &&
-                                       product.tier <= (usersCurrentProduct?.tier || 0); // Compare tiers
+  // MODIFIED: Final disabled state logic
+  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan);
 
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = 'Current Plan';
-  } else if (isDisabledByAdminAssignment) {
-    // This covers the current admin-assigned plan and all lower tiers
+  } else if (isAnyAdminAssignedPlanActive) { // MODIFIED: Use new flag
     buttonText = 'Included with Your Plan';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
   } else {
     buttonText = 'Purchase';
   }
-
-  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || isDisabledByAdminAssignment;
 
   const handlePurchase = async () => {
     try {
@@ -120,7 +118,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
           Already covered by your active subscription.
         </p>
       )}
-      {isDisabledByAdminAssignment && !isCurrentPlan && (
+      {isAnyAdminAssignedPlanActive && !isCurrentPlan && ( // MODIFIED: Use new flag
         <p className="text-xs text-gray-500 mt-2 text-center">
           This plan is included with your current assigned subscription.
         </p>
