@@ -185,9 +185,6 @@ Deno.serve(async (req) => {
       const maxUsers = selectedProduct.max_users ?? null; // MODIFIED: Use selectedProduct.max_users
       const maxFiles = selectedProduct.maxFiles ?? null;
 
-      // Generate a unique, non-Stripe subscription_id
-      const adminAssignedSubscriptionId = `admin_assigned_${userId}_${Date.now()}`;
-
       // First, cancel any existing Stripe subscriptions for this customer
       const { data: existingActiveStripeSubscription, error: existingStripeSubError } = await supabase
         .from('stripe_subscriptions')
@@ -211,6 +208,16 @@ Deno.serve(async (req) => {
           console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
           // Continue, but log the error.
         }
+      }
+
+      // NEW: Delete any existing membership records for this user before upserting the new one
+      const { error: deleteExistingMembershipsError } = await supabase
+        .from('subscription_memberships')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteExistingMembershipsError) {
+        console.error('admin-manage-subscription: Error deleting existing memberships for admin_assigned plan:', deleteExistingMembershipsError);
       }
 
       // Upsert directly into stripe_subscriptions table
@@ -319,6 +326,16 @@ Deno.serve(async (req) => {
             // Continue, but log the error.
           }
         }
+      }
+
+      // NEW: Delete any existing membership records for this user before upserting the new one
+      const { error: deleteExistingMembershipsError } = await supabase
+        .from('subscription_memberships')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteExistingMembershipsError) {
+        console.error('admin-manage-subscription: Error deleting existing memberships for Stripe plan:', deleteExistingMembershipsError);
       }
 
       // Create a new Stripe Subscription for the user
