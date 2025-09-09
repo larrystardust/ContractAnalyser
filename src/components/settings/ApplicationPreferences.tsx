@@ -222,7 +222,7 @@ const ApplicationPreferences: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Palette className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Appearance</h3>
+            <h3 className="text-lg font-medium text-gray-900">Dashboard Appearance</h3>
           </div>
         </CardHeader>
         <CardBody>
