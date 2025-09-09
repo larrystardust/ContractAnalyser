@@ -3,7 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
 import { logActivity } from '../_shared/logActivity.ts';
 import { insertNotification } from '../_shared/notification_utils.ts';
-import { stripeProducts } from '../_shared/stripe_products_data.ts';
+import { stripeProducts } from '../_shared/stripe_products_data.ts'; // ADDED: Import stripeProducts
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -118,9 +118,14 @@ Deno.serve(async (req) => {
       console.log('admin-manage-subscription: Created new customerId:', customerId);
     }
 
-    // 2. Manage Subscription
-    let newStripeSubscriptionId: string | null = null;
+    // Find the product associated with the priceId
+    const selectedProduct = stripeProducts.find(p =>
+      p.pricing.monthly?.priceId === priceId ||
+      p.pricing.yearly?.priceId === priceId ||
+      p.pricing.one_time?.priceId === priceId
+    );
 
+    // Handle removing user from all subscriptions
     if (priceId === null) {
       console.log('admin-manage-subscription: priceId is null, removing user from all subscriptions.');
       // Remove user from any existing subscription memberships
@@ -133,7 +138,20 @@ Deno.serve(async (req) => {
         console.error('admin-manage-subscription: Error deleting membership:', deleteMembershipError);
         return corsResponse({ error: 'Failed to remove user from subscription.' }, 500);
       }
-      // Also update the contract's subscription_id to null if this user was the primary
+
+      // Also delete any existing subscription entry for this customer in stripe_subscriptions
+      // This covers both Stripe-managed and admin-assigned subscriptions
+      const { error: deleteSubError } = await supabase
+        .from('stripe_subscriptions')
+        .delete()
+        .eq('customer_id', customerId);
+
+      if (deleteSubError) {
+        console.error('admin-manage-subscription: Error deleting existing subscription for customer:', deleteSubError);
+        // Continue, but log the error.
+      }
+
+      // Update the contract's subscription_id to null if this user was the primary
       const { error: updateContractsError } = await supabase.from('contracts').update({ subscription_id: null }).eq('user_id', userId);
       if (updateContractsError) {
         console.error('admin-manage-subscription: Error updating contracts subscription_id to null:', updateContractsError);
@@ -147,7 +165,6 @@ Deno.serve(async (req) => {
         { target_user_id: userId, target_user_email: targetUserEmail }
       );
 
-      // Send notification to the user that their subscription was removed
       await insertNotification(
         userId,
         'Subscription Removed',
@@ -157,31 +174,116 @@ Deno.serve(async (req) => {
 
       return corsResponse({ message: 'User removed from subscription successfully.' });
 
-    } else {
-      console.log('admin-manage-subscription: priceId is not null, assigning user to a new subscription.');
+    } else if (selectedProduct?.mode === 'admin_assigned') {
+      console.log('admin-manage-subscription: Assigning admin-only free plan.');
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
         return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
       }
 
-      // Fetch product details to get max_users for the selected priceId
-      const { data: productMetadata, error: productMetadataError } = await supabase
-        .from('stripe_product_metadata')
-        .select('max_users, product_id')
-        .eq('price_id', priceId)
+      // Get max_users and max_files from the selectedProduct
+      const maxUsers = selectedProduct.maxFiles ?? null; // Corrected to maxFiles
+      const maxFiles = selectedProduct.maxFiles ?? null;
+
+      // Generate a unique, non-Stripe subscription_id
+      const adminAssignedSubscriptionId = `admin_assigned_${userId}_${Date.now()}`;
+
+      // First, cancel any existing Stripe subscriptions for this customer
+      const { data: existingActiveStripeSubscription, error: existingStripeSubError } = await supabase
+        .from('stripe_subscriptions')
+        .select('subscription_id, status')
+        .eq('customer_id', customerId)
+        .in('status', ['active', 'trialing'])
         .maybeSingle();
 
-      if (productMetadataError || !productMetadata) {
-        console.error('admin-manage-subscription: Product metadata not found for priceId:', priceId, productMetadataError);
+      if (existingStripeSubError) {
+        console.error('admin-manage-subscription: Error checking existing active Stripe subscription:', existingStripeSubError);
+        // Continue, but log the error.
+      }
+
+      if (existingActiveStripeSubscription && existingActiveStripeSubscription.subscription_id && !existingActiveStripeSubscription.subscription_id.startsWith('admin_assigned_')) {
+        console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`);
+        try {
+          await stripe.subscriptions.cancel(existingActiveStripeSubscription.subscription_id);
+          console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`);
+          // The webhook will update the DB status for the old subscription.
+        } catch (stripeCancelError: any) {
+          console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
+          // Continue, but log the error.
+        }
+      }
+
+      // Upsert directly into stripe_subscriptions table
+      const { error: upsertSubError } = await supabase
+        .from('stripe_subscriptions')
+        .upsert({
+          customer_id: customerId,
+          subscription_id: adminAssignedSubscriptionId, // Use the generated ID
+          price_id: priceId, // The admin-only priceId
+          current_period_start: Math.floor(Date.now() / 1000), // Current timestamp
+          current_period_end: Math.floor(new Date('2099-12-31').getTime() / 1000), // Far future date
+          cancel_at_period_end: false,
+          payment_method_brand: 'Admin', // Indicate admin assignment
+          payment_method_last4: 'Free', // Indicate admin assignment
+          status: 'active', // Always active for admin-assigned
+          max_users: maxUsers,
+          max_files: maxFiles,
+        }, { onConflict: 'customer_id' }); // Update if customer already has a subscription
+
+      if (upsertSubError) {
+        console.error('admin-manage-subscription: Error upserting admin-assigned subscription:', upsertSubError);
+        return corsResponse({ error: 'Failed to assign admin-managed subscription.' }, 500);
+      }
+
+      // Upsert membership for the owner
+      const { error: membershipUpsertError } = await supabase
+        .from('subscription_memberships')
+        .upsert(
+          {
+            user_id: userId,
+            subscription_id: adminAssignedSubscriptionId,
+            role: role,
+            status: 'active',
+            accepted_at: new Date().toISOString(),
+          },
+          { onConflict: ['user_id', 'subscription_id'] }
+        );
+
+      if (membershipUpsertError) {
+        console.error('admin-manage-subscription: Error upserting membership for admin-assigned plan:', membershipUpsertError);
+        // Do not return error, just log it.
+      }
+
+      await logActivity(
+        supabase,
+        user.id,
+        'ADMIN_SUBSCRIPTION_ASSIGNED_FREE',
+        `Admin ${user.email} assigned free plan (${selectedProduct.name}) to user: ${targetUserEmail}`,
+        { target_user_id: userId, target_user_email: targetUserEmail, price_id: priceId, subscription_id: adminAssignedSubscriptionId, role: role }
+      );
+
+      await insertNotification(
+        userId,
+        'Plan Assigned!',
+        `An administrator has assigned you to the ${selectedProduct.name} plan.`,
+        'success'
+      );
+
+      return corsResponse({ message: 'User assigned to free plan successfully.', subscription_id: adminAssignedSubscriptionId });
+
+    } else { // This is for actual Stripe subscriptions (mode === 'subscription' or 'payment')
+      console.log('admin-manage-subscription: Assigning Stripe subscription.');
+      if (!role) {
+        console.error('admin-manage-subscription: Role is required when assigning a subscription.');
+        return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
+      }
+
+      if (!selectedProduct) {
+        console.error('admin-manage-subscription: Product not found for priceId:', priceId);
         return corsResponse({ error: 'Product details not found for the selected plan.' }, 404);
       }
 
-      const maxUsers = productMetadata.max_users;
-      const productId = productMetadata.product_id;
-      console.log('admin-manage-subscription: Product max_users:', maxUsers);
-      console.log('admin-manage-subscription: Product price_id:', priceId);
-
-      // Check if the user already has an active subscription
+      // Check if the user already has an active subscription (Stripe-managed or admin-assigned)
       const { data: existingActiveSubscription, error: existingSubError } = await supabase
         .from('stripe_subscriptions')
         .select('subscription_id, status')
@@ -195,14 +297,27 @@ Deno.serve(async (req) => {
       }
 
       if (existingActiveSubscription) {
-        console.log(`admin-manage-subscription: User ${userId} already has an active subscription (${existingActiveSubscription.subscription_id}). Cancelling it.`);
-        try {
-          await stripe.subscriptions.cancel(existingActiveSubscription.subscription_id);
-          console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveSubscription.subscription_id} cancelled.`);
-          // The webhook will update the DB status for the old subscription.
-        } catch (stripeCancelError: any) {
-          console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
-          // Continue, but log the error.
+        // If it's an admin-assigned subscription, delete it directly
+        if (existingActiveSubscription.subscription_id && existingActiveSubscription.subscription_id.startsWith('admin_assigned_')) {
+          console.log(`admin-manage-subscription: User ${userId} has an active admin-assigned subscription (${existingActiveSubscription.subscription_id}). Deleting it.`);
+          const { error: deleteAdminAssignedSubError } = await supabase
+            .from('stripe_subscriptions')
+            .delete()
+            .eq('subscription_id', existingActiveSubscription.subscription_id);
+          if (deleteAdminAssignedSubError) {
+            console.error('admin-manage-subscription: Error deleting old admin-assigned subscription:', deleteAdminAssignedSubError);
+          }
+        } else if (existingActiveSubscription.subscription_id) {
+          // If it's a Stripe-managed subscription, cancel it via Stripe API
+          console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveSubscription.subscription_id}). Cancelling it.`);
+          try {
+            await stripe.subscriptions.cancel(existingActiveSubscription.subscription_id);
+            console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveSubscription.subscription_id} cancelled.`);
+            // The webhook will update the DB status for the old subscription.
+          } catch (stripeCancelError: any) {
+            console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
+            // Continue, but log the error.
+          }
         }
       }
 
@@ -211,15 +326,11 @@ Deno.serve(async (req) => {
       const newStripeSubscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
-        collection_method: 'charge_automatically', // Or 'send_invoice' depending on desired flow
-        expand: ['latest_invoice.payment_intent'], // Useful for webhooks
+        collection_method: 'charge_automatically',
+        expand: ['latest_invoice.payment_intent'],
       });
-      newStripeSubscriptionId = newStripeSubscription.id;
+      let newStripeSubscriptionId = newStripeSubscription.id;
       console.log('admin-manage-subscription: New Stripe subscription created:', newStripeSubscriptionId);
-
-      // The stripe-webhook will handle populating the stripe_subscriptions table
-      // and the subscription_memberships table (for the owner).
-      // We simply return success here.
 
       await logActivity(
         supabase,
@@ -229,15 +340,8 @@ Deno.serve(async (req) => {
         { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: newStripeSubscriptionId, role: role, price_id: priceId }
       );
 
-      // Get product name for notification
-      const assignedProduct = stripeProducts.find(p =>
-        p.pricing.monthly?.priceId === priceId ||
-        p.pricing.yearly?.priceId === priceId ||
-        p.pricing.one_time?.priceId === priceId
-      );
-      const productName = assignedProduct?.name || 'a subscription plan';
+      const productName = selectedProduct.name || 'a subscription plan';
 
-      // Send notification to the user that their subscription was assigned
       await insertNotification(
         userId,
         'Subscription Assigned!',
