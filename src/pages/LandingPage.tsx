@@ -198,7 +198,7 @@ const LandingPage: React.FC = () => {
               <Building className="h-10 w-10 text-green-600 mb-4 mx-auto" />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Businesses & Entrepreneurs</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Small, medium or large enterprises, startups, and business owners needing to quickly understand vendor agreements, partnership deeds, and client contracts.
+                Small, medium and large enterprises, startups, and business owners needing to quickly understand vendor agreements, partnership deeds, and client contracts.
               </p>
             </div>
             <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
