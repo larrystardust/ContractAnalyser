@@ -57,6 +57,7 @@ function App() {
     const publicPaths = [
       '/',
       '/public-report-view',
+      '/checkout/success',
       '/checkout/cancel',
       '/sample-dashboard',
       '/landing-pricing',
