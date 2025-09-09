@@ -5,11 +5,13 @@ import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
 import { useToast } from '../../context/ToastContext'; // ADDED: Import useToast
+import { useNavigate } from 'react-router-dom'; // ADDED: Import useNavigate
 
 const SecuritySettings: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
   const { addToast } = useToast(); // ADDED: Use the toast hook
+  const navigate = useNavigate(); // ADDED: Initialize useNavigate
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -259,11 +261,16 @@ const SecuritySettings: React.FC = () => {
       });
       if (verifyError) throw verifyError;
 
-      // Only proceed to recovery codes and show success message after successful verification
+      // --- START MODIFIED LOGIC ---
       setTwoFactorEnabled(true);
-      setEnrollmentStep('recovery_codes');
-      setVerificationCode('');
-      await handleGenerateRecoveryCodes(); // Await this call
+      localStorage.setItem('mfa_passed', 'true'); // Set flag for AuthGuard
+      addToast('Two-factor authentication enabled successfully!', 'success');
+      setShowEnrollmentFlow(false); // Hide the enrollment flow
+      setEnrollmentStep('initial'); // Reset enrollment step
+      setVerificationCode(''); // Clear verification code
+      navigate('/dashboard', { replace: true }); // Navigate to dashboard
+      // --- END MODIFIED LOGIC ---
+
     } catch (err: any) {
       console.error('Error verifying 2FA:', err);
       addToast(err.message || 'Invalid 2FA code. Please try again.', 'error'); // MODIFIED: Use addToast
