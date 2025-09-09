@@ -24,9 +24,6 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     return null; // Or render a message indicating unavailability
   }
 
-  // Check if this card's product is the user's current active subscription plan
-  const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
-
   // Find the user's current product based on their subscription
   const usersCurrentProduct = subscription
     ? stripeProducts.find(p =>
@@ -35,6 +32,12 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         p.pricing.one_time?.priceId === subscription.price_id
       )
     : null;
+
+  // Determine if the user's current plan is admin-assigned
+  const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
+
+  // Determine if this card's product is the user's current active subscription plan
+  const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
 
   // Determine if this card's product is a downgrade option
   const isDowngradeOption = usersCurrentProduct &&
@@ -46,11 +49,23 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  const buttonText = isCurrentPlan
-    ? 'Current Plan'
-    : isDowngradeOption
-      ? 'Downgrade'
-      : 'Purchase';
+  // NEW LOGIC: Determine if the current card's product should be disabled due to admin assignment
+  const isDisabledByAdminAssignment = isUsersCurrentPlanAdminAssigned &&
+                                       product.tier <= (usersCurrentProduct?.tier || 0); // Compare tiers
+
+  let buttonText: string;
+  if (isCurrentPlan) {
+    buttonText = 'Current Plan';
+  } else if (isDisabledByAdminAssignment) {
+    // This covers the current admin-assigned plan and all lower tiers
+    buttonText = 'Included with Your Plan';
+  } else if (isDowngradeOption) {
+    buttonText = 'Downgrade';
+  } else {
+    buttonText = 'Purchase';
+  }
+
+  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || isDisabledByAdminAssignment;
 
   const handlePurchase = async () => {
     try {
@@ -61,7 +76,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
       }
     } catch (error: any) {
       console.error('Purchase error:', error);
-      // Handle error (show toast, etc.)
+      // You might want to display a user-friendly message here, e.g., using a toast notification
     }
   };
 
@@ -96,13 +111,18 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={loadingSubscription || isCurrentPlan || isDisabledForSubscribers}
+        disabled={finalDisabledState}
       >
         {buttonText}
       </Button>
       {isDisabledForSubscribers && product.mode === 'payment' && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           Already covered by your active subscription.
+        </p>
+      )}
+      {isDisabledByAdminAssignment && !isCurrentPlan && (
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          This plan is included with your current assigned subscription.
         </p>
       )}
     </div>
