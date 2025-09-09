@@ -118,6 +118,9 @@ const BillingSettings: React.FC = () => {
     );
   }
 
+  // ADDED: Determine if the current plan is a free admin-assigned plan
+  const isFreeAdminAssignedPlan = currentPlan?.product.mode === 'admin_assigned';
+
   return (
     <div className="space-y-6">
       {/* Current Plan */}
@@ -187,7 +190,7 @@ const BillingSettings: React.FC = () => {
       </Card>
 
       {/* Billing Management */}
-      {membership?.role === 'owner' && ( // ADDED: Conditional rendering for owner only
+      {membership?.role === 'owner' && !isFreeAdminAssignedPlan && ( // MODIFIED: Added !isFreeAdminAssignedPlan
         <Card>
           <CardHeader>
             <div className="flex items-center">
