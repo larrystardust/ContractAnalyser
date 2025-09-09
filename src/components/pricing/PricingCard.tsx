@@ -1,5 +1,5 @@
 import React from 'react';
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
@@ -14,17 +14,14 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { subscription, loading: loadingSubscription } = useSubscription();
 
-  // Determine the current pricing option based on product mode and selected billing period
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
     : product.pricing[billingPeriod];
 
-  // If there's no pricing option for the selected period (e.g., single-use doesn't have monthly/yearly)
   if (!currentPricingOption) {
-    return null; // Or render a message indicating unavailability
+    return null;
   }
 
-  // Find the user's current product based on their subscription
   const usersCurrentProduct = subscription
     ? stripeProducts.find(p =>
         p.pricing.monthly?.priceId === subscription.price_id ||
@@ -33,37 +30,52 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
       )
     : null;
 
-  // Determine if the user's current plan is admin-assigned
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  // NEW: Flag to indicate if *any* admin-assigned plan is active for the user
-  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
+  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned; // This flag is already correct
 
-  // Determine if this card's product is the user's current active subscription plan
   const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
 
-  // Determine if this card's product is a downgrade option
   const isDowngradeOption = usersCurrentProduct &&
                             product.mode === 'subscription' &&
                             usersCurrentProduct.mode === 'subscription' &&
                             product.tier < usersCurrentProduct.tier;
 
-  // Determine if the button should be disabled (e.g., single-use for active subscribers)
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // MODIFIED: Final disabled state logic
+  // The core logic for disabling all other buttons when on an admin-assigned plan
+  // is already captured by `(isAnyAdminAssignedPlanActive && !isCurrentPlan)`.
+  // If `isAnyAdminAssignedPlanActive` is true, and the current card is NOT the `isCurrentPlan`,
+  // then this part will be true, disabling the button.
   const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan);
 
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = 'Current Plan';
-  } else if (isAnyAdminAssignedPlanActive) { // MODIFIED: Use new flag
+  } else if (isAnyAdminAssignedPlanActive) {
     buttonText = 'Included with Your Plan';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
   } else {
     buttonText = 'Purchase';
   }
+
+  console.log(`--- Pricing Card: ${product.name} (${currentPricingOption.interval}) ---`);
+  console.log(`  product.id: ${product.id}`);
+  console.log(`  product.tier: ${product.tier}`);
+  console.log(`  currentPricingOption.priceId: ${currentPricingOption.priceId}`);
+  console.log(`  subscription?.price_id: ${subscription?.price_id}`);
+  console.log(`  usersCurrentProduct?.name: ${usersCurrentProduct?.name}`);
+  console.log(`  usersCurrentProduct?.mode: ${usersCurrentProduct?.mode}`);
+  console.log(`  usersCurrentProduct?.tier: ${usersCurrentProduct?.tier}`);
+  console.log(`  isUsersCurrentPlanAdminAssigned: ${isUsersCurrentPlanAdminAssigned}`);
+  console.log(`  isAnyAdminAssignedPlanActive: ${isAnyAdminAssignedPlanActive}`);
+  console.log(`  isCurrentPlan: ${isCurrentPlan}`);
+  console.log(`  isDisabledForSubscribers: ${isDisabledForSubscribers}`);
+  console.log(`  (isAnyAdminAssignedPlanActive && !isCurrentPlan): ${isAnyAdminAssignedPlanActive && !isCurrentPlan}`);
+  console.log(`  finalDisabledState: ${finalDisabledState}`);
+  console.log(`  buttonText: ${buttonText}`);
+  console.log('---------------------------------------------------');
 
   const handlePurchase = async () => {
     try {
@@ -118,7 +130,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
           Already covered by your active subscription.
         </p>
       )}
-      {isAnyAdminAssignedPlanActive && !isCurrentPlan && ( // MODIFIED: Use new flag
+      {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           This plan is included with your current assigned subscription.
         </p>
