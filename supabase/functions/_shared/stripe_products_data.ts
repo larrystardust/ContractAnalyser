@@ -1,4 +1,4 @@
-import { StripeProduct } from './stripe_product_types.js'; // MODIFIED: Added .ts extension
+import { StripeProduct } from './stripe_product_types.ts'; // MODIFIED: Added .ts extension
 
 export const stripeProducts: StripeProduct[] = [
   {
