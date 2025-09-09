@@ -8,6 +8,11 @@ const LandingPagePricingSection: React.FC = () => {
   console.log('LandingPagePricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
+  // Filter out products that are for admin assignment only
+  const publicProducts = stripeProducts.filter(product => 
+    product.mode === 'payment' || product.mode === 'subscription'
+  );
+
   return (
     <div className="py-12 bg-gray-50 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,7 +54,7 @@ const LandingPagePricingSection: React.FC = () => {
         </div>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-3">
-          {stripeProducts.map((product) => (
+          {publicProducts.map((product) => ( // MODIFIED: Use publicProducts
             <PricingCard key={product.id} product={product} billingPeriod={billingPeriod} />
           ))}
         </div>
