@@ -181,6 +181,9 @@ Deno.serve(async (req) => {
         return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
       }
 
+      // Declare and initialize adminAssignedSubscriptionId
+      const adminAssignedSubscriptionId = `admin_assigned_${userId}_${Date.now()}`; // Unique ID for admin-assigned subscription
+
       // Get max_users and max_files from the selectedProduct
       const maxUsers = selectedProduct.max_users ?? null; // MODIFIED: Use selectedProduct.max_users
       const maxFiles = selectedProduct.maxFiles ?? null;
