@@ -230,6 +230,13 @@ const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
+  // Helper function to get simplified product name for display
+  const getSimplifiedProductName = (productName: string) => {
+    return productName
+      .replace('ContractAnalyser ', '')
+      .replace(' (Admin Free)', '');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Profile Information */}
@@ -393,22 +400,18 @@ const UserForm: React.FC<UserFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             disabled={isManagingSubscription}
           >
-            <option value="">-- No Subscription --</option>
-            {stripeProducts.map((product) => ( // MODIFIED: Iterate over stripeProducts
-              <React.Fragment key={product.id}>
-                {product.pricing.monthly && (
-                  <option value={product.pricing.monthly.priceId}>
-                    {product.name} (Monthly) - ${product.pricing.monthly.price}
-                  </option>
-                )}
-                {product.pricing.yearly && (
-                  <option value={product.pricing.yearly.priceId}>
-                    {product.name} (Yearly) - ${product.pricing.yearly.price}
-                  </option>
-                )}
-                {/* One-time products are not subscriptions, so don't list them here for assignment */}
-              </React.Fragment>
-            ))}
+            <option value="">-- No subscription --</option>
+            {stripeProducts
+              .filter(product => product.mode === 'admin_assigned') // Filter for admin_assigned products only
+              .map((product) => (
+                <React.Fragment key={product.id}>
+                  {product.pricing.monthly && ( // Assuming admin_assigned plans only have a 'monthly' priceId for internal use
+                    <option value={product.pricing.monthly.priceId}>
+                      {getSimplifiedProductName(product.name)} {/* Use simplified name */}
+                    </option>
+                  )}
+                </React.Fragment>
+              ))}
           </select>
         </div>
 
