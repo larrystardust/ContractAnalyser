@@ -4,10 +4,12 @@ import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
+import { useToast } from '../../context/ToastContext'; // ADDED: Import useToast
 
 const SecuritySettings: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
+  const { addToast } = useToast(); // ADDED: Use the toast hook
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -38,14 +40,14 @@ const SecuritySettings: React.FC = () => {
   const [reauthError, setReauthError] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  // REMOVED: const [error, setError] = useState<string | null>(null);
+  // REMOVED: const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetch2FAStatus = async () => {
       if (!session?.user) return;
       setIsLoading(true);
-      setError(null);
+      // REMOVED: setError(null);
       try {
         const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
         if (getFactorsError) throw getFactorsError;
@@ -60,14 +62,14 @@ const SecuritySettings: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error fetching 2FA status:', err);
-        setError(err.message || 'Failed to fetch 2FA status.');
+        addToast(err.message || 'Failed to fetch 2FA status.', 'error'); // MODIFIED: Use addToast
       } finally {
         setIsLoading(false);
       }
     };
 
     fetch2FAStatus();
-  }, [session?.user, supabase]);
+  }, [session?.user, supabase, addToast]); // ADDED addToast to dependencies
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -87,11 +89,11 @@ const SecuritySettings: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setMessage(null);
+    // REMOVED: setError(null);
+    // REMOVED: setMessage(null);
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('New passwords do not match.');
+      addToast('New passwords do not match.', 'error'); // MODIFIED: Use addToast
       setIsLoading(false);
       return;
     }
@@ -105,11 +107,11 @@ const SecuritySettings: React.FC = () => {
         throw updateError;
       }
 
-      setMessage('Password updated successfully!');
+      addToast('Password updated successfully!', 'success'); // MODIFIED: Use addToast
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err: any) {
       console.error('Error updating password:', err);
-      setError(err.message || 'Failed to update password.');
+      addToast(err.message || 'Failed to update password.', 'error'); // MODIFIED: Use addToast
     } finally {
       setIsLoading(false);
     }
@@ -117,8 +119,8 @@ const SecuritySettings: React.FC = () => {
 
   const handleTwoFactorToggle = async () => {
     setIsLoading(true);
-    setError(null);
-    setMessage(null);
+    // REMOVED: setError(null);
+    // REMOVED: setMessage(null);
 
     if (twoFactorEnabled) {
       setShowReauthModal(true);
@@ -152,7 +154,7 @@ const SecuritySettings: React.FC = () => {
         setSecret(enrollData.totp.secret);
       } catch (err: any) {
         console.error('Error enrolling 2FA:', err);
-        setError(err.message || 'Failed to start 2FA enrollment.');
+        addToast(err.message || 'Failed to start 2FA enrollment.', 'error'); // MODIFIED: Use addToast
         setShowEnrollmentFlow(false);
         setEnrollmentStep('initial');
       } finally {
@@ -216,7 +218,7 @@ const SecuritySettings: React.FC = () => {
 
       setTwoFactorEnabled(false);
       setFactorId(null);
-      setMessage('Two-factor authentication disabled successfully.');
+      addToast('Two-factor authentication disabled successfully.', 'success'); // MODIFIED: Use addToast
       setShowEnrollmentFlow(false);
       setEnrollmentStep('initial');
       setShowReauthModal(false);
@@ -233,11 +235,11 @@ const SecuritySettings: React.FC = () => {
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setMessage(null);
+    // REMOVED: setError(null);
+    // REMOVED: setMessage(null);
 
     if (!factorId) {
-      setError('No 2FA factor to verify.');
+      addToast('No 2FA factor to verify.', 'error'); // MODIFIED: Use addToast
       setIsLoading(false);
       return;
     }
@@ -264,7 +266,7 @@ const SecuritySettings: React.FC = () => {
       await handleGenerateRecoveryCodes(); // Await this call
     } catch (err: any) {
       console.error('Error verifying 2FA:', err);
-      setError(err.message || 'Invalid 2FA code. Please try again.');
+      addToast(err.message || 'Invalid 2FA code. Please try again.', 'error'); // MODIFIED: Use addToast
       // If verification fails, reset 2FA state to initial
       setTwoFactorEnabled(false);
       setShowEnrollmentFlow(false);
@@ -277,7 +279,7 @@ const SecuritySettings: React.FC = () => {
 
   const handleGenerateRecoveryCodes = async () => {
     setIsLoading(true);
-    setError(null);
+    // REMOVED: setError(null);
     try {
       // Check if recoveryCodes functionality is available
       if (!supabase.auth.mfa || !supabase.auth.mfa.recoveryCodes) {
@@ -289,10 +291,10 @@ const SecuritySettings: React.FC = () => {
       
       setRecoveryCodes(codes);
       // Show success message ONLY after recovery codes are generated
-      setMessage('Two-factor authentication enabled successfully! Please save these recovery codes in a safe place!');
+      addToast('Two-factor authentication enabled successfully! Please save these recovery codes in a safe place!', 'success', 10000); // MODIFIED: Use addToast with longer duration
     } catch (err: any) {
       console.error('Error generating recovery codes:', err);
-      setError(err.message || 'Failed to generate recovery codes.');
+      addToast(err.message || 'Failed to generate recovery codes.', 'error'); // MODIFIED: Use addToast
       // If recovery code generation fails, consider 2FA setup incomplete or problematic
       setTwoFactorEnabled(false);
       setShowEnrollmentFlow(false);
@@ -305,22 +307,22 @@ const SecuritySettings: React.FC = () => {
 
   const handleCopyRecoveryCodes = () => {
     navigator.clipboard.writeText(recoveryCodes.join('\n'));
-    setMessage('Recovery codes copied to clipboard!');
+    addToast('Recovery codes copied to clipboard!', 'info'); // MODIFIED: Use addToast
   };
 
   const handleSignOutOtherSessions = async () => {
     setIsLoading(true);
-    setError(null);
-    setMessage(null);
+    // REMOVED: setError(null);
+    // REMOVED: setMessage(null);
     try {
       const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
       if (signOutError) {
         throw signOutError;
       }
-      setMessage('Successfully signed out of all other sessions.');
+      addToast('Successfully signed out of all other sessions.', 'success'); // MODIFIED: Use addToast
     } catch (err: any) {
       console.error('Error signing out other sessions:', err);
-      setError(err.message || 'Failed to sign out other sessions.');
+      addToast(err.message || 'Failed to sign out other sessions.', 'error'); // MODIFIED: Use addToast
     } finally {
       setIsLoading(false);
     }
@@ -337,6 +339,7 @@ const SecuritySettings: React.FC = () => {
           </div>
         </CardHeader>
         <CardBody>
+          {/* REMOVED: Error and Message display divs */}
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             {/* Current Password Input */}
             <div>
@@ -436,16 +439,7 @@ const SecuritySettings: React.FC = () => {
           </div>
         </CardHeader>
         <CardBody>
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-              {error}
-            </div>
-          )}
-          {message && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-              {message}
-            </div>
-          )}
+          {/* REMOVED: Error and Message display divs */}
 
           <div className="flex items-center justify-between">
             <div>
