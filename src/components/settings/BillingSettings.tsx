@@ -187,45 +187,47 @@ const BillingSettings: React.FC = () => {
       </Card>
 
       {/* Billing Management */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center">
-            <Download className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Billing Management</h3>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Manage Billing</h4>
-                <p className="text-sm text-gray-500">Update payment methods, view invoices, and manage your subscription</p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleManageBilling}
-                icon={<ExternalLink className="w-4 h-4" />}
-              >
-                Manage Billing
-              </Button>
+      {membership?.role === 'owner' && ( // ADDED: Conditional rendering for owner only
+        <Card>
+          <CardHeader>
+            <div className="flex items-center">
+              <Download className="h-5 w-5 text-blue-900 mr-2" />
+              <h3 className="text-lg font-medium text-gray-900">Billing Management</h3>
             </div>
+          </CardHeader>
+          <CardBody>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Manage Billing</h4>
+                  <p className="text-sm text-gray-500">Update payment methods, view invoices, and manage your subscription</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleManageBilling}
+                  icon={<ExternalLink className="w-4 h-4" />}
+                >
+                  Manage Billing
+                </Button>
+              </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Download Latest Invoice</h4>
-                <p className="text-sm text-gray-500">Get a copy of your most recent billing statement</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900">Download Latest Invoice</h4>
+                  <p className="text-sm text-gray-500">Get a copy of your most recent billing statement</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadInvoice}
+                  icon={<Download className="w-4 h-4" />}
+                >
+                  Download
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleDownloadInvoice}
-                icon={<Download className="w-4 h-4" />}
-              >
-                Download
-              </Button>
             </div>
-          </div>
-        </CardBody>
-      </Card>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Usage Statistics */}
       <Card>
