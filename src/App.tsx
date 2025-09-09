@@ -68,6 +68,10 @@ function App() {
       '/auth/email-sent',
       '/mfa-challenge',
       '/reset-password', // This is the target for password reset emails, so it must be public
+      '/disclaimer', // ADDED
+      '/terms', // ADDED
+      '/privacy-policy', // ADDED
+      '/help', // ADDED
     ];
     
     // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
