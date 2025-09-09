@@ -56,4 +56,37 @@ export const stripeProducts = [
             },
         },
     },
+    // New Admin-Assigned Free Plans
+    {
+        id: 'prod_AdminFreeProfessional', // Unique ID for admin-assigned free professional
+        name: 'ContractAnalyser Professional Use (Admin Free)',
+        description: 'Professional Subscription Plan (Admin Assigned - Free)',
+        mode: 'admin_assigned', // New mode
+        fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
+        maxFiles: 200,
+        tier: 2,
+        pricing: {
+            monthly: {
+                priceId: 'price_admin_professional_free', // Unique ID, not a real Stripe price ID
+                price: 0.00,
+                interval: 'month',
+            },
+        },
+    },
+    {
+        id: 'prod_AdminFreeEnterprise', // Unique ID for admin-assigned free enterprise
+        name: 'ContractAnalyser Enterprise Use (Admin Free)',
+        description: 'Enterprise Subscription Plan (Admin Assigned - Free)',
+        mode: 'admin_assigned', // New mode
+        fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
+        maxFiles: 1000,
+        tier: 3,
+        pricing: {
+            monthly: {
+                priceId: 'price_admin_enterprise_free', // Unique ID, not a real Stripe price ID
+                price: 0.00,
+                interval: 'month',
+            },
+        },
+    },
 ];
