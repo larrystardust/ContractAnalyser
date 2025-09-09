@@ -21,6 +21,7 @@ export const stripeProducts = [
         mode: 'subscription',
         fileRetentionPolicy: 'Files are retained for the duration of your active subscription plus a 30 day grace period.',
         maxFiles: 200,
+        max_users: 2, // ADDED: Correct max_users for Professional
         tier: 2,
         pricing: {
             monthly: {
@@ -42,6 +43,7 @@ export const stripeProducts = [
         mode: 'subscription',
         fileRetentionPolicy: 'Files are retained for the duration of your active subscription plus a 30 day grace period.',
         maxFiles: 1000,
+        max_users: 999999, // ADDED: Correct max_users for Enterprise (using 999999 for consistency with existing "unlimited" logic)
         tier: 3,
         pricing: {
             monthly: {
@@ -64,6 +66,7 @@ export const stripeProducts = [
         mode: 'admin_assigned', // New mode
         fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
         maxFiles: 200,
+        max_users: 2, // ADDED: Correct max_users for Admin Free Professional
         tier: 2,
         pricing: {
             monthly: {
@@ -80,6 +83,7 @@ export const stripeProducts = [
         mode: 'admin_assigned', // New mode
         fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
         maxFiles: 1000,
+        max_users: 20, // ADDED: Correct max_users for Admin Free Enterprise
         tier: 3,
         pricing: {
             monthly: {
