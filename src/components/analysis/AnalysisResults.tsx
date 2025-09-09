@@ -92,7 +92,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       const sendEmail = profileData?.email_reports_enabled || false;
 
       if (!sendEmail) {
-        alert('Your email reports setting is currently disabled. Please enable it in your Application Preferences to receive reports via email.');
+        alert('Your email reports setting is currently disabled. Please enable it in your "Settings" Preferences to receive reports via email.');
         return;
       }
 
