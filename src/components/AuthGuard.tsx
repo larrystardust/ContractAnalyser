@@ -27,6 +27,13 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return;
       }
 
+      // ADDED: Check for email confirmation
+      if (!session.user.email_confirmed_at) {
+        console.log('AuthGuard: User email not confirmed. Redirecting to email confirmation page.');
+        navigate('/email-not-confirmed', { replace: true });
+        return; // Stop further checks and redirection
+      }
+
       try {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
@@ -63,7 +70,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
     setTargetAal(null); // Reset on session/loadingSession change
     checkAuthStatus();
-  }, [session, loadingSession, supabase]);
+  }, [session, loadingSession, supabase, navigate]); // ADDED navigate to dependencies
 
   // Removed useEffect to clear localStorage flag after delay
 
@@ -82,6 +89,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // MODIFIED: Pass current path and search as redirect parameter
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
+
+  // This check is now redundant here as it's handled in the useEffect above
+  // if (!session.user.email_confirmed_at) {
+  //   console.log('AuthGuard: User email not confirmed. Redirecting to email confirmation page.');
+  //   return <Navigate to="/email-not-confirmed" replace />;
+  // }
 
   if (targetAal === 'aal1') {
     console.log('AuthGuard: MFA is required (aal1). Redirecting to MFA challenge.');
