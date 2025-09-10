@@ -41,6 +41,12 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (!isSessionLoading && session?.user) {
+      // ADDED: Check for email confirmation before proceeding
+      if (!session.user.email_confirmed_at) {
+        navigate('/email-not-confirmed', { replace: true });
+        return;
+      }
+
       if (session.aal === 'aal2') {
         redirectToDashboard(session.user.id);
       } else {
@@ -79,6 +85,12 @@ const LoginPage: React.FC = () => {
       setError(signInError.message);
     } else {
       if (authData.user) { 
+        // ADDED: Check for email confirmation immediately after sign-in
+        if (!authData.user.email_confirmed_at) {
+          navigate('/email-not-confirmed', { replace: true });
+          return; // Stop further execution
+        }
+
         try {
           await supabase
             .from('profiles')
