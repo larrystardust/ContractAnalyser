@@ -14,15 +14,36 @@ const EmailNotConfirmedPage: React.FC = () => {
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loadingResend, setLoadingResend] = useState(false);
+  const [isEmailVerifiedByAdmin, setIsEmailVerifiedByAdmin] = useState<boolean | null>(null); // ADDED: State for admin verification status
 
   useEffect(() => {
-    if (session?.user?.email) {
-      setUserEmail(session.user.email);
-    } else {
-      // If no session or email, redirect to login
-      navigate('/login', { replace: true });
-    }
-  }, [session, navigate]);
+    const fetchVerificationStatus = async () => {
+      if (session?.user?.id) {
+        setUserEmail(session.user.email);
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_email_verified_by_admin')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Error fetching is_email_verified_by_admin in EmailNotConfirmedPage:', profileError);
+            setIsEmailVerifiedByAdmin(false);
+          } else {
+            setIsEmailVerifiedByAdmin(profileData?.is_email_verified_by_admin ?? false);
+          }
+        } catch (err) {
+          console.error('Unexpected error fetching profile in EmailNotConfirmedPage:', err);
+          setIsEmailVerifiedByAdmin(false);
+        }
+      } else {
+        navigate('/login', { replace: true });
+      }
+    };
+
+    fetchVerificationStatus();
+  }, [session, navigate, supabase]);
 
   const handleResendEmail = async () => {
     if (!userEmail) {
@@ -57,13 +78,16 @@ const EmailNotConfirmedPage: React.FC = () => {
     navigate('/login', { replace: true });
   };
 
-  if (!userEmail) {
+  if (!userEmail || isEmailVerifiedByAdmin === null) { // MODIFIED: Wait for admin verification status
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
       </div>
     );
   }
+
+  const isSelfRegisteredUnconfirmed = !session?.user?.email_confirmed_at && isEmailVerifiedByAdmin === true; // User is self-registered but hasn't confirmed via link
+  const isAdminCreatedUnconfirmed = isEmailVerifiedByAdmin === false; // User is admin-created and not yet verified by admin
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
@@ -72,23 +96,35 @@ const EmailNotConfirmedPage: React.FC = () => {
           <Mail className="h-12 w-12 text-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Email Not Confirmed</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Your email address <span className="font-medium text-blue-600">{userEmail}</span> has not been confirmed.
-            Please check your inbox for a confirmation link.
+            Your email address <span className="font-medium text-blue-600">{userEmail}</span> is not yet confirmed.
           </p>
         </CardHeader>
         <CardBody>
+          {isSelfRegisteredUnconfirmed && (
+            <p className="text-gray-700 mb-4">
+              Please check your inbox for a confirmation link. If you haven't received it, you can request another one below.
+            </p>
+          )}
+          {isAdminCreatedUnconfirmed && (
+            <p className="text-gray-700 mb-4">
+              Your account requires administrator verification. Please contact your administrator to gain full access.
+            </p>
+          )}
+
           <div className="space-y-4">
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              className="w-full"
-              onClick={handleResendEmail}
-              disabled={loadingResend}
-              icon={loadingResend ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
-            >
-              {loadingResend ? 'Sending...' : 'Resend Confirmation Email'}
-            </Button>
+            {isSelfRegisteredUnconfirmed && (
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                className="w-full"
+                onClick={handleResendEmail}
+                disabled={loadingResend}
+                icon={loadingResend ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
+              >
+                {loadingResend ? 'Sending...' : 'Resend Confirmation Email'}
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
