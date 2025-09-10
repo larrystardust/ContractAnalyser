@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Removed useRef
+import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -73,22 +73,25 @@ const AdminGuard: React.FC = () => {
         const hasMfaEnrolled = factors.totp.length > 0;
         console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled);
 
+        // MODIFIED LOGIC START
         if (hasMfaEnrolled) {
           // If MFA is enrolled, check localStorage for the mfa_passed flag
           const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true') {
-            console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Granting access.');
+          if (mfaPassedFlag === 'true' && session.aal === 'aal2') { // Ensure session.aal is also aal2
+            console.log('AdminGuard: MFA enrolled and mfa_passed flag found, and session is aal2. Granting access.');
             setTargetAal('aal2');
           } else {
-            // MFA enrolled but no flag, redirect to challenge
-            console.log('AdminGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
+            // MFA enrolled but no flag or session.aal is not aal2, redirect to challenge
+            console.log('AdminGuard: MFA enrolled but mfa_passed flag missing or session.aal not aal2. Redirecting to challenge.');
             setTargetAal('aal1'); // User needs to complete MFA challenge
           }
         } else {
           // If no MFA is enrolled, AAL1 is sufficient.
+          // If session.aal is undefined, treat it as aal1 for the purpose of allowing access.
           console.log('AdminGuard: No MFA enrolled. Granting access.');
           setTargetAal('aal2');
         }
+        // MODIFIED LOGIC END
       } catch (err) {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
         setTargetAal('aal2'); // Fallback to allow access on unexpected errors
