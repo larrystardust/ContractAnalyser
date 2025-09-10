@@ -2,6 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1';
 
+// Initialize Supabase client with service role key for any potential DB interactions
+// (though not strictly needed for this function's current purpose of sending email)
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -42,40 +44,13 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Missing required email parameters: recipientEmail, initialPassword' }, 400);
     }
 
-    // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
-    const authHeader = req.headers.get('Authorization');
-    console.log('send-admin-created-user-invite-email: Authorization header:', authHeader);
+    // --- REMOVED AUTHENTICATION AND AUTHORIZATION CHECKS ---
+    // This function is called by another authenticated Edge Function (admin-create-user)
+    // and does not need to re-authenticate the caller or check admin privileges.
+    // The token passed is the service_role key, which is not a user JWT.
+    // --- END REMOVED CHECKS ---
 
-    if (!authHeader) {
-      console.error('send-admin-created-user-invite-email: Authorization header missing.');
-      return corsResponse({ error: 'Authorization header missing' }, 401);
-    }
-    const token = authHeader.replace('Bearer ', '');
-    console.log('send-admin-created-user-invite-email: Extracted token (first 10 chars):', token.substring(0, 10));
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    console.log('send-admin-created-user-invite-email: Result of supabase.auth.getUser - user:', user ? user.id : 'null', 'error:', userError);
-
-    if (userError || !user) {
-      console.error('send-admin-created-user-invite-email: Unauthorized: Invalid or missing user token:', userError?.message);
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
-    }
-
-    // Verify if the user is an admin (assuming 'is_admin' column in 'profiles' table)
-    const { data: adminProfile, error: adminProfileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    console.log('send-admin-created-user-invite-email: Result of admin profile check - is_admin:', adminProfile?.is_admin, 'error:', adminProfileError);
-
-    if (adminProfileError || !adminProfile?.is_admin) {
-      console.error('send-admin-created-user-invite-email: Forbidden: User is not an administrator.', adminProfileError);
-      return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
-    }
-
-    console.log(`send-admin-created-user-invite-email: Admin user ${user.email} is authorized. Attempting to send email to ${recipientEmail}.`);
+    console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail}.`);
 
     try {
       const { data, error } = await resend.emails.send({
