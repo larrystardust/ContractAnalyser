@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import Button from '../ui/Button';
-import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as UsersIcon, Eye, EyeOff, Briefcase, Sparkles } from 'lucide-react'; // ADDED Sparkles
+import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as UsersIcon, Eye, EyeOff, Briefcase, Sparkles } from 'lucide-react';
 import adminService, { AvailableSubscription } from '../../services/adminService';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -106,19 +106,19 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     password: '',
     confirmPassword: '',
     full_name: '',
-    business_name: '', // ADDED: New state for business name
+    business_name: '',
     mobile_phone_number: '',
     country_code: countryCodes[0].code,
     is_admin: false,
-    email_confirm: true, // Option to send email confirmation
+    // REMOVED: email_confirm from state
     default_jurisdictions: [] as Jurisdiction[],
-    send_invitation_email: true, // ADDED: New state for sending invitation email
+    send_invitation_email: true,
   });
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null); // MODIFIED: Use priceId
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<'owner' | 'member' | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // ADDED
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // ADDED
-  const [grantSingleUseCredit, setGrantSingleUseCredit] = useState(false); // ADDED: State for single-use credit checkbox
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [grantSingleUseCredit, setGrantSingleUseCredit] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,11 +146,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
   };
 
   const handleSubscriptionDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPriceId(e.target.value === '' ? null : e.target.value); // MODIFIED: Set priceId
+    setSelectedPriceId(e.target.value === '' ? null : e.target.value);
     if (e.target.value !== '' && selectedRole === null) {
-      setSelectedRole('member'); // Default to member if subscription selected
+      setSelectedRole('member');
     } else if (e.target.value === '') {
-      setSelectedRole(null); // Clear role if no subscription
+      setSelectedRole(null);
     }
   };
 
@@ -170,7 +170,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       return;
     }
 
-    if (selectedPriceId && !selectedRole) { // MODIFIED: Check selectedPriceId
+    if (selectedPriceId && !selectedRole) {
       setError('Please select a role for the assigned subscription.');
       setLoading(false);
       return;
@@ -181,43 +181,39 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
-        business_name: formData.business_name, // ADDED: Pass business name
+        business_name: formData.business_name,
         mobile_phone_number: formData.mobile_phone_number,
         country_code: formData.country_code,
         is_admin: formData.is_admin,
-        email_confirm: formData.email_confirm,
+        email_confirm: true, // HARDCODED: Always send confirmation email
         default_jurisdictions: formData.default_jurisdictions,
-        price_id: selectedPriceId, // MODIFIED: Pass price_id
-        role: selectedRole, // MODIFIED: Pass role
-        send_invitation_email: formData.send_invitation_email, // ADDED: Pass send_invitation_email
-        initial_password: formData.password, // ADDED: Pass the initial password for the invite email
+        price_id: selectedPriceId,
+        role: selectedRole,
+        send_invitation_email: formData.send_invitation_email,
+        initial_password: formData.password,
       });
 
-      // The subscription assignment logic is now handled within adminService.createUser
-      // No need for a separate adminService.manageUserSubscription call here.
-
-      // ADDED: Grant single-use credit if checkbox is checked
       if (grantSingleUseCredit) {
         await adminService.grantSingleUseCredit(userId);
       }
 
       setMessage('User created successfully!');
-      setFormData({ // Reset form
+      setFormData({
         email: '',
         password: '',
         confirmPassword: '',
         full_name: '',
-        business_name: '', // ADDED: Reset business name
+        business_name: '',
         mobile_phone_number: '',
         country_code: countryCodes[0].code,
         is_admin: false,
-        email_confirm: true,
+        // email_confirm: true, // No longer needed in state
         default_jurisdictions: [],
-        send_invitation_email: true, // ADDED: Reset checkbox
+        send_invitation_email: true,
       });
-      setSelectedPriceId(null); // MODIFIED: Reset priceId
+      setSelectedPriceId(null);
       setSelectedRole(null);
-      setGrantSingleUseCredit(false); // ADDED: Reset checkbox
+      setGrantSingleUseCredit(false);
       onSuccess();
     } catch (err: any) {
       console.error('Error creating user:', err);
@@ -227,7 +223,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     }
   };
 
-  // Helper function to get simplified product name for display
   const getSimplifiedProductName = (productName: string) => {
     return productName
       .replace('ContractAnalyser ', '')
@@ -265,12 +260,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </div>
       </div>
 
+      {/* Password Input */}
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
-            type={showPassword ? 'text' : 'password'} // MODIFIED
+            type={showPassword ? 'text' : 'password'}
             id="password"
             name="password"
             value={formData.password}
@@ -288,12 +284,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </div>
       </div>
 
+      {/* Confirm Password Input */}
       <div>
         <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
-            type={showConfirmPassword ? 'text' : 'password'} // MODIFIED
+            type={showConfirmPassword ? 'text' : 'password'}
             id="confirmPassword"
             name="confirmPassword"
             value={formData.confirmPassword}
@@ -326,7 +323,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </div>
       </div>
 
-      {/* Business Name Input */}
       <div>
         <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
         <div className="relative">
@@ -386,21 +382,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </label>
       </div>
 
-      <div>
-        <label htmlFor="email_confirm" className="flex items-center text-sm font-medium text-gray-700">
-          <input
-            type="checkbox"
-            id="email_confirm"
-            name="email_confirm"
-            checked={formData.email_confirm}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="ml-2">Require Email Confirmation (User will receive a confirmation email)</span>
-        </label>
-      </div>
+      {/* REMOVED: email_confirm checkbox */}
 
-      {/* ADDED: Send Invitation Email Checkbox */}
+      {/* Send Invitation Email Checkbox */}
       <div>
         <label htmlFor="send_invitation_email" className="flex items-center text-sm font-medium text-gray-700">
           <input
@@ -415,7 +399,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </label>
       </div>
 
-      {/* ADDED: Grant Single-Use Credit Checkbox */}
       <div>
         <label htmlFor="grant_single_use_credit" className="flex items-center text-sm font-medium text-gray-700">
           <input
@@ -432,7 +415,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </label>
       </div>
 
-      {/* Default Jurisdictions */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Default Jurisdictions</label>
         <div className="flex flex-wrap gap-2">
@@ -453,7 +435,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </div>
       </div>
 
-      {/* Subscription Assignment */}
       <h3 className="text-lg font-medium text-gray-900 flex items-center mb-2 pt-4 border-t border-gray-200">
         <UsersIcon className="h-5 w-5 text-blue-900 mr-2" /> Assign Subscription
       </h3>
@@ -462,19 +443,19 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         <select
           id="assign_subscription"
           name="assign_subscription"
-          value={selectedPriceId || ''} // MODIFIED: Use selectedPriceId
+          value={selectedPriceId || ''}
           onChange={handleSubscriptionDropdownChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           disabled={loading}
         >
           <option value="">-- No subscription --</option>
           {stripeProducts
-            .filter(product => product.mode === 'admin_assigned') // Filter for admin_assigned products only
+            .filter(product => product.mode === 'admin_assigned')
             .map((product) => (
               <React.Fragment key={product.id}>
-                {product.pricing.monthly && ( // Assuming admin_assigned plans only have a 'monthly' priceId for internal use
+                {product.pricing.monthly && (
                   <option value={product.pricing.monthly.priceId}>
-                    {getSimplifiedProductName(product.name)} {/* Use simplified name */}
+                    {getSimplifiedProductName(product.name)}
                   </option>
                 )}
               </React.Fragment>
@@ -482,7 +463,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         </select>
       </div>
 
-      {selectedPriceId && ( // Only show role if a priceId is selected
+      {selectedPriceId && (
         <div>
           <label htmlFor="assign_role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
           <select
@@ -491,7 +472,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             value={selectedRole || ''}
             onChange={handleRoleDropdownChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            required={selectedPriceId !== null} // MODIFIED: Required if priceId is selected
+            required={selectedPriceId !== null}
             disabled={loading}
           >
             <option value="">-- Select Role --</option>
