@@ -42,6 +42,7 @@ import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword'; // Keep this import for the consolidated ResetPassword component
+import EmailNotConfirmedPage from './pages/EmailNotConfirmedPage'; // ADDED: Import new page
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -73,6 +74,7 @@ function App() {
       '/terms', // ADDED
       '/privacy-policy', // ADDED
       '/help', // ADDED
+      '/email-not-confirmed', // ADDED: New public path
     ];
     
     // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
@@ -100,6 +102,7 @@ function App() {
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
           <Route path="/public-report-view" element={<PublicReportViewerPage />} />
           <Route path="/reset-password" element={<ResetPassword />} /> {/* This route is for the actual password reset form */}
+          <Route path="/email-not-confirmed" element={<EmailNotConfirmedPage />} /> {/* ADDED: New route */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
