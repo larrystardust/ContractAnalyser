@@ -13,7 +13,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
-  // Removed mfaPassedFlagRef and its associated useEffect for clearing localStorage
+  const [isEmailVerifiedByAdmin, setIsEmailVerifiedByAdmin] = useState<boolean | null>(null); // ADDED: New state for custom email verification
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -24,11 +24,37 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
       if (!session?.user) {
         setTargetAal(null); // No user, will redirect to login
+        setIsEmailVerifiedByAdmin(null); // Reset custom flag
         return;
       }
 
-      // ADDED: Check for email confirmation
-      if (!session.user.email_confirmed_at) {
+      // ADDED: Fetch custom email verification status from profiles table
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_email_verified_by_admin')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('AuthGuard: Error fetching is_email_verified_by_admin:', profileError);
+          setIsEmailVerifiedByAdmin(false); // Default to false on error for security
+        } else {
+          setIsEmailVerifiedByAdmin(profileData?.is_email_verified_by_admin ?? false); // Default to false if null
+        }
+      } catch (err) {
+        console.error('AuthGuard: Unexpected error fetching profile for email verification:', err);
+        setIsEmailVerifiedByAdmin(false); // Default to false on unexpected error
+      }
+
+      // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag)
+      // A user is considered unconfirmed if:
+      // 1. Their email_confirmed_at is NULL (for self-registered users who haven't clicked link)
+      // OR
+      // 2. Their is_email_verified_by_admin is FALSE (for admin-created users)
+      const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
+
+      if (isEmailUnconfirmed) {
         console.log('AuthGuard: User email not confirmed. Redirecting to email confirmation page.');
         navigate('/email-not-confirmed', { replace: true });
         return; // Stop further checks and redirection
@@ -69,13 +95,13 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
 
     setTargetAal(null); // Reset on session/loadingSession change
+    setIsEmailVerifiedByAdmin(null); // Reset custom flag on session/loadingSession change
     checkAuthStatus();
-  }, [session, loadingSession, supabase, navigate]); // ADDED navigate to dependencies
-
-  // Removed useEffect to clear localStorage flag after delay
+  }, [session, loadingSession, supabase, navigate, isEmailVerifiedByAdmin]); // ADDED isEmailVerifiedByAdmin to dependencies
 
   // Show loading indicator while checking authentication and MFA status
-  if (loadingSession || targetAal === null) {
+  // MODIFIED: Add isEmailVerifiedByAdmin === null to loading condition
+  if (loadingSession || targetAal === null || isEmailVerifiedByAdmin === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -90,11 +116,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // This check is now redundant here as it's handled in the useEffect above
-  // if (!session.user.email_confirmed_at) {
-  //   console.log('AuthGuard: User email not confirmed. Redirecting to email confirmation page.');
-  //   return <Navigate to="/email-not-confirmed" replace />;
-  // }
+  // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag) again before proceeding
+  const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
+  if (isEmailUnconfirmed) {
+    console.log('AuthGuard: User email not confirmed. Redirecting to email confirmation page.');
+    return <Navigate to="/email-not-confirmed" replace />;
+  }
 
   if (targetAal === 'aal1') {
     console.log('AuthGuard: MFA is required (aal1). Redirecting to MFA challenge.');
