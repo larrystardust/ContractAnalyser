@@ -33,10 +33,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, initialPassword, passwordResetLink } = await req.json();
+    const { recipientEmail, recipientName, initialPassword } = await req.json(); // REMOVED: passwordResetLink
 
-    if (!recipientEmail || !initialPassword || !passwordResetLink) {
-      return corsResponse({ error: 'Missing required email parameters: recipientEmail, initialPassword, passwordResetLink' }, 400);
+    if (!recipientEmail || !initialPassword) { // MODIFIED: Removed passwordResetLink from check
+      return corsResponse({ error: 'Missing required email parameters: recipientEmail, initialPassword' }, 400);
     }
 
     // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
@@ -78,8 +78,7 @@ Deno.serve(async (req) => {
           <p style="color: red; font-weight: bold;">
             For security reasons, we strongly recommend that you change this password immediately after your first login.
           </p>
-          <p>You can set a new password by clicking this secure link:</p>
-          <p><a href="${passwordResetLink}">Set Your Password</a></p>
+          <p>To change your password, please visit the login page and use the "Forgot password?" link.</p>
           <p>If you have any questions, please contact your administrator.</p>
           <p>Thank you for using ContractAnalyser.</p>
           <p>The ContractAnalyser Team</p>
