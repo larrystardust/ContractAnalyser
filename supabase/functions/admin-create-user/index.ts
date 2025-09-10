@@ -94,6 +94,7 @@ Deno.serve(async (req) => {
         mobile_phone_number: mobile_phone_number || null,
         country_code: country_code || null,
         theme_preference: defaultTheme, // Use the fetched default theme
+        is_email_verified_by_admin: false, // ADDED: Set custom verification flag to false
       });
 
     if (insertProfileError) {
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
     // ADDED: Log activity
     await logActivity(
       supabase,
-      user.id, // Admin user performing the action
+      user.id,
       'ADMIN_USER_CREATED',
       `Admin ${user.email} created new user: ${email}`,
       { target_user_id: newUser.user.id, target_user_email: email }
