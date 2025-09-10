@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm } = await req.json();
+    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm, send_invitation_email, initial_password } = await req.json();
 
     if (!email || !password) {
       return corsResponse({ error: 'Email and password are required.' }, 400);
@@ -77,6 +77,12 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: email_confirm ?? true, // Default to true, admin can override
+      user_metadata: { // Store additional profile data in user_metadata for initial profile creation
+        full_name: full_name || null,
+        business_name: business_name || null,
+        mobile_phone_number: mobile_phone_number || null,
+        country_code: country_code || null,
+      }
     });
 
     if (createUserError) {
@@ -101,6 +107,39 @@ Deno.serve(async (req) => {
       // Optionally, delete the user from auth if profile creation fails
       await supabase.auth.admin.deleteUser(newUser.user.id);
       return corsResponse({ error: 'Failed to create user profile.' }, 500);
+    }
+
+    // If send_invitation_email is true, send the custom invitation email
+    if (send_invitation_email) {
+      // Generate a password reset link for the newly created user
+      const { data: passwordResetLinkData, error: generateLinkError } = await supabase.auth.admin.generateLink(
+        'password_reset',
+        email,
+        { redirectTo: `${Deno.env.get('APP_BASE_URL')}/reset-password` } // Redirect to your reset password page
+      );
+
+      if (generateLinkError) {
+        console.error('Error generating password reset link:', generateLinkError);
+        // Do not return error, just log it and proceed without sending invite email
+      } else {
+        // Invoke the new Edge Function to send the custom invitation email
+        const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
+          body: {
+            recipientEmail: email,
+            recipientName: full_name || email,
+            initialPassword: initial_password, // Pass the initial password provided by admin
+            passwordResetLink: passwordResetLinkData?.properties?.action_link,
+          },
+        });
+
+        if (emailFnInvokeError) {
+          console.error('Error invoking send-admin-created-user-invite-email Edge Function:', emailFnInvokeError);
+        } else if (emailFnResponse && !emailFnResponse.success) {
+          console.warn('send-admin-created-user-invite-email Edge Function reported failure:', emailFnResponse.message);
+        } else {
+          console.log('send-admin-created-user-invite-email Edge Function invoked successfully.');
+        }
+      }
     }
 
     // ADDED: Log activity
