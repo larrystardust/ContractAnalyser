@@ -111,7 +111,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     country_code: countryCodes[0].code,
     is_admin: false,
     email_confirm: true, // Option to send email confirmation
-    is_email_verified_by_admin: false, // ADDED: New state for custom admin verification
     default_jurisdictions: [] as Jurisdiction[],
   });
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null); // MODIFIED: Use priceId
@@ -186,7 +185,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         country_code: formData.country_code,
         is_admin: formData.is_admin,
         email_confirm: formData.email_confirm,
-        is_email_verified_by_admin: formData.is_email_verified_by_admin, // ADDED: Pass custom admin verification flag
         default_jurisdictions: formData.default_jurisdictions,
         price_id: selectedPriceId, // MODIFIED: Pass price_id
         role: selectedRole, // MODIFIED: Pass role
@@ -211,7 +209,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         country_code: countryCodes[0].code,
         is_admin: false,
         email_confirm: true,
-        is_email_verified_by_admin: false, // ADDED: Reset custom admin verification flag
         default_jurisdictions: [],
       });
       setSelectedPriceId(null); // MODIFIED: Reset priceId
@@ -397,25 +394,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
           />
           <span className="ml-2">Require Email Confirmation (User will receive a confirmation email)</span>
         </label>
-      </div>
-
-      {/* ADDED: Custom Admin Email Verification Checkbox */}
-      <div>
-        <label htmlFor="is_email_verified_by_admin" className="flex items-center text-sm font-medium text-gray-700">
-          <input
-            type="checkbox"
-            id="is_email_verified_by_admin"
-            name="is_email_verified_by_admin"
-            checked={formData.is_email_verified_by_admin}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="ml-2">Email Verified by Admin (Allow login without email confirmation link)</span>
-        </label>
-        <p className="text-xs text-gray-500 mt-1">
-          Check this if you want the user to bypass the email confirmation link and be able to log in immediately.
-          If unchecked, the user will be redirected to a page requiring admin verification.
-        </p>
       </div>
 
       {/* ADDED: Grant Single-Use Credit Checkbox */}
