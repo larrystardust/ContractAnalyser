@@ -64,6 +64,19 @@ Deno.serve(async (req) => {
       ...(existingProfile?.notification_settings || {}),
     };
 
+    // Fetch the user's email_confirmed_at status from auth.users
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(userId);
+    let isEmailVerifiedByAdminDefault = false; // Default for admin-created users
+
+    if (authUserError) {
+      console.error('create-user-profile: Error fetching auth user for email_confirmed_at:', authUserError);
+      // Default to false if auth user cannot be fetched
+    } else if (authUser?.user?.email_confirmed_at) {
+      // If email_confirmed_at is set, it means the user self-registered and confirmed their email
+      // or was auto-confirmed by Supabase (which we treat as verified for self-registered flow).
+      isEmailVerifiedByAdminDefault = true;
+    }
+
     // Use upsert to create or update the profile.
     // The service_role key bypasses RLS.
     const { data, error } = await supabase
@@ -76,6 +89,7 @@ Deno.serve(async (req) => {
           mobile_phone_number: mobilePhoneNumber || null,
           country_code: countryCode || null,
           notification_settings: mergedNotificationSettings, // Set merged settings
+          is_email_verified_by_admin: isEmailVerifiedByAdminDefault, // MODIFIED: Set based on auth.users status
         },
         { onConflict: 'id' } // Conflict on 'id' to update if exists
       )
