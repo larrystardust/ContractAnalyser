@@ -11,7 +11,7 @@ const AdminGuard: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdminStatus, setLoadingAdminStatus] = useState(true);
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
-  // Removed mfaPassedFlagRef and its associated useEffect for clearing localStorage
+  const [isEmailVerifiedByAdmin, setIsEmailVerifiedByAdmin] = useState<boolean | null>(null); // ADDED: New state for custom email verification
 
   useEffect(() => {
     const checkAdminAndMfaStatus = async () => {
@@ -24,32 +24,44 @@ const AdminGuard: React.FC = () => {
         setIsAdmin(false);
         setLoadingAdminStatus(false);
         setTargetAal(null); // No user, will redirect to login
+        setIsEmailVerifiedByAdmin(null); // Reset custom flag
         return;
       }
 
-      // ADDED: Check for email confirmation for admin users
-      if (!session.user.email_confirmed_at) {
+      // ADDED: Fetch custom email verification status from profiles table
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin, is_email_verified_by_admin') // MODIFIED: Select is_admin and is_email_verified_by_admin
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('AdminGuard: Error fetching profile for admin/email verification:', profileError);
+          setIsAdmin(false); // Default to not admin on error
+          setIsEmailVerifiedByAdmin(false); // Default to false on error for security
+        } else {
+          setIsAdmin(profileData?.is_admin || false);
+          setIsEmailVerifiedByAdmin(profileData?.is_email_verified_by_admin ?? false); // Default to false if null
+        }
+        setLoadingAdminStatus(false); // Set loading to false after fetching profile
+      } catch (err) {
+        console.error('AdminGuard: Unexpected error fetching profile for admin/email verification:', err);
+        setIsAdmin(false);
+        setIsEmailVerifiedByAdmin(false);
+        setLoadingAdminStatus(false);
+      }
+
+      // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag) for admin users
+      const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
+
+      if (isEmailUnconfirmed) {
         console.log('AdminGuard: Admin user email not confirmed. Redirecting to email confirmation page.');
         navigate('/email-not-confirmed', { replace: true });
         return; // Stop further checks and redirection
       }
 
       try {
-        // First, check admin status
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('AdminGuard: Error fetching admin status:', profileError);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(profile?.is_admin || false);
-        }
-        setLoadingAdminStatus(false);
-
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
           console.error('AdminGuard: Error listing MFA factors:', factorsError);
@@ -79,20 +91,18 @@ const AdminGuard: React.FC = () => {
         }
       } catch (err) {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
-        setIsAdmin(false);
-        setLoadingAdminStatus(false);
-        setTargetAAl('aal2'); // Fallback to allow access on unexpected errors
+        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
       }
     };
 
     setTargetAal(null); // Reset on session/loadingSession change
+    setIsEmailVerifiedByAdmin(null); // Reset custom flag on session/loadingSession change
     checkAdminAndMfaStatus();
-  }, [session, loadingSession, supabase, navigate]); // ADDED navigate to dependencies
-
-  // Removed useEffect to clear localStorage flag after delay
+  }, [session, loadingSession, supabase, navigate, isEmailVerifiedByAdmin]); // ADDED isEmailVerifiedByAdmin to dependencies
 
   // Show loading indicator while checking authentication and admin/MFA status
-  if (loadingSession || loadingAdminStatus || targetAal === null) {
+  // MODIFIED: Add isEmailVerifiedByAdmin === null to loading condition
+  if (loadingSession || loadingAdminStatus || targetAal === null || isEmailVerifiedByAdmin === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -107,11 +117,12 @@ const AdminGuard: React.FC = () => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // This check is now redundant here as it's handled in the useEffect above
-  // if (!session.user.email_confirmed_at) {
-  //   console.log('AdminGuard: User email not confirmed. Redirecting to email confirmation page.');
-  //   return <Navigate to="/email-not-confirmed" replace />;
-  // }
+  // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag) again before proceeding
+  const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
+  if (isEmailUnconfirmed) {
+    console.log('AdminGuard: Admin user email not confirmed. Redirecting to email confirmation page.');
+    return <Navigate to="/email-not-confirmed" replace />;
+  }
 
   // Admin specific check
   if (!isAdmin) {
