@@ -48,6 +48,10 @@ Deno.serve(async (req) => {
 
     console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail}.`);
 
+    // Get APP_BASE_URL from environment variables
+    const appBaseUrl = Deno.env.get('APP_BASE_URL');
+    const loginPageUrl = `${appBaseUrl}/login`; // Construct the login page URL
+
     try {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
@@ -62,8 +66,8 @@ Deno.serve(async (req) => {
           <p style="color: red; font-weight: bold;">
             For security reasons, we strongly recommend that you change this password immediately after your first login.
           </p>
-          <p>To change your password, please visit the login page and use the "Forgot password?" link.</p>
-          <p>If you have any questions, please contact your administrator.</p>
+          <p>To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.</p>
+          <p>If you have any questions, please contact support on our "Help" page.</p>
           <p>Thank you for using ContractAnalyser.</p>
           <p>The ContractAnalyser Team</p>
         `, // MODIFIED: Email content
