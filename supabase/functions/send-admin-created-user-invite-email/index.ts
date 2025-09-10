@@ -33,21 +33,31 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, initialPassword } = await req.json(); // REMOVED: passwordResetLink
+    const { recipientEmail, recipientName, initialPassword } = await req.json();
 
-    if (!recipientEmail || !initialPassword) { // MODIFIED: Removed passwordResetLink from check
+    console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
+
+    if (!recipientEmail || !initialPassword) {
+      console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword');
       return corsResponse({ error: 'Missing required email parameters: recipientEmail, initialPassword' }, 400);
     }
 
     // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
     const authHeader = req.headers.get('Authorization');
+    console.log('send-admin-created-user-invite-email: Authorization header:', authHeader);
+
     if (!authHeader) {
+      console.error('send-admin-created-user-invite-email: Authorization header missing.');
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
     const token = authHeader.replace('Bearer ', '');
+    console.log('send-admin-created-user-invite-email: Extracted token (first 10 chars):', token.substring(0, 10));
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    console.log('send-admin-created-user-invite-email: Result of supabase.auth.getUser - user:', user ? user.id : 'null', 'error:', userError);
 
     if (userError || !user) {
+      console.error('send-admin-created-user-invite-email: Unauthorized: Invalid or missing user token:', userError?.message);
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
@@ -58,11 +68,14 @@ Deno.serve(async (req) => {
       .eq('id', user.id)
       .maybeSingle();
 
+    console.log('send-admin-created-user-invite-email: Result of admin profile check - is_admin:', adminProfile?.is_admin, 'error:', adminProfileError);
+
     if (adminProfileError || !adminProfile?.is_admin) {
+      console.error('send-admin-created-user-invite-email: Forbidden: User is not an administrator.', adminProfileError);
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
-    console.log(`Attempting to send admin-created user invitation email to ${recipientEmail}.`);
+    console.log(`send-admin-created-user-invite-email: Admin user ${user.email} is authorized. Attempting to send email to ${recipientEmail}.`);
 
     try {
       const { data, error } = await resend.emails.send({
@@ -86,19 +99,19 @@ Deno.serve(async (req) => {
       });
 
       if (error) {
-        console.error('Error sending email via Resend:', error);
+        console.error('send-admin-created-user-invite-email: Error sending email via Resend:', error);
         return corsResponse({ success: false, message: `Failed to send invitation email: ${error.message}` });
       }
-      console.log('Email sent successfully via Resend:', data);
+      console.log('send-admin-created-user-invite-email: Email sent successfully via Resend:', data);
       return corsResponse({ success: true, message: 'Invitation email sent successfully.' });
 
     } catch (emailSendError: any) {
-      console.error('Caught unexpected error during email sending:', emailSendError);
+      console.error('send-admin-created-user-invite-email: Caught unexpected error during email sending:', emailSendError);
       return corsResponse({ success: false, message: `An unexpected error occurred during email sending: ${emailSendError.message}` });
     }
 
   } catch (error: any) {
-    console.error('Error in send-admin-created-user-invite-email Edge Function:', error);
+    console.error('send-admin-created-user-invite-email: Unhandled error in Edge Function:', error);
     return corsResponse({ error: error.message }, 500);
   }
 });
