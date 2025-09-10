@@ -53,7 +53,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   if (isCurrentPlan) {
     buttonText = 'Current Plan';
   } else if (isAnyAdminAssignedPlanActive) {
-    buttonText = 'Included with Your Plan';
+    buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
   } else {
