@@ -112,6 +112,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     is_admin: false,
     email_confirm: true, // Option to send email confirmation
     default_jurisdictions: [] as Jurisdiction[],
+    send_invitation_email: true, // ADDED: New state for sending invitation email
   });
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null); // MODIFIED: Use priceId
   const [selectedRole, setSelectedRole] = useState<'owner' | 'member' | null>(null);
@@ -188,6 +189,8 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         default_jurisdictions: formData.default_jurisdictions,
         price_id: selectedPriceId, // MODIFIED: Pass price_id
         role: selectedRole, // MODIFIED: Pass role
+        send_invitation_email: formData.send_invitation_email, // ADDED: Pass send_invitation_email
+        initial_password: formData.password, // ADDED: Pass the initial password for the invite email
       });
 
       // The subscription assignment logic is now handled within adminService.createUser
@@ -210,6 +213,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         is_admin: false,
         email_confirm: true,
         default_jurisdictions: [],
+        send_invitation_email: true, // ADDED: Reset checkbox
       });
       setSelectedPriceId(null); // MODIFIED: Reset priceId
       setSelectedRole(null);
@@ -393,6 +397,21 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <span className="ml-2">Require Email Confirmation (User will receive a confirmation email)</span>
+        </label>
+      </div>
+
+      {/* ADDED: Send Invitation Email Checkbox */}
+      <div>
+        <label htmlFor="send_invitation_email" className="flex items-center text-sm font-medium text-gray-700">
+          <input
+            type="checkbox"
+            id="send_invitation_email"
+            name="send_invitation_email"
+            checked={formData.send_invitation_email}
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <span className="ml-2">Send Invitation Email with Credentials</span>
         </label>
       </div>
 
