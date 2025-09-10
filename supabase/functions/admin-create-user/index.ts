@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       // Generate a password reset link for the newly created user
       const { data: passwordResetLinkData, error: generateLinkError } = await supabase.auth.admin.generateLink(
         'password_reset',
-        email,
+        newUser.user.email!, // MODIFIED: Use newUser.user.email
         { redirectTo: `${Deno.env.get('APP_BASE_URL')}/reset-password` } // Redirect to your reset password page
       );
 
