@@ -10,7 +10,7 @@ const EmailSentPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loadingResend, setLoadingResend] = useState(false); // MODIFIED: Renamed loading to loadingResend
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [redirectParam, setRedirectParam] = useState<string | null>(null); // ADDED
@@ -34,13 +34,13 @@ const EmailSentPage: React.FC = () => {
   }, [searchParams]); // ADDED searchParams to dependency array
 
   const handleResendEmail = async () => {
-    setLoading(true);
+    setLoadingResend(true); // MODIFIED
     setResendError(null);
     setResendMessage(null);
 
     if (!userEmail || userEmail === 'your email address') {
       setResendError('Please go back to signup and provide a valid email.');
-      setLoading(false);
+      setLoadingResend(false); // MODIFIED
       return;
     }
 
@@ -68,7 +68,7 @@ const EmailSentPage: React.FC = () => {
       console.error('Error resending confirmation email:', err);
       setResendError(err.message || 'Failed to resend confirmation email.');
     } finally {
-      setLoading(false);
+      setLoadingResend(false); // MODIFIED
     }
   };
 
@@ -113,14 +113,14 @@ const EmailSentPage: React.FC = () => {
               size="lg"
               className="w-full"
               onClick={handleResendEmail}
-              disabled={loading}
+              disabled={loadingResend} // MODIFIED
             >
-              {loading ? (
+              {loadingResend ? ( // MODIFIED
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Mail className="h-5 w-5 mr-2" />
               )}
-              {loading ? 'Sending...' : 'Resend Confirmation Email'}
+              {loadingResend ? 'Sending...' : 'Resend Confirmation Email'} {/* MODIFIED */}
             </Button>
             <Button
               type="button"
@@ -128,7 +128,7 @@ const EmailSentPage: React.FC = () => {
               size="lg"
               className="w-full"
               onClick={handleBackToLogin}
-              disabled={loading}
+              disabled={loadingResend} // MODIFIED
             >
               Back to Login
             </Button>
