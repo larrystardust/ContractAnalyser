@@ -28,6 +28,10 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return;
       }
 
+      // CRITICAL FIX: Explicitly set the session on the Supabase client before making authenticated calls
+      // This helps prevent "Auth session missing!" errors due to timing issues.
+      await supabase.auth.setSession(session);
+
       // ADDED: Fetch custom email verification status from profiles table
       try {
         const { data: profileData, error: profileError } = await supabase
