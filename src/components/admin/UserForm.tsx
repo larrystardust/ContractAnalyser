@@ -5,6 +5,7 @@ import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../s
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
+import adminService from '../../services/adminService'; // ADDED: Import adminService
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -125,6 +126,7 @@ const UserForm: React.FC<UserFormProps> = ({
     email_reports_enabled: user.email_reports_enabled,
     default_jurisdictions: user.default_jurisdictions,
     notification_settings: user.notification_settings,
+    is_email_verified_by_admin: user.is_email_verified_by_admin, // ADDED: Initialize custom flag
   });
 
   // MODIFIED: Use priceId for selection, initialize based on user's current price_id if available
@@ -139,6 +141,7 @@ const UserForm: React.FC<UserFormProps> = ({
   const [isGrantingCredit, setIsGrantingCredit] = useState(false);
   const [isManagingSubscription, setIsManagingSubscription] = useState(false);
   const [isCreatingPortal, setIsCreatingPortal] = useState(false);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false); // ADDED: State for email verification action
 
   useEffect(() => {
     setFormData({
@@ -151,6 +154,7 @@ const UserForm: React.FC<UserFormProps> = ({
       email_reports_enabled: user.email_reports_enabled,
       default_jurisdictions: user.default_jurisdictions,
       notification_settings: user.notification_settings,
+      is_email_verified_by_admin: user.is_email_verified_by_admin, // ADDED: Update custom flag on user change
     });
 
     // MODIFIED: Update selectedPriceId on user change
@@ -227,6 +231,20 @@ const UserForm: React.FC<UserFormProps> = ({
       alert(`Failed to open customer portal: ${error.message}`);
     } finally {
       setIsCreatingPortal(false);
+    }
+  };
+
+  // ADDED: New handler for email verification
+  const handleVerifyEmail = async (isVerified: boolean) => {
+    setIsVerifyingEmail(true);
+    try {
+      await adminService.updateUser(user.id, { is_email_verified_by_admin: isVerified });
+      alert(`User email ${isVerified ? 'verified' : 'unverified'} successfully!`);
+      onCancel(); // Close modal and refresh data
+    } catch (error: any) {
+      alert(`Failed to update email verification status: ${error.message}`);
+    } finally {
+      setIsVerifyingEmail(false);
     }
   };
 
@@ -331,6 +349,33 @@ const UserForm: React.FC<UserFormProps> = ({
           />
           <span className="ml-2">Is Admin</span>
         </label>
+      </div>
+
+      {/* ADDED: Email Verification Status */}
+      <div>
+        <label htmlFor="is_email_verified_by_admin" className="flex items-center text-sm font-medium text-gray-700">
+          <input
+            type="checkbox"
+            id="is_email_verified_by_admin"
+            name="is_email_verified_by_admin"
+            checked={formData.is_email_verified_by_admin || false}
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            disabled={isVerifyingEmail}
+          />
+          <span className="ml-2">Email Verified by Admin</span>
+        </label>
+        <div className="mt-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => handleVerifyEmail(!formData.is_email_verified_by_admin)}
+            disabled={isVerifyingEmail}
+          >
+            {isVerifyingEmail ? 'Updating...' : (formData.is_email_verified_by_admin ? 'Unverify Email' : 'Verify Email')}
+          </Button>
+        </div>
       </div>
 
       {/* Theme Preference */}
