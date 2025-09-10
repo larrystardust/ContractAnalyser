@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; // Removed useRef
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -11,7 +11,7 @@ const AdminGuard: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAdminStatus, setLoadingAdminStatus] = useState(true);
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
-  const [isEmailVerifiedByAdmin, setIsEmailVerifiedByAdmin] = useState<boolean | null>(null); // ADDED: New state for custom email verification
+  // Removed mfaPassedFlagRef and its associated useEffect for clearing localStorage
 
   useEffect(() => {
     const checkAdminAndMfaStatus = async () => {
@@ -24,48 +24,25 @@ const AdminGuard: React.FC = () => {
         setIsAdmin(false);
         setLoadingAdminStatus(false);
         setTargetAal(null); // No user, will redirect to login
-        setIsEmailVerifiedByAdmin(null); // Reset custom flag
         return;
       }
 
-      // CRITICAL FIX: Explicitly set the session on the Supabase client before making authenticated calls
-      // This helps prevent "Auth session missing!" errors due to timing issues.
-      await supabase.auth.setSession(session);
-
-      // ADDED: Fetch custom email verification status from profiles table
       try {
-        const { data: profileData, error: profileError } = await supabase
+        // First, check admin status
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('is_admin, is_email_verified_by_admin') // MODIFIED: Select is_admin and is_email_verified_by_admin
+          .select('is_admin')
           .eq('id', session.user.id)
           .maybeSingle();
 
         if (profileError) {
-          console.error('AdminGuard: Error fetching profile for admin/email verification:', profileError);
-          setIsAdmin(false); // Default to not admin on error
-          setIsEmailVerifiedByAdmin(false); // Default to false on error for security
+          console.error('AdminGuard: Error fetching admin status:', profileError);
+          setIsAdmin(false);
         } else {
-          setIsAdmin(profileData?.is_admin || false);
-          setIsEmailVerifiedByAdmin(profileData?.is_email_verified_by_admin ?? false); // Default to false if null
+          setIsAdmin(profile?.is_admin || false);
         }
-        setLoadingAdminStatus(false); // Set loading to false after fetching profile
-      } catch (err) {
-        console.error('AdminGuard: Unexpected error fetching profile for admin/email verification:', err);
-        setIsAdmin(false);
-        setIsEmailVerifiedByAdmin(false);
         setLoadingAdminStatus(false);
-      }
 
-      // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag) for admin users
-      const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
-
-      if (isEmailUnconfirmed) {
-        console.log('AdminGuard: Admin user email not confirmed. Redirecting to email confirmation page.');
-        navigate('/email-not-confirmed', { replace: true });
-        return; // Stop further checks and redirection
-      }
-
-      try {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
           console.error('AdminGuard: Error listing MFA factors:', factorsError);
@@ -77,39 +54,38 @@ const AdminGuard: React.FC = () => {
         const hasMfaEnrolled = factors.totp.length > 0;
         console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled);
 
-        // MODIFIED LOGIC START
         if (hasMfaEnrolled) {
           // If MFA is enrolled, check localStorage for the mfa_passed flag
           const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true' && session.aal === 'aal2') { // Ensure session.aal is also aal2
-            console.log('AdminGuard: MFA enrolled and mfa_passed flag found, and session is aal2. Granting access.');
+          if (mfaPassedFlag === 'true') {
+            console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Granting access.');
             setTargetAal('aal2');
           } else {
-            // MFA enrolled but no flag or session.aal is not aal2, redirect to challenge
-            console.log('AdminGuard: MFA enrolled but mfa_passed flag missing or session.aal not aal2. Redirecting to challenge.');
+            // MFA enrolled but no flag, redirect to challenge
+            console.log('AdminGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
             setTargetAal('aal1'); // User needs to complete MFA challenge
           }
         } else {
           // If no MFA is enrolled, AAL1 is sufficient.
-          // If session.aal is undefined, treat it as aal1 for the purpose of allowing access.
           console.log('AdminGuard: No MFA enrolled. Granting access.');
           setTargetAal('aal2');
         }
-        // MODIFIED LOGIC END
       } catch (err) {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
+        setIsAdmin(false);
+        setLoadingAdminStatus(false);
         setTargetAal('aal2'); // Fallback to allow access on unexpected errors
       }
     };
 
     setTargetAal(null); // Reset on session/loadingSession change
-    setIsEmailVerifiedByAdmin(null); // Reset custom flag on session/loadingSession change
     checkAdminAndMfaStatus();
-  }, [session, loadingSession, supabase, navigate, isEmailVerifiedByAdmin]); // ADDED isEmailVerifiedByAdmin to dependencies
+  }, [session, loadingSession, supabase]);
+
+  // Removed useEffect to clear localStorage flag after delay
 
   // Show loading indicator while checking authentication and admin/MFA status
-  // MODIFIED: Add isEmailVerifiedByAdmin === null to loading condition
-  if (loadingSession || loadingAdminStatus || targetAal === null || isEmailVerifiedByAdmin === null) {
+  if (loadingSession || loadingAdminStatus || targetAal === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -122,13 +98,6 @@ const AdminGuard: React.FC = () => {
     console.log('AdminGuard: No active user session found. Redirecting to login page.');
     // MODIFIED: Pass current path and search as redirect parameter
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
-
-  // MODIFIED: Check for email confirmation (both Supabase's and custom admin flag) again before proceeding
-  const isEmailUnconfirmed = !session.user.email_confirmed_at || isEmailVerifiedByAdmin === false;
-  if (isEmailUnconfirmed) {
-    console.log('AdminGuard: Admin user email not confirmed. Redirecting to email confirmation page.');
-    return <Navigate to="/email-not-confirmed" replace />;
   }
 
   // Admin specific check
