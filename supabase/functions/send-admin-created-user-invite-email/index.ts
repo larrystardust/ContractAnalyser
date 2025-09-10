@@ -35,20 +35,16 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // MODIFIED: Re-added initialPassword
     const { recipientEmail, recipientName, initialPassword } = await req.json();
 
     console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
 
+    // MODIFIED: Check for initialPassword
     if (!recipientEmail || !initialPassword) {
       console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword');
       return corsResponse({ error: 'Missing required email parameters: recipientEmail, initialPassword' }, 400);
     }
-
-    // --- REMOVED AUTHENTICATION AND AUTHORIZATION CHECKS ---
-    // This function is called by another authenticated Edge Function (admin-create-user)
-    // and does not need to re-authenticate the caller or check admin privileges.
-    // The token passed is the service_role key, which is not a user JWT.
-    // --- END REMOVED CHECKS ---
 
     console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail}.`);
 
@@ -56,7 +52,7 @@ Deno.serve(async (req) => {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
         to: [recipientEmail],
-        subject: `Welcome to ContractAnalyser! Your Account Details`,
+        subject: `Welcome to ContractAnalyser! Your Account Details`, // MODIFIED: Subject
         html: `
           <p>Hello ${recipientName || 'there'},</p>
           <p>An administrator has created an account for you on ContractAnalyser.</p>
@@ -70,7 +66,7 @@ Deno.serve(async (req) => {
           <p>If you have any questions, please contact your administrator.</p>
           <p>Thank you for using ContractAnalyser.</p>
           <p>The ContractAnalyser Team</p>
-        `,
+        `, // MODIFIED: Email content
       });
 
       if (error) {
