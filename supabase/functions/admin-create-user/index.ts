@@ -30,9 +30,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm, send_invitation_email, initial_password } = await req.json();
+    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, initial_password } = await req.json(); // REMOVED: email_confirm from destructuring
 
-    console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, email_confirm, send_invitation_email });
+    console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email });
 
     if (!email || !password) {
       console.error('admin-create-user: Missing email or password in request.');
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: email_confirm ?? true, // Default to true, admin can override
+      email_confirm: true, // HARDCODED: Always send confirmation email
       user_metadata: {
         full_name: full_name || null,
         business_name: business_name || null,
@@ -121,16 +121,15 @@ Deno.serve(async (req) => {
     }
     console.log('admin-create-user: User profile inserted successfully.');
 
-    // If send_invitation_email is true, send the custom invitation email
+    // Conditional email sending based on send_invitation_email flag
     if (send_invitation_email) {
       console.log('admin-create-user: send_invitation_email is true. Invoking send-admin-created-user-invite-email...');
       // Invoke the new Edge Function to send the custom invitation email
       const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
         body: {
-          recipientEmail: newUser.user.email, // Use newUser.user.email for consistency
+          recipientEmail: newUser.user.email,
           recipientName: full_name || newUser.user.email,
           initialPassword: initial_password,
-          // REMOVED: passwordResetLink is no longer passed
         },
       });
 
