@@ -132,7 +132,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
       )}
       {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          No payment with your current assigned subscription.
+          No payment needed with your current assigned subscription.
         </p>
       )}
     </div>
