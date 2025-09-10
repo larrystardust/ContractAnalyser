@@ -27,6 +27,13 @@ const AdminGuard: React.FC = () => {
         return;
       }
 
+      // ADDED: Check for email confirmation for admin users
+      if (!session.user.email_confirmed_at) {
+        console.log('AdminGuard: Admin user email not confirmed. Redirecting to email confirmation page.');
+        navigate('/email-not-confirmed', { replace: true });
+        return; // Stop further checks and redirection
+      }
+
       try {
         // First, check admin status
         const { data: profile, error: profileError } = await supabase
@@ -74,13 +81,13 @@ const AdminGuard: React.FC = () => {
         console.error('AdminGuard: Unexpected error during admin/MFA check:', err);
         setIsAdmin(false);
         setLoadingAdminStatus(false);
-        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
+        setTargetAAl('aal2'); // Fallback to allow access on unexpected errors
       }
     };
 
     setTargetAal(null); // Reset on session/loadingSession change
     checkAdminAndMfaStatus();
-  }, [session, loadingSession, supabase]);
+  }, [session, loadingSession, supabase, navigate]); // ADDED navigate to dependencies
 
   // Removed useEffect to clear localStorage flag after delay
 
@@ -99,6 +106,12 @@ const AdminGuard: React.FC = () => {
     // MODIFIED: Pass current path and search as redirect parameter
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
+
+  // This check is now redundant here as it's handled in the useEffect above
+  // if (!session.user.email_confirmed_at) {
+  //   console.log('AdminGuard: User email not confirmed. Redirecting to email confirmation page.');
+  //   return <Navigate to="/email-not-confirmed" replace />;
+  // }
 
   // Admin specific check
   if (!isAdmin) {
