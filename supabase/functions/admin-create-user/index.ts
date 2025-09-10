@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     console.log('admin-create-user: Default theme determined:', defaultTheme);
 
     // Create the user in Supabase Auth
-    console.log('admin-create-user: Attempting to create user in Supabase Auth...');
+    console.log('admin-create-user: Attempting to create user in Supabase Auth with email:', email);
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -98,7 +98,11 @@ Deno.serve(async (req) => {
       console.error('admin-create-user: Error creating user in auth:', createUserError);
       return corsResponse({ error: createUserError.message }, 500);
     }
-    console.log('admin-create-user: User created in Supabase Auth. New user ID:', newUser.user.id, 'Email:', newUser.user.email);
+    // --- NEW LOGGING ADDED HERE ---
+    console.log('admin-create-user: User created in Supabase Auth. Full newUser object:', JSON.stringify(newUser, null, 2));
+    console.log('admin-create-user: newUser.user.id:', newUser.user.id);
+    console.log('admin-create-user: newUser.user.email (after createUser):', newUser.user.email);
+    // --- END NEW LOGGING ---
 
     // Insert profile data for the new user
     console.log('admin-create-user: Attempting to insert user profile...');
@@ -123,6 +127,9 @@ Deno.serve(async (req) => {
     // If send_invitation_email is true, send the custom invitation email
     if (send_invitation_email) {
       console.log('admin-create-user: send_invitation_email is true. Generating password reset link...');
+      // --- NEW LOGGING ADDED HERE ---
+      console.log('admin-create-user: Email being passed to generateLink (before call):', newUser.user.email);
+      // --- END NEW LOGGING ---
       // Generate a password reset link for the newly created user
       const { data: passwordResetLinkData, error: generateLinkError } = await supabase.auth.admin.generateLink(
         'password_reset',
