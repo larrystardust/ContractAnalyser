@@ -123,45 +123,23 @@ Deno.serve(async (req) => {
 
     // If send_invitation_email is true, send the custom invitation email
     if (send_invitation_email) {
-      console.log('admin-create-user: send_invitation_email is true. Generating password reset link...');
-      
-      // --- NEW LOGGING FOR APP_BASE_URL AND REDIRECT_TO URL ---
-      const appBaseUrlEnv = Deno.env.get('APP_BASE_URL');
-      const redirectToUrl = `${appBaseUrlEnv}/reset-password`;
-      console.log('admin-create-user: APP_BASE_URL environment variable:', appBaseUrlEnv);
-      console.log('admin-create-user: Constructed redirectTo URL:', redirectToUrl);
-      console.log('admin-create-user: Email being passed to generateLink (before call):', newUser.user.email);
-      // --- END NEW LOGGING ---
+      console.log('admin-create-user: send_invitation_email is true. Invoking send-admin-created-user-invite-email...');
+      // Invoke the new Edge Function to send the custom invitation email
+      const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
+        body: {
+          recipientEmail: newUser.user.email, // Use newUser.user.email for consistency
+          recipientName: full_name || newUser.user.email,
+          initialPassword: initial_password,
+          // REMOVED: passwordResetLink is no longer passed
+        },
+      });
 
-      // Generate a password reset link for the newly created user
-      const { data: passwordResetLinkData, error: generateLinkError } = await supabase.auth.admin.generateLink(
-        'password_reset',
-        newUser.user.email!, // Use newUser.user.email which is confirmed to exist
-        { redirectTo: redirectToUrl }
-      );
-
-      if (generateLinkError) {
-        console.error('admin-create-user: Error generating password reset link:', generateLinkError);
-        // Do not return error, just log it and proceed without sending invite email
+      if (emailFnInvokeError) {
+        console.error('admin-create-user: Error invoking send-admin-created-user-invite-email Edge Function:', emailFnInvokeError);
+      } else if (emailFnResponse && !emailFnResponse.success) {
+        console.warn('admin-create-user: send-admin-created-user-invite-email Edge Function reported failure:', emailFnResponse.message);
       } else {
-        console.log('admin-create-user: Password reset link generated. Invoking send-admin-created-user-invite-email...');
-        // Invoke the new Edge Function to send the custom invitation email
-        const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
-          body: {
-            recipientEmail: newUser.user.email, // Use newUser.user.email for consistency
-            recipientName: full_name || newUser.user.email,
-            initialPassword: initial_password,
-            passwordResetLink: passwordResetLinkData?.properties?.action_link,
-          },
-        });
-
-        if (emailFnInvokeError) {
-          console.error('admin-create-user: Error invoking send-admin-created-user-invite-email Edge Function:', emailFnInvokeError);
-        } else if (emailFnResponse && !emailFnResponse.success) {
-          console.warn('admin-create-user: send-admin-created-user-invite-email Edge Function reported failure:', emailFnResponse.message);
-        } else {
-          console.log('admin-create-user: send-admin-created-user-invite-email Edge Function invoked successfully.');
-        }
+        console.log('admin-create-user: send-admin-created-user-invite-email Edge Function invoked successfully.');
       }
     } else {
       console.log('admin-create-user: send_invitation_email is false. Skipping custom invitation email.');
