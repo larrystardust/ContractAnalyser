@@ -49,8 +49,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
-      console.error('admin-create-user: Unauthorized: Invalid or missing user token:', userError?.message);
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+      return corsResponse({ error: 'Unauthorized: Invalid or missing user token', details: userError?.message }, 401);
     }
     console.log('admin-create-user: Admin user authenticated:', user.id);
 
@@ -98,11 +97,9 @@ Deno.serve(async (req) => {
       console.error('admin-create-user: Error creating user in auth:', createUserError);
       return corsResponse({ error: createUserError.message }, 500);
     }
-    // --- NEW LOGGING ADDED HERE ---
     console.log('admin-create-user: User created in Supabase Auth. Full newUser object:', JSON.stringify(newUser, null, 2));
     console.log('admin-create-user: newUser.user.id:', newUser.user.id);
     console.log('admin-create-user: newUser.user.email (after createUser):', newUser.user.email);
-    // --- END NEW LOGGING ---
 
     // Insert profile data for the new user
     console.log('admin-create-user: Attempting to insert user profile...');
@@ -127,14 +124,20 @@ Deno.serve(async (req) => {
     // If send_invitation_email is true, send the custom invitation email
     if (send_invitation_email) {
       console.log('admin-create-user: send_invitation_email is true. Generating password reset link...');
-      // --- NEW LOGGING ADDED HERE ---
+      
+      // --- NEW LOGGING FOR APP_BASE_URL AND REDIRECT_TO URL ---
+      const appBaseUrlEnv = Deno.env.get('APP_BASE_URL');
+      const redirectToUrl = `${appBaseUrlEnv}/reset-password`;
+      console.log('admin-create-user: APP_BASE_URL environment variable:', appBaseUrlEnv);
+      console.log('admin-create-user: Constructed redirectTo URL:', redirectToUrl);
       console.log('admin-create-user: Email being passed to generateLink (before call):', newUser.user.email);
       // --- END NEW LOGGING ---
+
       // Generate a password reset link for the newly created user
       const { data: passwordResetLinkData, error: generateLinkError } = await supabase.auth.admin.generateLink(
         'password_reset',
         newUser.user.email!, // Use newUser.user.email which is confirmed to exist
-        { redirectTo: `${Deno.env.get('APP_BASE_URL')}/reset-password` }
+        { redirectTo: redirectToUrl }
       );
 
       if (generateLinkError) {
