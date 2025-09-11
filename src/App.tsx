@@ -10,7 +10,6 @@ import SettingsPage from './pages/SettingsPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-// REMOVED: import PasswordResetPage from './pages/PasswordResetPage'; // This import is no longer needed
 import EmailConfirmationPage from './pages/EmailConfirmationPage';
 import EmailSentPage from './pages/EmailSentPage';
 import AuthGuard from './components/AuthGuard';
@@ -41,9 +40,10 @@ import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
-import ResetPassword from './pages/ResetPassword'; // Keep this import for the consolidated ResetPassword component
+import ResetPassword from './pages/ResetPassword';
+import RecoveryInProgressPage from './pages/RecoveryInProgressPage'; // NEW IMPORT
 
-// Define constants for localStorage keys and expiry duration (must match AuthCallbackPage and ResetPassword)
+// Define constants for localStorage keys and expiry duration
 const RECOVERY_FLAG = 'password_recovery_active';
 const RECOVERY_EXPIRY = 'password_recovery_expiry';
 
@@ -51,24 +51,41 @@ function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const navigationType = useNavigationType();
   const session = useSession();
-  // MODIFIED: isPasswordResetFlow now only reflects if *this tab* is in the flow via URL hash
-  const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false); 
-  // REMOVED: isRecoveryActiveGlobally state and its useEffect listener
+  const [isRecoveryActiveGlobally, setIsRecoveryActiveGlobally] = useState(false); // State to track global recovery status
 
   useTheme();
 
+  // Function to check and update recovery status from localStorage
+  const checkRecoveryStatus = () => {
+    const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
+    const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
+    return recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage;
+  };
+
+  // Effect to listen for localStorage changes and update recovery status
   useEffect(() => {
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    const hashType = hashParams.get('type');
-    const isPasswordResetFlowFromHash = hashType === 'recovery';
+    // Initial check when component mounts
+    setIsRecoveryActiveGlobally(checkRecoveryStatus());
 
-    // MODIFIED: Set isPasswordResetFlow based on URL hash for this tab
-    setIsPasswordResetFlow(isPasswordResetFlowFromHash);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === RECOVERY_FLAG || event.key === RECOVERY_EXPIRY) {
+        console.log('App.tsx: Storage event detected. Re-checking recovery status.');
+        setIsRecoveryActiveGlobally(checkRecoveryStatus());
+      }
+    };
 
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+
+  useEffect(() => {
     const publicPaths = [
-      '/', // Base URL is public
+      '/',
       '/public-report-view',
       '/checkout/success',
       '/checkout/cancel',
@@ -80,30 +97,26 @@ function App() {
       '/accept-invitation',
       '/auth/email-sent',
       '/mfa-challenge',
-      '/reset-password', // This is the target for password reset emails, so it must be public
+      '/reset-password',
       '/disclaimer',
       '/terms',
       '/privacy-policy',
       '/help',
+      '/recovery-in-progress', // NEW: Add the recovery in progress page to public paths
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
-    // --- ABSOLUTE HIGHEST PRIORITY: Handle global recovery state ---
-    // This logic is now primarily handled by AuthGuard.tsx.
-    // However, we keep a basic check here for non-protected routes (like /login, /signup)
-    // to ensure they don't inadvertently allow access if a recovery is active.
-    const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
-    const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
-    const isRecoveryActiveGlobally = recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage;
-
-    if (isRecoveryActiveGlobally && currentPathBase !== '/reset-password' && !isPasswordResetFlowFromHash) {
-      console.log(`App.tsx: Global recovery active. Redirecting ${currentPathBase} to /login.`);
-      navigate('/login', { replace: true });
+    // --- ABSOLUTE HIGHEST PRIORITY: Global Recovery State Enforcement ---
+    // If a global recovery is active, force redirect to /recovery-in-progress
+    // unless the current path is already /reset-password or /recovery-in-progress.
+    if (isRecoveryActiveGlobally && currentPathBase !== '/reset-password' && currentPathBase !== '/recovery-in-progress') {
+      console.log(`App.tsx: Global recovery active. Redirecting ${currentPathBase} to /recovery-in-progress.`);
+      navigate('/recovery-in-progress', { replace: true });
       return; // STOP all other redirects
     }
 
-    // --- Standard authentication redirects ---
+    // --- Standard authentication redirects (only if NOT in a global recovery state) ---
     // If no session AND not on a public path, redirect to landing page.
     if (!session && !publicPaths.includes(currentPathBase)) {
       console.log(`App.tsx: No session and not public path. Redirecting ${currentPathBase} to /.`);
@@ -112,13 +125,14 @@ function App() {
     }
 
     // If session exists and user is on login/signup/etc., redirect to dashboard.
+    // This block now runs only if isRecoveryActiveGlobally is FALSE.
     if (session && (currentPathBase === '/login' || currentPathBase === '/signup')) {
-      console.log(`App.tsx: Session exists on login/signup. Redirecting to /dashboard.`);
+      console.log(`App.tsx: Session exists (not recovery) on login/signup. Redirecting to /dashboard.`);
       navigate('/dashboard', { replace: true });
       return; // Stop further redirects
     }
 
-  }, [location, session, navigate]); // Removed isRecoveryActiveGlobally from dependencies as it's now calculated locally
+  }, [location, session, navigate, isRecoveryActiveGlobally]);
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
@@ -129,14 +143,14 @@ function App() {
           {/* Routes without Header (truly no header) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          {/* REMOVED: <Route path="/password-reset" element={<ResetPassword />} /> */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/mfa-challenge" element={<MfaChallengePage />} />
           <Route path="/public-report-view" element={<PublicReportViewerPage />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> {/* This route is for the actual password reset form */}
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/recovery-in-progress" element={<RecoveryInProgressPage />} /> {/* NEW ROUTE */}
 
           {/* Routes with Header (using MainLayout) */}
           <Route element={<MainLayout
@@ -155,7 +169,8 @@ function App() {
             <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
 
             {/* Protected Routes - wrapped with AuthGuard */}
-            <Route element={<AuthGuard isPasswordResetFlow={isPasswordResetFlow} />}> {/* PASS NEW PROP */}
+            {/* isPasswordResetFlow prop is no longer needed by AuthGuard for recovery logic */}
+            <Route element={<AuthGuard />}> 
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
