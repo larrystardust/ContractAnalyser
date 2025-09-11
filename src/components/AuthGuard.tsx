@@ -3,16 +3,11 @@ import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-rea
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
-// Define constants for localStorage keys and expiry duration (must match AuthCallbackPage and ResetPassword)
-const RECOVERY_FLAG = 'password_recovery_active';
-const RECOVERY_EXPIRY = 'password_recovery_expiry';
+// Removed RECOVERY_FLAG and RECOVERY_EXPIRY constants from here,
+// as the global recovery check is now handled exclusively in App.tsx.
+// The isPasswordResetFlow prop is also no longer used for recovery logic here.
 
-interface AuthGuardProps {
-  isPasswordResetFlow: boolean; // This prop will now primarily indicate if the current tab *initiated* the flow
-  children?: React.ReactNode;
-}
-
-const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
+const AuthGuard: React.FC = () => { // Removed isPasswordResetFlow prop
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
@@ -20,43 +15,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
 
-  // Read recovery flag + expiry from localStorage directly within AuthGuard
-  const recoveryActive = (() => {
-    const flag = localStorage.getItem(RECOVERY_FLAG);
-    const expiry = localStorage.getItem(RECOVERY_EXPIRY);
-    if (!flag || !expiry) return false;
-    const expiryTime = parseInt(expiry, 10);
-    if (isNaN(expiryTime) || Date.now() > expiryTime) {
-      // expired, clean up
-      localStorage.removeItem(RECOVERY_FLAG);
-      localStorage.removeItem(RECOVERY_EXPIRY);
-      return false;
-    }
-    return flag === 'true';
-  })();
+  // Removed all recoveryActive related logic from AuthGuard.
+  // This component now only handles standard authentication and MFA.
 
-  console.log('AuthGuard Debug:', {
-    isPasswordResetFlowProp: isPasswordResetFlow, // From App.tsx, indicates if this tab initiated
-    recoveryActiveInternal: recoveryActive, // Internal check from localStorage
-    pathname: location.pathname,
-    session: !!session,
-  });
-
-  // === ABSOLUTE PRIORITY: recovery session ===
-  // If a recovery session is active (from localStorage flag),
-  // strictly confine the user to the /reset-password page.
-  // Any attempt to navigate elsewhere will redirect to /login.
-  // This check must come BEFORE any session or loading checks.
-  if (recoveryActive) {
-    if (location.pathname !== '/reset-password') {
-      console.log(`AuthGuard: Recovery active. User attempted to access ${location.pathname}. Redirecting to login.`);
-      return <Navigate to="/login" replace />;
-    }
-    // If it is /reset-password, allow it.
-    return <Outlet />;
-  }
-
-  // === Normal authentication flow (runs only if NOT in recovery) ===
   useEffect(() => {
     const checkAuthStatus = async () => {
       if (loadingSession) return;
@@ -103,7 +64,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     };
 
     checkAuthStatus();
-  }, [session, loadingSession, supabase, location.pathname, location.search]); // Added location dependencies for useEffect
+  }, [session, loadingSession, supabase, location.pathname, location.search]);
 
   // === Loading state ===
   if (loadingSession || loadingAuthChecks) {
