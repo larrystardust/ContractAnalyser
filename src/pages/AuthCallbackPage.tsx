@@ -4,25 +4,19 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
-import Button from '../components/ui/Button'; // Ensure Button is imported
-
-// Define constants for localStorage keys and expiry duration
-const RECOVERY_FLAG = 'password_recovery_active';
-const RECOVERY_EXPIRY = 'password_recovery_expiry';
-const RECOVERY_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
+  const [searchParams] = useSearchParams(); // Keep for other potential query params
+  const location = useLocation(); // ADDED: To access hash
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Processing authentication...');
 
-  const processingRef = useRef(false);
+  const processingRef = useRef(false); // Ref to prevent multiple executions
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
@@ -30,39 +24,21 @@ const AuthCallbackPage: React.FC = () => {
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
     let finalRedirectPath: string | null = null;
-    let isPasswordResetFlow = false;
 
-    // 1. Check for 'type=recovery' in the URL hash (for password reset)
-    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
-    const hashType = hashParams.get('type');
-    if (hashType === 'recovery') {
-      isPasswordResetFlow = true;
-      finalRedirectPath = `/reset-password${location.hash}`; // Redirect to reset-password, preserving hash
-      
-      // CRITICAL: Set recovery flag in localStorage
-      const expiryTime = Date.now() + RECOVERY_DURATION_MS;
-      localStorage.setItem(RECOVERY_FLAG, 'true');
-      localStorage.setItem(RECOVERY_EXPIRY, expiryTime.toString());
-      console.log('AuthCallbackPage: Detected password reset flow. Recovery flag set in localStorage with expiry:', new Date(expiryTime).toISOString());
-
-      console.log('AuthCallbackPage: Redirecting to:', finalRedirectPath);
-      navigate(finalRedirectPath, { replace: true });
-      return; // Exit early as we're redirecting
-    }
-
-    // 2. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
+    // 1. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
       console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
-    // 3. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
+    // 2. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
     // This takes precedence if found, as it's the direct instruction from Supabase.
+    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
@@ -89,9 +65,8 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
-      // Only proceed if it's a SIGNED_IN' event and not a password reset flow (which is handled above)
-      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at && !isPasswordResetFlow) {
-        processingRef.current = true;
+      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
+        processingRef.current = true; // Set flag to true
 
         console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
 
@@ -162,11 +137,6 @@ const AuthCallbackPage: React.FC = () => {
             setMessage('Authentication successful! Redirecting...');
           }
 
-          // CRITICAL: Clear recovery flag if this was a successful non-recovery login
-          localStorage.removeItem(RECOVERY_FLAG);
-          localStorage.removeItem(RECOVERY_EXPIRY);
-          console.log('AuthCallbackPage: Non-recovery login successful. Recovery state cleared from localStorage.');
-
           setStatus('success');
           // If no invitation token was processed, determine where to redirect based on admin status
           const { data: profileData, error: profileCheckError } = await supabase
@@ -214,6 +184,7 @@ const AuthCallbackPage: React.FC = () => {
     // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
+      // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
   }, [navigate, supabase.auth, searchParams, location.hash]);
@@ -234,6 +205,8 @@ const AuthCallbackPage: React.FC = () => {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
                 Log In
@@ -252,6 +225,8 @@ const AuthCallbackPage: React.FC = () => {
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
                 Log In
