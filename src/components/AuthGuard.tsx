@@ -17,6 +17,22 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
   const [isRecoverySession, setIsRecoverySession] = useState(false);
 
+  // Check if user has successfully logged in after password reset
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const resetFlowCompleted = localStorage.getItem('passwordResetCompleted');
+      if (resetFlowCompleted === 'true') {
+        // Clear the reset flow flags if user has completed login
+        localStorage.removeItem('passwordResetFlowActive');
+        localStorage.removeItem('passwordResetFlowStartTime');
+        localStorage.removeItem('passwordResetCompleted');
+        setIsRecoverySession(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, [session]); // Re-check when session changes
+
   // Global state to track password reset flow across all browser tabs
   useEffect(() => {
     // Set a global flag to indicate password reset flow is active
@@ -35,7 +51,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
         // If within 15 minutes, consider reset flow active
         if (elapsedTime < 15 * 60 * 1000) {
           setIsRecoverySession(true);
-          console.log('AuthGuard: Password reset flow detected from global state');
         } else {
           // Clear expired reset flow
           localStorage.removeItem('passwordResetFlowActive');
@@ -50,7 +65,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
         setIsRecoverySession(true);
-        console.log('AuthGuard: Password reset flow detected from other tab');
+      } else if (e.key === 'passwordResetCompleted' && e.newValue === 'true') {
+        // Clear reset flow when completed from other tab
+        localStorage.removeItem('passwordResetFlowActive');
+        localStorage.removeItem('passwordResetFlowStartTime');
+        setIsRecoverySession(false);
       }
     };
 
@@ -71,7 +90,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
         setIsRecoverySession(true);
         localStorage.setItem('passwordResetFlowActive', 'true');
         localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
-        console.log('AuthGuard: Recovery session detected from URL hash');
       }
     };
 
@@ -87,16 +105,21 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
+  // CRITICAL: Check if user has a valid session and is not in recovery mode
+  // This allows dashboard access after successful login
+  if (session?.user && !isRecoverySession) {
+    console.log('AuthGuard: Valid session detected, allowing access to protected routes');
+    // Continue with normal auth flow checks below
+  }
+
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW - REDIRECT ALL ROUTES TO RESET-PASSWORD
   if (isPasswordResetFlow || isRecoverySession) {
     if (location.pathname === '/reset-password') {
       // Allow access to reset-password page only - session is preserved
-      console.log('AuthGuard: Allowing access to reset-password during recovery flow');
       return <Outlet />;
     } else {
       // Redirect ALL other routes (including dashboard, base URL, etc.) to reset-password
       // This blocks all open browsers, navigational paths, and back buttons
-      console.log('AuthGuard: Blocking access - redirecting all routes to reset-password');
       
       // Preserve the hash if it exists, otherwise use current hash
       const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
@@ -129,19 +152,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
         }
 
         const hasMfaEnrolled = factors.totp.length > 0;
-        console.log('AuthGuard: User has MFA enrolled:', hasMfaEnrolled);
 
         if (hasMfaEnrolled) {
           const mfaPassedFlag = localStorage.getItem('mfa_passed');
           if (mfaPassedFlag === 'true') {
-            console.log('AuthGuard: MFA enrolled and mfa_passed flag found. Granting access.');
             setTargetAal('aal2');
           } else {
-            console.log('AuthGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
             setTargetAal('aal1');
           }
         } else {
-          console.log('AuthGuard: No MFA enrolled. Granting access.');
           setTargetAal('aal2');
         }
       } catch (err) {
@@ -164,21 +183,17 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   }
 
   if (!session || !session.user) {
-    console.log('AuthGuard: No active user session found. Redirecting to login page.');
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   if (targetAal === 'aal1') {
-    console.log('AuthGuard: MFA is required (aal1). Redirecting to MFA challenge.');
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   if (targetAal === 'aal2') {
-    console.log('AuthGuard: User is authenticated and AAL2 or no MFA required. Rendering protected content.');
     return <Outlet />;
   }
 
-  console.warn('AuthGuard: Unexpected state. Redirecting to login.');
   return <Navigate to="/login" replace />;
 };
 
