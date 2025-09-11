@@ -18,16 +18,8 @@ const ResetPassword: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // CRITICAL FIX: Sign out immediately if a session exists on this page load
-  useEffect(() => {
-    if (!isSessionLoading && session) {
-      console.log('ResetPassword: Session detected on load. Signing out to prevent premature login.');
-      // Sign out the current session. This clears the local session state.
-      // The password reset token in the URL hash will still be available for updateUser().
-      supabase.auth.signOut();
-    }
-  }, [session, isSessionLoading, supabase.auth]);
-
+  // REMOVED: The useEffect that called supabase.auth.signOut() on load.
+  // This session must remain active for updateUser() to work.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,10 +38,15 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // This will use the access_token from the URL hash, which is still available
-      // even if the local session state was cleared by signOut().
+      // This will use the access_token from the URL hash, which is now available
+      // because we are NOT signing out on load.
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...'); // Redirect to login after reset
+      
+      // CRITICAL: Sign out the user after successful password reset
+      // This terminates the recovery session, forcing a fresh login.
+      await supabase.auth.signOut();
+
       setTimeout(() => {
         navigate('/login', { replace: true }); // User must explicitly log in with new password
       }, 1500);
