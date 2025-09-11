@@ -1,74 +1,63 @@
-import React, { useEffect, useState } from 'react'; // Removed useRef
+import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
 interface AuthGuardProps {
-  children?: React.ReactNode; // Optional, as Outlet is used
+  isPasswordResetFlow: boolean;
+  children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = () => {
+const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
-  const navigate = useNavigate();
-  const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null); // null: checking, 'aal1': needs MFA, 'aal2': good to go
-  // Removed mfaPassedFlagRef and its associated useEffect for clearing localStorage
+  
+  const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
+  const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
+  const [isRecoverySession, setIsRecoverySession] = useState(false);
 
+  // Check if this is a recovery session (password reset flow)
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (loadingSession) return;
-
-      console.log('AuthGuard: Current session AAL:', session?.aal); // Log current AAL
-      console.log('AuthGuard: Current session user:', session?.user?.id); // Log current user ID
-
-      if (!session?.user) {
-        setTargetAal(null); // No user, will redirect to login
-        return;
-      }
-
-      try {
-        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) {
-          console.error('AuthGuard: Error listing MFA factors:', factorsError);
-          // If error fetching factors, assume no MFA is required for now to avoid blocking
-          setTargetAal('aal2');
-          return;
-        }
-
-        const hasMfaEnrolled = factors.totp.length > 0;
-        console.log('AuthGuard: User has MFA enrolled:', hasMfaEnrolled);
-
-        if (hasMfaEnrolled) {
-          // If MFA is enrolled, check localStorage for the mfa_passed flag
-          const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true') {
-            console.log('AuthGuard: MFA enrolled and mfa_passed flag found. Granting access.');
-            setTargetAal('aal2');
+    const checkRecoverySession = async () => {
+      if (session) {
+        try {
+          // Check if this session was created from a password reset flow
+          const { data } = await supabase.auth.getSession();
+          if (data.session?.user?.app_metadata?.provider === 'email' && 
+              data.session.user.aud === 'authenticated' &&
+              data.session.user.role === 'authenticated' &&
+              location.hash.includes('type=recovery')) {
+            setIsRecoverySession(true);
           } else {
-            // MFA enrolled but no flag, redirect to challenge
-            console.log('AuthGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
-            setTargetAal('aal1'); // User needs to complete MFA challenge
+            setIsRecoverySession(false);
           }
-        } else {
-          // If no MFA is enrolled, AAL1 is sufficient.
-          console.log('AuthGuard: No MFA enrolled. Granting access.');
-          setTargetAal('aal2');
+        } catch (error) {
+          console.error('Error checking recovery session:', error);
+          setIsRecoverySession(false);
         }
-      } catch (err) {
-        console.error('AuthGuard: Unexpected error during MFA check:', err);
-        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
       }
     };
 
-    setTargetAal(null); // Reset on session/loadingSession change
-    checkAuthStatus();
-  }, [session, loadingSession, supabase]);
+    checkRecoverySession();
+  }, [session, location.hash, supabase.auth]);
 
-  // Removed useEffect to clear localStorage flag after delay
+  // CRITICAL: Handle password reset flow - redirect ALL routes except reset-password to login
+  useEffect(() => {
+    if (isPasswordResetFlow || isRecoverySession) {
+      console.log('AuthGuard: Password reset flow detected, blocking access to protected routes');
+      
+      // If we're in password reset flow but not on the reset-password page, redirect to login
+      if (location.pathname !== '/reset-password') {
+        console.log('AuthGuard: Redirecting to login during password reset flow');
+        // Clear any existing session to prevent access
+        supabase.auth.signOut().catch(console.error);
+      }
+    }
+  }, [isPasswordResetFlow, isRecoverySession, location.pathname, supabase.auth]);
 
-  // Show loading indicator while checking authentication and MFA status
-  if (loadingSession || targetAal === null) {
+  // Show loading indicator for initial session loading
+  if (loadingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -76,10 +65,77 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // If not loading and MFA check is complete, evaluate redirection
+  // BLOCK ACCESS DURING PASSWORD RESET FLOW
+  if (isPasswordResetFlow || isRecoverySession) {
+    if (location.pathname === '/reset-password') {
+      // Allow access to reset-password page only
+      return <Outlet />;
+    } else {
+      // Redirect all other routes to login during password reset flow
+      console.log('AuthGuard: Blocking access during password reset flow, redirecting to login');
+      return <Navigate to="/login" replace />;
+    }
+  }
+
+  // Normal authentication flow (only if NOT a password reset flow)
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (loadingSession) return;
+
+      setLoadingAuthChecks(true);
+
+      if (!session?.user) {
+        setTargetAal(null);
+        setLoadingAuthChecks(false);
+        return;
+      }
+
+      try {
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        if (factorsError) {
+          console.error('AuthGuard: Error listing MFA factors:', factorsError);
+          setTargetAal('aal2');
+          setLoadingAuthChecks(false);
+          return;
+        }
+
+        const hasMfaEnrolled = factors.totp.length > 0;
+        console.log('AuthGuard: User has MFA enrolled:', hasMfaEnrolled);
+
+        if (hasMfaEnrolled) {
+          const mfaPassedFlag = localStorage.getItem('mfa_passed');
+          if (mfaPassedFlag === 'true') {
+            console.log('AuthGuard: MFA enrolled and mfa_passed flag found. Granting access.');
+            setTargetAal('aal2');
+          } else {
+            console.log('AuthGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
+            setTargetAal('aal1');
+          }
+        } else {
+          console.log('AuthGuard: No MFA enrolled. Granting access.');
+          setTargetAal('aal2');
+        }
+      } catch (err) {
+        console.error('AuthGuard: Unexpected error during MFA check:', err);
+        setTargetAal('aal2');
+      } finally {
+        setLoadingAuthChecks(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, [session, loadingSession, supabase]);
+
+  if (loadingAuthChecks) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
+      </div>
+    );
+  }
+
   if (!session || !session.user) {
     console.log('AuthGuard: No active user session found. Redirecting to login page.');
-    // MODIFIED: Pass current path and search as redirect parameter
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
@@ -93,7 +149,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Outlet />;
   }
 
-  // This should ideally not be reached
   console.warn('AuthGuard: Unexpected state. Redirecting to login.');
   return <Navigate to="/login" replace />;
 };
