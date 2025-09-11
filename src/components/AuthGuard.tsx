@@ -48,7 +48,13 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
 
   // === ABSOLUTE PRIORITY: recovery session ===
   if (recoveryActive || isRecoveryHashPresent) {
-    if (location.pathname !== '/reset-password') {
+    // Define paths that should explicitly redirect to /login during recovery
+    const blockedPathsDuringRecovery = ['/', '/dashboard'];
+
+    if (blockedPathsDuringRecovery.includes(location.pathname)) {
+      console.log(`AuthGuard: Recovery active. Blocking access to ${location.pathname}. Redirecting to login.`);
+      return <Navigate to="/login" replace />;
+    } else if (location.pathname !== '/reset-password') {
       console.log('AuthGuard: Recovery active. Redirecting to /reset-password.');
       return <Navigate to="/reset-password" replace />;
     }
@@ -88,7 +94,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
             setTargetAal('aal2');
           } else {
             console.log('AuthGuard: MFA required. Redirecting to challenge.');
-            setTargetAal('aal1');
+            return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
           }
         } else {
           console.log('AuthGuard: No MFA enrolled. Granting access.');
@@ -103,7 +109,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     };
 
     checkAuthStatus();
-  }, [session, loadingSession, supabase]);
+  }, [session, loadingSession, supabase, location.pathname, location.search]); // Added location dependencies for useEffect
 
   // === Loading state ===
   if (loadingSession || loadingAuthChecks) {
@@ -120,10 +126,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  if (targetAal === 'aal1') {
-    console.log('AuthGuard: MFA required. Redirecting.');
-    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
+  // This check is now redundant if the MFA redirect is handled inside useEffect
+  // if (targetAal === 'aal1') {
+  //   console.log('AuthGuard: MFA required. Redirecting.');
+  //   return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  // }
 
   if (targetAal === 'aal2') {
     console.log('AuthGuard: Authenticated. Rendering protected content.');
