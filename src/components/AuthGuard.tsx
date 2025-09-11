@@ -10,7 +10,7 @@ interface AuthGuardProps {
 
 const RECOVERY_FLAG_KEY = 'password_recovery_active';
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
+const AuthGuard: React.FC<AuthGuardProps> = () => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
@@ -18,47 +18,48 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
 
-  // --- Check recovery flag (with expiry) ---
-  let recoveryActive = false;
-  try {
-    const raw = localStorage.getItem(RECOVERY_FLAG_KEY);
-    if (raw) {
+  // --- Recovery check (with expiry) ---
+  const checkRecoveryFlag = () => {
+    try {
+      const raw = localStorage.getItem(RECOVERY_FLAG_KEY);
+      if (!raw) return false;
+
       const parsed = JSON.parse(raw);
       if (parsed.active && typeof parsed.expiresAt === 'number') {
         if (parsed.expiresAt > Date.now()) {
-          recoveryActive = true;
+          return true;
         } else {
           console.log('AuthGuard: Recovery flag expired, clearing.');
           localStorage.removeItem(RECOVERY_FLAG_KEY);
         }
       }
+    } catch (err) {
+      console.error('AuthGuard: error parsing recovery flag:', err);
     }
-  } catch (err) {
-    console.error('AuthGuard: error parsing recovery flag:', err);
-  }
+    return false;
+  };
 
-  // Also check if URL hash indicates recovery
+  const recoveryActive = checkRecoveryFlag();
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isRecoveryHashPresent = hashParams.get('type') === 'recovery';
 
-  console.log('AuthGuard Recovery Check:', {
-    recoveryActive,
-    isRecoveryHashPresent,
-    pathname: location.pathname,
-  });
-
-  // === ABSOLUTE PRIORITY: Recovery flow blocks everything ===
+  // === ABSOLUTE PRIORITY: recovery session ===
   if (recoveryActive || isRecoveryHashPresent) {
-    if (location.pathname === '/reset-password') {
-      return <Outlet />;
-    } else {
-      console.log('AuthGuard: Blocking dashboard due to active recovery session.');
-      return <Navigate to="/login" replace />;
+    // Kill any Supabase session so rehydration can't sneak them in
+    if (session) {
+      supabase.auth.signOut().catch(() => {});
     }
-  }
-  // === END RECOVERY PRIORITY ===
 
-  // --- Normal authentication flow ---
+    if (location.pathname !== '/reset-password') {
+      console.log('AuthGuard: Recovery active. Redirecting to /reset-password.');
+      return <Navigate to="/reset-password" replace />;
+    }
+
+    // Only /reset-password is allowed
+    return <Outlet />;
+  }
+
+  // === Normal authentication ===
   useEffect(() => {
     const checkAuthStatus = async () => {
       if (loadingSession) return;
@@ -74,25 +75,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
           console.error('AuthGuard: Error listing MFA factors:', factorsError);
-          setTargetAal('aal2'); // fallback
+          setTargetAal('aal2');
           setLoadingAuthChecks(false);
           return;
         }
 
         const hasMfaEnrolled = factors.totp.length > 0;
-        console.log('AuthGuard: User has MFA enrolled:', hasMfaEnrolled);
-
         if (hasMfaEnrolled) {
           const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true') {
-            console.log('AuthGuard: MFA passed. Granting access.');
-            setTargetAal('aal2');
-          } else {
-            console.log('AuthGuard: MFA required but not passed. Redirecting to challenge.');
-            setTargetAal('aal1');
-          }
+          setTargetAal(mfaPassedFlag === 'true' ? 'aal2' : 'aal1');
         } else {
-          console.log('AuthGuard: No MFA. Granting access.');
           setTargetAal('aal2');
         }
       } catch (err) {
@@ -106,7 +98,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     checkAuthStatus();
   }, [session, loadingSession, supabase]);
 
-  // --- Loading screen ---
   if (loadingSession || loadingAuthChecks) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -115,7 +106,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // --- Redirect if no session ---
   if (!session || !session.user) {
     return (
       <Navigate
@@ -125,7 +115,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // --- MFA checks ---
   if (targetAal === 'aal1') {
     return (
       <Navigate
