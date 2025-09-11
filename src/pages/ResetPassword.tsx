@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -8,12 +8,16 @@ import { useSessionContext } from '@supabase/auth-helpers-react';
 const RECOVERY_FLAG_KEY = 'password_recovery_active';
 const RECOVERY_EXPIRY_MINUTES = 15;
 
+interface RecoveryFlag {
+  active: boolean;
+  expiresAt: number;
+}
+
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { resetPassword } = useAuth();
-  const { session, isLoading: isSessionLoading } = useSessionContext();
-  const [searchParams] = useSearchParams();
+  const { session } = useSessionContext();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,13 +30,11 @@ const ResetPassword: React.FC = () => {
   // --- Helper to set the flag with expiry ---
   const setRecoveryFlag = () => {
     const expiresAt = Date.now() + RECOVERY_EXPIRY_MINUTES * 60 * 1000;
+    const flag: RecoveryFlag = { active: true, expiresAt };
     try {
-      localStorage.setItem(
-        RECOVERY_FLAG_KEY,
-        JSON.stringify({ active: true, expiresAt })
-      );
+      localStorage.setItem(RECOVERY_FLAG_KEY, JSON.stringify(flag));
       console.log(
-        `ResetPassword: password_recovery_active flag set with expiry in ${RECOVERY_EXPIRY_MINUTES} minutes.`
+        `ResetPassword: password_recovery_active flag set (expires in ${RECOVERY_EXPIRY_MINUTES} min).`
       );
     } catch (err) {
       console.error('ResetPassword: error setting recovery flag:', err);
@@ -49,23 +51,41 @@ const ResetPassword: React.FC = () => {
     }
   };
 
+  // --- On mount: set the flag if URL hash is recovery ---
   useEffect(() => {
-    // Check if this page load has a recovery hash
     const hashParams = new URLSearchParams(location.hash.substring(1));
-    const hashType = hashParams.get('type');
-
-    if (hashType === 'recovery') {
+    if (hashParams.get('type') === 'recovery') {
       setRecoveryFlag();
-    } else {
-      console.log('ResetPassword: no recovery hash detected.');
     }
 
-    // Clean up on unmount
     return () => {
       clearRecoveryFlag();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // --- Watch the flag expiry in real time ---
+  useEffect(() => {
+    const checkExpiry = () => {
+      try {
+        const raw = localStorage.getItem(RECOVERY_FLAG_KEY);
+        if (!raw) return;
+
+        const parsed: RecoveryFlag = JSON.parse(raw);
+        if (parsed.active && parsed.expiresAt <= Date.now()) {
+          console.log('ResetPassword: recovery session expired. Redirecting to login.');
+          clearRecoveryFlag();
+          supabase.auth.signOut().catch(() => {});
+          navigate('/login', { replace: true });
+        }
+      } catch (err) {
+        console.error('ResetPassword: error checking expiry:', err);
+      }
+    };
+
+    const interval = setInterval(checkExpiry, 5000); // check every 5 seconds
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,10 +107,7 @@ const ResetPassword: React.FC = () => {
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
 
-      // Sign out to terminate the recovery session
       await supabase.auth.signOut();
-
-      // Clear recovery flag
       clearRecoveryFlag();
 
       setTimeout(() => {
@@ -107,7 +124,7 @@ const ResetPassword: React.FC = () => {
     try {
       await supabase.auth.signOut();
     } catch (error) {
-      console.error("Error during logout on back to login:", error);
+      console.error('Error during logout on back to login:', error);
     } finally {
       clearRecoveryFlag();
       navigate('/login', { replace: true });
