@@ -12,40 +12,40 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false); // Keep for AdminGuard, but not directly used here
-  const [loadingAdminStatus, setLoadingAdminStatus] = useState(true); // Keep for AdminGuard
+  
+  // State for normal auth checks (MFA, etc.)
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
+  const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
 
+  // --- CRITICAL: Immediate checks for password reset flow ---
+  // This logic runs on every render, ensuring immediate redirection if needed.
+  if (isPasswordResetFlow) {
+    if (location.pathname === '/reset-password') {
+      // If it's a password reset flow AND we are on the /reset-password page,
+      // allow the ResetPassword component to render.
+      // No further session checks are needed here, as the ResetPassword component
+      // will handle the session validity using the URL hash tokens.
+      return <Outlet />;
+    } else {
+      // If it's a password reset flow but the user is trying to access ANY OTHER route,
+      // immediately redirect them to the login page. This prevents dashboard access.
+      console.log('AuthGuard: Password reset flow detected, but not on /reset-password. Redirecting to login.');
+      return <Navigate to="/login" replace />;
+    }
+  }
+  // --- END CRITICAL PASSWORD RESET FLOW CHECKS ---
+
+  // --- Normal authentication flow (only if NOT a password reset flow) ---
+  // This useEffect will only run if isPasswordResetFlow is false.
   useEffect(() => {
     const checkAuthStatus = async () => {
-      if (loadingSession) return;
+      if (loadingSession) return; // Still loading session from auth-helpers
 
-      console.log('AuthGuard: Current session AAL:', session?.aal);
-      console.log('AuthGuard: Current session user:', session?.user?.id);
-      console.log('AuthGuard: isPasswordResetFlow:', isPasswordResetFlow); // Log new prop
+      setLoadingAuthChecks(true); // Start loading for normal auth checks
 
-      // CRITICAL FIX: If it's a password reset flow, strictly enforce access to /reset-password only.
-      if (isPasswordResetFlow) {
-        if (location.pathname === '/reset-password') {
-          setTargetAal('aal2'); // Allow access to the reset password page
-          setLoadingAdminStatus(false);
-        } else {
-          // If it's a password reset flow but not on the /reset-password page, redirect to login.
-          // This prevents the recovery session from granting access to other protected routes.
-          console.log('AuthGuard: Password reset flow detected, but not on /reset-password. Redirecting to login.');
-          setTargetAal(null); // Force redirect to login
-          setLoadingAdminStatus(false);
-          // Optionally, you might want to sign out here to clear the session immediately
-          // if the user tries to navigate away from /reset-password.
-          // However, the redirect to /login should handle it.
-        }
-        return; // Exit early from this useEffect as we've handled the password reset flow.
-      }
-
-      // Normal authentication flow (if not a password reset flow)
       if (!session?.user) {
-        setTargetAal(null); // No user, will redirect to login
-        setLoadingAdminStatus(false);
+        setTargetAal(null); // No user, will trigger redirect to login
+        setLoadingAuthChecks(false);
         return;
       }
 
@@ -54,7 +54,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
         if (factorsError) {
           console.error('AuthGuard: Error listing MFA factors:', factorsError);
           setTargetAal('aal2'); // Fallback to allow access on errors
-          setLoadingAdminStatus(false);
+          setLoadingAuthChecks(false);
           return;
         }
 
@@ -78,16 +78,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
         console.error('AuthGuard: Unexpected error during MFA check:', err);
         setTargetAal('aal2'); // Fallback to allow access on unexpected errors
       } finally {
-        setLoadingAdminStatus(false); // Ensure this is always set
+        setLoadingAuthChecks(false);
       }
     };
 
-    setTargetAal(null); // Reset on session/loadingSession/location change
     checkAuthStatus();
-  }, [session, loadingSession, supabase, location.pathname, isPasswordResetFlow]); // Add isPasswordResetFlow to dependencies
+  }, [session, loadingSession, supabase]); // isPasswordResetFlow is not a dependency here because it's handled above
 
-  // Show loading indicator while checking authentication and MFA status
-  if (loadingSession || targetAal === null) {
+  // Show loading indicator for initial session loading or ongoing auth checks
+  if (loadingSession || loadingAuthChecks) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -95,7 +94,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
     );
   }
 
-  // Handle redirects based on targetAal
+  // Handle redirects for normal authentication flow (after all checks are done)
   if (!session || !session.user) {
     console.log('AuthGuard: No active user session found. Redirecting to login page.');
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
@@ -111,7 +110,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
     return <Outlet />;
   }
 
-  // This should ideally not be reached
+  // Fallback for unexpected states (should ideally not be reached)
   console.warn('AuthGuard: Unexpected state. Redirecting to login.');
   return <Navigate to="/login" replace />;
 };
