@@ -36,7 +36,7 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'; // Added useSupabaseClient
+import { useSession } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
@@ -52,7 +52,6 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const session = useSession();
-  const supabase = useSupabaseClient(); // Initialize Supabase client
   const [isRecoveryActiveGlobally, setIsRecoveryActiveGlobally] = useState(false); // State to track global recovery status
 
   useTheme();
@@ -111,17 +110,9 @@ function App() {
     // --- ABSOLUTE HIGHEST PRIORITY: Global Recovery State Enforcement ---
     // If a global recovery is active, force redirect to /recovery-in-progress
     // unless the current path is already /reset-password or /recovery-in-progress.
-    // Crucially, also sign out the user in this tab to invalidate the session.
     if (isRecoveryActiveGlobally && currentPathBase !== '/reset-password' && currentPathBase !== '/recovery-in-progress') {
       console.log(`App.tsx: Global recovery active. Redirecting ${currentPathBase} to /recovery-in-progress.`);
-      // Force sign out the user in this tab
-      supabase.auth.signOut().then(() => {
-        console.log('App.tsx: Signed out current session due to active recovery.');
-        navigate('/recovery-in-progress', { replace: true });
-      }).catch(error => {
-        console.error('App.tsx: Error signing out during recovery enforcement:', error);
-        navigate('/recovery-in-progress', { replace: true }); // Still redirect even if sign out fails
-      });
+      navigate('/recovery-in-progress', { replace: true });
       return; // STOP all other redirects
     }
 
@@ -141,7 +132,7 @@ function App() {
       return; // Stop further redirects
     }
 
-  }, [location, session, navigate, isRecoveryActiveGlobally, supabase]); // Added supabase to dependencies
+  }, [location, session, navigate, isRecoveryActiveGlobally]);
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
