@@ -54,7 +54,7 @@ const AuthCallbackPage: React.FC = () => {
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
-      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectParam);
+      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
     // 3. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
@@ -89,7 +89,7 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
-      // Only proceed if it's a SIGNED_IN event and not a password reset flow (which is handled above)
+      // Only proceed if it's a SIGNED_IN' event and not a password reset flow (which is handled above)
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at && !isPasswordResetFlow) {
         processingRef.current = true;
 
