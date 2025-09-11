@@ -54,21 +54,41 @@ function App() {
   const navigationType = useNavigationType();
   const session = useSession();
   const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false);
-  // MODIFIED: Declare isRecoveryActiveGlobally as a state variable
-  const [isRecoveryActiveGlobally, setIsRecoveryActiveGlobally] = useState(false);
+  const [isRecoveryActiveGlobally, setIsRecoveryActiveGlobally] = useState(false); // State to track global recovery status
 
   useTheme();
+
+  // Function to check and update recovery status from localStorage
+  const checkRecoveryStatus = () => {
+    const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
+    const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
+    return recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage;
+  };
+
+  // Effect to listen for localStorage changes and update recovery status
+  useEffect(() => {
+    // Initial check when component mounts
+    setIsRecoveryActiveGlobally(checkRecoveryStatus());
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === RECOVERY_FLAG || event.key === RECOVERY_EXPIRY) {
+        console.log('App.tsx: Storage event detected. Re-checking recovery status.');
+        setIsRecoveryActiveGlobally(checkRecoveryStatus());
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const hashType = hashParams.get('type');
     const isPasswordResetFlowFromHash = hashType === 'recovery';
-
-    // Read recovery flag from localStorage (persists across tabs/refreshes)
-    const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
-    const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
-    // MODIFIED: Update the state variable
-    setIsRecoveryActiveGlobally(recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage);
 
     // Determine if this specific tab is currently in the password reset flow (either by hash or by being on /reset-password while recovery is active)
     const thisTabIsResettingPassword = isPasswordResetFlowFromHash || (isRecoveryActiveGlobally && location.pathname === '/reset-password');
@@ -121,7 +141,7 @@ function App() {
       return; // Stop further redirects
     }
 
-  }, [location, session, navigate, isRecoveryActiveGlobally]); // ADDED isRecoveryActiveGlobally to dependencies
+  }, [location, session, navigate, isRecoveryActiveGlobally]); // isRecoveryActiveGlobally is now correctly in dependencies
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
