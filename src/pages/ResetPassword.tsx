@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase'; // Import supabase client directly
-import { useSessionContext } from '@supabase/auth-helpers-react'; // Import useSessionContext
+import { supabase } from '../lib/supabase';
+import { useSessionContext } from '@supabase/auth-helpers-react';
+
+const RECOVERY_FLAG_KEY = 'password_recovery_active';
+const RECOVERY_EXPIRY_MINUTES = 15;
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { resetPassword } = useAuth();
   const { session, isLoading: isSessionLoading } = useSessionContext();
-  const [searchParams] = useSearchParams(); // Keep useSearchParams for consistency, though not directly used for token extraction anymore
+  const [searchParams] = useSearchParams();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,42 +23,49 @@ const ResetPassword: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  /**
-   * SECURITY / UX: Mark that a password recovery is currently active.
-   * This sets a localStorage flag so other tabs that run AuthGuard will
-   * detect the recovery in progress and will not allow access to protected routes.
-   *
-   * We remove the flag on unmount or after success so normal flows resume.
-   */
-  useEffect(() => {
+  // --- Helper to set the flag with expiry ---
+  const setRecoveryFlag = () => {
+    const expiresAt = Date.now() + RECOVERY_EXPIRY_MINUTES * 60 * 1000;
     try {
-      // Only set the flag when it looks like a recovery flow (hash contains type=recovery)
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const hashType = hashParams.get('type');
-
-      if (hashType === 'recovery') {
-        localStorage.setItem('password_recovery_active', 'true');
-        console.log('ResetPassword: password_recovery_active flag set in localStorage.');
-      } else {
-        // In case someone navigates to /reset-password without a recovery hash,
-        // ensure we don't accidentally set the flag.
-        console.log('ResetPassword: no recovery hash detected on mount.');
-      }
+      localStorage.setItem(
+        RECOVERY_FLAG_KEY,
+        JSON.stringify({ active: true, expiresAt })
+      );
+      console.log(
+        `ResetPassword: password_recovery_active flag set with expiry in ${RECOVERY_EXPIRY_MINUTES} minutes.`
+      );
     } catch (err) {
       console.error('ResetPassword: error setting recovery flag:', err);
     }
+  };
 
+  // --- Helper to clear the flag ---
+  const clearRecoveryFlag = () => {
+    try {
+      localStorage.removeItem(RECOVERY_FLAG_KEY);
+      console.log('ResetPassword: password_recovery_active flag cleared.');
+    } catch (err) {
+      console.error('ResetPassword: error clearing recovery flag:', err);
+    }
+  };
+
+  useEffect(() => {
+    // Check if this page load has a recovery hash
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const hashType = hashParams.get('type');
+
+    if (hashType === 'recovery') {
+      setRecoveryFlag();
+    } else {
+      console.log('ResetPassword: no recovery hash detected.');
+    }
+
+    // Clean up on unmount
     return () => {
-      // Ensure flag cleaned up on unmount (covers navigation away or tab close)
-      try {
-        localStorage.removeItem('password_recovery_active');
-        console.log('ResetPassword: password_recovery_active flag removed on unmount.');
-      } catch (err) {
-        console.error('ResetPassword: error removing recovery flag on unmount:', err);
-      }
+      clearRecoveryFlag();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,24 +84,17 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // This will use the access_token from the URL hash, which is automatically
-      // processed by @supabase/auth-helpers-react when the page loads.
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
 
-      // CRITICAL: Sign out the user after successful password reset
-      // This terminates the recovery session, forcing a fresh login.
+      // Sign out to terminate the recovery session
       await supabase.auth.signOut();
 
-      // Clean-up: remove the recovery flag so other tabs can resume normal auth checks
-      try {
-        localStorage.removeItem('password_recovery_active');
-      } catch (err) {
-        console.error('ResetPassword: error removing recovery flag after success:', err);
-      }
+      // Clear recovery flag
+      clearRecoveryFlag();
 
       setTimeout(() => {
-        navigate('/login', { replace: true }); // User must explicitly log in with new password
+        navigate('/login', { replace: true });
       }, 1500);
     } catch (error: any) {
       setError(error instanceof Error ? error.message : 'Failed to reset password');
@@ -102,17 +105,11 @@ const ResetPassword: React.FC = () => {
 
   const handleBackToLogin = async () => {
     try {
-      // Ensure any lingering session is cleared before going to login
       await supabase.auth.signOut();
     } catch (error) {
       console.error("Error during logout on back to login:", error);
     } finally {
-      // Also remove the recovery flag in case user abandons the flow
-      try {
-        localStorage.removeItem('password_recovery_active');
-      } catch (err) {
-        console.error('ResetPassword: error removing recovery flag on back to login:', err);
-      }
+      clearRecoveryFlag();
       navigate('/login', { replace: true });
     }
   };
@@ -195,7 +192,7 @@ const ResetPassword: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading} // Only disable based on local loading state
+              disabled={isLoading}
               className="w-full bg-blue-900 text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
