@@ -3,13 +3,14 @@ import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-rea
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
-interface AuthGuardProps {
-  isPasswordResetFlow: boolean;
-  children?: React.ReactNode;
-}
-
+// Define constants for localStorage keys and expiry duration (must match AuthCallbackPage and ResetPassword)
 const RECOVERY_FLAG = 'password_recovery_active';
 const RECOVERY_EXPIRY = 'password_recovery_expiry';
+
+interface AuthGuardProps {
+  isPasswordResetFlow: boolean; // This prop will now primarily indicate if the current tab *initiated* the flow
+  children?: React.ReactNode;
+}
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const { session, isLoading: loadingSession } = useSessionContext();
@@ -19,7 +20,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
 
-  // Read recovery flag + expiry from localStorage
+  // Read recovery flag + expiry from localStorage directly within AuthGuard
   const recoveryActive = (() => {
     const flag = localStorage.getItem(RECOVERY_FLAG);
     const expiry = localStorage.getItem(RECOVERY_EXPIRY);
@@ -34,23 +35,19 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     return flag === 'true';
   })();
 
-  // Check URL hash directly (for initial entry from email link)
-  const hashParams = new URLSearchParams(location.hash.substring(1));
-  const isRecoveryHashPresent = hashParams.get('type') === 'recovery';
-
   console.log('AuthGuard Debug:', {
-    isPasswordResetFlow,
-    recoveryActive, // This now reflects the localStorage flag
-    isRecoveryHashPresent,
+    isPasswordResetFlowProp: isPasswordResetFlow, // From App.tsx, indicates if this tab initiated
+    recoveryActiveInternal: recoveryActive, // Internal check from localStorage
     pathname: location.pathname,
     session: !!session,
   });
 
   // === ABSOLUTE PRIORITY: recovery session ===
-  // If a recovery session is active (either from URL hash or localStorage flag),
+  // If a recovery session is active (from localStorage flag),
   // strictly confine the user to the /reset-password page.
   // Any attempt to navigate elsewhere will redirect to /login.
-  if (recoveryActive || isRecoveryHashPresent) {
+  // This check must come BEFORE any session or loading checks.
+  if (recoveryActive) {
     if (location.pathname !== '/reset-password') {
       console.log(`AuthGuard: Recovery active. User attempted to access ${location.pathname}. Redirecting to login.`);
       return <Navigate to="/login" replace />;
