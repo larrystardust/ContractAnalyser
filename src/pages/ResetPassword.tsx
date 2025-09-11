@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase'; // Keep this import for signOut
+import { supabase } from '../lib/supabase'; // Import supabase client directly
+import { useSessionContext } from '@supabase/auth-helpers-react'; // Import useSessionContext
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams(); // Keep this to potentially read 'type=recovery' if needed for display
   const { resetPassword } = useAuth();
+  const { session, isLoading: isSessionLoading } = useSessionContext(); // Get session context
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,8 +18,16 @@ const ResetPassword: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // REMOVED: useEffect that looks for 'token' in searchParams
-  // REMOVED: handleVerification function
+  // CRITICAL FIX: Sign out immediately if a session exists on this page load
+  useEffect(() => {
+    if (!isSessionLoading && session) {
+      console.log('ResetPassword: Session detected on load. Signing out to prevent premature login.');
+      // Sign out the current session. This clears the local session state.
+      // The password reset token in the URL hash will still be available for updateUser().
+      supabase.auth.signOut();
+    }
+  }, [session, isSessionLoading, supabase.auth]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,11 +46,12 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // This will use the session's access_token to update the user's password
+      // This will use the access_token from the URL hash, which is still available
+      // even if the local session state was cleared by signOut().
       await resetPassword(newPassword);
-      setSuccess('Password successfully reset! Redirecting to dashboard...');
+      setSuccess('Password successfully reset! Redirecting to login...'); // Redirect to login after reset
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
+        navigate('/login', { replace: true }); // User must explicitly log in with new password
       }, 1500);
     } catch (error: any) {
       setError(error instanceof Error ? error.message : 'Failed to reset password');
@@ -52,6 +62,7 @@ const ResetPassword: React.FC = () => {
 
   const handleBackToLogin = async () => {
     try {
+      // Ensure any lingering session is cleared before going to login
       await supabase.auth.signOut();
     } catch (error) {
       console.error("Error during logout on back to login:", error);
