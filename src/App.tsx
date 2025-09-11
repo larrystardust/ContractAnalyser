@@ -117,13 +117,12 @@ function App() {
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
     // --- ABSOLUTE HIGHEST PRIORITY: Handle global recovery state ---
-    // If a session exists (even a recovery one) AND a global recovery flag is active,
-    // AND the current path is NOT the /reset-password page,
-    // THEN force a redirect to /login. This prevents dashboard access from any tab.
-    if (session && isRecoveryActiveGlobally && currentPathBase !== '/reset-password') {
-      console.log(`App.tsx: Session exists and global recovery active. Redirecting ${currentPathBase} to /login.`);
+    // If a global recovery is active, force redirect to /login unless on /reset-password.
+    // This check must come BEFORE any other session-based redirects.
+    if (isRecoveryActiveGlobally && currentPathBase !== '/reset-password') {
+      console.log(`App.tsx: Global recovery active. Redirecting ${currentPathBase} to /login.`);
       navigate('/login', { replace: true });
-      return; // Stop further redirects
+      return; // STOP all other redirects
     }
 
     // --- Standard authentication redirects (only if NOT in a global recovery state) ---
@@ -134,7 +133,8 @@ function App() {
       return; // Stop further redirects
     }
 
-    // If session exists (and not in recovery) and user is on login/signup/etc., redirect to dashboard.
+    // If session exists and user is on login/signup/etc., redirect to dashboard.
+    // This block now runs only if isRecoveryActiveGlobally is FALSE.
     if (session && (currentPathBase === '/login' || currentPathBase === '/signup')) {
       console.log(`App.tsx: Session exists (not recovery) on login/signup. Redirecting to /dashboard.`);
       navigate('/dashboard', { replace: true });
