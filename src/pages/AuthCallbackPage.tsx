@@ -43,9 +43,9 @@ const AuthCallbackPage: React.FC = () => {
       const expiryTime = Date.now() + RECOVERY_DURATION_MS;
       localStorage.setItem(RECOVERY_FLAG, 'true');
       localStorage.setItem(RECOVERY_EXPIRY, expiryTime.toString());
-      console.log('AuthCallbackPage: Recovery flag set in localStorage with expiry:', new Date(expiryTime).toISOString());
+      console.log('AuthCallbackPage: Detected password reset flow. Recovery flag set in localStorage with expiry:', new Date(expiryTime).toISOString());
 
-      console.log('AuthCallbackPage: Detected password reset flow. Redirecting to:', finalRedirectPath);
+      console.log('AuthCallbackPage: Redirecting to:', finalRedirectPath);
       navigate(finalRedirectPath, { replace: true });
       return; // Exit early as we're redirecting
     }
@@ -54,7 +54,7 @@ const AuthCallbackPage: React.FC = () => {
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
-      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
+      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectParam);
     }
 
     // 3. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
@@ -161,6 +161,11 @@ const AuthCallbackPage: React.FC = () => {
           } else {
             setMessage('Authentication successful! Redirecting...');
           }
+
+          // CRITICAL: Clear recovery flag if this was a successful non-recovery login
+          localStorage.removeItem(RECOVERY_FLAG);
+          localStorage.removeItem(RECOVERY_EXPIRY);
+          console.log('AuthCallbackPage: Non-recovery login successful. Recovery state cleared from localStorage.');
 
           setStatus('success');
           // If no invitation token was processed, determine where to redirect based on admin status
