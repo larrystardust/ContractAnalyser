@@ -118,7 +118,7 @@ function App() {
       return; // Stop further redirects
     }
 
-  }, [location, session, navigate]); // Dependencies: location, session, navigate. isPasswordResetFlow is derived.
+  }, [location, session, navigate, isRecoveryActiveGlobally]); // ADDED isRecoveryActiveGlobally to dependencies
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
