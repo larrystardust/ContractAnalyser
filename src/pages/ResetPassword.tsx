@@ -38,7 +38,6 @@ const ResetPassword: React.FC = () => {
   // Auto-redirect to login after 15 minutes of inactivity
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log('ResetPassword: 15-minute session timeout reached, cleaning up');
       // Clear global state
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
@@ -48,7 +47,7 @@ const ResetPassword: React.FC = () => {
         supabase.auth.signOut().catch(console.error);
       }
       navigate('/login', { replace: true });
-    }, 15 * 60 * 1000); // 15 minutes
+    }, 15 * 60 * 1000);
 
     setSessionTimer(timer);
 
@@ -71,65 +70,24 @@ const ResetPassword: React.FC = () => {
 
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
-        // Block back button completely - don't allow any navigation away
         window.history.pushState(null, '', window.location.pathname + window.location.hash);
         setError('Please complete the password reset process. Navigation is disabled during password reset.');
       }
     };
 
-    // Block any attempt to navigate away
-    const blockNavigation = (e: BeforeUnloadEvent) => {
-      if (!success) {
-        e.preventDefault();
-        return 'Password reset in progress. Are you sure you want to leave?';
-      }
-    };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('unload', blockNavigation);
     
-    // Replace history to prevent back navigation
     window.history.pushState(null, '', window.location.pathname + window.location.hash);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('unload', blockNavigation);
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
     };
   }, [success, sessionTimer, location.hash]);
-
-  // Intercept any navigation attempts and redirect to reset-password
-  useEffect(() => {
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-
-    history.pushState = function(...args) {
-      if (!success) {
-        // Block any pushState attempts during reset
-        console.log('ResetPassword: Blocking pushState navigation');
-        return;
-      }
-      return originalPushState.apply(this, args);
-    };
-
-    history.replaceState = function(...args) {
-      if (!success) {
-        // Block any replaceState attempts during reset
-        console.log('ResetPassword: Blocking replaceState navigation');
-        return;
-      }
-      return originalReplaceState.apply(this, args);
-    };
-
-    return () => {
-      history.pushState = originalPushState;
-      history.replaceState = originalReplaceState;
-    };
-  }, [success]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +106,6 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Use the preserved auth session for password reset
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
       
@@ -156,9 +113,10 @@ const ResetPassword: React.FC = () => {
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
-      localStorage.removeItem('passwordResetFlowActive');
-      localStorage.removeItem('passwordResetFlowStartTime');
-
+      
+      // Set completion flag that will be checked after login
+      localStorage.setItem('passwordResetCompleted', 'true');
+      
       // Sign out the user after successful password reset
       await supabase.auth.signOut();
 
