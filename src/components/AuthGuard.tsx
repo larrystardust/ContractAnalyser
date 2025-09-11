@@ -12,7 +12,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
-  
+
   // State for normal auth checks (MFA, etc.)
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
@@ -23,28 +23,42 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isRecoveryHashPresent = hashParams.get('type') === 'recovery';
 
+  // NEW: Check shared localStorage flag for recovery active from other tabs.
+  let recoveryActiveFlag = false;
+  try {
+    recoveryActiveFlag = localStorage.getItem('password_recovery_active') === 'true';
+  } catch (err) {
+    console.error('AuthGuard: error reading password_recovery_active flag:', err);
+  }
+
   // Aggressive logging for debugging
   console.log('AuthGuard Render Check:');
   console.log('  isPasswordResetFlow (from App.tsx prop):', isPasswordResetFlow);
   console.log('  isRecoveryHashPresent (direct hash check):', isRecoveryHashPresent);
+  console.log('  recoveryActiveFlag (from localStorage):', recoveryActiveFlag);
   console.log('  location.pathname:', location.pathname);
   console.log('  session:', session ? 'Exists' : 'Does NOT exist');
   console.log('  session.user:', session?.user ? 'Exists' : 'Does NOT exist');
   console.log('  loadingSession:', loadingSession);
 
+  // If a recovery hash is present and we are on /reset-password, allow outlet (ResetPassword)
   if (isRecoveryHashPresent) {
     if (location.pathname === '/reset-password') {
-      // If it's a password reset flow AND we are on the /reset-password page,
-      // allow the ResetPassword component to render.
-      // No further session checks are needed here, as the ResetPassword component
-      // will handle the session validity using the URL hash tokens.
       return <Outlet />;
     } else {
-      // If a recovery hash is present but the user is trying to access ANY OTHER route,
-      // immediately redirect them to the login page. This prevents dashboard access.
       console.log('AuthGuard: Recovery hash detected, but not on /reset-password. Redirecting to login.');
       return <Navigate to="/login" replace />;
     }
+  }
+
+  // If a recovery flow is active in another tab (localStorage flag), block access to protected routes
+  if (recoveryActiveFlag) {
+    if (location.pathname === '/reset-password') {
+      // If somehow on reset-password page, allow
+      return <Outlet />;
+    }
+    console.log('AuthGuard: password_recovery_active flag detected in localStorage. Redirecting to login to prevent premature dashboard access.');
+    return <Navigate to="/login" replace />;
   }
   // --- END CRITICAL PASSWORD RESET FLOW CHECKS ---
 
