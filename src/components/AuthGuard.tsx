@@ -4,10 +4,11 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
 interface AuthGuardProps {
+  isPasswordResetFlow: boolean; // NEW PROP
   children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = () => {
+const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // ACCEPT NEW PROP
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
@@ -21,15 +22,27 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
       console.log('AuthGuard: Current session AAL:', session?.aal);
       console.log('AuthGuard: Current session user:', session?.user?.id);
+      console.log('AuthGuard: isPasswordResetFlow:', isPasswordResetFlow); // Log new prop
 
-      // CRITICAL FIX: If on the reset-password page, and a session exists, allow it.
-      // The ResetPassword component will handle the session validity for password reset.
-      if (location.pathname === '/reset-password' && session?.user) {
-        setTargetAal('aal2'); // Treat as sufficient for this specific page
-        setLoadingAdminStatus(false); // Not relevant for this path, but set to false
-        return;
+      // CRITICAL FIX: If it's a password reset flow, strictly enforce access to /reset-password only.
+      if (isPasswordResetFlow) {
+        if (location.pathname === '/reset-password') {
+          setTargetAal('aal2'); // Allow access to the reset password page
+          setLoadingAdminStatus(false);
+        } else {
+          // If it's a password reset flow but not on the /reset-password page, redirect to login.
+          // This prevents the recovery session from granting access to other protected routes.
+          console.log('AuthGuard: Password reset flow detected, but not on /reset-password. Redirecting to login.');
+          setTargetAal(null); // Force redirect to login
+          setLoadingAdminStatus(false);
+          // Optionally, you might want to sign out here to clear the session immediately
+          // if the user tries to navigate away from /reset-password.
+          // However, the redirect to /login should handle it.
+        }
+        return; // Exit early from this useEffect as we've handled the password reset flow.
       }
 
+      // Normal authentication flow (if not a password reset flow)
       if (!session?.user) {
         setTargetAal(null); // No user, will redirect to login
         setLoadingAdminStatus(false);
@@ -71,7 +84,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
     setTargetAal(null); // Reset on session/loadingSession/location change
     checkAuthStatus();
-  }, [session, loadingSession, supabase, location.pathname]); // Add location.pathname to dependencies
+  }, [session, loadingSession, supabase, location.pathname, isPasswordResetFlow]); // Add isPasswordResetFlow to dependencies
 
   // Show loading indicator while checking authentication and MFA status
   if (loadingSession || targetAal === null) {
@@ -82,14 +95,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // CRITICAL FIX: If on the reset-password page, and a session exists, allow it to render.
-  // This is the key change to prevent redirection from AuthGuard for this specific flow.
-  if (location.pathname === '/reset-password' && session?.user) {
-    console.log('AuthGuard: Allowing access to /reset-password with existing session.');
-    return <Outlet />;
-  }
-
-  // General authentication checks for all other protected routes
+  // Handle redirects based on targetAal
   if (!session || !session.user) {
     console.log('AuthGuard: No active user session found. Redirecting to login page.');
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
