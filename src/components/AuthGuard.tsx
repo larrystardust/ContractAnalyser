@@ -19,42 +19,38 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
 
   // Check if this is a recovery session (password reset flow)
   useEffect(() => {
-    const checkRecoverySession = async () => {
+    const checkRecoverySession = () => {
       if (session) {
-        try {
-          // Check if this session was created from a password reset flow
-          const { data } = await supabase.auth.getSession();
-          if (data.session?.user?.app_metadata?.provider === 'email' && 
-              data.session.user.aud === 'authenticated' &&
-              data.session.user.role === 'authenticated' &&
-              location.hash.includes('type=recovery')) {
-            setIsRecoverySession(true);
-          } else {
-            setIsRecoverySession(false);
-          }
-        } catch (error) {
-          console.error('Error checking recovery session:', error);
+        // Check URL hash for recovery type
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const hashType = hashParams.get('type');
+        
+        if (hashType === 'recovery') {
+          setIsRecoverySession(true);
+          console.log('AuthGuard: Recovery session detected from URL hash');
+        } else {
           setIsRecoverySession(false);
         }
       }
     };
 
     checkRecoverySession();
-  }, [session, location.hash, supabase.auth]);
+  }, [session, location.hash]);
 
-  // CRITICAL: Handle password reset flow - redirect ALL routes except reset-password to login
+  // CRITICAL: Handle password reset flow - redirect ALL routes except reset-password to reset-password
   useEffect(() => {
     if (isPasswordResetFlow || isRecoverySession) {
-      console.log('AuthGuard: Password reset flow detected, blocking access to protected routes');
+      console.log('AuthGuard: Password reset flow detected');
       
-      // If we're in password reset flow but not on the reset-password page, redirect to login
+      // If we're in password reset flow but not on the reset-password page, redirect to reset-password
       if (location.pathname !== '/reset-password') {
-        console.log('AuthGuard: Redirecting to login during password reset flow');
-        // Clear any existing session to prevent access
-        supabase.auth.signOut().catch(console.error);
+        console.log('AuthGuard: Redirecting to reset-password during password reset flow');
+        // Preserve the hash (contains the recovery token) when redirecting
+        const redirectUrl = `/reset-password${location.hash}`;
+        return <Navigate to={redirectUrl} replace />;
       }
     }
-  }, [isPasswordResetFlow, isRecoverySession, location.pathname, supabase.auth]);
+  }, [isPasswordResetFlow, isRecoverySession, location.pathname, location.hash]);
 
   // Show loading indicator for initial session loading
   if (loadingSession) {
@@ -65,15 +61,18 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // BLOCK ACCESS DURING PASSWORD RESET FLOW
+  // BLOCK ACCESS DURING PASSWORD RESET FLOW - PRESERVE SESSION BUT RESTRICT NAVIGATION
   if (isPasswordResetFlow || isRecoverySession) {
     if (location.pathname === '/reset-password') {
-      // Allow access to reset-password page only
+      // Allow access to reset-password page only - session is preserved
+      console.log('AuthGuard: Allowing access to reset-password during recovery flow');
       return <Outlet />;
     } else {
-      // Redirect all other routes to login during password reset flow
-      console.log('AuthGuard: Blocking access during password reset flow, redirecting to login');
-      return <Navigate to="/login" replace />;
+      // Redirect all other routes to reset-password during password reset flow
+      // This preserves the auth session but forces user to stay on reset-password
+      console.log('AuthGuard: Redirecting to reset-password to preserve recovery session');
+      const redirectUrl = `/reset-password${location.hash}`;
+      return <Navigate to={redirectUrl} replace />;
     }
   }
 
