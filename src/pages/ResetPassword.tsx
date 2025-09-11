@@ -10,6 +10,7 @@ const ResetPassword: React.FC = () => {
   const { resetPassword } = useAuth();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,7 +25,10 @@ const ResetPassword: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       console.log('ResetPassword: 15-minute session timeout reached, redirecting to login');
-      supabase.auth.signOut().catch(console.error);
+      // Only sign out if the user hasn't completed the reset
+      if (!success) {
+        supabase.auth.signOut().catch(console.error);
+      }
       navigate('/login', { replace: true });
     }, 15 * 60 * 1000); // 15 minutes
 
@@ -35,9 +39,9 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [navigate]);
+  }, [navigate, success]);
 
-  // Block browser navigation during password reset
+  // Block browser navigation during password reset but preserve session
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!success) {
@@ -49,15 +53,17 @@ const ResetPassword: React.FC = () => {
 
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
-        // Prevent going back during password reset
-        window.history.pushState(null, '', window.location.pathname);
+        // Prevent going back during password reset but preserve the session
+        window.history.pushState(null, '', window.location.pathname + window.location.hash);
         setError('Please complete the password reset process or use the Back to Login button');
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
-    window.history.pushState(null, '', window.location.pathname);
+    
+    // Push current state to prevent back navigation
+    window.history.pushState(null, '', window.location.pathname + window.location.hash);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -66,7 +72,7 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [success, sessionTimer]);
+  }, [success, sessionTimer, location.hash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +91,7 @@ const ResetPassword: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // This will use the preserved auth session from the recovery flow
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
       
@@ -111,6 +118,7 @@ const ResetPassword: React.FC = () => {
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
+      // Sign out when user explicitly goes back to login
       await supabase.auth.signOut();
     } catch (error) {
       console.error("Error during logout on back to login:", error);
