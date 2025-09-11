@@ -17,40 +17,66 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
   const [isRecoverySession, setIsRecoverySession] = useState(false);
 
-  // Check if this is a recovery session (password reset flow)
+  // Global state to track password reset flow across all browser tabs
   useEffect(() => {
-    const checkRecoverySession = () => {
-      if (session) {
-        // Check URL hash for recovery type
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const hashType = hashParams.get('type');
-        
-        if (hashType === 'recovery') {
+    // Set a global flag to indicate password reset flow is active
+    if (isPasswordResetFlow) {
+      localStorage.setItem('passwordResetFlowActive', 'true');
+      localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
+    }
+
+    // Check if password reset flow is active from other tabs
+    const checkGlobalResetFlow = () => {
+      const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
+      const startTime = localStorage.getItem('passwordResetFlowStartTime');
+      
+      if (resetFlowActive === 'true' && startTime) {
+        const elapsedTime = Date.now() - parseInt(startTime);
+        // If within 15 minutes, consider reset flow active
+        if (elapsedTime < 15 * 60 * 1000) {
           setIsRecoverySession(true);
-          console.log('AuthGuard: Recovery session detected from URL hash');
+          console.log('AuthGuard: Password reset flow detected from global state');
         } else {
-          setIsRecoverySession(false);
+          // Clear expired reset flow
+          localStorage.removeItem('passwordResetFlowActive');
+          localStorage.removeItem('passwordResetFlowStartTime');
         }
       }
     };
 
-    checkRecoverySession();
-  }, [session, location.hash]);
+    checkGlobalResetFlow();
 
-  // CRITICAL: Handle password reset flow - redirect ALL routes except reset-password to reset-password
-  useEffect(() => {
-    if (isPasswordResetFlow || isRecoverySession) {
-      console.log('AuthGuard: Password reset flow detected');
-      
-      // If we're in password reset flow but not on the reset-password page, redirect to reset-password
-      if (location.pathname !== '/reset-password') {
-        console.log('AuthGuard: Redirecting to reset-password during password reset flow');
-        // Preserve the hash (contains the recovery token) when redirecting
-        const redirectUrl = `/reset-password${location.hash}`;
-        return <Navigate to={redirectUrl} replace />;
+    // Listen for storage events (changes from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
+        setIsRecoverySession(true);
+        console.log('AuthGuard: Password reset flow detected from other tab');
       }
-    }
-  }, [isPasswordResetFlow, isRecoverySession, location.pathname, location.hash]);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [isPasswordResetFlow]);
+
+  // Check URL for recovery session
+  useEffect(() => {
+    const checkRecoverySession = () => {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const hashType = hashParams.get('type');
+      
+      if (hashType === 'recovery') {
+        setIsRecoverySession(true);
+        localStorage.setItem('passwordResetFlowActive', 'true');
+        localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
+        console.log('AuthGuard: Recovery session detected from URL hash');
+      }
+    };
+
+    checkRecoverySession();
+  }, [location.hash]);
 
   // Show loading indicator for initial session loading
   if (loadingSession) {
@@ -61,17 +87,21 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // BLOCK ACCESS DURING PASSWORD RESET FLOW - PRESERVE SESSION BUT RESTRICT NAVIGATION
+  // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW - REDIRECT ALL ROUTES TO RESET-PASSWORD
   if (isPasswordResetFlow || isRecoverySession) {
     if (location.pathname === '/reset-password') {
       // Allow access to reset-password page only - session is preserved
       console.log('AuthGuard: Allowing access to reset-password during recovery flow');
       return <Outlet />;
     } else {
-      // Redirect all other routes to reset-password during password reset flow
-      // This preserves the auth session but forces user to stay on reset-password
-      console.log('AuthGuard: Redirecting to reset-password to preserve recovery session');
-      const redirectUrl = `/reset-password${location.hash}`;
+      // Redirect ALL other routes (including dashboard, base URL, etc.) to reset-password
+      // This blocks all open browsers, navigational paths, and back buttons
+      console.log('AuthGuard: Blocking access - redirecting all routes to reset-password');
+      
+      // Preserve the hash if it exists, otherwise use current hash
+      const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
+      const redirectUrl = `/reset-password${redirectHash}`;
+      
       return <Navigate to={redirectUrl} replace />;
     }
   }
