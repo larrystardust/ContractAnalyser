@@ -112,8 +112,7 @@ function App() {
             <Route path="/disclaimer" element={<DisclaimerPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/pricing" element={<PricingSection />} />
+            <Route path="/help" element={<HelpPage />} />            
             <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
             <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
 
@@ -123,6 +122,7 @@ function App() {
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/settings/*" element={<SettingsPage />} />
+              <Route path="/pricing" element={<PricingSection />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
