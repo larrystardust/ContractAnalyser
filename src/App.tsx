@@ -43,6 +43,10 @@ import LandingPageSampleDashboard from './components/dashboard/LandingPageSample
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword'; // Keep this import for the consolidated ResetPassword component
 
+// Define constants for localStorage keys and expiry duration (must match AuthCallbackPage and ResetPassword)
+const RECOVERY_FLAG = 'password_recovery_active';
+const RECOVERY_EXPIRY = 'password_recovery_expiry';
+
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
   const location = useLocation();
@@ -54,14 +58,21 @@ function App() {
   useTheme();
 
   useEffect(() => {
-    // Check if the current URL hash indicates a password reset flow
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const hashType = hashParams.get('type');
-    setIsPasswordResetFlow(hashType === 'recovery'); // Set new state
+    const isPasswordResetFlowFromHash = hashType === 'recovery'; // Rename for clarity
 
-    // Exclude /public-report-view and /checkout/cancel from the session-based redirect
+    // Read recovery flag from localStorage (persists across tabs/refreshes)
+    const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
+    const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
+    const isRecoveryActiveGlobally = recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage;
+
+    // Determine if this specific tab is currently in the password reset flow (either by hash or by being on /reset-password while recovery is active)
+    const thisTabIsResettingPassword = isPasswordResetFlowFromHash || (isRecoveryActiveGlobally && location.pathname === '/reset-password');
+    setIsPasswordResetFlow(thisTabIsResettingPassword); // Update App's state
+
     const publicPaths = [
-      '/',
+      '/', // Base URL is public
       '/public-report-view',
       '/checkout/success',
       '/checkout/cancel',
@@ -69,27 +80,45 @@ function App() {
       '/landing-pricing',
       '/login',
       '/signup',
-      // REMOVED: '/password-reset' is no longer a direct public path as LoginPage handles it internally
       '/auth/callback',
       '/accept-invitation',
       '/auth/email-sent',
       '/mfa-challenge',
       '/reset-password', // This is the target for password reset emails, so it must be public
-      '/disclaimer', // ADDED
-      '/terms', // ADDED
-      '/privacy-policy', // ADDED
-      '/help', // ADDED
+      '/disclaimer',
+      '/terms',
+      '/privacy-policy',
+      '/help',
     ];
     
-    // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
-    // Also, ensure we only check the base path for inclusion.
-    const currentPathBase = location.pathname.split('?')[0].split('#')[0]; // Get path without query or hash
-    
-    // Only redirect if NOT a password reset flow AND not authenticated AND not on a public path
-    if (!isPasswordResetFlow && !session && !publicPaths.includes(currentPathBase)) {
-      navigate('/', { replace: true });
+    const currentPathBase = location.pathname.split('?')[0].split('#')[0];
+
+    // --- ABSOLUTE HIGHEST PRIORITY: Handle global recovery state ---
+    // If a session exists (even a recovery one) AND a global recovery flag is active,
+    // AND the current path is NOT the /reset-password page,
+    // THEN force a redirect to /login. This prevents dashboard access from any tab.
+    if (session && isRecoveryActiveGlobally && currentPathBase !== '/reset-password') {
+      console.log(`App.tsx: Session exists and global recovery active. Redirecting ${currentPathBase} to /login.`);
+      navigate('/login', { replace: true });
+      return; // Stop further redirects
     }
-  }, [location, session, navigate, isPasswordResetFlow]); // Add isPasswordResetFlow to dependencies
+
+    // --- Standard authentication redirects (only if NOT in a global recovery state) ---
+    // If no session AND not on a public path, redirect to landing page.
+    if (!session && !publicPaths.includes(currentPathBase)) {
+      console.log(`App.tsx: No session and not public path. Redirecting ${currentPathBase} to /.`);
+      navigate('/', { replace: true });
+      return; // Stop further redirects
+    }
+
+    // If session exists (and not in recovery) and user is on login/signup/etc., redirect to dashboard.
+    if (session && (currentPathBase === '/login' || currentPathBase === '/signup')) {
+      console.log(`App.tsx: Session exists (not recovery) on login/signup. Redirecting to /dashboard.`);
+      navigate('/dashboard', { replace: true });
+      return; // Stop further redirects
+    }
+
+  }, [location, session, navigate]); // Dependencies: location, session, navigate. isPasswordResetFlow is derived.
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
