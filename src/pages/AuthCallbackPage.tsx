@@ -4,19 +4,20 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
+import Button from '../components/ui/Button'; // Ensure Button is imported
 
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Keep for other potential query params
-  const location = useLocation(); // ADDED: To access hash
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>('Processing authentication...');
 
-  const processingRef = useRef(false); // Ref to prevent multiple executions
+  const processingRef = useRef(false);
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
@@ -24,21 +25,32 @@ const AuthCallbackPage: React.FC = () => {
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
     let finalRedirectPath: string | null = null;
+    let isPasswordResetFlow = false;
 
-    // 1. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
+    // 1. Check for 'type=recovery' in the URL hash (for password reset)
+    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
+    const hashType = hashParams.get('type');
+    if (hashType === 'recovery') {
+      isPasswordResetFlow = true;
+      finalRedirectPath = `/reset-password${location.hash}`; // Redirect to reset-password, preserving hash
+      console.log('AuthCallbackPage: Detected password reset flow. Redirecting to:', finalRedirectPath);
+      navigate(finalRedirectPath, { replace: true });
+      return; // Exit early as we're redirecting
+    }
+
+    // 2. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
-      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
+      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectParam);
     }
 
-    // 2. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
+    // 3. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
     // This takes precedence if found, as it's the direct instruction from Supabase.
-    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
@@ -65,8 +77,9 @@ const AuthCallbackPage: React.FC = () => {
         return;
       }
 
-      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
-        processingRef.current = true; // Set flag to true
+      // Only proceed if it's a SIGNED_IN event and not a password reset flow (which is handled above)
+      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at && !isPasswordResetFlow) {
+        processingRef.current = true;
 
         console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
 
@@ -184,7 +197,6 @@ const AuthCallbackPage: React.FC = () => {
     // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
-      // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
   }, [navigate, supabase.auth, searchParams, location.hash]);
@@ -205,8 +217,6 @@ const AuthCallbackPage: React.FC = () => {
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
             <p className="text-gray-600">{message}</p>
-            {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
                 Log In
@@ -225,8 +235,6 @@ const AuthCallbackPage: React.FC = () => {
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
             <p className="text-gray-600">{message}</p>
-            {/* The buttons below will still be visible for 3 seconds before redirection */}
-            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
                 Log In
