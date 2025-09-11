@@ -49,10 +49,16 @@ function App() {
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const session = useSession();
+  const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false); // NEW STATE
 
   useTheme();
 
   useEffect(() => {
+    // Check if the current URL hash indicates a password reset flow
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const hashType = hashParams.get('type');
+    setIsPasswordResetFlow(hashType === 'recovery'); // Set new state
+
     // Exclude /public-report-view and /checkout/cancel from the session-based redirect
     const publicPaths = [
       '/',
@@ -78,10 +84,12 @@ function App() {
     // This makes the redirect apply to all navigation types if the user is unauthenticated and not on a public path.
     // Also, ensure we only check the base path for inclusion.
     const currentPathBase = location.pathname.split('?')[0].split('#')[0]; // Get path without query or hash
-    if (!session && !publicPaths.includes(currentPathBase)) {
+    
+    // Only redirect if NOT a password reset flow AND not authenticated AND not on a public path
+    if (!isPasswordResetFlow && !session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, session, navigate]);
+  }, [location, session, navigate, isPasswordResetFlow]); // Add isPasswordResetFlow to dependencies
 
   const handleOpenHelpModal = () => setIsDashboardHelpModal(true);
 
@@ -118,7 +126,7 @@ function App() {
             <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
 
             {/* Protected Routes - wrapped with AuthGuard */}
-            <Route element={<AuthGuard />}>
+            <Route element={<AuthGuard isPasswordResetFlow={isPasswordResetFlow} />}> {/* PASS NEW PROP */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/contracts" element={<ContractsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
