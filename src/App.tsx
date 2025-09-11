@@ -53,23 +53,26 @@ function App() {
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const session = useSession();
-  const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false); // NEW STATE
+  const [isPasswordResetFlow, setIsPasswordResetFlow] = useState(false);
+  // MODIFIED: Declare isRecoveryActiveGlobally as a state variable
+  const [isRecoveryActiveGlobally, setIsRecoveryActiveGlobally] = useState(false);
 
   useTheme();
 
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const hashType = hashParams.get('type');
-    const isPasswordResetFlowFromHash = hashType === 'recovery'; // Rename for clarity
+    const isPasswordResetFlowFromHash = hashType === 'recovery';
 
     // Read recovery flag from localStorage (persists across tabs/refreshes)
     const recoveryFlagInLocalStorage = localStorage.getItem(RECOVERY_FLAG) === 'true';
     const recoveryExpiryInLocalStorage = parseInt(localStorage.getItem(RECOVERY_EXPIRY) || '0', 10);
-    const isRecoveryActiveGlobally = recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage;
+    // MODIFIED: Update the state variable
+    setIsRecoveryActiveGlobally(recoveryFlagInLocalStorage && Date.now() < recoveryExpiryInLocalStorage);
 
     // Determine if this specific tab is currently in the password reset flow (either by hash or by being on /reset-password while recovery is active)
     const thisTabIsResettingPassword = isPasswordResetFlowFromHash || (isRecoveryActiveGlobally && location.pathname === '/reset-password');
-    setIsPasswordResetFlow(thisTabIsResettingPassword); // Update App's state
+    setIsPasswordResetFlow(thisTabIsResettingPassword);
 
     const publicPaths = [
       '/', // Base URL is public
