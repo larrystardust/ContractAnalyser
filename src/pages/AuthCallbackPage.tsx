@@ -42,7 +42,7 @@ const AuthCallbackPage: React.FC = () => {
     const queryRedirectParam = searchParams.get('redirect');
     if (queryRedirectParam) {
       finalRedirectPath = decodeURIComponent(queryRedirectParam);
-      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectParam);
+      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
     }
 
     // 3. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
