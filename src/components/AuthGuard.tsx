@@ -47,21 +47,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   });
 
   // === ABSOLUTE PRIORITY: recovery session ===
-  // This block now primarily relies on `recoveryActive` from localStorage
-  // or `isRecoveryHashPresent` for the very first load from the email link.
+  // If a recovery session is active (either from URL hash or localStorage flag),
+  // strictly confine the user to the /reset-password page.
+  // Any attempt to navigate elsewhere will redirect to /login.
   if (recoveryActive || isRecoveryHashPresent) {
-    // Define paths that should explicitly redirect to /login during recovery
-    // This includes the base URL ('/') and the dashboard ('/dashboard').
-    const blockedPathsDuringRecovery = ['/', '/dashboard'];
-
-    if (blockedPathsDuringRecovery.includes(location.pathname)) {
-      console.log(`AuthGuard: Recovery active. Blocking access to ${location.pathname}. Redirecting to login.`);
+    if (location.pathname !== '/reset-password') {
+      console.log(`AuthGuard: Recovery active. User attempted to access ${location.pathname}. Redirecting to login.`);
       return <Navigate to="/login" replace />;
-    } else if (location.pathname !== '/reset-password') {
-      console.log('AuthGuard: Recovery active. Redirecting to /reset-password.');
-      return <Navigate to="/reset-password" replace />;
     }
-    // Only allow reset-password page
+    // If it is /reset-password, allow it.
     return <Outlet />;
   }
 
@@ -129,11 +123,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // This check is now redundant if the MFA redirect is handled inside useEffect
-  // if (targetAal === 'aal1') {
-  //   console.log('AuthGuard: MFA required. Redirecting.');
-  //   return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  // }
+  if (targetAal === 'aal1') {
+    console.log('AuthGuard: MFA required. Redirecting.');
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
 
   if (targetAal === 'aal2') {
     console.log('AuthGuard: Authenticated. Rendering protected content.');
