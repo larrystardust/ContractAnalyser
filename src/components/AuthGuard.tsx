@@ -19,7 +19,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
 
-  // Read recovery flag + expiry
+  // Read recovery flag + expiry from localStorage
   const recoveryActive = (() => {
     const flag = localStorage.getItem(RECOVERY_FLAG);
     const expiry = localStorage.getItem(RECOVERY_EXPIRY);
@@ -34,21 +34,24 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     return flag === 'true';
   })();
 
-  // Check URL hash directly
+  // Check URL hash directly (for initial entry from email link)
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isRecoveryHashPresent = hashParams.get('type') === 'recovery';
 
   console.log('AuthGuard Debug:', {
     isPasswordResetFlow,
-    recoveryActive,
+    recoveryActive, // This now reflects the localStorage flag
     isRecoveryHashPresent,
     pathname: location.pathname,
     session: !!session,
   });
 
   // === ABSOLUTE PRIORITY: recovery session ===
+  // This block now primarily relies on `recoveryActive` from localStorage
+  // or `isRecoveryHashPresent` for the very first load from the email link.
   if (recoveryActive || isRecoveryHashPresent) {
     // Define paths that should explicitly redirect to /login during recovery
+    // This includes the base URL ('/') and the dashboard ('/dashboard').
     const blockedPathsDuringRecovery = ['/', '/dashboard'];
 
     if (blockedPathsDuringRecovery.includes(location.pathname)) {
