@@ -6,6 +6,11 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
 import Button from '../components/ui/Button'; // Ensure Button is imported
 
+// Define constants for localStorage keys and expiry duration
+const RECOVERY_FLAG = 'password_recovery_active';
+const RECOVERY_EXPIRY = 'password_recovery_expiry';
+const RECOVERY_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
 
@@ -33,6 +38,13 @@ const AuthCallbackPage: React.FC = () => {
     if (hashType === 'recovery') {
       isPasswordResetFlow = true;
       finalRedirectPath = `/reset-password${location.hash}`; // Redirect to reset-password, preserving hash
+      
+      // CRITICAL: Set recovery flag in localStorage
+      const expiryTime = Date.now() + RECOVERY_DURATION_MS;
+      localStorage.setItem(RECOVERY_FLAG, 'true');
+      localStorage.setItem(RECOVERY_EXPIRY, expiryTime.toString());
+      console.log('AuthCallbackPage: Recovery flag set in localStorage with expiry:', new Date(expiryTime).toISOString());
+
       console.log('AuthCallbackPage: Detected password reset flow. Redirecting to:', finalRedirectPath);
       navigate(finalRedirectPath, { replace: true });
       return; // Exit early as we're redirecting
