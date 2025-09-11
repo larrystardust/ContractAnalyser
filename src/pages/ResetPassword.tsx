@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'; // ADDED useSearchParams
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase'; // Import supabase client directly
@@ -8,7 +8,8 @@ import { useSessionContext } from '@supabase/auth-helpers-react'; // Import useS
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // Get session context
+  const { session, isLoading: isSessionLoading } = useSessionContext();
+  const [searchParams] = useSearchParams(); // ADDED
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,13 +18,60 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isTokenVerified, setIsTokenVerified] = useState(false); // NEW STATE
 
   // REMOVED: The useEffect that called supabase.auth.signOut() on load.
   // This session must remain active for updateUser() to work.
 
+  // ADDED: Token verification logic
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      console.log('Verification token found:', token);
+      handleVerification(token);
+    } else {
+      // If no token is found, it means the user didn't come from a valid reset link
+      setError('No password reset token found in the URL. Please use the link from your email.');
+    }
+  }, [searchParams]);
+
+  // ADDED: handleVerification function
+  const handleVerification = async (token: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Verifying password reset token...');
+      // CRITICAL FIX: Change type from "signup" to "recovery"
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        type: "recovery",
+        token_hash: token,
+      });
+
+      if (verifyError) {
+        throw verifyError;
+      }
+
+      setSuccess('Token verified. Please set your new password.');
+      setIsTokenVerified(true); // Enable the form
+      // Do not redirect immediately, wait for user to set new password
+    } catch (error: any) {
+      console.error('Password reset token verification failed:', error);
+      setError(error instanceof Error ? error.message : 'Invalid or expired password reset link');
+      setIsTokenVerified(false); // Keep the form disabled on failure
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isTokenVerified) { // Ensure token is verified before proceeding
+      setError('Please verify the reset token first.');
+      return;
+    }
 
     if (newPassword.length < 6) {
       setError('Password must be at least 6 characters long');
@@ -107,11 +155,13 @@ const ResetPassword: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   required
                   minLength={6}
+                  disabled={!isTokenVerified || isLoading} // DISABLED until token is verified
                 />
                 <button
                   type="button"
+                  onClick={() => togglePasswordVisibility('new')}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  disabled={!isTokenVerified || isLoading} // DISABLED until token is verified
                 >
                   {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -133,11 +183,13 @@ const ResetPassword: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   required
+                  disabled={!isTokenVerified || isLoading} // DISABLED until token is verified
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={!isTokenVerified || isLoading} // DISABLED until token is verified
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -146,7 +198,7 @@ const ResetPassword: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={!isTokenVerified || isLoading} // DISABLED until token is verified
               className="w-full bg-blue-900 text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
