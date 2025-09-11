@@ -7,6 +7,7 @@ import { useSessionContext } from '@supabase/auth-helpers-react'; // Import useS
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { resetPassword } = useAuth();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const [searchParams] = useSearchParams(); // Keep useSearchParams for consistency, though not directly used for token extraction anymore
@@ -18,17 +19,47 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // REMOVED: const [isTokenVerified, setIsTokenVerified] = useState(false); // Removed this state
 
-  // REMOVED: The useEffect that called supabase.auth.signOut() on load.
-  // REMOVED: The useEffect that called handleVerification.
-  // REMOVED: The handleVerification function.
+  /**
+   * SECURITY / UX: Mark that a password recovery is currently active.
+   * This sets a localStorage flag so other tabs that run AuthGuard will
+   * detect the recovery in progress and will not allow access to protected routes.
+   *
+   * We remove the flag on unmount or after success so normal flows resume.
+   */
+  useEffect(() => {
+    try {
+      // Only set the flag when it looks like a recovery flow (hash contains type=recovery)
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const hashType = hashParams.get('type');
+
+      if (hashType === 'recovery') {
+        localStorage.setItem('password_recovery_active', 'true');
+        console.log('ResetPassword: password_recovery_active flag set in localStorage.');
+      } else {
+        // In case someone navigates to /reset-password without a recovery hash,
+        // ensure we don't accidentally set the flag.
+        console.log('ResetPassword: no recovery hash detected on mount.');
+      }
+    } catch (err) {
+      console.error('ResetPassword: error setting recovery flag:', err);
+    }
+
+    return () => {
+      // Ensure flag cleaned up on unmount (covers navigation away or tab close)
+      try {
+        localStorage.removeItem('password_recovery_active');
+        console.log('ResetPassword: password_recovery_active flag removed on unmount.');
+      } catch (err) {
+        console.error('ResetPassword: error removing recovery flag on unmount:', err);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // REMOVED: if (!isTokenVerified) check
 
     if (newPassword.length < 6) {
       setError('Password must be at least 6 characters long');
@@ -47,10 +78,17 @@ const ResetPassword: React.FC = () => {
       // processed by @supabase/auth-helpers-react when the page loads.
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
-      
+
       // CRITICAL: Sign out the user after successful password reset
       // This terminates the recovery session, forcing a fresh login.
       await supabase.auth.signOut();
+
+      // Clean-up: remove the recovery flag so other tabs can resume normal auth checks
+      try {
+        localStorage.removeItem('password_recovery_active');
+      } catch (err) {
+        console.error('ResetPassword: error removing recovery flag after success:', err);
+      }
 
       setTimeout(() => {
         navigate('/login', { replace: true }); // User must explicitly log in with new password
@@ -69,6 +107,12 @@ const ResetPassword: React.FC = () => {
     } catch (error) {
       console.error("Error during logout on back to login:", error);
     } finally {
+      // Also remove the recovery flag in case user abandons the flow
+      try {
+        localStorage.removeItem('password_recovery_active');
+      } catch (err) {
+        console.error('ResetPassword: error removing recovery flag on back to login:', err);
+      }
       navigate('/login', { replace: true });
     }
   };
@@ -112,13 +156,11 @@ const ResetPassword: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   required
                   minLength={6}
-                  // REMOVED: disabled={!isTokenVerified || isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  // REMOVED: disabled={!isTokenVerified || isLoading}
                 >
                   {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -140,13 +182,11 @@ const ResetPassword: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   required
-                  // REMOVED: disabled={!isTokenVerified || isLoading}
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  // REMOVED: disabled={!isTokenVerified || isLoading}
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -155,7 +195,6 @@ const ResetPassword: React.FC = () => {
 
             <button
               type="submit"
-              // REMOVED: disabled={!isTokenVerified || isLoading}
               disabled={isLoading} // Only disable based on local loading state
               className="w-full bg-blue-900 text-white py-2 rounded-md font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
