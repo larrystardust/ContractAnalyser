@@ -19,7 +19,20 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
 
   // --- CRITICAL: Immediate checks for password reset flow ---
   // This logic runs on every render, ensuring immediate redirection if needed.
-  if (isPasswordResetFlow) {
+  // It directly checks the URL hash for the 'type=recovery' parameter.
+  const hashParams = new URLSearchParams(location.hash.substring(1));
+  const isRecoveryHashPresent = hashParams.get('type') === 'recovery';
+
+  // Aggressive logging for debugging
+  console.log('AuthGuard Render Check:');
+  console.log('  isPasswordResetFlow (from App.tsx prop):', isPasswordResetFlow);
+  console.log('  isRecoveryHashPresent (direct hash check):', isRecoveryHashPresent);
+  console.log('  location.pathname:', location.pathname);
+  console.log('  session:', session ? 'Exists' : 'Does NOT exist');
+  console.log('  session.user:', session?.user ? 'Exists' : 'Does NOT exist');
+  console.log('  loadingSession:', loadingSession);
+
+  if (isRecoveryHashPresent) {
     if (location.pathname === '/reset-password') {
       // If it's a password reset flow AND we are on the /reset-password page,
       // allow the ResetPassword component to render.
@@ -27,16 +40,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
       // will handle the session validity using the URL hash tokens.
       return <Outlet />;
     } else {
-      // If it's a password reset flow but the user is trying to access ANY OTHER route,
+      // If a recovery hash is present but the user is trying to access ANY OTHER route,
       // immediately redirect them to the login page. This prevents dashboard access.
-      console.log('AuthGuard: Password reset flow detected, but not on /reset-password. Redirecting to login.');
+      console.log('AuthGuard: Recovery hash detected, but not on /reset-password. Redirecting to login.');
       return <Navigate to="/login" replace />;
     }
   }
   // --- END CRITICAL PASSWORD RESET FLOW CHECKS ---
 
   // --- Normal authentication flow (only if NOT a password reset flow) ---
-  // This useEffect will only run if isPasswordResetFlow is false.
+  // This useEffect will only run if isRecoveryHashPresent is false.
   useEffect(() => {
     const checkAuthStatus = async () => {
       if (loadingSession) return; // Still loading session from auth-helpers
@@ -83,7 +96,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => { // AC
     };
 
     checkAuthStatus();
-  }, [session, loadingSession, supabase]); // isPasswordResetFlow is not a dependency here because it's handled above
+  }, [session, loadingSession, supabase]); // isRecoveryHashPresent is handled above, so not a dependency here.
 
   // Show loading indicator for initial session loading or ongoing auth checks
   if (loadingSession || loadingAuthChecks) {
