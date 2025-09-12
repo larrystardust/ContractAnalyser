@@ -16,13 +16,9 @@ const PricingSection: React.FC = () => {
     product.mode === 'payment' || product.mode === 'subscription'
   );
 
-  // Determine if the user is logged in and their ID is available
-  const isLoggedInAndIdAvailable = session && session.user && session.user.id;
-
-  // Handle loading state:
-  // 1. If session or subscription data is still loading.
-  // 2. If session is loaded but user is logged in (session is not null) AND user.id is not yet available.
-  if (isSessionLoading || loadingSubscription || (session && !isLoggedInAndIdAvailable)) {
+  // --- START OF CRITICAL FIX ---
+  // Ensure session.user.id is available before proceeding
+  if (isSessionLoading || loadingSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -30,6 +26,19 @@ const PricingSection: React.FC = () => {
       </div>
     );
   }
+
+  // If session is not null, but session.user or session.user.id is null/undefined,
+  // it means the user object is not fully hydrated yet. Keep showing loading.
+  // This handles the edge case where session is present but user.id is not.
+  if (session && !session.user?.id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
+        <p className="text-gray-500 mt-4">Loading user data...</p>
+      </div>
+    );
+  }
+  // --- END OF CRITICAL FIX ---
 
   return (
     <div className="py-12 bg-gray-50 mt-16">
@@ -70,11 +79,12 @@ const PricingSection: React.FC = () => {
               key={product.id}
               product={product}
               billingPeriod={billingPeriod}
-              // Pass the user ID only if it's available, otherwise null
-              currentSessionUserId={isLoggedInAndIdAvailable ? session.user.id : null}
+              // Now session.user.id is guaranteed to be available if session is not null
+              currentSessionUserId={session?.user?.id || null}
               userSubscription={subscription}
               userMembership={membership}
-              isDataLoading={isSessionLoading || loadingSubscription}
+              // isDataLoading is now effectively handled by the explicit loading checks above
+              isDataLoading={false} 
             />
           ))}
         </div>
