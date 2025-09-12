@@ -45,25 +45,36 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // Check if user is an invited member (not owner)
+  // Check if user is an invited member (not owner) on ANY plan
   const isMemberNotOwner = membership && 
                           membership.user_id === session?.user?.id && 
                           membership.role === 'member' && 
                           membership.status === 'active';
 
+  // Check if this is the Enterprise plan
+  const isEnterprisePlan = product.name.toLowerCase().includes('enterprise');
+
+  // Check if user is currently on Enterprise plan as a member
+  const isOnEnterpriseAsMember = usersCurrentProduct?.name.toLowerCase().includes('enterprise') && isMemberNotOwner;
+
+  // Check if this is a downgrade from Enterprise (any lower tier plan)
+  const isDowngradeFromEnterprise = usersCurrentProduct?.name.toLowerCase().includes('enterprise') && 
+                                   product.tier < usersCurrentProduct.tier;
+
   // Debug logging to verify the conditions
-  console.log('Downgrade analysis:', {
+  console.log('Enterprise downgrade analysis:', {
     productName: product.name,
+    isEnterprisePlan,
     isDowngradeOption,
     isMemberNotOwner,
-    membership,
-    userHasMembership: !!membership,
-    userIdMatches: membership?.user_id === session?.user?.id,
-    isMemberRole: membership?.role === 'member',
-    isActiveStatus: membership?.status === 'active'
+    isOnEnterpriseAsMember,
+    isDowngradeFromEnterprise,
+    currentProduct: usersCurrentProduct?.name,
+    currentProductTier: usersCurrentProduct?.tier,
+    newProductTier: product.tier
   });
 
-  // --- Refined disabled logic with proper downgrade handling ---
+  // --- Refined disabled logic with proper Enterprise downgrade handling ---
   let shouldBeDisabled = loadingSubscription;
 
   if (!shouldBeDisabled) {
@@ -74,8 +85,12 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
     } 
-    // Explicitly check for downgrade option for members
+    // Disable downgrade options for members (from any plan to any lower plan)
     else if (isDowngradeOption && isMemberNotOwner) {
+      shouldBeDisabled = true;
+    }
+    // Specifically disable Enterprise downgrades for members
+    else if (isOnEnterpriseAsMember && isDowngradeFromEnterprise) {
       shouldBeDisabled = true;
     }
   }
@@ -106,7 +121,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     }
 
     // Prevent members from attempting to downgrade
-    if (isDowngradeOption && isMemberNotOwner) {
+    if ((isDowngradeOption && isMemberNotOwner) || (isOnEnterpriseAsMember && isDowngradeFromEnterprise)) {
       return; // Do nothing for members trying to downgrade
     }
 
@@ -162,7 +177,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
           No payment needed with your current assigned subscription.
         </p>
       )}
-      {isDowngradeOption && isMemberNotOwner && (
+      {(isDowngradeOption && isMemberNotOwner) || (isOnEnterpriseAsMember && isDowngradeFromEnterprise) && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           Only the subscription owner can manage downgrades.
         </p>
