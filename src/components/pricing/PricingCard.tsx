@@ -45,24 +45,40 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
+  // Check if user is an invited member (not owner)
+  const isMemberNotOwner = membership && 
+                          membership.user_id === session?.user?.id && 
+                          membership.role === 'member' && 
+                          membership.status === 'active';
 
-  // --- Start of refined disabled logic ---
-  let shouldBeDisabled = loadingSubscription; // Always disable if loading
+  // Debug logging to verify the conditions
+  console.log('Downgrade analysis:', {
+    productName: product.name,
+    isDowngradeOption,
+    isMemberNotOwner,
+    membership,
+    userHasMembership: !!membership,
+    userIdMatches: membership?.user_id === session?.user?.id,
+    isMemberRole: membership?.role === 'member',
+    isActiveStatus: membership?.status === 'active'
+  });
 
-  if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
+  // --- Refined disabled logic with proper downgrade handling ---
+  let shouldBeDisabled = loadingSubscription;
+
+  if (!shouldBeDisabled) {
     if (isCurrentPlan) {
       shouldBeDisabled = true;
     } else if (isDisabledForSubscribers) {
       shouldBeDisabled = true;
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
-    } else if (isDowngradeOption && isMemberNotOwner) {
-      // This is the specific condition for disabling downgrade for invited members
+    } 
+    // Explicitly check for downgrade option for members
+    else if (isDowngradeOption && isMemberNotOwner) {
       shouldBeDisabled = true;
     }
   }
-  // --- End of refined disabled logic ---
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -70,10 +86,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   } else if (isAnyAdminAssignedPlanActive) {
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
-    buttonText = 'Downgrade';
     if (isMemberNotOwner) {
-      // Override button text for members on downgrade options
       buttonText = 'Owner Only';
+    } else {
+      buttonText = 'Downgrade';
     }
   } else {
     buttonText = 'Purchase';
@@ -87,6 +103,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         createCustomerPortalSession();
       }
       return;
+    }
+
+    // Prevent members from attempting to downgrade
+    if (isDowngradeOption && isMemberNotOwner) {
+      return; // Do nothing for members trying to downgrade
     }
 
     if (product.mode === 'payment') {
@@ -127,7 +148,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={shouldBeDisabled} // Use the refined shouldBeDisabled variable
+        disabled={shouldBeDisabled}
       >
         {buttonText}
       </Button>
