@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -8,8 +8,7 @@ import { useSessionContext } from '@supabase/auth-helpers-react';
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
-  const { session, isLoading: isSessionLoading } = useSessionContext();
-  const [searchParams] = useSearchParams();
+  const { session } = useSessionContext();
   const location = useLocation();
 
   const [newPassword, setNewPassword] = useState('');
@@ -21,28 +20,72 @@ const ResetPassword: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sessionTimer, setSessionTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // Set global password reset flow state on component mount
+  // Set global password reset flow state and block modals
   useEffect(() => {
     localStorage.setItem('passwordResetFlowActive', 'true');
     localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
+    localStorage.setItem('blockModalsDuringReset', 'true');
 
     return () => {
-      // Only clear if password reset wasn't successful
       if (!success) {
         localStorage.removeItem('passwordResetFlowActive');
         localStorage.removeItem('passwordResetFlowStartTime');
+        localStorage.removeItem('blockModalsDuringReset');
       }
     };
   }, [success]);
 
-  // Auto-redirect to login after 15 minutes of inactivity
+  // Block modal opening attempts
+  useEffect(() => {
+    const blockModals = () => {
+      // Prevent any modal from opening during password reset
+      const modalBlockers = [
+        // Common modal selectors
+        '[data-modal]',
+        '[data-help]',
+        '.modal-trigger',
+        '.help-button',
+        '.help-icon',
+        '#help-button',
+        '#dashboard-help',
+        // Add any specific selectors for DashboardHelpModal
+        '[onclick*="help"]',
+        '[onclick*="modal"]',
+        '[href*="help"]',
+        '[href*="modal"]'
+      ];
+
+      modalBlockers.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+          element.addEventListener('click', (e) => {
+            if (!success) {
+              e.preventDefault();
+              e.stopPropagation();
+              setError('Please complete the password reset process before accessing other features.');
+              // Force focus back to password fields
+              document.getElementById('newPassword')?.focus();
+            }
+          }, true);
+        });
+      });
+    };
+
+    // Run after a short delay to ensure DOM is loaded
+    const timer = setTimeout(blockModals, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [success]);
+
+  // Auto-redirect to login after 15 minutes
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Clear global state
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
+      localStorage.removeItem('blockModalsDuringReset');
       
-      // Only sign out if the user hasn't completed the reset
       if (!success) {
         supabase.auth.signOut().catch(console.error);
       }
@@ -58,7 +101,7 @@ const ResetPassword: React.FC = () => {
     };
   }, [navigate, success]);
 
-  // Block ALL navigation during password reset including modals
+  // Block navigation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!success) {
@@ -71,37 +114,18 @@ const ResetPassword: React.FC = () => {
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
         window.history.pushState(null, '', window.location.pathname + window.location.hash);
-        setError('Please complete the password reset process. Navigation is disabled during password reset.');
-      }
-    };
-
-    // Block any attempts to open modals or overlays
-    const blockModalEvents = (e: MouseEvent) => {
-      if (!success) {
-        // Check if the click is trying to open a modal (help modal, etc.)
-        const target = e.target as HTMLElement;
-        if (target.closest('[data-modal]') || 
-            target.closest('[data-help]') || 
-            target.closest('.modal-trigger') ||
-            target.id === 'help-button' ||
-            target.classList.contains('help-icon')) {
-          e.preventDefault();
-          e.stopPropagation();
-          setError('Please complete the password reset process before accessing other features.');
-        }
+        setError('Please complete the password reset process. Navigation is disabled.');
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
-    document.addEventListener('click', blockModalEvents, true); // Use capture phase
     
     window.history.pushState(null, '', window.location.pathname + window.location.hash);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('click', blockModalEvents, true);
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
@@ -128,15 +152,13 @@ const ResetPassword: React.FC = () => {
       await resetPassword(newPassword);
       setSuccess('Password successfully reset! Redirecting to login...');
       
-      // Clear session timer and global state on success
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
       
-      // Set completion flag that will be checked after login
       localStorage.setItem('passwordResetCompleted', 'true');
+      localStorage.removeItem('blockModalsDuringReset');
       
-      // Sign out the user after successful password reset
       await supabase.auth.signOut();
 
       setTimeout(() => {
@@ -154,14 +176,13 @@ const ResetPassword: React.FC = () => {
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
-      // Clear global state
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
+      localStorage.removeItem('blockModalsDuringReset');
       
-      // Sign out when user explicitly goes back to login
       await supabase.auth.signOut();
     } catch (error) {
-      console.error("Error during logout on back to login:", error);
+      console.error("Error during logout:", error);
     } finally {
       navigate('/login', { replace: true });
     }
@@ -206,6 +227,7 @@ const ResetPassword: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   required
                   minLength={6}
+                  autoFocus
                 />
                 <button
                   type="button"
