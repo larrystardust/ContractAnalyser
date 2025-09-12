@@ -58,7 +58,7 @@ const ResetPassword: React.FC = () => {
     };
   }, [navigate, success]);
 
-  // Block ALL navigation during password reset
+  // Block ALL navigation during password reset including modals
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!success) {
@@ -75,14 +75,33 @@ const ResetPassword: React.FC = () => {
       }
     };
 
+    // Block any attempts to open modals or overlays
+    const blockModalEvents = (e: MouseEvent) => {
+      if (!success) {
+        // Check if the click is trying to open a modal (help modal, etc.)
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-modal]') || 
+            target.closest('[data-help]') || 
+            target.closest('.modal-trigger') ||
+            target.id === 'help-button' ||
+            target.classList.contains('help-icon')) {
+          e.preventDefault();
+          e.stopPropagation();
+          setError('Please complete the password reset process before accessing other features.');
+        }
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
+    document.addEventListener('click', blockModalEvents, true); // Use capture phase
     
     window.history.pushState(null, '', window.location.pathname + window.location.hash);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('click', blockModalEvents, true);
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
