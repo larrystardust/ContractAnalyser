@@ -11,7 +11,7 @@ interface PricingCardProps {
   currentSessionUserId: string | null;
   userSubscription: Subscription | null;
   userMembership: SubscriptionMembership | null;
-  isDataLoading: boolean; // This prop will now always be false due to upstream handling
+  isDataLoading: boolean;
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -53,8 +53,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
-  // This is the crucial line. currentSessionUserId will now be correct.
-  const isMemberNotOwner = userMembership && userMembership.user_id === currentSessionUserId && userMembership.role === 'member' && userMembership.status === 'active';
+  // ✅ Safety Guard: members are treated as "not owners" unless their user_id matches
+  const isMemberNotOwner =
+    !!userMembership &&
+    userMembership.role === 'member' &&
+    userMembership.status === 'active' &&
+    userMembership.user_id !== currentSessionUserId;
 
   // --- DEBUG LOGS START ---
   console.log(`PricingCard: ${product.name} (${billingPeriod})`);
@@ -66,7 +70,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
   console.log(`  isDowngradeOption: ${isDowngradeOption}`);
   // --- DEBUG LOGS END ---
 
-  // isDataLoading will now always be false because PricingSection handles loading explicitly
   let shouldBeDisabled = isDataLoading; 
 
   if (!shouldBeDisabled) { 
@@ -77,12 +80,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
     } else if (isDowngradeOption && isMemberNotOwner) {
-      // This is the specific condition for disabling downgrade for invited members
+      // 🚫 Disable downgrade for invited members
       shouldBeDisabled = true;
     }
   }
   console.log(`  Final shouldBeDisabled for ${product.name}: ${shouldBeDisabled}`);
-
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -92,7 +94,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
     if (isMemberNotOwner) {
-      // Override button text for members on downgrade options
       buttonText = 'Owner Only';
     }
   } else {
