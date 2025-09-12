@@ -1,25 +1,103 @@
-import React, { useState } from 'react'; // ADDED: useState
+import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { LifeBuoy, BookOpen, Lightbulb, Bug } from 'lucide-react';
-import Modal from '../ui/Modal'; // ADDED: Import Modal
-import SupportTicketForm from '../forms/SupportTicketForm'; // ADDED: Import SupportTicketForm
-import { Link } from 'react-router-dom'; // ADDED: Import Link for Help Center
+import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle } from 'lucide-react';
+import Modal from '../ui/Modal';
+import SupportTicketForm from '../forms/SupportTicketForm';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface DashboardHelpModalProps {
-  onReportIssue: () => void; // This prop is now optional or can be removed if we handle modal internally
+  onReportIssue?: () => void;
 }
 
-const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => { // MODIFIED: Removed onReportIssue from props
-  const [isSupportTicketModalOpen, setIsSupportTicketModalOpen] = useState(false); // ADDED: State for support ticket modal
+const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
+  const [isSupportTicketModalOpen, setIsSupportTicketModalOpen] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const navigate = useNavigate();
 
-  const handleReportIssueClick = () => { // ADDED: New handler
+  // Check if password reset flow is active and block the modal
+  useEffect(() => {
+    const checkPasswordResetFlow = () => {
+      const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
+      const blockModals = localStorage.getItem('blockModalsDuringReset');
+      
+      if (resetFlowActive === 'true' || blockModals === 'true') {
+        setIsBlocked(true);
+        // Close any open modals immediately
+        setIsSupportTicketModalOpen(false);
+        
+        // Redirect to reset-password page if not already there
+        if (window.location.pathname !== '/reset-password') {
+          const currentHash = window.location.hash.includes('type=recovery') ? window.location.hash : '';
+          navigate(`/reset-password${currentHash}`, { replace: true });
+        }
+      } else {
+        setIsBlocked(false);
+      }
+    };
+
+    // Check immediately on mount
+    checkPasswordResetFlow();
+
+    // Listen for storage changes (from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'passwordResetFlowActive' || e.key === 'blockModalsDuringReset') {
+        checkPasswordResetFlow();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Check periodically in case changes happen in the same tab
+    const interval = setInterval(checkPasswordResetFlow, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [navigate]);
+
+  const handleReportIssueClick = () => {
+    // Check again before opening modal
+    const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
+    const blockModals = localStorage.getItem('blockModalsDuringReset');
+    
+    if (resetFlowActive === 'true' || blockModals === 'true') {
+      setIsBlocked(true);
+      const currentHash = window.location.hash.includes('type=recovery') ? window.location.hash : '';
+      navigate(`/reset-password${currentHash}`, { replace: true });
+      return;
+    }
+    
     setIsSupportTicketModalOpen(true);
   };
+
+  // If blocked during password reset, show blocked message instead of help content
+  if (isBlocked) {
+    return (
+      <div className="space-y-6 text-center py-8">
+        <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+        <p className="text-gray-700 mb-4">
+          Help features are temporarily unavailable during password reset process.
+          Please complete your password reset first.
+        </p>
+        <Button 
+          variant="primary" 
+          onClick={() => {
+            const currentHash = window.location.hash.includes('type=recovery') ? window.location.hash : '';
+            navigate(`/reset-password${currentHash}`, { replace: true });
+          }}
+        >
+          Continue Password Reset
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <Button variant="primary" onClick={handleReportIssueClick} className="w-full"> {/* MODIFIED: Use new handler */}
+        <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
           <Bug className="h-5 w-5 mr-2" /> Click Here To Report An Issue
         </Button>
       </div>
@@ -71,7 +149,6 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => { // MODIFIE
         If you have further questions or encounter any issues, please use the "Report an Issue" button above to create a support ticket, or visit our full <Link to="/help" className="text-blue-600 hover:underline">Help Center</Link> for more detailed guides and FAQs.
       </p>
 
-      {/* ADDED: Support Ticket Modal */}
       <Modal
         isOpen={isSupportTicketModalOpen}
         onClose={() => setIsSupportTicketModalOpen(false)}
