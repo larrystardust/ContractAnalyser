@@ -228,7 +228,25 @@ async function syncCustomerFromStripe(customerId: string) {
     const oldDbSubscriptionId = oldSubscriptionDb?.subscription_id;
     const newStripeSubscriptionId = stripeSubscription.id;
 
-    // 4. UPSERT the subscription data into our database FIRST
+    // Step 1: Temporarily set contracts.subscription_id to NULL for contracts referencing the old subscription ID
+    // This is only necessary if the subscription ID is actually changing.
+    if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
+      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}. Temporarily nullifying contracts' subscription_id...`);
+      const { error: nullifyContractsError } = await supabase
+        .from('contracts')
+        .update({ subscription_id: null }) // Set to NULL
+        .eq('user_id', userId)
+        .eq('subscription_id', oldDbSubscriptionId);
+
+      if (nullifyContractsError) {
+        console.error('Error temporarily nullifying contracts\' subscription_id:', nullifyContractsError);
+        throw new Error('Failed to prepare contracts for subscription ID change.');
+      }
+      console.log('Contracts\' old subscription_id temporarily nullified.');
+    }
+
+    // Step 2: UPSERT the stripe_subscriptions table with the new subscription data.
+    // This will now succeed because contracts no longer reference the old ID (if it changed).
     const { error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
       {
         customer_id: stripeSubscription.customer as string,
@@ -248,7 +266,7 @@ async function syncCustomerFromStripe(customerId: string) {
         max_files: maxFiles,
       },
       {
-        onConflict: 'customer_id',
+        onConflict: 'customer_id', // Conflict on customer_id to update the existing record
       },
     );
 
@@ -257,20 +275,21 @@ async function syncCustomerFromStripe(customerId: string) {
       throw new Error('Failed to update subscription status in database');
     }
 
-    // 5. Now, if the subscription ID has changed, update contracts
+    // Step 3: Re-link contracts to the new subscription ID
+    // This is only necessary if the subscription ID actually changed.
     if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
-      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}. Updating contracts...`);
-      const { error: updateContractsError } = await supabase
+      console.log(`Re-linking contracts to new subscription ID: ${newStripeSubscriptionId}...`);
+      const { error: relinkContractsError } = await supabase
         .from('contracts')
         .update({ subscription_id: newStripeSubscriptionId })
-        .eq('user_id', userId) // Only update contracts belonging to this user
-        .eq('subscription_id', oldDbSubscriptionId); // Only update contracts linked to the old subscription ID
+        .eq('user_id', userId)
+        .is('subscription_id', null); // Update only those that were just nullified
 
-      if (updateContractsError) {
-        console.error('Error updating contracts with new subscription ID:', updateContractsError);
-        throw new Error('Failed to update contracts with new subscription ID before upserting stripe_subscriptions.');
+      if (relinkContractsError) {
+        console.error('Error re-linking contracts to new subscription ID:', relinkContractsError);
+        throw new Error('Failed to re-link contracts to new subscription ID.');
       }
-      console.log('Contracts updated successfully with new subscription ID.');
+      console.log('Contracts successfully re-linked to new subscription ID.');
     }
 
     // Upsert the subscription_memberships entry for the owner
