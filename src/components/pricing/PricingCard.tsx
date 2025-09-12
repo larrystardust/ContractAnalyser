@@ -11,7 +11,7 @@ interface PricingCardProps {
   currentSessionUserId: string | null;
   userSubscription: Subscription | null;
   userMembership: SubscriptionMembership | null;
-  isDataLoading: boolean;
+  isDataLoading: boolean; // This prop will now always be false due to upstream handling
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -53,6 +53,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
+  // This is the crucial line. currentSessionUserId will now be correct.
   const isMemberNotOwner = userMembership && userMembership.user_id === currentSessionUserId && userMembership.role === 'member' && userMembership.status === 'active';
 
   // --- DEBUG LOGS START ---
@@ -65,9 +66,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
   console.log(`  isDowngradeOption: ${isDowngradeOption}`);
   // --- DEBUG LOGS END ---
 
-  let shouldBeDisabled = isDataLoading; // Always disable if data is still loading
+  // isDataLoading will now always be false because PricingSection handles loading explicitly
+  let shouldBeDisabled = isDataLoading; 
 
-  if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
+  if (!shouldBeDisabled) { 
     if (isCurrentPlan) {
       shouldBeDisabled = true;
     } else if (isDisabledForSubscribers) {
