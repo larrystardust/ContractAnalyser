@@ -4,6 +4,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useAuth } from '../../hooks/useAuth'; // Assuming you have an auth hook
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -13,6 +14,7 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { subscription, loading: loadingSubscription } = useSubscription();
+  const { user } = useAuth(); // Get current user info
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -43,14 +45,16 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // Check if user is the owner of the subscription (not an invited member)
-  // Assuming subscription object has a role property that indicates ownership
-  const isSubscriptionOwner = subscription?.role === 'owner';
-  
-  // Check if this is the Enterprise Use plan (case-insensitive check)
+  // Check if user is the owner - using app_metadata.role or user_metadata.role
+  // This depends on how your authentication system stores the user role
+  const isSubscriptionOwner = user?.app_metadata?.role === 'owner' || 
+                             user?.user_metadata?.role === 'owner' ||
+                             subscription?.role === 'owner';
+
+  // Check if this is the Enterprise Use plan
   const isEnterprisePlan = product.name.toLowerCase().includes('enterprise');
   
-  // Disable downgrade for Enterprise plan if user is not the owner
+  // Disable downgrade for Enterprise plan if user is not the owner and it's a downgrade option
   const disableEnterpriseDowngrade = isEnterprisePlan && isDowngradeOption && !isSubscriptionOwner;
 
   const finalDisabledState = loadingSubscription || 
@@ -84,6 +88,8 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   console.log(`  isDisabledForSubscribers: ${isDisabledForSubscribers}`);
   console.log(`  (isAnyAdminAssignedPlanActive && !isCurrentPlan): ${isAnyAdminAssignedPlanActive && !isCurrentPlan}`);
   console.log(`  isSubscriptionOwner: ${isSubscriptionOwner}`);
+  console.log(`  isEnterprisePlan: ${isEnterprisePlan}`);
+  console.log(`  isDowngradeOption: ${isDowngradeOption}`);
   console.log(`  disableEnterpriseDowngrade: ${disableEnterpriseDowngrade}`);
   console.log(`  finalDisabledState: ${finalDisabledState}`);
   console.log(`  buttonText: ${buttonText}`);
