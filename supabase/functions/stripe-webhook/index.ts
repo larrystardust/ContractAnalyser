@@ -216,7 +216,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
-      .eq('user_id', customerId) // This was the bug: should be customer_id, not user_id
+      .eq('customer_id', customerId) // CORRECTED: Use customer_id column here
       .single();
 
     if (customerUserError || !customerUser) {
