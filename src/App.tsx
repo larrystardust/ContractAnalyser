@@ -88,7 +88,7 @@ function App() {
       setIsDashboardHelpModal(true);
     } else {
       // If not logged in, redirect to login page
-      navigate('/' + encodeURIComponent(location.pathname + location.search));
+      navigate('/');
     }
   };
 
