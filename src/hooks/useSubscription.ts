@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
 
-// MODIFIED: Added max_files to the Subscription type
 export type Subscription = Database['public']['Tables']['stripe_subscriptions']['Row'] & { max_users?: number; max_files?: number; };
 export type SubscriptionMembership = Database['public']['Tables']['subscription_memberships']['Row'];
 
@@ -69,6 +68,8 @@ export function useSubscription() {
 
         } else {
           // 2. If no membership record is found, check if the user is a direct customer (owner)
+          // This path is now primarily for users who subscribed directly and the webhook
+          // might not have processed yet, or for admin-assigned plans.
           console.log('useSubscription: No membership found. Attempting to fetch customer record for user:', session.user.id);
           const { data: customerData, error: customerError } = await supabase
             .from('stripe_customers')
@@ -101,33 +102,12 @@ export function useSubscription() {
             setSubscription(fetchedSubscription);
             console.log('useSubscription: Found direct subscription:', fetchedSubscription);
 
-            // If a direct subscription is found, ensure an 'owner' membership exists for consistency
-            if (fetchedSubscription) {
-              console.log('useSubscription: Upserting owner membership for direct subscriber...');
-              const { data: upsertedMember, error: upsertError } = await supabase
-                .from('subscription_memberships')
-                .upsert(
-                  {
-                    user_id: session.user.id,
-                    subscription_id: fetchedSubscription.subscription_id,
-                    role: 'owner',
-                    status: 'active',
-                    accepted_at: new Date().toISOString(),
-                  },
-                  { onConflict: ['user_id', 'subscription_id'] }
-                )
-                .select()
-                .single();
-
-              if (upsertError) {
-                console.error('useSubscription: Error upserting owner membership:', upsertError);
-                // Do not throw, just log the error and proceed
-              } else {
-                fetchedMembership = upsertedMember;
-                setMembership(fetchedMembership);
-                console.log('useSubscription: Upserted owner membership:', fetchedMembership);
-              }
-            }
+            // --- START: Removed client-side upsert for owner membership ---
+            // This logic is now handled server-side by the stripe-webhook Edge Function.
+            // If a direct subscription is found, the webhook should have already created
+            // the 'owner' membership. If not, there might be a delay or an issue with the webhook.
+            // The client-side should primarily read the state.
+            // --- END: Removed client-side upsert for owner membership ---
           } else {
             console.log('useSubscription: No customer_id found for user.');
           }
