@@ -48,14 +48,13 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   // NEW LOGIC: Check if the current user is a member (not owner) of an active subscription
   const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
 
-  // Determine if the downgrade button should be disabled for this specific card
-  let disableDowngradeButtonForMembers = false;
-  if (isDowngradeOption && isMemberNotOwner) {
-    disableDowngradeButtonForMembers = true;
-  }
+  // Determine the base disabled state
+  let isDisabled = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan);
 
-  // Final disabled state for the button
-  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan) || disableDowngradeButtonForMembers;
+  // Add specific logic for disabling downgrade for members
+  if (isDowngradeOption && isMemberNotOwner) {
+    isDisabled = true; // Explicitly disable if it's a downgrade and user is a member
+  }
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -64,13 +63,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
+    if (isMemberNotOwner) { // Override button text for members on downgrade options
+      buttonText = 'Owner Only';
+    }
   } else {
     buttonText = 'Purchase';
-  }
-
-  // If it's a downgrade option and the user is a member, change the button text
-  if (isDowngradeOption && isMemberNotOwner) {
-    buttonText = 'Owner Only'; // Or 'Not Available'
   }
 
   // RE-ADDED: handlePurchase function
@@ -124,7 +121,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={finalDisabledState}
+        disabled={isDisabled} // Use the new isDisabled variable
       >
         {buttonText}
       </Button>
