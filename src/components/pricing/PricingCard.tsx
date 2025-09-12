@@ -33,7 +33,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
+  const isAnyAdminAssignedPlanActive = isUsersCurrentProduct; // Simplified: if usersCurrentProduct exists and is admin_assigned
 
   const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
 
@@ -47,7 +47,16 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
 
   const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
 
-  // --- Start of refined disabled logic ---
+  // --- DEBUG LOGS START ---
+  console.log(`PricingCard: ${product.name} (${billingPeriod})`);
+  console.log(`  session.user.id: ${session?.user?.id}`);
+  console.log(`  membership:`, membership);
+  console.log(`  isMemberNotOwner: ${isMemberNotOwner}`);
+  console.log(`  usersCurrentProduct:`, usersCurrentProduct);
+  console.log(`  product.tier: ${product.tier}, usersCurrentProduct.tier: ${usersCurrentProduct?.tier}`);
+  console.log(`  isDowngradeOption: ${isDowngradeOption}`);
+  // --- DEBUG LOGS END ---
+
   let shouldBeDisabled = loadingSubscription; // Always disable if loading
 
   if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
@@ -62,12 +71,13 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
       shouldBeDisabled = true;
     }
   }
-  // --- End of refined disabled logic ---
+  console.log(`  Final shouldBeDisabled for ${product.name}: ${shouldBeDisabled}`);
+
 
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = 'Current Plan';
-  } else if (isAnyAdminAssignedPlanActive) {
+  } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) { // Only show "Zero Payment" if it's an admin-assigned plan and not the current one
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
