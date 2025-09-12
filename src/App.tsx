@@ -87,8 +87,8 @@ function App() {
     if (session) { // Check if a session exists
       setIsDashboardHelpModal(true);
     } else {
-      // If not logged in, redirect to login page
-      navigate('/');
+      // If not logged in, redirect to base URL
+      navigate('/'); // MODIFIED: Redirect to base URL
     }
   };
 
