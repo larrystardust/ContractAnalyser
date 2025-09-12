@@ -31,7 +31,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     };
 
     checkLoginStatus();
-  }, [session]); // Re-check when session changes
+  }, [session]);
 
   // Global state to track password reset flow across all browser tabs
   useEffect(() => {
@@ -48,11 +48,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
       
       if (resetFlowActive === 'true' && startTime) {
         const elapsedTime = Date.now() - parseInt(startTime);
-        // If within 15 minutes, consider reset flow active
         if (elapsedTime < 15 * 60 * 1000) {
           setIsRecoverySession(true);
         } else {
-          // Clear expired reset flow
           localStorage.removeItem('passwordResetFlowActive');
           localStorage.removeItem('passwordResetFlowStartTime');
         }
@@ -61,12 +59,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
 
     checkGlobalResetFlow();
 
-    // Listen for storage events (changes from other tabs)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
         setIsRecoverySession(true);
       } else if (e.key === 'passwordResetCompleted' && e.newValue === 'true') {
-        // Clear reset flow when completed from other tab
         localStorage.removeItem('passwordResetFlowActive');
         localStorage.removeItem('passwordResetFlowStartTime');
         setIsRecoverySession(false);
@@ -96,6 +92,23 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     checkRecoverySession();
   }, [location.hash]);
 
+  // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
+  if (isPasswordResetFlow || isRecoverySession) {
+    // Set global flag to block modals and overlays
+    localStorage.setItem('blockModalsDuringReset', 'true');
+    
+    if (location.pathname === '/reset-password') {
+      return <Outlet />;
+    } else {
+      const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
+      const redirectUrl = `/reset-password${redirectHash}`;
+      return <Navigate to={redirectUrl} replace />;
+    }
+  } else {
+    // Clear modal blocking when not in reset flow
+    localStorage.removeItem('blockModalsDuringReset');
+  }
+
   // Show loading indicator for initial session loading
   if (loadingSession) {
     return (
@@ -105,40 +118,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // CRITICAL: Check if user has a valid session and is not in recovery mode
-  // This allows dashboard access after successful login
-  if (session?.user && !isRecoverySession) {
-    // Continue with normal auth flow checks below
-  }
-
-  // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW - REDIRECT ALL ROUTES TO RESET-PASSWORD
-  // This includes blocking DashboardHelpModal and any other modals/overlays
-  if (isPasswordResetFlow || isRecoverySession) {
-    // Check if this is a modal route or overlay (like DashboardHelpModal)
-    const isModalRoute = location.pathname.includes('modal') || 
-                         location.search.includes('modal') ||
-                         location.hash.includes('modal') ||
-                         // Add any specific modal routes used by DashboardHelpModal
-                         location.pathname === '/dashboard-help' ||
-                         location.search.includes('help=true');
-    
-    if (location.pathname === '/reset-password' && !isModalRoute) {
-      // Allow access to reset-password page only - session is preserved
-      return <Outlet />;
-    } else {
-      // Redirect ALL other routes (including dashboard, modals, base URL, etc.) to reset-password
-      // This blocks all open browsers, navigational paths, modals, and back buttons
-      
-      // Preserve the hash if it exists, otherwise use current hash
-      const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
-      const redirectUrl = `/reset-password${redirectHash}`;
-      
-      console.log('AuthGuard: Blocking access to modal/route during password reset:', location.pathname);
-      return <Navigate to={redirectUrl} replace />;
-    }
-  }
-
-  // Normal authentication flow (only if NOT a password reset flow)
+  // Normal authentication flow
   useEffect(() => {
     const checkAuthStatus = async () => {
       if (loadingSession) return;
@@ -154,7 +134,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
       try {
         const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
         if (factorsError) {
-          console.error('AuthGuard: Error listing MFA factors:', factorsError);
           setTargetAal('aal2');
           setLoadingAuthChecks(false);
           return;
@@ -173,7 +152,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
           setTargetAal('aal2');
         }
       } catch (err) {
-        console.error('AuthGuard: Unexpected error during MFA check:', err);
         setTargetAal('aal2');
       } finally {
         setLoadingAuthChecks(false);
