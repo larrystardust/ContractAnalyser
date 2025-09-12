@@ -3,18 +3,27 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
-import { useSubscription } from '../../hooks/useSubscription';
-import { useSession } from '@supabase/auth-helpers-react';
+import { Subscription, SubscriptionMembership } from '../../hooks/useSubscription'; // ADDED: Import types
 
 interface PricingCardProps {
   product: StripeProduct;
   billingPeriod: 'monthly' | 'yearly';
+  // ADDED: New props for session and subscription data
+  currentSessionUserId: string | null;
+  userSubscription: Subscription | null;
+  userMembership: SubscriptionMembership | null;
+  isDataLoading: boolean;
 }
 
-const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
+const PricingCard: React.FC<PricingCardProps> = ({
+  product,
+  billingPeriod,
+  currentSessionUserId, // ADDED
+  userSubscription, // ADDED
+  userMembership, // ADDED
+  isDataLoading, // ADDED
+}) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
-  const { subscription, membership, loading: loadingSubscription } = useSubscription();
-  const { session } = useSession();
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -24,40 +33,45 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     return null;
   }
 
-  const usersCurrentProduct = subscription
+  // MODIFIED: Use userSubscription prop
+  const usersCurrentProduct = userSubscription
     ? stripeProducts.find(p =>
-        p.pricing.monthly?.priceId === subscription.price_id ||
-        p.pricing.yearly?.priceId === subscription.price_id ||
-        p.pricing.one_time?.priceId === subscription.price_id
+        p.pricing.monthly?.priceId === userSubscription.price_id ||
+        p.pricing.yearly?.priceId === userSubscription.price_id ||
+        p.pricing.one_time?.priceId === userSubscription.price_id
       )
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
   const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
 
-  const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
+  // MODIFIED: Use userSubscription prop
+  const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
   const isDowngradeOption = usersCurrentProduct &&
                             product.mode === 'subscription' &&
                             usersCurrentProduct.mode === 'subscription' &&
                             product.tier < usersCurrentProduct.tier;
 
+  // MODIFIED: Use userSubscription prop
   const isDisabledForSubscribers = product.mode === 'payment' &&
-                                   (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
+                                   (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
-  const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
+  // MODIFIED: Use currentSessionUserId and userMembership props
+  const isMemberNotOwner = userMembership && userMembership.user_id === currentSessionUserId && userMembership.role === 'member' && userMembership.status === 'active';
 
   // --- DEBUG LOGS START ---
   console.log(`PricingCard: ${product.name} (${billingPeriod})`);
-  console.log(`  session.user.id: ${session?.user?.id}`);
-  console.log(`  membership:`, membership);
+  console.log(`  currentSessionUserId: ${currentSessionUserId}`); // MODIFIED
+  console.log(`  userMembership:`, userMembership); // MODIFIED
   console.log(`  isMemberNotOwner: ${isMemberNotOwner}`);
   console.log(`  usersCurrentProduct:`, usersCurrentProduct);
   console.log(`  product.tier: ${product.tier}, usersCurrentProduct.tier: ${usersCurrentProduct?.tier}`);
   console.log(`  isDowngradeOption: ${isDowngradeOption}`);
   // --- DEBUG LOGS END ---
 
-  let shouldBeDisabled = loadingSubscription; // Always disable if loading
+  // MODIFIED: Use isDataLoading prop
+  let shouldBeDisabled = isDataLoading; // Always disable if data is still loading
 
   if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
     if (isCurrentPlan) {
