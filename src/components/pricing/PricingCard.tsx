@@ -53,7 +53,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
-  // ✅ Safety Guard: members are treated as "not owners" unless their user_id matches
+  // Safety Guard: members are treated as "not owners" unless their user_id matches
   const isMemberNotOwner =
     !!userMembership &&
     userMembership.role === 'member' &&
@@ -80,7 +80,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
     } else if (isDowngradeOption && isMemberNotOwner) {
-      // 🚫 Disable downgrade for invited members
+      // Disable downgrade for invited members
       shouldBeDisabled = true;
     }
   }
