@@ -4,7 +4,6 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
-import { useAuth } from '../../hooks/useAuth'; // Assuming you have an auth hook
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -14,7 +13,6 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { subscription, loading: loadingSubscription } = useSubscription();
-  const { user } = useAuth(); // Get current user info
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -45,17 +43,26 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // Check if user is the owner - using app_metadata.role or user_metadata.role
-  // This depends on how your authentication system stores the user role
-  const isSubscriptionOwner = user?.app_metadata?.role === 'owner' || 
-                             user?.user_metadata?.role === 'owner' ||
-                             subscription?.role === 'owner';
+  // Check if user is the owner - using the most common ways to store role information
+  // Adjust this based on your actual user data structure
+  const isSubscriptionOwner = () => {
+    // Check if we can access user data from localStorage or sessionStorage
+    try {
+      const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        return user?.role === 'owner' || user?.user_metadata?.role === 'owner' || user?.app_metadata?.role === 'owner';
+      }
+    } catch (e) {
+      console.warn('Could not access user data from storage');
+    }
+    
+    // Fallback: check subscription data
+    return subscription?.role === 'owner';
+  };
 
-  // Check if this is the Enterprise Use plan
   const isEnterprisePlan = product.name.toLowerCase().includes('enterprise');
-  
-  // Disable downgrade for Enterprise plan if user is not the owner and it's a downgrade option
-  const disableEnterpriseDowngrade = isEnterprisePlan && isDowngradeOption && !isSubscriptionOwner;
+  const disableEnterpriseDowngrade = isEnterprisePlan && isDowngradeOption && !isSubscriptionOwner();
 
   const finalDisabledState = loadingSubscription || 
                             isCurrentPlan || 
@@ -74,26 +81,8 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Purchase';
   }
 
-  console.log(`--- Pricing Card: ${product.name} (${currentPricingOption.interval}) ---`);
-  console.log(`  product.id: ${product.id}`);
-  console.log(`  product.tier: ${product.tier}`);
-  console.log(`  currentPricingOption.priceId: ${currentPricingOption.priceId}`);
-  console.log(`  subscription?.price_id: ${subscription?.price_id}`);
-  console.log(`  usersCurrentProduct?.name: ${usersCurrentProduct?.name}`);
-  console.log(`  usersCurrentProduct?.mode: ${usersCurrentProduct?.mode}`);
-  console.log(`  usersCurrentProduct?.tier: ${usersCurrentProduct?.tier}`);
-  console.log(`  isUsersCurrentPlanAdminAssigned: ${isUsersCurrentPlanAdminAssigned}`);
-  console.log(`  isAnyAdminAssignedPlanActive: ${isAnyAdminAssignedPlanActive}`);
-  console.log(`  isCurrentPlan: ${isCurrentPlan}`);
-  console.log(`  isDisabledForSubscribers: ${isDisabledForSubscribers}`);
-  console.log(`  (isAnyAdminAssignedPlanActive && !isCurrentPlan): ${isAnyAdminAssignedPlanActive && !isCurrentPlan}`);
-  console.log(`  isSubscriptionOwner: ${isSubscriptionOwner}`);
-  console.log(`  isEnterprisePlan: ${isEnterprisePlan}`);
-  console.log(`  isDowngradeOption: ${isDowngradeOption}`);
-  console.log(`  disableEnterpriseDowngrade: ${disableEnterpriseDowngrade}`);
-  console.log(`  finalDisabledState: ${finalDisabledState}`);
-  console.log(`  buttonText: ${buttonText}`);
-  console.log('---------------------------------------------------');
+  console.log('User is subscription owner:', isSubscriptionOwner());
+  console.log('Disable enterprise downgrade:', disableEnterpriseDowngrade);
 
   const handlePurchase = async () => {
     try {
