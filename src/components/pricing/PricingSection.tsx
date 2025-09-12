@@ -3,7 +3,6 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import PricingCard from './PricingCard';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useSubscription } from '../../hooks/useSubscription';
-import { Loader2 } from 'lucide-react';
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
@@ -17,7 +16,7 @@ const PricingSection: React.FC = () => {
   );
 
   // --- START OF CRITICAL FIX ---
-  // Ensure session.user.id is available before proceeding
+  // Block rendering until both session and subscription are fully loaded
   if (isSessionLoading || loadingSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -27,9 +26,7 @@ const PricingSection: React.FC = () => {
     );
   }
 
-  // If session is not null, but session.user or session.user.id is null/undefined,
-  // it means the user object is not fully hydrated yet. Keep showing loading.
-  // This handles the edge case where session is present but user.id is not.
+  // If session exists but user.id is not hydrated yet, keep loading
   if (session && !session.user?.id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -79,11 +76,10 @@ const PricingSection: React.FC = () => {
               key={product.id}
               product={product}
               billingPeriod={billingPeriod}
-              // Now session.user.id is guaranteed to be available if session is not null
+              // session.user.id is guaranteed if session exists
               currentSessionUserId={session?.user?.id || null}
               userSubscription={subscription}
               userMembership={membership}
-              // isDataLoading is now effectively handled by the explicit loading checks above
               isDataLoading={false} 
             />
           ))}
