@@ -108,23 +108,32 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
   // CRITICAL: Check if user has a valid session and is not in recovery mode
   // This allows dashboard access after successful login
   if (session?.user && !isRecoverySession) {
-    console.log('AuthGuard: Valid session detected, allowing access to protected routes');
     // Continue with normal auth flow checks below
   }
 
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW - REDIRECT ALL ROUTES TO RESET-PASSWORD
+  // This includes blocking DashboardHelpModal and any other modals/overlays
   if (isPasswordResetFlow || isRecoverySession) {
-    if (location.pathname === '/reset-password') {
+    // Check if this is a modal route or overlay (like DashboardHelpModal)
+    const isModalRoute = location.pathname.includes('modal') || 
+                         location.search.includes('modal') ||
+                         location.hash.includes('modal') ||
+                         // Add any specific modal routes used by DashboardHelpModal
+                         location.pathname === '/dashboard-help' ||
+                         location.search.includes('help=true');
+    
+    if (location.pathname === '/reset-password' && !isModalRoute) {
       // Allow access to reset-password page only - session is preserved
       return <Outlet />;
     } else {
-      // Redirect ALL other routes (including dashboard, base URL, etc.) to reset-password
-      // This blocks all open browsers, navigational paths, and back buttons
+      // Redirect ALL other routes (including dashboard, modals, base URL, etc.) to reset-password
+      // This blocks all open browsers, navigational paths, modals, and back buttons
       
       // Preserve the hash if it exists, otherwise use current hash
       const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
       const redirectUrl = `/reset-password${redirectHash}`;
       
+      console.log('AuthGuard: Blocking access to modal/route during password reset:', location.pathname);
       return <Navigate to={redirectUrl} replace />;
     }
   }
