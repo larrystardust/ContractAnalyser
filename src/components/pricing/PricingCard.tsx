@@ -4,7 +4,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
-import { useSession } from '@supabase/auth-helpers-react'; // Import useSession
+import { useSession } from '@supabase/auth-helpers-react';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -13,8 +13,8 @@ interface PricingCardProps {
 
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
-  const { subscription, membership, loading: loadingSubscription } = useSubscription(); // Get membership
-  const { session } = useSession(); // Get session to check user ID
+  const { subscription, membership, loading: loadingSubscription } = useSubscription();
+  const { session } = useSession();
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -45,16 +45,24 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // NEW LOGIC: Check if the current user is a member (not owner) of an active subscription
   const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
 
-  // Determine the base disabled state
-  let isDisabled = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan);
+  // --- Start of refined disabled logic ---
+  let shouldBeDisabled = loadingSubscription; // Always disable if loading
 
-  // Add specific logic for disabling downgrade for members
-  if (isDowngradeOption && isMemberNotOwner) {
-    isDisabled = true; // Explicitly disable if it's a downgrade and user is a member
+  if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
+    if (isCurrentPlan) {
+      shouldBeDisabled = true;
+    } else if (isDisabledForSubscribers) {
+      shouldBeDisabled = true;
+    } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
+      shouldBeDisabled = true;
+    } else if (isDowngradeOption && isMemberNotOwner) {
+      // This is the specific condition for disabling downgrade for invited members
+      shouldBeDisabled = true;
+    }
   }
+  // --- End of refined disabled logic ---
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -63,23 +71,21 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
-    if (isMemberNotOwner) { // Override button text for members on downgrade options
+    if (isMemberNotOwner) {
+      // Override button text for members on downgrade options
       buttonText = 'Owner Only';
     }
   } else {
     buttonText = 'Purchase';
   }
 
-  // RE-ADDED: handlePurchase function
   const handlePurchase = () => {
     if (!currentPricingOption) return;
 
     if (isCurrentPlan) {
-      // If it's the current plan, and it's a subscription, allow managing billing
       if (product.mode === 'subscription') {
         createCustomerPortalSession();
       }
-      // For one-time, if it's current, there's nothing to do here.
       return;
     }
 
@@ -121,7 +127,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={isDisabled} // Use the new isDisabled variable
+        disabled={shouldBeDisabled} // Use the refined shouldBeDisabled variable
       >
         {buttonText}
       </Button>
