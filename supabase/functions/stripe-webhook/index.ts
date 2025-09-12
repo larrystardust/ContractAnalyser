@@ -216,7 +216,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
-      .eq('customer_id', customerId)
+      .eq('user_id', customerId) // This was the bug: should be customer_id, not user_id
       .single();
 
     if (customerUserError || !customerUser) {
@@ -228,24 +228,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const oldDbSubscriptionId = oldSubscriptionDb?.subscription_id;
     const newStripeSubscriptionId = stripeSubscription.id;
 
-    // If the subscription ID has changed, update contracts first
-    if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
-      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}. Updating contracts...`);
-      const { error: updateContractsError } = await supabase
-        .from('contracts')
-        .update({ subscription_id: newStripeSubscriptionId })
-        .eq('user_id', userId) // Only update contracts belonging to this user
-        .eq('subscription_id', oldDbSubscriptionId); // Only update contracts linked to the old subscription ID
-
-      if (updateContractsError) {
-        console.error('Error updating contracts with new subscription ID:', updateContractsError);
-        // This is critical. If contracts cannot be updated, the subsequent upsert will fail.
-        throw new Error('Failed to update contracts with new subscription ID before upserting stripe_subscriptions.');
-      }
-      console.log('Contracts updated successfully with new subscription ID.');
-    }
-
-    // 4. UPSERT the subscription data into our database
+    // 4. UPSERT the subscription data into our database FIRST
     const { error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
       {
         customer_id: stripeSubscription.customer as string,
@@ -274,6 +257,22 @@ async function syncCustomerFromStripe(customerId: string) {
       throw new Error('Failed to update subscription status in database');
     }
 
+    // 5. Now, if the subscription ID has changed, update contracts
+    if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
+      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}. Updating contracts...`);
+      const { error: updateContractsError } = await supabase
+        .from('contracts')
+        .update({ subscription_id: newStripeSubscriptionId })
+        .eq('user_id', userId) // Only update contracts belonging to this user
+        .eq('subscription_id', oldDbSubscriptionId); // Only update contracts linked to the old subscription ID
+
+      if (updateContractsError) {
+        console.error('Error updating contracts with new subscription ID:', updateContractsError);
+        throw new Error('Failed to update contracts with new subscription ID before upserting stripe_subscriptions.');
+      }
+      console.log('Contracts updated successfully with new subscription ID.');
+    }
+
     // Upsert the subscription_memberships entry for the owner
     const { error: membershipUpsertError } = await supabase
       .from('subscription_memberships')
@@ -293,7 +292,7 @@ async function syncCustomerFromStripe(customerId: string) {
       // Do not throw, just log the error.
     }
 
-    // 5. Fetch the *new* state of the subscription from our DB *after* the upsert
+    // 6. Fetch the *new* state of the subscription from our DB *after* the upsert
     const { data: newSubscriptionDb, error: newSubFetchError } = await supabase
       .from('stripe_subscriptions')
       .select('status, price_id')
@@ -306,7 +305,7 @@ async function syncCustomerFromStripe(customerId: string) {
       return;
     }
 
-    // 6. Compare old and new DB states to decide on notifications
+    // 7. Compare old and new DB states to decide on notifications
     const oldStatus = oldSubscriptionDb?.status;
     const newStatus = newSubscriptionDb.status;
     const oldPriceId = oldSubscriptionDb?.price_id;
