@@ -73,6 +73,26 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Owner Only'; // Or 'Not Available'
   }
 
+  // RE-ADDED: handlePurchase function
+  const handlePurchase = () => {
+    if (!currentPricingOption) return;
+
+    if (isCurrentPlan) {
+      // If it's the current plan, and it's a subscription, allow managing billing
+      if (product.mode === 'subscription') {
+        createCustomerPortalSession();
+      }
+      // For one-time, if it's current, there's nothing to do here.
+      return;
+    }
+
+    if (product.mode === 'payment') {
+      createCheckoutSession(currentPricingOption.priceId, 'payment');
+    } else if (product.mode === 'subscription') {
+      createCheckoutSession(currentPricingOption.priceId, 'subscription');
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
       <h3 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h3>
