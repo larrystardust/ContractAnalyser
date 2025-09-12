@@ -3,12 +3,11 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types';
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
-import { Subscription, SubscriptionMembership } from '../../hooks/useSubscription'; // ADDED: Import types
+import { Subscription, SubscriptionMembership } from '../../hooks/useSubscription';
 
 interface PricingCardProps {
   product: StripeProduct;
   billingPeriod: 'monthly' | 'yearly';
-  // ADDED: New props for session and subscription data
   currentSessionUserId: string | null;
   userSubscription: Subscription | null;
   userMembership: SubscriptionMembership | null;
@@ -18,10 +17,10 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({
   product,
   billingPeriod,
-  currentSessionUserId, // ADDED
-  userSubscription, // ADDED
-  userMembership, // ADDED
-  isDataLoading, // ADDED
+  currentSessionUserId,
+  userSubscription,
+  userMembership,
+  isDataLoading,
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
 
@@ -33,7 +32,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return null;
   }
 
-  // MODIFIED: Use userSubscription prop
   const usersCurrentProduct = userSubscription
     ? stripeProducts.find(p =>
         p.pricing.monthly?.priceId === userSubscription.price_id ||
@@ -45,7 +43,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
   const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
 
-  // MODIFIED: Use userSubscription prop
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
   const isDowngradeOption = usersCurrentProduct &&
@@ -53,24 +50,21 @@ const PricingCard: React.FC<PricingCardProps> = ({
                             usersCurrentProduct.mode === 'subscription' &&
                             product.tier < usersCurrentProduct.tier;
 
-  // MODIFIED: Use userSubscription prop
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
-  // MODIFIED: Use currentSessionUserId and userMembership props
   const isMemberNotOwner = userMembership && userMembership.user_id === currentSessionUserId && userMembership.role === 'member' && userMembership.status === 'active';
 
   // --- DEBUG LOGS START ---
   console.log(`PricingCard: ${product.name} (${billingPeriod})`);
-  console.log(`  currentSessionUserId: ${currentSessionUserId}`); // MODIFIED
-  console.log(`  userMembership:`, userMembership); // MODIFIED
+  console.log(`  currentSessionUserId: ${currentSessionUserId}`);
+  console.log(`  userMembership:`, userMembership);
   console.log(`  isMemberNotOwner: ${isMemberNotOwner}`);
   console.log(`  usersCurrentProduct:`, usersCurrentProduct);
   console.log(`  product.tier: ${product.tier}, usersCurrentProduct.tier: ${usersCurrentProduct?.tier}`);
   console.log(`  isDowngradeOption: ${isDowngradeOption}`);
   // --- DEBUG LOGS END ---
 
-  // MODIFIED: Use isDataLoading prop
   let shouldBeDisabled = isDataLoading; // Always disable if data is still loading
 
   if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
@@ -151,7 +145,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={shouldBeDisabled} // Use the refined shouldBeDisabled variable
+        disabled={shouldBeDisabled}
       >
         {buttonText}
       </Button>
