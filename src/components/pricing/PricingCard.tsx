@@ -4,6 +4,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useSession } from '@supabase/auth-helpers-react';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -12,7 +13,8 @@ interface PricingCardProps {
 
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
-  const { subscription, loading: loadingSubscription } = useSubscription();
+  const { subscription, membership, loading: loadingSubscription } = useSubscription();
+  const { session } = useSession();
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -43,32 +45,24 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // Check if user is the owner - using the most common ways to store role information
-  // Adjust this based on your actual user data structure
-  const isSubscriptionOwner = () => {
-    // Check if we can access user data from localStorage or sessionStorage
-    try {
-      const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
-      if (userData) {
-        const user = JSON.parse(userData);
-        return user?.role === 'owner' || user?.user_metadata?.role === 'owner' || user?.app_metadata?.role === 'owner';
-      }
-    } catch (e) {
-      console.warn('Could not access user data from storage');
+  const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
+
+  // --- Start of refined disabled logic ---
+  let shouldBeDisabled = loadingSubscription; // Always disable if loading
+
+  if (!shouldBeDisabled) { // Only check other conditions if not already disabled by loading
+    if (isCurrentPlan) {
+      shouldBeDisabled = true;
+    } else if (isDisabledForSubscribers) {
+      shouldBeDisabled = true;
+    } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
+      shouldBeDisabled = true;
+    } else if (isDowngradeOption && isMemberNotOwner) {
+      // This is the specific condition for disabling downgrade for invited members
+      shouldBeDisabled = true;
     }
-    
-    // Fallback: check subscription data
-    return subscription?.role === 'owner';
-  };
-
-  const isEnterprisePlan = product.name.toLowerCase().includes('enterprise');
-  const disableEnterpriseDowngrade = isEnterprisePlan && isDowngradeOption && !isSubscriptionOwner();
-
-  const finalDisabledState = loadingSubscription || 
-                            isCurrentPlan || 
-                            isDisabledForSubscribers || 
-                            (isAnyAdminAssignedPlanActive && !isCurrentPlan) ||
-                            disableEnterpriseDowngrade;
+  }
+  // --- End of refined disabled logic ---
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -77,22 +71,28 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
+    if (isMemberNotOwner) {
+      // Override button text for members on downgrade options
+      buttonText = 'Owner Only';
+    }
   } else {
     buttonText = 'Purchase';
   }
 
-  console.log('User is subscription owner:', isSubscriptionOwner());
-  console.log('Disable enterprise downgrade:', disableEnterpriseDowngrade);
+  const handlePurchase = () => {
+    if (!currentPricingOption) return;
 
-  const handlePurchase = async () => {
-    try {
-      if (isDowngradeOption) {
-        await createCustomerPortalSession();
-      } else {
-        await createCheckoutSession(currentPricingOption.priceId, product.mode);
+    if (isCurrentPlan) {
+      if (product.mode === 'subscription') {
+        createCustomerPortalSession();
       }
-    } catch (error: any) {
-      console.error('Purchase error:', error);
+      return;
+    }
+
+    if (product.mode === 'payment') {
+      createCheckoutSession(currentPricingOption.priceId, 'payment');
+    } else if (product.mode === 'subscription') {
+      createCheckoutSession(currentPricingOption.priceId, 'subscription');
     }
   };
 
@@ -127,7 +127,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
         size="lg"
         className="w-full"
         onClick={handlePurchase}
-        disabled={finalDisabledState}
+        disabled={shouldBeDisabled} // Use the refined shouldBeDisabled variable
       >
         {buttonText}
       </Button>
@@ -141,9 +141,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
           No payment needed with your current assigned subscription.
         </p>
       )}
-      {disableEnterpriseDowngrade && (
+      {isDowngradeOption && isMemberNotOwner && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          Only the subscription owner can downgrade the Enterprise plan.
+          Only the subscription owner can manage downgrades.
         </p>
       )}
     </div>
