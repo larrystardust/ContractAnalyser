@@ -160,7 +160,7 @@ async function syncCustomerFromStripe(customerId: string) {
     // 1. Fetch the current state of the subscription from our DB *before* any updates
     const { data: oldSubscriptionDb, error: oldSubError } = await supabase
       .from('stripe_subscriptions')
-      .select('status, price_id')
+      .select('status, price_id, subscription_id') // Select subscription_id here
       .eq('customer_id', customerId)
       .maybeSingle();
 
@@ -192,7 +192,6 @@ async function syncCustomerFromStripe(customerId: string) {
         console.error('Error updating subscription status:', noSubError);
         throw new Error('Failed to update subscription status in database');
       }
-      // Removed the delete from subscription_memberships here, as it should be handled by the main logic below
       return;
     }
 
@@ -212,6 +211,39 @@ async function syncCustomerFromStripe(customerId: string) {
 
     const maxUsers = productMetadata?.max_users ?? null;
     const maxFiles = productMetadata?.max_files ?? null;
+
+    // Get the user_id associated with this customer_id
+    const { data: customerUser, error: customerUserError } = await supabase
+      .from('stripe_customers')
+      .select('user_id')
+      .eq('customer_id', customerId)
+      .single();
+
+    if (customerUserError || !customerUser) {
+      console.error(`Could not find user_id for customer ${customerId}:`, customerUserError);
+      return; // Cannot proceed without user_id
+    }
+    const userId = customerUser.user_id;
+
+    const oldDbSubscriptionId = oldSubscriptionDb?.subscription_id;
+    const newStripeSubscriptionId = stripeSubscription.id;
+
+    // If the subscription ID has changed, update contracts first
+    if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
+      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}. Updating contracts...`);
+      const { error: updateContractsError } = await supabase
+        .from('contracts')
+        .update({ subscription_id: newStripeSubscriptionId })
+        .eq('user_id', userId) // Only update contracts belonging to this user
+        .eq('subscription_id', oldDbSubscriptionId); // Only update contracts linked to the old subscription ID
+
+      if (updateContractsError) {
+        console.error('Error updating contracts with new subscription ID:', updateContractsError);
+        // This is critical. If contracts cannot be updated, the subsequent upsert will fail.
+        throw new Error('Failed to update contracts with new subscription ID before upserting stripe_subscriptions.');
+      }
+      console.log('Contracts updated successfully with new subscription ID.');
+    }
 
     // 4. UPSERT the subscription data into our database
     const { error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
@@ -242,20 +274,6 @@ async function syncCustomerFromStripe(customerId: string) {
       throw new Error('Failed to update subscription status in database');
     }
 
-    // --- START: Fix for Issue 2 - Correctly populate subscription_memberships ---
-    // Get the user_id associated with this customer_id
-    const { data: customerUser, error: customerUserError } = await supabase
-      .from('stripe_customers')
-      .select('user_id')
-      .eq('customer_id', customerId)
-      .single();
-
-    if (customerUserError || !customerUser) {
-      console.error(`Could not find user_id for customer ${customerId}:`, customerUserError);
-      return; // Cannot proceed without user_id
-    }
-    const userId = customerUser.user_id;
-
     // Upsert the subscription_memberships entry for the owner
     const { error: membershipUpsertError } = await supabase
       .from('subscription_memberships')
@@ -274,7 +292,6 @@ async function syncCustomerFromStripe(customerId: string) {
       console.error('Error upserting subscription_memberships for owner:', membershipUpsertError);
       // Do not throw, just log the error.
     }
-    // --- END: Fix for Issue 2 ---
 
     // 5. Fetch the *new* state of the subscription from our DB *after* the upsert
     const { data: newSubscriptionDb, error: newSubFetchError } = await supabase
