@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
-import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
+import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import PricingCard from './PricingCard';
+import { useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
+import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
+import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
+  // ADDED: Fetch session and subscription data here
+  const { session, isLoading: isSessionLoading } = useSession();
+  const { subscription, membership, loading: loadingSubscription } = useSubscription();
+
   // Filter out products that are for admin assignment only
   const publicProducts = stripeProducts.filter(product => 
     product.mode === 'payment' || product.mode === 'subscription'
   );
+
+  // ADDED: Handle loading state
+  if (isSessionLoading || loadingSubscription) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
+        <p className="text-gray-500 mt-4">Loading pricing information...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 bg-gray-50 mt-16">
@@ -45,8 +62,17 @@ const PricingSection: React.FC = () => {
         </div>
 
         <div className="mt-12 grid gap-8 lg:grid-cols-3">
-          {publicProducts.map((product) => ( // MODIFIED: Use publicProducts
-            <PricingCard key={product.id} product={product} billingPeriod={billingPeriod} />
+          {publicProducts.map((product) => (
+            <PricingCard
+              key={product.id}
+              product={product}
+              billingPeriod={billingPeriod}
+              // ADDED: Pass session and subscription data as props
+              currentSessionUserId={session?.user?.id || null}
+              userSubscription={subscription}
+              userMembership={membership}
+              isDataLoading={isSessionLoading || loadingSubscription}
+            />
           ))}
         </div>
       </div>
