@@ -42,6 +42,7 @@ import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword'; // Keep this import for the consolidated ResetPassword component
+import SupportTicketForm from './components/forms/SupportTicketForm'; // NEW IMPORT: SupportTicketForm
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -126,6 +127,7 @@ function App() {
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/support-ticket" element={<SupportTicketForm />} />
             </Route>
 
             {/* Admin Protected Routes - wrapped with AdminGuard */}
