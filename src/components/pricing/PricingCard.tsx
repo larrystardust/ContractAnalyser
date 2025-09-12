@@ -4,7 +4,6 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
-import { useUser } from '../../hooks/useUser'; // Added import
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -14,7 +13,6 @@ interface PricingCardProps {
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { subscription, loading: loadingSubscription } = useSubscription();
-  const { user } = useUser(); // Added hook to get user info
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -46,9 +44,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
   // Check if user is the owner of the subscription (not an invited member)
+  // Assuming subscription object has a role property that indicates ownership
   const isSubscriptionOwner = subscription?.role === 'owner';
   
-  // Check if this is the Enterprise Use plan
+  // Check if this is the Enterprise Use plan (case-insensitive check)
   const isEnterprisePlan = product.name.toLowerCase().includes('enterprise');
   
   // Disable downgrade for Enterprise plan if user is not the owner
