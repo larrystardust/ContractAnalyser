@@ -337,19 +337,6 @@ async function syncCustomerFromStripe(customerId: string) {
       // Do not throw, just log the error.
     }
 
-    // 6. Fetch the *new* state of the subscription from our DB *after* the upsert
-    const { data: newSubscriptionDb, error: newSubFetchError } = await supabase
-      .from('stripe_subscriptions')
-      .select('status, price_id')
-      .eq('customer_id', customerId)
-      .maybeSingle();
-
-    if (newSubFetchError || !newSubscriptionDb) {
-      console.error('Error fetching new subscription status from DB after upsert:', newSubFetchError);
-      // This is a critical error, but we might still want to proceed with other logic if possible
-      return;
-    }
-
     // 7. Compare old and new DB states to decide on notifications
     const oldStatus = oldSubscriptionDb?.status;
     const newStatus = newSubscriptionDb.status;
@@ -363,37 +350,44 @@ async function syncCustomerFromStripe(customerId: string) {
     );
     const productName = currentProduct?.name || 'Subscription';
 
-    if (oldStatus !== newStatus) {
-      let title = 'Subscription Update';
-      let message = `Your ${productName} subscription status changed to: ${newStatus}.`;
-      let type = 'info';
-
-      if (newStatus === 'active' || newStatus === 'trialing') {
-        title = 'Subscription Active!';
-        message = `Your ${productName} subscription is now active.`;
-        type = 'success';
-      } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
-        title = 'Subscription Alert!';
-        message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
-        type = 'warning';
-        if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
-          message = `Your ${productName} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`;
+    // Only send notification if there was a meaningful change in status or price
+    if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
+        if (newStatus === 'active' || newStatus === 'trialing') {
+            if (oldPriceId !== newPriceId) {
+                // This is a plan change (upgrade/downgrade)
+                const oldProduct = stripeProducts.find(p =>
+                    p.pricing.monthly?.priceId === oldPriceId ||
+                    p.pricing.yearly?.priceId === oldPriceId ||
+                    p.pricing.one_time?.priceId === oldPriceId
+                );
+                const oldProductName = oldProduct?.name || 'previous plan';
+                await insertNotification(
+                    userId,
+                    'Subscription Plan Changed',
+                    `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
+                    'info'
+                );
+            } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
+                // Status changed to active (e.g., from canceled, past_due, not_started)
+                await insertNotification(
+                    userId,
+                    'Subscription Active!',
+                    `Your ${productName} subscription is now active.`,
+                    'success'
+                );
+            }
+        } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
+            let message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
+            if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
+                message = `Your ${productName} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`;
+            }
+            await insertNotification(
+                userId,
+                'Subscription Alert!',
+                message,
+                'warning'
+            );
         }
-      }
-      await insertNotification(userId, title, message, type);
-    } else if (oldPriceId !== newPriceId && newStatus === 'active') {
-      const oldProduct = stripeProducts.find(p =>
-        p.pricing.monthly?.priceId === oldPriceId ||
-        p.pricing.yearly?.priceId === oldPriceId ||
-        p.pricing.one_time?.priceId === oldPriceId
-      );
-      const oldProductName = oldProduct?.name || 'previous plan';
-      await insertNotification(
-        userId,
-        'Subscription Plan Changed',
-        `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
-        'info'
-      );
     }
     console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
