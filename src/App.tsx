@@ -88,8 +88,8 @@ function App() {
     if (session) { // Check if a session exists
       setIsDashboardHelpModal(true);
     } else {
-      // If not logged in, redirect to base URL
-      navigate('/'); // MODIFIED: Redirect to base URL
+      // If not logged in, redirect to login page
+      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
     }
   };
 
@@ -134,7 +134,7 @@ function App() {
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/support-ticket" element={<SupportTicketForm />} />
+              {/* The SupportTicketForm route was removed in the previous turn, which is correct. */}
             </Route>
 
             {/* Admin Protected Routes - wrapped with AdminGuard */}
