@@ -4,6 +4,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useSession } from '@supabase/auth-helpers-react'; // Import useSession
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -12,7 +13,8 @@ interface PricingCardProps {
 
 const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
-  const { subscription, loading: loadingSubscription } = useSubscription();
+  const { subscription, membership, loading: loadingSubscription } = useSubscription(); // Get membership
+  const { session } = useSession(); // Get session to check user ID
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -31,7 +33,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned; // This flag is already correct
+  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
 
   const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
 
@@ -43,11 +45,17 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (subscription && (subscription.status === 'active' || subscription.status === 'trialing'));
 
-  // The core logic for disabling all other buttons when on an admin-assigned plan
-  // is already captured by `(isAnyAdminAssignedPlanActive && !isCurrentPlan)`.
-  // If `isAnyAdminAssignedPlanActive` is true, and the current card is NOT the `isCurrentPlan`,
-  // then this part will be true, disabling the button.
-  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan);
+  // NEW LOGIC: Check if the current user is a member (not owner) of an active subscription
+  const isMemberNotOwner = membership && membership.user_id === session?.user?.id && membership.role === 'member' && membership.status === 'active';
+
+  // Determine if the downgrade button should be disabled for this specific card
+  let disableDowngradeButtonForMembers = false;
+  if (isDowngradeOption && isMemberNotOwner) {
+    disableDowngradeButtonForMembers = true;
+  }
+
+  // Final disabled state for the button
+  const finalDisabledState = loadingSubscription || isCurrentPlan || isDisabledForSubscribers || (isAnyAdminAssignedPlanActive && !isCurrentPlan) || disableDowngradeButtonForMembers;
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -60,35 +68,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     buttonText = 'Purchase';
   }
 
-  console.log(`--- Pricing Card: ${product.name} (${currentPricingOption.interval}) ---`);
-  console.log(`  product.id: ${product.id}`);
-  console.log(`  product.tier: ${product.tier}`);
-  console.log(`  currentPricingOption.priceId: ${currentPricingOption.priceId}`);
-  console.log(`  subscription?.price_id: ${subscription?.price_id}`);
-  console.log(`  usersCurrentProduct?.name: ${usersCurrentProduct?.name}`);
-  console.log(`  usersCurrentProduct?.mode: ${usersCurrentProduct?.mode}`);
-  console.log(`  usersCurrentProduct?.tier: ${usersCurrentProduct?.tier}`);
-  console.log(`  isUsersCurrentPlanAdminAssigned: ${isUsersCurrentPlanAdminAssigned}`);
-  console.log(`  isAnyAdminAssignedPlanActive: ${isAnyAdminAssignedPlanActive}`);
-  console.log(`  isCurrentPlan: ${isCurrentPlan}`);
-  console.log(`  isDisabledForSubscribers: ${isDisabledForSubscribers}`);
-  console.log(`  (isAnyAdminAssignedPlanActive && !isCurrentPlan): ${isAnyAdminAssignedPlanActive && !isCurrentPlan}`);
-  console.log(`  finalDisabledState: ${finalDisabledState}`);
-  console.log(`  buttonText: ${buttonText}`);
-  console.log('---------------------------------------------------');
-
-  const handlePurchase = async () => {
-    try {
-      if (isDowngradeOption) {
-        await createCustomerPortalSession();
-      } else {
-        await createCheckoutSession(currentPricingOption.priceId, product.mode);
-      }
-    } catch (error: any) {
-      console.error('Purchase error:', error);
-      // You might want to display a user-friendly message here, e.g., using a toast notification
-    }
-  };
+  // If it's a downgrade option and the user is a member, change the button text
+  if (isDowngradeOption && isMemberNotOwner) {
+    buttonText = 'Owner Only'; // Or 'Not Available'
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
@@ -133,6 +116,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
       {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           No payment needed with your current assigned subscription.
+        </p>
+      )}
+      {isDowngradeOption && isMemberNotOwner && (
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          Only the subscription owner can manage downgrades.
         </p>
       )}
     </div>
