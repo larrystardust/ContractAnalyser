@@ -33,7 +33,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  const isAnyAdminAssignedPlanActive = isUsersCurrentProduct; // Simplified: if usersCurrentProduct exists and is admin_assigned
+  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
 
   const isCurrentPlan = subscription?.price_id === currentPricingOption.priceId;
 
@@ -77,7 +77,7 @@ const PricingCard: React.FC<PricingCardProps> = ({ product, billingPeriod }) => 
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = 'Current Plan';
-  } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) { // Only show "Zero Payment" if it's an admin-assigned plan and not the current one
+  } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
     buttonText = 'Zero Payment';
   } else if (isDowngradeOption) {
     buttonText = 'Downgrade';
