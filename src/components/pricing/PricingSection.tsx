@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import PricingCard from './PricingCard';
-import { useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
-import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
-import { Loader2 } from 'lucide-react'; // ADDED: Import Loader2
+import { useSession } from '@supabase/auth-helpers-react';
+import { useSubscription } from '../../hooks/useSubscription';
+import { Loader2 } from 'lucide-react';
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
-  // ADDED: Fetch session and subscription data here
   const { session, isLoading: isSessionLoading } = useSession();
   const { subscription, membership, loading: loadingSubscription } = useSubscription();
 
-  // Filter out products that are for admin assignment only
   const publicProducts = stripeProducts.filter(product => 
     product.mode === 'payment' || product.mode === 'subscription'
   );
 
-  // ADDED: Handle loading state
-  if (isSessionLoading || loadingSubscription) {
+  // Determine if the user is logged in and their ID is available
+  const isLoggedInAndIdAvailable = session && session.user && session.user.id;
+
+  // Handle loading state:
+  // 1. If session or subscription data is still loading.
+  // 2. If session is loaded but user is logged in (session is not null) AND user.id is not yet available.
+  if (isSessionLoading || loadingSubscription || (session && !isLoggedInAndIdAvailable)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -67,8 +70,8 @@ const PricingSection: React.FC = () => {
               key={product.id}
               product={product}
               billingPeriod={billingPeriod}
-              // ADDED: Pass session and subscription data as props
-              currentSessionUserId={session?.user?.id || null}
+              // Pass the user ID only if it's available, otherwise null
+              currentSessionUserId={isLoggedInAndIdAvailable ? session.user.id : null}
               userSubscription={subscription}
               userMembership={membership}
               isDataLoading={isSessionLoading || loadingSubscription}
