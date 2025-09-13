@@ -216,7 +216,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
-      .eq('customer_id', customerId)
+      .eq('user_id', customerId)
       .single();
 
     if (customerUserError || !customerUser) {
@@ -339,9 +339,9 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // 7. Compare old and new DB states to decide on notifications
     const oldStatus = oldSubscriptionDb?.status;
-    const newStatus = newSubscriptionDb.status; // MODIFIED: Use captured newSubscriptionDb
+    const newStatus = newSubscriptionDb.status;
     const oldPriceId = oldSubscriptionDb?.price_id;
-    const newPriceId = newSubscriptionDb.price_id; // MODIFIED: Use captured newSubscriptionDb
+    const newPriceId = newSubscriptionDb.price_id;
 
     const currentProduct = stripeProducts.find(p =>
       p.pricing.monthly?.priceId === newPriceId ||
@@ -369,10 +369,9 @@ async function syncCustomerFromStripe(customerId: string) {
                 );
             } else if (
                 // MODIFIED: More specific condition for initial activation
-                oldStatus === null || // No previous record
-                ['not_started', 'incomplete', 'incomplete_expired', 'canceled', 'unpaid', 'paused'].includes(oldStatus)
+                !(oldStatus === 'active' || oldStatus === 'trialing')
             ) {
-                // Status changed to active (e.g., from canceled, past_due, not_started)
+                // Status changed to active (e.g., from canceled, past_due, not_started, or null)
                 await insertNotification(
                     userId,
                     'Subscription Active!',
