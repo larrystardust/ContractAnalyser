@@ -51,7 +51,7 @@ const HelpPage: React.FC = () => {
   const contactPointSchema = {
     "@context": "https://schema.org",
     "@type": "ContactPoint",
-    "telephone": "+1-555-123-4567", // Placeholder, update with actual phone number if applicable
+    // "telephone": "+1-555-123-4567", // REMOVED: telephone property update with actual phone number if applicable
     "contactType": "customer service",
     // "email": "support@contractanalyser.com", // REMOVED: email property
     "url": "https://www.contractanalyser.com/help"
