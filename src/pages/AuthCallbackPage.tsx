@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom'; // MODIFIED: Added Link import
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
+import Button from '../components/ui/Button'; // ADDED: Import Button component
 
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
