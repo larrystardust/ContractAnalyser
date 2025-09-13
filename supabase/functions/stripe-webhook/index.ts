@@ -271,7 +271,7 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // Step 2: UPSERT the stripe_subscriptions table with the new subscription data.
     // This operation should now succeed because any conflicting foreign key references have been removed.
-    const { error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
+    const { data: newSubscriptionDb, error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert( // MODIFIED: Capture upsert result
       {
         customer_id: stripeSubscription.customer as string,
         subscription_id: stripeSubscription.id,
@@ -292,7 +292,7 @@ async function syncCustomerFromStripe(customerId: string) {
       {
         onConflict: 'customer_id', // Conflict on customer_id to update the existing record
       },
-    );
+    ).select().single(); // MODIFIED: Select the updated row
 
     if (subUpsertError) {
       console.error('Error upserting subscription:', subUpsertError);
@@ -339,9 +339,9 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // 7. Compare old and new DB states to decide on notifications
     const oldStatus = oldSubscriptionDb?.status;
-    const newStatus = newSubscriptionDb.status;
+    const newStatus = newSubscriptionDb.status; // MODIFIED: Use captured newSubscriptionDb
     const oldPriceId = oldSubscriptionDb?.price_id;
-    const newPriceId = newSubscriptionDb.price_id;
+    const newPriceId = newSubscriptionDb.price_id; // MODIFIED: Use captured newSubscriptionDb
 
     const currentProduct = stripeProducts.find(p =>
       p.pricing.monthly?.priceId === newPriceId ||
