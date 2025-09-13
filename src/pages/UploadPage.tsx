@@ -62,8 +62,8 @@ const UploadPage: React.FC = () => {
 
       <ContractUpload
         onUploadStatusChange={handleUploadStatusChange}
-        // MODIFIED: Pass default jurisdictions from app settings if available, otherwise from user profile
-        defaultJurisdictions={appSettings?.default_jurisdictions || defaultJurisdictions}
+        // MODIFIED: Pass default jurisdictions from user profile directly
+        defaultJurisdictions={defaultJurisdictions}
       />
 
       {isUploading && (
