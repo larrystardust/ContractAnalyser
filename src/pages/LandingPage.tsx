@@ -35,11 +35,11 @@ const LandingPage: React.FC = () => {
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer service",
-          // "email": "support@contractanalyser.com" // Placeholder, update with actual support email
+          // "email": "support@contractanalyser.com", // REMOVED: email property
         },
         "sameAs": [
-          // "https://www.linkedin.com/company/contractanalyser", // Placeholder, update with actual social profiles
-          // "https://twitter.com/contractanalyser" // Placeholder
+          // "https://www.linkedin.com/company/contractanalyser", // REMOVED: social profiles
+          // "https://twitter.com/contractanalyser" // REMOVED: social profies
         ]
       }
     ]
