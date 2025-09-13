@@ -110,7 +110,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
       return;
     }
 
-    if (product.mode === 'payment') {
+    // MODIFIED: If it's a downgrade option, direct to customer portal
+    if (isDowngradeOption) {
+      createCustomerPortalSession();
+    } else if (product.mode === 'payment') {
       createCheckoutSession(currentPricingOption.priceId, 'payment');
     } else if (product.mode === 'subscription') {
       createCheckoutSession(currentPricingOption.priceId, 'subscription');
