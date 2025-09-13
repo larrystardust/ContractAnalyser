@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
-import { Jurisdiction } from '../../types';
+import { Jurisdiction, AnalysisLanguage } from '../../types'; // MODIFIED: Import AnalysisLanguage
 import { useContracts } from '../../context/ContractContext';
-import { useNavigate, Link } from 'react-router-dom'; // MODIFIED: Added Link import
+import { useNavigate, Link } from 'react-router-dom';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import { useSubscription } from '../../hooks/useSubscription';
 
@@ -16,31 +16,42 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 // Set the worker source for pdfjs-dist using Vite's ?url suffix
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-interface ContractUploadProps { // Define props interface
+interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
-  defaultJurisdictions: Jurisdiction[]; // ADDED: New prop for default jurisdictions
+  defaultJurisdictions: Jurisdiction[];
 }
 
-const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => { // Accept the prop
-  const { contracts, addContract, loadingContracts, refetchContracts } = useContracts(); // MODIFIED: Destructure contracts
+const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => {
+  const { contracts, addContract, loadingContracts, refetchContracts } = useContracts();
   const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError } = useUserOrders();
-  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use useSubscription
+  const { subscription, loading: loadingSubscription } = useSubscription();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedJurisdictions, setSelectedJurisdictions] = useState<Jurisdiction[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false); // Keep this for internal button state
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
-  // ADDED: Effect to set default jurisdictions when component mounts or defaultJurisdictions prop changes
+  // ADDED: State variables for language selection
+  const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
+  const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
+
+  // ADDED: Language options array
+  const languageOptions = [
+    { value: 'auto', label: 'Auto-detect' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'French' },
+    { value: 'es', label: 'Spanish' },
+    { value: 'ar', label: 'Arabic' },
+  ];
+
   useEffect(() => {
     if (defaultJurisdictions && defaultJurisdictions.length > 0) {
       setSelectedJurisdictions(defaultJurisdictions);
     } else {
-      setSelectedJurisdictions([]); // Clear if no defaults provided
+      setSelectedJurisdictions([]);
     }
   }, [defaultJurisdictions]);
-
 
   // Determine current file count
   const currentFileCount = contracts.length;
@@ -49,8 +60,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
   // Determine if the user can upload based on available credits OR subscription quota
   const canUpload = !uploading && (
-    (hasAvailableSingleUse() && !loadingOrders) || // Single-use credit available
-    (subscription && !loadingSubscription && currentFileCount < maxAllowedFiles) // Active subscription with quota remaining
+    (hasAvailableSingleUse() && !loadingOrders) ||
+    (subscription && !loadingSubscription && currentFileCount < maxAllowedFiles)
   );
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -79,7 +90,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile.type === 'application/pdf' ||
           droppedFile.name.endsWith('.docx') ||
-          droppedFile.name.endsWith('.doc')) { // Note: .doc support is limited by mammoth.js
+          droppedFile.name.endsWith('.doc')) {
         setFile(droppedFile);
       } else {
         alert('Unsupported file type. Please upload PDF, DOCX, or DOC.');
@@ -92,11 +103,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       const selectedFile = e.target.files[0];
       if (selectedFile.type === 'application/pdf' ||
           selectedFile.name.endsWith('.docx') ||
-          selectedFile.name.endsWith('.doc')) { // Note: .doc support is limited by mammoth.js
+          selectedFile.name.endsWith('.doc')) {
         setFile(selectedFile);
       } else {
         alert('Unsupported file type. Please upload PDF, DOCX, or DOC.');
-        e.target.value = ''; // Clear the input
+        e.target.value = '';
       }
     }
   };
@@ -108,7 +119,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   const removeFile = () => {
     setFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Clear the input
+      fileInputRef.current.value = '';
     }
   };
 
@@ -126,7 +137,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     const arrayBuffer = await file.arrayBuffer();
 
     if (fileExtension === 'pdf') {
-      // MODIFIED: Use pdfjs-dist for PDF parsing
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
       let fullText = '';
@@ -138,10 +148,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       return fullText;
     } else if (fileExtension === 'docx') {
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-      return result.value; // The raw text
+      return result.value;
     } else if (fileExtension === 'doc') {
-      // mammoth.js has limited support for .doc (old Word format)
-      // It might work for simple .doc files, but .docx is preferred.
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       return result.value;
     } else {
@@ -160,26 +168,32 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       return;
     }
     if (file && selectedJurisdictions.length > 0) {
-      setUploading(true); // For button state
-      onUploadStatusChange(true); // Notify parent to show full-page loader
+      setUploading(true);
+      onUploadStatusChange(true);
       try {
-        // Extract text from the file
         const contractText = await extractTextFromFile(file);
         
-        // Pass the extracted text along with other data
-        const newContractId = await addContract({ file, jurisdictions: selectedJurisdictions, contractText });
+        // MODIFIED: Pass sourceLanguage and outputLanguage to addContract
+        const newContractId = await addContract({
+          file,
+          jurisdictions: selectedJurisdictions,
+          contractText,
+          sourceLanguage, // ADDED
+          outputLanguage, // ADDED
+        });
         
         alert('Contract uploaded and analysis initiated!');
-        refetchContracts(); // Call refetchContracts after alert is dismissed
+        refetchContracts();
         
-        // MODIFIED: Redirect to the dashboard with the new contract ID
         if (newContractId) {
           navigate(`/dashboard?contractId=${newContractId}`);
         }
 
-        // Reset the form
         setFile(null);
         setSelectedJurisdictions([]);
+        // MODIFIED: Reset language selections to default
+        setSourceLanguage('auto');
+        setOutputLanguage('en');
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -187,8 +201,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         alert(`Failed to upload contract or extract text: ${error.message}`);
         console.error('Upload failed:', error);
       } finally {
-        setUploading(false); // For button state
-        onUploadStatusChange(false); // Notify parent to hide full-page loader
+        setUploading(false);
+        onUploadStatusChange(false);
       }
     } else {
       alert('Please select a file and at least one jurisdiction.');
@@ -207,11 +221,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
               {subscription && currentFileCount >= maxAllowedFiles ? (
                 <p>
-                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>. {/* MODIFIED */}
+                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>.
                 </p>
               ) : (
                 <p>
-                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <Link to="/pricing" className="font-medium underline">Pricing page</Link> to start uploading and analyzing contracts. {/* MODIFIED */}
+                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <Link to="/pricing" className="font-medium underline">Pricing page</Link> to start uploading and analyzing contracts.
                 </p>
               )}
             </div>
@@ -225,7 +239,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         <p className="text-sm">
           For single-use purchases, your uploaded contracts and their analysis results will be automatically deleted after 30 days.
           For active subscription plans, your data will be retained for the duration of your subscription plus a 30 day grace period.
-          The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. To add more files after reaching your limit, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>. {/* MODIFIED */}
+          The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. To add more files after reaching your limit, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>.
         </p>
       </div>
 
@@ -316,6 +330,50 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ADDED: Document Language Selection */}
+        <div className="mt-4">
+          <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
+            Document Language
+          </label>
+          <select
+            id="sourceLanguage"
+            name="sourceLanguage"
+            value={sourceLanguage}
+            onChange={(e) => setSourceLanguage(e.target.value as AnalysisLanguage)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            disabled={!canUpload}
+          >
+            {languageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">The original language of the contract document.</p>
+        </div>
+
+        {/* ADDED: Analysis Output Language Selection */}
+        <div className="mt-4">
+          <label htmlFor="outputLanguage" className="block text-sm font-medium text-gray-700 mb-2">
+            Analysis Output Language
+          </label>
+          <select
+            id="outputLanguage"
+            name="outputLanguage"
+            value={outputLanguage}
+            onChange={(e) => setOutputLanguage(e.target.value as AnalysisLanguage)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            disabled={!canUpload}
+          >
+            {languageOptions.filter(opt => opt.value !== 'auto').map((option) => ( // Filter out 'auto' for output
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">The language in which the analysis results will be provided.</p>
         </div>
 
         <div className="mt-6 flex justify-end">
