@@ -58,7 +58,7 @@ export interface StripeProduct {
   description: string;
   mode: 'subscription' | 'payment' | 'admin_assigned';
   fileRetentionPolicy?: string;
-  maxFiles?: number;
+  maxFiles?: number; // ADDED: Max files for the plan
   max_users?: number; // ADDED: Max users for the plan
   tier: number;
   pricing: {
@@ -67,3 +67,6 @@ export interface StripeProduct {
     one_time?: { priceId: string; price: number; interval: 'one_time' };
   };
 }
+
+// ADDED: New type for analysis languages
+export type AnalysisLanguage = 'en' | 'fr' | 'es' | 'ar' | 'auto';
