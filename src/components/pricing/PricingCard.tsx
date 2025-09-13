@@ -82,6 +82,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
     } else if (isDowngradeOption && isMemberNotOwner) {
       // Disable downgrade for invited members
       shouldBeDisabled = true;
+    } else if (product.name === 'Enterprise Use' && isMemberNotOwner) {
+      // 🚫 Disable upgrade to Enterprise Use for invited members
+      shouldBeDisabled = true;
     }
   }
   console.log(`  Final shouldBeDisabled for ${product.name}: ${shouldBeDisabled}`);
@@ -96,6 +99,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
     if (isMemberNotOwner) {
       buttonText = 'Owner Only';
     }
+  } else if (product.name === 'Enterprise Use') {
+    buttonText = isMemberNotOwner ? 'Owner Only' : 'Upgrade';
   } else {
     buttonText = 'Purchase';
   }
@@ -110,9 +115,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
       return;
     }
 
-    // MODIFIED: If it's a downgrade option, direct to customer portal
+    // If it's a downgrade option, direct to customer portal
     if (isDowngradeOption) {
       createCustomerPortalSession();
+    } else if (product.name === 'Enterprise Use' && isMemberNotOwner) {
+      // 🚫 Block member from purchasing Enterprise Use
+      return;
     } else if (product.mode === 'payment') {
       createCheckoutSession(currentPricingOption.priceId, 'payment');
     } else if (product.mode === 'subscription') {
@@ -168,6 +176,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
       {isDowngradeOption && isMemberNotOwner && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           Only the subscription owner can manage downgrades.
+        </p>
+      )}
+      {product.name === 'Enterprise Use' && isMemberNotOwner && (
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          Only the subscription owner can upgrade to Enterprise Use.
         </p>
       )}
     </div>
