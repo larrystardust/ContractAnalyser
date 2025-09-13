@@ -367,7 +367,11 @@ async function syncCustomerFromStripe(customerId: string) {
                     `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
                     'info'
                 );
-            } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
+            } else if (
+                // MODIFIED: More specific condition for initial activation
+                oldStatus === null || // No previous record
+                ['not_started', 'incomplete', 'incomplete_expired', 'canceled', 'unpaid', 'paused'].includes(oldStatus)
+            ) {
                 // Status changed to active (e.g., from canceled, past_due, not_started)
                 await insertNotification(
                     userId,
