@@ -2,11 +2,11 @@ import React, { createContext, useState, useContext, useEffect, useRef, ReactNod
 import { supabase } from '../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { Contract, AnalysisResult, Jurisdiction } from '../types'; // Ensure these types are correctly imported
+import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types'; // MODIFIED: Import AnalysisLanguage
 
 interface ContractContextType {
-  contracts: Contract[];
-  addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string }) => Promise<string>;
+  // MODIFIED: Update addContract signature to include sourceLanguage and outputLanguage
+  addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
   reanalyzeContract: (contractId: string) => Promise<void>;
@@ -26,7 +26,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const fetchContracts = useCallback(async () => {
     setLoadingContracts(true);
-    setErrorContracts(null); // Clear any previous errors when fetching
+    setErrorContracts(null);
     if (!session?.user?.id) {
       setContracts([]);
       setLoadingContracts(false);
@@ -39,7 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
-        analysis_results (*, findings(*)) // Fetch all analysis results and their nested findings
+        analysis_results (*, findings(*))
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
@@ -49,7 +49,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
-        // Sort analysis_results client-side to get the latest one
         const sortedAnalysisResults = dbContract.analysis_results
           ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           : [];
@@ -122,7 +121,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
   }, [fetchContracts]);
 
-  const addContract = useCallback(async (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string }) => {
+  // MODIFIED: Update addContract function to accept sourceLanguage and outputLanguage
+  const addContract = useCallback(async (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => {
     if (!session?.user?.id) {
       throw new Error('User not authenticated.');
     }
@@ -172,10 +172,13 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         ...prevContracts,
       ]);
 
+      // MODIFIED: Pass source_language and output_language to the Edge Function
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
           contract_text: newContractData.contractText,
+          source_language: newContractData.sourceLanguage, // ADDED
+          output_language: newContractData.outputLanguage, // ADDED
         },
       });
 
@@ -229,7 +232,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       if (fetchAnalysisError) {
         console.error('Error fetching analysis result for deletion:', fetchAnalysisError);
-        // Don't throw, try to delete other files anyway
       }
 
       const reportFilePath = analysisResultData?.report_file_path;
@@ -242,7 +244,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (storageError) {
           console.error('Error deleting original contract file from storage:', storageError);
-          // Don't throw, try to delete the DB record anyway
         } else {
           console.log(`Successfully deleted original contract file: ${filePath}`);
         }
@@ -273,7 +274,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         throw dbError;
       }
 
-      // Optimistically update UI or rely on real-time subscription
       setContracts(prevContracts => prevContracts.filter(contract => contract.id !== contractId));
       console.log(`Contract ${contractId} and its associated files deleted successfully.`);
     } catch (error: any) {
@@ -290,37 +290,33 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       throw new Error('User not authenticated.');
     }
     setLoadingContracts(true);
-    // DO NOT set setErrorContracts here, let the calling component handle the specific error message
-    // setErrorContracts(null); // This line is removed
 
     try {
-      // Optimistically update the contract status and clear analysisResult
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined } // Clear old analysisResult
+            ? { ...contract, status: 'analyzing', processing_progress: 0, analysisResult: undefined }
             : contract
         )
       );
 
       const { data, error } = await supabase.functions.invoke('re-analyze-contract', {
-        body: { contract_id: contractId },
+        body: {
+          contract_id: contractId,
+        },
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
       if (error) {
-        console.error('ContractContext: Error from re-analyze-contract:', error); // Log the full error object
+        console.error('ContractContext: Error from re-analyze-contract:', error);
 
-        let userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.'; // Default generic message
+        let userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.';
 
-        // Check if the error is a FunctionsHttpError
         if (error.name === 'FunctionsHttpError' && error.context) {
-          // Case 1: Specific 403 for credit issues
           if (error.context.status === 403) {
             userFacingMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
-            // Log the original error body for debugging, but don't use it for the user message
             try {
               const errorBody = await error.context.json();
               console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
@@ -328,12 +324,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               console.warn('ContractContext: Could not parse 403 error response body for logging:', parseError);
             }
           }
-          // Case 2: Other non-2xx FunctionsHttpError (e.g., 500, 404, etc.)
-          // Check if the error.message is the generic one from Supabase client
           else if (error.message.includes('Edge Function returned a non-2xx status code')) {
-            // This is the specific technical message we want to replace
             userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.';
-            // Log the original error body for debugging
             try {
               const errorBody = await error.context.json();
               console.log('ContractContext: Parsed non-403 FunctionsHttpError body for logging:', errorBody);
@@ -341,12 +333,10 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               console.warn('ContractContext: Could not parse non-403 FunctionsHttpError response body for logging:', parseError);
             }
           }
-          // Case 3: FunctionsHttpError with a specific message already in error.context.error (from Edge Function)
           else if (error.context.error) {
             userFacingMessage = error.context.error;
           }
         }
-        // Case 4: Any other type of error (network, generic JS error, etc.)
         else if (error.message) {
           userFacingMessage = error.message;
         }
@@ -355,19 +345,16 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
 
       console.log('Re-analysis initiated:', data);
-      // The real-time listener will handle updating the contract to 'completed' with new analysisResult
-      // No need to update local state here beyond the optimistic update above.
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
-      // If an error occurs, revert the optimistic update to 'failed' or original status
       setContracts(prevContracts =>
         prevContracts.map(contract =>
           contract.id === contractId
-            ? { ...contract, status: 'failed', processing_progress: 0 } // Or revert to original status if known
+            ? { ...contract, status: 'failed', processing_progress: 0 }
             : contract
         )
       );
-      throw error; // Re-throw the error so the calling component can catch it
+      throw error;
     } finally {
       setLoadingContracts(false);
     }
