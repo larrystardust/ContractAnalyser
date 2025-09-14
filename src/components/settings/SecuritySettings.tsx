@@ -386,7 +386,7 @@ const SecuritySettings: React.FC = () => {
                   type={showPasswords.new ? 'text' : 'password'}
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('new_password')} {/* MODIFIED */}
+                  placeholder={t('new_password')} 
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
                 />
