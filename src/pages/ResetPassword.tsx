@@ -4,12 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   const { session } = useSessionContext();
   const location = useLocation();
+  const { t } = useTranslation(); // ADDED
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -62,7 +64,7 @@ const ResetPassword: React.FC = () => {
             if (!success) {
               e.preventDefault();
               e.stopPropagation();
-              setError('Please complete the password reset process before accessing other features.');
+              setError(t('help_unavailable_during_reset_modal')); // MODIFIED
               // Force focus back to password fields
               document.getElementById('newPassword')?.focus();
             }
@@ -77,7 +79,7 @@ const ResetPassword: React.FC = () => {
     return () => {
       clearTimeout(timer);
     };
-  }, [success]);
+  }, [success, t]); // MODIFIED: Added t to dependency array
 
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
@@ -99,14 +101,14 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [navigate, success]);
+  }, [navigate, success, sessionTimer]); // MODIFIED: Added sessionTimer to dependency array
 
   // Block navigation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!success) {
         e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? Your password reset progress will be lost.';
+        e.returnValue = t('password_reset_progress_lost'); // MODIFIED
         return e.returnValue;
       }
     };
@@ -114,7 +116,7 @@ const ResetPassword: React.FC = () => {
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
         window.history.pushState(null, '', window.location.pathname + window.location.hash);
-        setError('Please complete the password reset process. Navigation is disabled.');
+        setError(t('navigation_disabled_reset_password')); // MODIFIED
       }
     };
 
@@ -130,19 +132,19 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [success, sessionTimer, location.hash]);
+  }, [success, sessionTimer, location.hash, t]); // MODIFIED: Added t to dependency array
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('password_must_be_6_chars')); // MODIFIED
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwords_do_not_match')); // MODIFIED
       return;
     }
 
@@ -150,7 +152,7 @@ const ResetPassword: React.FC = () => {
 
     try {
       await resetPassword(newPassword);
-      setSuccess('Password successfully reset! Redirecting to login...');
+      setSuccess(t('password_reset_success')); // MODIFIED
       
       if (sessionTimer) {
         clearTimeout(sessionTimer);
@@ -165,7 +167,7 @@ const ResetPassword: React.FC = () => {
         navigate('/login', { replace: true });
       }, 1500);
     } catch (error: any) {
-      setError(error instanceof Error ? error.message : 'Failed to reset password');
+      setError(error instanceof Error ? error.message : t('failed_to_reset_password')); // MODIFIED
     } finally {
       setIsLoading(false);
     }
@@ -199,7 +201,7 @@ const ResetPassword: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-xl font-bold text-gray-900 mb-6">Reset Your Password</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-6">{t('reset_your_password')}</h1> {/* MODIFIED */}
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg text-red-700">
@@ -216,7 +218,7 @@ const ResetPassword: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                New Password
+                {t('new_password')} {/* MODIFIED */}
               </label>
               <div className="relative">
                 <input
@@ -238,13 +240,13 @@ const ResetPassword: React.FC = () => {
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                Password must be at least 6 characters long
+                {t('password_must_be_6_chars')} {/* MODIFIED */}
               </p>
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                {t('confirm_password')} {/* MODIFIED */}
               </label>
               <div className="relative">
                 <input
@@ -273,7 +275,7 @@ const ResetPassword: React.FC = () => {
               {isLoading ? (
                 <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
               ) : (
-                'Reset Password'
+                t('reset_password') // MODIFIED
               )}
             </button>
           </form>
@@ -283,7 +285,7 @@ const ResetPassword: React.FC = () => {
               onClick={handleBackToLogin}
               className="text-sm text-blue-600 hover:text-blue-500"
             >
-              Back to Login
+              {t('back_to_login')} {/* MODIFIED */}
             </button>
           </div>
         </div>
