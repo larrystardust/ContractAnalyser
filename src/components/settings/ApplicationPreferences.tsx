@@ -6,24 +6,26 @@ import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import { Database } from '../../types/supabase'; // ADDED: Import Database type
+import { Database } from '../../types/supabase';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
+  const { t } = useTranslation(); // ADDED
 
   const [preferences, setPreferences] = useState({
-    defaultJurisdictions: [] as Jurisdiction[], // Initialize as empty array
+    defaultJurisdictions: [] as Jurisdiction[],
     theme: 'system' as 'light' | 'dark' | 'system',
-    reportFormat: 'pdf' as 'pdf' | 'docx' | 'html', // This is a frontend-only preference for now
-    autoAnalysis: true, // This is a frontend-only preference for now
+    reportFormat: 'pdf' as 'pdf' | 'docx' | 'html',
+    autoAnalysis: true,
     emailReports: false
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null); // ADDED: Error state
-  const [message, setMessage] = useState<string | null>(null); // ADDED: Success message state
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPreferences = async () => {
@@ -61,29 +63,14 @@ const ApplicationPreferences: React.FC = () => {
 
       } catch (err: any) {
         console.error('Error fetching preferences:', err);
-        setError(err.message || 'Failed to load preferences.');
+        setError(err.message || t('failed_to_load_preferences')); // MODIFIED
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPreferences();
-  }, [session?.user?.id, supabase]);
-
-  // REMOVED: The useEffect hook that directly manipulates document.documentElement
-  // This logic is now handled by the useTheme hook in App.tsx
-  // useEffect(() => {
-  //   const html = document.documentElement;
-  //   html.classList.remove('light', 'dark');
-
-  //   if (preferences.theme === 'system') {
-  //     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  //       html.classList.add('dark');
-  //     }
-  //   } else {
-  //     html.classList.add(preferences.theme);
-  //   }
-  // }, [preferences.theme]);
+  }, [session?.user?.id, supabase, t]); // MODIFIED: Added t to dependency array
 
   const toggleJurisdiction = (jurisdiction: Jurisdiction) => {
     setPreferences(prev => ({
@@ -108,7 +95,7 @@ const ApplicationPreferences: React.FC = () => {
 
   const handleSave = async () => {
     if (!session?.user?.id) {
-      setError('You must be logged in to save preferences.');
+      setError(t('must_be_logged_in_to_save_preferences')); // MODIFIED
       return;
     }
 
@@ -133,12 +120,12 @@ const ApplicationPreferences: React.FC = () => {
         throw updateError;
       }
 
-      setMessage('Preferences saved successfully!');
+      setMessage(t('preferences_saved_successfully')); // MODIFIED
       // The useTheme hook's real-time listener will update the theme,
       // and it already saves to localStorage. So no need to explicitly save here again.
     } catch (err: any) {
       console.error('Error saving preferences:', err);
-      setError(err.message || 'Failed to save preferences. Please try again.');
+      setError(err.message || t('failed_to_save_preferences')); // MODIFIED
     } finally {
       setIsSaving(false);
     }
@@ -168,7 +155,7 @@ const ApplicationPreferences: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Loading preferences...</p>
+          <p className="text-gray-500 mt-2">{t('loading_preferences')}...</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -191,12 +178,12 @@ const ApplicationPreferences: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Globe className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Default Jurisdictions</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('default_jurisdictions')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
           <p className="text-sm text-gray-600 mb-4">
-            Select the jurisdictions that will be pre-selected when uploading new contracts.
+            {t('default_jurisdictions_hint')} {/* MODIFIED */}
           </p>
           <div className="flex flex-wrap gap-2">
             {getAllJurisdictions().map((jurisdiction) => (
@@ -222,18 +209,18 @@ const ApplicationPreferences: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Palette className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Dashboard Appearance</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('dashboard_appearance')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('theme')}</label> {/* MODIFIED */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: 'light', label: 'Light' },
-                  { value: 'dark', label: 'Dark' },
-                  { value: 'system', label: 'System' }
+                  { value: 'light', label: t('light') }, {/* MODIFIED */}
+                  { value: 'dark', label: t('dark') }, {/* MODIFIED */}
+                  { value: 'system', label: t('system') } {/* MODIFIED */}
                 ].map((option) => (
                   <button
                     key={option.value}
@@ -259,7 +246,7 @@ const ApplicationPreferences: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <FileText className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Report Preferences</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('report_preferences')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
@@ -282,8 +269,8 @@ const ApplicationPreferences: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">Auto-start Analysis</h4>
-                <p className="text-sm text-gray-500">Automatically begin analysis when contracts are uploaded</p>
+                <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4> {/* MODIFIED */}
+                <p className="text-sm text-gray-500">{t('auto_start_analysis_hint')}</p> {/* MODIFIED */}
               </div>
               <ToggleSwitch
                 checked={preferences.autoAnalysis}
@@ -293,8 +280,8 @@ const ApplicationPreferences: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">Email Reports</h4>
-                <p className="text-sm text-gray-500">Send completed analysis reports to your email</p>
+                <h4 className="text-sm font-medium text-gray-900">{t('email_reports')}</h4> {/* MODIFIED */}
+                <p className="text-sm text-gray-500">{t('email_reports_hint')}</p> {/* MODIFIED */}
               </div>
               <ToggleSwitch
                 checked={preferences.emailReports}
@@ -313,7 +300,7 @@ const ApplicationPreferences: React.FC = () => {
           disabled={isSaving}
           icon={<Settings className="w-4 h-4" />}
         >
-          {isSaving ? 'Saving...' : 'Save Preferences'}
+          {isSaving ? t('saving_preferences') : t('save_preferences')} {/* MODIFIED */}
         </Button>
       </div>
     </div>
