@@ -3,9 +3,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'; // ADDED Loader2
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
-import { useAuth } from '../context/AuthContext'; // ADDED: Import useAuth
+import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,14 +14,15 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null); // ADDED: For success messages
-  const [showForgotPassword, setShowForgotPassword] = useState(false); // ADDED: State for forgot password form
+  const [message, setMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
-  const { sendPasswordResetEmail } = useAuth(); // ADDED: Use sendPasswordResetEmail from AuthContext
+  const { sendPasswordResetEmail } = useAuth();
+  const { t } = useTranslation(); // ADDED: useTranslation hook
 
   const redirectToDashboard = async (user_id: string) => {
     const { data, error: profileError } = await supabase
@@ -68,7 +70,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setMessage(null); // Clear messages on new attempt
+    setMessage(null);
 
     const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -93,7 +95,6 @@ const LoginPage: React.FC = () => {
     setLoading(false);
   };
 
-  // ADDED: Handle forgot password submission
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -101,19 +102,18 @@ const LoginPage: React.FC = () => {
     setMessage(null);
 
     if (!email) {
-      setError('Please enter your email address.');
+      setError(t('please_enter_email')); // MODIFIED
       setLoading(false);
       return;
     }
 
     try {
-      // MODIFIED: Removed redirectTo argument
       await sendPasswordResetEmail(email); 
-      setMessage('Password reset email sent! Please check your inbox. The link will direct you to update your password.');
-      setShowForgotPassword(false); // Go back to login form
-      setEmail(''); // Clear email field
+      setMessage(t('password_reset_email_sent')); // MODIFIED
+      setShowForgotPassword(false);
+      setEmail('');
     } catch (err: any) {
-      setError(err.message || 'Failed to send password reset email.');
+      setError(err.message || t('failed_to_send_password_reset')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -131,10 +131,10 @@ const LoginPage: React.FC = () => {
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">
-            {showForgotPassword ? 'Reset Your Password' : 'Log In to ContractAnalyser'}
+            {showForgotPassword ? t('reset_your_password') : t('login_to_app')} {/* MODIFIED */}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {showForgotPassword ? 'Enter your email to receive reset instructions.' : 'Welcome back! Please enter your credentials.'}
+            {showForgotPassword ? t('enter_email_reset_instructions') : t('welcome_back')} {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
@@ -148,7 +148,7 @@ const LoginPage: React.FC = () => {
           {showForgotPassword ? (
             <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="sr-only">Email address</label>
+                <label htmlFor="email" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
@@ -158,7 +158,7 @@ const LoginPage: React.FC = () => {
                     autoComplete="email"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Email address"
+                    placeholder={t('email_address')} {/* MODIFIED */}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -172,7 +172,7 @@ const LoginPage: React.FC = () => {
                   className="w-full"
                   disabled={loading}
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Send Reset Instructions'}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('send_reset_instructions')} {/* MODIFIED */}
                 </Button>
               </div>
               <div className="text-center">
@@ -181,14 +181,14 @@ const LoginPage: React.FC = () => {
                   onClick={() => setShowForgotPassword(false)}
                   className="font-medium text-blue-600 hover:text-blue-500 text-sm"
                 >
-                  Back to Login
+                  {t('back_to_login')} {/* MODIFIED */}
                 </button>
               </div>
             </form>
           ) : (
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
-                <label htmlFor="email" className="sr-only">Email address</label>
+                <label htmlFor="email" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
@@ -198,7 +198,7 @@ const LoginPage: React.FC = () => {
                     autoComplete="email"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Email address"
+                    placeholder={t('email_address')} {/* MODIFIED */}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -206,7 +206,7 @@ const LoginPage: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="sr-only">Password</label>
+                <label htmlFor="password" className="sr-only">{t('password')}</label> {/* MODIFIED */}
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
@@ -216,7 +216,7 @@ const LoginPage: React.FC = () => {
                     autoComplete="current-password"
                     required
                     className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Password"
+                    placeholder={t('password')} {/* MODIFIED */}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -238,7 +238,7 @@ const LoginPage: React.FC = () => {
                   className="w-full"
                   disabled={loading}
                 >
-                  {loading ? 'Logging In...' : 'Log In'}
+                  {loading ? t('logging_in') : t('login')} {/* MODIFIED */}
                 </Button>
               </div>
             </form>
@@ -252,14 +252,14 @@ const LoginPage: React.FC = () => {
                   onClick={() => setShowForgotPassword(true)}
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  Forgot password?
+                  {t('forgot_password')} {/* MODIFIED */}
                 </button>
               </p>
             )}
             <p className="text-sm text-gray-600 mt-2">
-              Don't have an account?{' '}
+              {t('dont_have_account')}{' '} {/* MODIFIED */}
               <Link to={signupLink} className="font-medium text-blue-600 hover:text-blue-500">
-                Sign Up
+                {t('signup')} {/* MODIFIED */}
               </Link>
             </p>
           </div>
