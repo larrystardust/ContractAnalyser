@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
-import Card, { CardBody, CardHeader } from '../components/ui/Card'; // FIX: Changed '=' to 'from'
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -113,15 +114,13 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { isLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
-  const [invitationToken, setInvitationToken] = useState<string | null>(null); // State to store invitation token
+  const [invitationToken, setInvitationToken] = useState<string | null>(null);
+  const { t } = useTranslation(); // ADDED: useTranslation hook
 
   useEffect(() => {
-    // Check for invitation_token in URL query parameters
     const tokenFromUrl = searchParams.get('invitation_token');
     if (tokenFromUrl) {
       setInvitationToken(tokenFromUrl);
-      // Optionally, remove it from URL to keep it clean, but ensure it's stored
-      // navigate(location.pathname, { replace: true }); // This would remove it from the URL
     }
   }, [searchParams]);
 
@@ -131,45 +130,37 @@ const SignupPage: React.FC = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('passwords_do_not_match')); // MODIFIED
       setLoading(false);
       return;
     }
 
-    // ADDED: Client-side validation for mobile phone number
-    const phoneRegex = /^[0-9]+$/; // Only allow digits
+    const phoneRegex = /^[0-9]+$/;
     if (mobilePhoneNumber && !phoneRegex.test(mobilePhoneNumber)) {
-      setError('Mobile phone number can only contain digits.');
+      setError(t('mobile_phone_number_digits_only')); // MODIFIED
       setLoading(false);
       return;
     }
 
-    // Start building the emailRedirectTo URL
     let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
-    let redirectParamForEmailSentPage = ''; // This will hold the final redirect param for EmailSentPage
+    let redirectParamForEmailSentPage = '';
 
     const originalRedirectParam = searchParams.get('redirect');
     
     let targetRedirectPath = '';
 
-    // Prioritize invitation token redirect if it exists
     if (invitationToken) {
       targetRedirectPath = `/accept-invitation?token=${encodeURIComponent(invitationToken)}`;
     }
 
-    // If there's an original redirect, combine it with the invitation redirect if both exist
-    // Otherwise, use the original redirect as the target
     if (originalRedirectParam) {
       if (targetRedirectPath) {
-        // If both exist, chain them. The AuthCallbackPage will handle this.
-        // Example: /original-path?param=value&redirect=/accept-invitation?token=xyz
         targetRedirectPath = `${originalRedirectParam}&redirect=${encodeURIComponent(targetRedirectPath)}`;
       } else {
         targetRedirectPath = originalRedirectParam;
       }
     }
 
-    // Append the constructed targetRedirectPath to the emailRedirectToUrl
     if (targetRedirectPath) {
       emailRedirectToUrl += `?redirect=${encodeURIComponent(targetRedirectPath)}`;
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
@@ -219,7 +210,6 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      // Navigate to EmailSentPage, passing the correctly constructed redirectParamForEmailSentPage
       navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
     
@@ -236,16 +226,16 @@ const SignupPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Create Your Account</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            Sign up to start analyzing your legal contracts.
+            {t('start_analyzing')} {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSignup} className="space-y-6">
             {/* Full Name Input */}
             <div>
-              <label htmlFor="fullName" className="sr-only">Full Name</label>
+              <label htmlFor="fullName" className="sr-only">{t('full_name')}</label> {/* MODIFIED */}
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -255,7 +245,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="name"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Full Name"
+                  placeholder={t('full_name')} {/* MODIFIED */}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
@@ -264,7 +254,7 @@ const SignupPage: React.FC = () => {
 
             {/* Business Name Input */}
             <div>
-              <label htmlFor="businessName" className="sr-only">Business Name</label>
+              <label htmlFor="businessName" className="sr-only">{t('business_name')}</label> {/* MODIFIED */}
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -273,7 +263,7 @@ const SignupPage: React.FC = () => {
                   name="businessName"
                   autoComplete="organization"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Business Name"
+                  placeholder={t('business_name')} {/* MODIFIED */}
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                 />
@@ -281,7 +271,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="sr-only">Email</label>
+              <label htmlFor="email" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -291,7 +281,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="email"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Email address"
+                  placeholder={t('email_address')} {/* MODIFIED */}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -300,7 +290,7 @@ const SignupPage: React.FC = () => {
 
             {/* Mobile Phone Number Input with Country Code */}
             <div>
-              <label htmlFor="mobilePhoneNumber" className="sr-only">Mobile Phone Number</label>
+              <label htmlFor="mobilePhoneNumber" className="sr-only">{t('mobile_phone_number')}</label> {/* MODIFIED */}
               <div className="relative flex">
                 <select
                   id="countryCode"
@@ -320,12 +310,12 @@ const SignupPage: React.FC = () => {
                   <input
                     id="mobilePhoneNumber"
                     name="mobilePhoneNumber"
-                    type="tel" // Use type="tel" for mobile keyboards
-                    pattern="[0-9]*" // ADDED: Pattern to restrict to digits
+                    type="tel"
+                    pattern="[0-9]*"
                     autoComplete="tel"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Mobile Phone Number"
+                    placeholder={t('mobile_phone_number')} {/* MODIFIED */}
                     value={mobilePhoneNumber}
                     onChange={(e) => setMobilePhoneNumber(e.target.value)}
                   />
@@ -334,7 +324,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">{t('password')}</label> {/* MODIFIED */}
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -344,7 +334,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Password"
+                  placeholder={t('password')} {/* MODIFIED */}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -359,7 +349,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
+              <label htmlFor="confirm-password" className="sr-only">{t('confirm_password')}</label> {/* MODIFIED */}
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -369,7 +359,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Confirm Password"
+                  placeholder={t('confirm_password')} {/* MODIFIED */}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -395,16 +385,16 @@ const SignupPage: React.FC = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? 'Signing Up...' : 'Sign Up'}
+                {loading ? t('signing_up') : t('signup')} {/* MODIFIED */}
               </Button>
             </div>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              {t('already_have_account')}{' '} {/* MODIFIED */}
               <Link to={loginLink} className="font-medium text-blue-600 hover:text-blue-500">
-                Log In
+                {t('login')} {/* MODIFIED */}
               </Link>
             </p>
           </div>
