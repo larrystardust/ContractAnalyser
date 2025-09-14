@@ -630,7 +630,7 @@ const SecuritySettings: React.FC = () => {
           setReauthError(null);
           setIsLoading(false);
         }}
-        title={t('confirm_password_to_disable_2fa_modal')} {/* MODIFIED */}
+        title={t('confirm_password_to_disable_2fa_modal')} 
       >
         <form onSubmit={handleReauthenticateAndDisable2FA} className="space-y-4">
           <p className="text-sm text-gray-700">
