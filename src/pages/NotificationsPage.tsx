@@ -2,17 +2,19 @@ import React from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 import Card, { CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Bell, CheckCircle, XCircle, Info, Trash2, Mail } from 'lucide-react'; // ADDED Mail icon for Mark All As Read button
+import { Bell, CheckCircle, XCircle, Info, Trash2, Mail } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const NotificationsPage: React.FC = () => {
   const { notifications, loading, error, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { t } = useTranslation(); // ADDED
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
         return <CheckCircle className="h-6 w-6 text-green-500" />;
       case 'warning':
-        return <XCircle className="h-6 w-6 text-amber-500" />; // Changed to XCircle for warning
+        return <XCircle className="h-6 w-6 text-amber-500" />;
       case 'error':
         return <XCircle className="h-6 w-6 text-red-500" />;
       case 'info':
@@ -36,7 +38,7 @@ const NotificationsPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
-        <p className="text-gray-500 mt-2">Loading notifications...</p>
+        <p className="text-gray-500 mt-2">{t('loading_notifications')}...</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -44,7 +46,7 @@ const NotificationsPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-red-600">Error loading notifications: {error.message}</p>
+        <p className="text-red-600">{t('error_loading_notifications', { message: error.message })}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -52,14 +54,14 @@ const NotificationsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6 mt-16">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Your Notifications</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('your_notifications')}</h1> {/* MODIFIED */}
         <Button
           variant="secondary"
           onClick={markAllAsRead}
-          disabled={unreadCount === 0} // Disable if no unread notifications
+          disabled={unreadCount === 0}
           icon={<Mail className="h-4 w-4" />}
         >
-          Mark All As Read
+          {t('mark_all_as_read')} {/* MODIFIED */}
         </Button>
       </div>
       
@@ -67,7 +69,7 @@ const NotificationsPage: React.FC = () => {
         <Card>
           <CardBody className="text-center py-8">
             <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No new notifications.</p>
+            <p className="text-gray-500">{t('no_new_notifications')}</p> {/* MODIFIED */}
           </CardBody>
         </Card>
       ) : (
@@ -100,7 +102,7 @@ const NotificationsPage: React.FC = () => {
                         size="sm" 
                         onClick={() => markAsRead(notification.id)}
                       >
-                        Mark as Read
+                        {t('mark_as_read')} {/* MODIFIED */}
                       </Button>
                     )}
                     <Button 
@@ -109,7 +111,7 @@ const NotificationsPage: React.FC = () => {
                       icon={<Trash2 className="h-4 w-4" />}
                       onClick={() => deleteNotification(notification.id)}
                     >
-                      Delete
+                      {t('delete')} {/* MODIFIED */}
                     </Button>
                   </div>
                 </div>
