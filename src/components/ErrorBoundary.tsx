@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { useTranslation } from 'react-i18next'; // ADDED
+// REMOVED: import { useTranslation } from 'react-i18next'; // ADDED
 
 interface Props {
   children?: ReactNode;
@@ -41,19 +41,18 @@ class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      // ADDED: Access t from useTranslation within render method
-      const { t } = useTranslation();
+      // REMOVED: const { t } = useTranslation(); // ADDED: Access t from useTranslation within render method
 
       return (
         <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md w-full">
-            <h1 className="text-2xl font-bold text-red-700 mb-4">{t('something_went_wrong')}</h1> {/* MODIFIED */}
+            <h1 className="text-2xl font-bold text-red-700 mb-4">Something went wrong.</h1> {/* MODIFIED */}
             <p className="text-gray-700 mb-4">
-              {t('unexpected_error_occurred')} {/* MODIFIED */}
+              We're sorry, but an unexpected error occurred. Please try refreshing the page. {/* MODIFIED */}
             </p>
             {this.state.error && (
               <details className="text-left text-sm text-gray-600 bg-gray-100 p-3 rounded-md overflow-auto max-h-60">
-                <summary className="font-semibold cursor-pointer">{t('error_details')}</summary> {/* MODIFIED */}
+                <summary className="font-semibold cursor-pointer">Error Details</summary> {/* MODIFIED */}
                 <pre className="mt-2 whitespace-pre-wrap break-words">
                   {this.state.error.toString()}
                   <br />
@@ -65,7 +64,7 @@ class ErrorBoundary extends Component<Props, State> {
               onClick={() => window.location.reload()}
               className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              {t('refresh_page')} {/* MODIFIED */}
+              Refresh Page {/* MODIFIED */}
             </button>
           </div>
         </div>
