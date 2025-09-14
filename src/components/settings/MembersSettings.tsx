@@ -6,6 +6,7 @@ import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { useSubscription, SubscriptionMembership } from '../../hooks/useSubscription';
 import { Database } from '../../types/supabase';
 import { Link } from 'react-router-dom'; // Import Link
+import { useTranslation } from 'react-i18next'; // ADDED
 
 // Extended type for local use with email and full_name
 interface ExtendedSubscriptionMembership extends SubscriptionMembership {
@@ -17,6 +18,7 @@ const MembersSettings: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { subscription, membership, loading: loadingSubscription, error: subscriptionError } = useSubscription();
+  const { t } = useTranslation(); // ADDED
 
   const [invitedEmail, setInvitedEmail] = useState('');
   const [members, setMembers] = useState<ExtendedSubscriptionMembership[]>([]);
@@ -53,7 +55,7 @@ const MembersSettings: React.FC = () => {
 
       if (membershipsError) {
         console.error('Error fetching members directly:', membershipsError);
-        setInviteError(membershipsError.message || 'Failed to fetch members.');
+        setInviteError(membershipsError.message || t('failed_to_fetch_members')); // MODIFIED
         setMembers([]);
         return;
       }
@@ -69,7 +71,7 @@ const MembersSettings: React.FC = () => {
       setMembers(fetchedMembers);
     } catch (err: any) {
       console.error('Unexpected error fetching members:', err);
-      setInviteError(err.message || 'Failed to fetch members.');
+      setInviteError(err.message || t('failed_to_fetch_members')); // MODIFIED
       setMembers([]);
     } finally {
       setLoadingMembers(false);
@@ -93,19 +95,19 @@ const MembersSettings: React.FC = () => {
     setInviteSuccess(null);
 
     if (!invitedEmail) {
-      setInviteError('Please enter an email address.');
+      setInviteError(t('please_enter_email_address')); // MODIFIED
       setInviteLoading(false);
       return;
     }
 
     if (!isOwner) {
-      setInviteError('You must be the subscription owner to invite users.');
+      setInviteError(t('only_owner_invite')); // MODIFIED
       setInviteLoading(false);
       return;
     }
 
     if (!canInvite) {
-      setInviteError(`You have reached the maximum number of users (${maxUsers}) for your plan.`);
+      setInviteError(t('max_users_reached', { maxUsers: maxUsers })); // MODIFIED
       setInviteLoading(false);
       return;
     }
@@ -123,7 +125,7 @@ const MembersSettings: React.FC = () => {
 
       if (error) {
         // More robust error parsing for FunctionsHttpError
-        let displayErrorMessage = 'Failed to send invitation. Please try again.';
+        let displayErrorMessage = t('failed_to_send_invitation'); // MODIFIED
         if (error.name === 'FunctionsHttpError' && (error as any).context) {
           const errorContext = (error as any).context;
           if (errorContext.body instanceof ReadableStream) {
@@ -162,7 +164,7 @@ const MembersSettings: React.FC = () => {
         throw error; // Re-throw to stop execution
       }
 
-      setInviteSuccess(data.message || 'Invitation sent successfully!');
+      setInviteSuccess(data.message || t('invitation_sent_successfully')); // MODIFIED
       setInvitedEmail('');
       fetchMembers(); // Re-fetch members to update the list
     } catch (err: any) {
@@ -175,10 +177,10 @@ const MembersSettings: React.FC = () => {
 
   const handleDeleteMember = async (memberId: string, userId: string | null) => {
     if (!isOwner) {
-      alert('You must be the subscription owner to remove users.');
+      alert(t('only_owner_remove_users')); // MODIFIED
       return;
     }
-    if (!window.confirm('Are you sure you want to remove this member from your subscription?')) {
+    if (!window.confirm(t('confirm_remove_member'))) { // MODIFIED
       return;
     }
 
@@ -195,11 +197,11 @@ const MembersSettings: React.FC = () => {
         throw error;
       }
 
-      setInviteSuccess('Member removed successfully.');
+      setInviteSuccess(t('member_removed_successfully')); // MODIFIED
       fetchMembers(); // Re-fetch members to update the list
     } catch (err: any) {
       console.error('Error deleting member:', err);
-      setInviteError(err.message || 'Failed to remove member.');
+      setInviteError(err.message || t('failed_to_remove_member')); // MODIFIED
     } finally {
       setDeleteLoading(null);
     }
@@ -210,7 +212,7 @@ const MembersSettings: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Loading subscription details...</p>
+          <p className="text-gray-500 mt-2">{t('loading_subscription_details')}</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -220,8 +222,8 @@ const MembersSettings: React.FC = () => {
     return (
       <Card>
         <CardBody className="text-center py-8">
-          <p className="text-red-600">Error: {subscriptionError.message}</p>
-          <p className="text-gray-500 mt-2">Please try again later or contact support.</p>
+          <p className="text-red-600">{t('error_label')}: {subscriptionError.message}</p> {/* MODIFIED */}
+          <p className="text-gray-500 mt-2">{t('please_try_again_later_contact_support')}</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -231,10 +233,10 @@ const MembersSettings: React.FC = () => {
     return (
       <Card>
         <CardBody className="text-center py-8">
-          <p className="text-gray-600 mb-4">You do not have an active subscription that supports multiple users.</p>
+          <p className="text-gray-600 mb-4">{t('view_plans_to_add_members')}</p> {/* MODIFIED */}
           <Link to="/pricing"> 
             <Button variant="primary" type="button"> 
-              View Plans
+              {t('view_plans')} {/* MODIFIED */}
             </Button>
           </Link>
         </CardBody>
@@ -249,38 +251,38 @@ const MembersSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <UserPlus className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Invite New Member</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('invite_new_member')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
           {!isOwner && (
             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-              <p className="font-bold">Permission Denied</p>
-              <p>Only the subscription owner can invite new members.</p>
+              <p className="font-bold">{t('permission_denied')}</p> {/* MODIFIED */}
+              <p>{t('only_owner_invite')}</p> {/* MODIFIED */}
             </div>
           )}
           {inviteSuccess && (
             <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-              <p className="font-bold">Success!</p>
+              <p className="font-bold">{t('success')}</p> {/* MODIFIED */}
               <p>{inviteSuccess}</p>
             </div>
           )}
           {inviteError && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-              <p className="font-bold">Error!</p>
+              <p className="font-bold">{t('error')}</p> {/* MODIFIED */}
               <p>{inviteError}</p>
             </div>
           )}
           <form onSubmit={handleInvite} className="space-y-4">
             <div>
-              <label htmlFor="invitedEmail" className="sr-only">Email address</label>
+              <label htmlFor="invitedEmail" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="email"
                   id="invitedEmail"
                   name="invitedEmail"
-                  placeholder="Member's Email Address"
+                  placeholder={t('members_email_address')} {/* MODIFIED */}
                   value={invitedEmail}
                   onChange={(e) => setInvitedEmail(e.target.value)}
                   required
@@ -296,11 +298,11 @@ const MembersSettings: React.FC = () => {
               className="w-full"
               disabled={inviteLoading || !canInvite || !isOwner}
             >
-              {inviteLoading ? 'Sending Invitation...' : 'Send Invitation'}
+              {inviteLoading ? t('sending_invitation') : t('send_invitation')} {/* MODIFIED */}
             </Button>
             {!canInvite && isOwner && maxUsers !== 999999 && (
               <p className="text-sm text-red-600 mt-2">
-                You have reached the maximum number of users ({maxUsers}) for your plan.
+                {t('max_users_reached', { maxUsers: maxUsers })} {/* MODIFIED */}
               </p>
             )}
           </form>
@@ -312,9 +314,9 @@ const MembersSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Users className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Current Members</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('current_members')}</h3> {/* MODIFIED */}
             <span className="ml-3 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-              {currentMembersCount} / {maxUsers === 999999 ? 'Unlimited' : maxUsers}
+              {currentMembersCount} / {maxUsers === 999999 ? t('unlimited') : maxUsers} {/* MODIFIED */}
             </span>
           </div>
         </CardHeader>
@@ -322,24 +324,24 @@ const MembersSettings: React.FC = () => {
           {loadingMembers ? (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-              <p className="text-gray-500 mt-2">Loading members...</p>
+              <p className="text-gray-500 mt-2">{t('loading_members')}</p> {/* MODIFIED */}
             </div>
           ) : members.length === 0 ? (
-            <p className="text-gray-600">No members found for this subscription yet.</p>
+            <p className="text-gray-600">{t('no_members_found')}</p> {/* MODIFIED */}
           ) : (
             <ul className="divide-y divide-gray-200">
               {members.map((member) => (
                 <li key={member.id} className="py-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {member.full_name || member.email || 'N/A'}
-                      {member.user_id === session?.user?.id && <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">You</span>}
+                      {member.full_name || member.email || t('n_a')} {/* MODIFIED */}
+                      {member.user_id === session?.user?.id && <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">{t('you')}</span>} {/* MODIFIED */}
                     </p>
                     {member.full_name && member.email && (
                       <p className="text-xs text-gray-500">{member.email}</p>
                     )}
-                    <p className="text-xs text-gray-500">Role: {member.role.charAt(0).toUpperCase() + member.role.slice(1)}</p>
-                    <p className="text-xs text-gray-500">Status: {member.status.charAt(0).toUpperCase() + member.status.slice(1)}</p>
+                    <p className="text-xs text-gray-500">{t('role')}: {member.role.charAt(0).toUpperCase() + member.role.slice(1)}</p> {/* MODIFIED */}
+                    <p className="text-xs text-gray-500">{t('status_member')}: {member.status.charAt(0).toUpperCase() + member.status.slice(1)}</p> {/* MODIFIED */}
                   </div>
                   {isOwner && member.user_id !== session?.user?.id && (
                     <Button
@@ -349,7 +351,7 @@ const MembersSettings: React.FC = () => {
                       disabled={deleteLoading === member.id}
                       icon={<Trash2 className="h-4 w-4" />}
                     >
-                      {deleteLoading === member.id ? 'Removing...' : 'Remove'}
+                      {deleteLoading === member.id ? t('removing') : t('remove')} {/* MODIFIED */}
                     </Button>
                   )}
                 </li>
