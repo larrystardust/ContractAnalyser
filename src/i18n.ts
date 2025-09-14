@@ -16,7 +16,7 @@ i18n
       loadPath: '/locales/{{lng}}/translation.json', // Path to your translation files
     },
     react: {
-      useSuspense: false, // Set to true if you want to use React.Suspense for loading translations
+      useSuspense: true, // MODIFIED: Set to true to use React.Suspense for loading translations
     },
   });
 
