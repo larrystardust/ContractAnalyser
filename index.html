@@ -23,6 +23,16 @@
           }
         }
       })();
+
+      // ADDED: Set language direction (RTL/LTR) based on stored language
+      (function() {
+        const storedLang = localStorage.getItem('i18nextLng');
+        if (storedLang && (storedLang === 'ar')) { // Add other RTL languages here if needed
+          document.documentElement.setAttribute('dir', 'rtl');
+        } else {
+          document.documentElement.setAttribute('dir', 'ltr');
+        }
+      })();
     </script>
   </head>
   <body>
