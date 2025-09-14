@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED: Import Supabase hooks
 import { Database } from '../../types/supabase'; // ADDED: Import Database type
+import { useTranslation } from 'react-i18next'; // ADDED
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -98,6 +99,7 @@ const countryCodes = [
 const ProfileSettings: React.FC = () => {
   const supabase = useSupabaseClient<Database>(); // ADDED
   const session = useSession(); // ADDED
+  const { t } = useTranslation(); // ADDED
 
   const [formData, setFormData] = useState({
     fullName: '', // Changed from firstName/lastName to match DB
@@ -142,14 +144,14 @@ const ProfileSettings: React.FC = () => {
         }));
       } catch (err: any) {
         console.error('Error fetching profile:', err);
-        setError(err.message || 'Failed to load profile data.');
+        setError(err.message || t('failed_to_load_profile_data')); // MODIFIED
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [session?.user?.id, supabase]);
+  }, [session?.user?.id, supabase, t]); // MODIFIED: Added t to dependency array
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { // MODIFIED: Added HTMLSelectElement
     const { name, value } = e.target;
@@ -166,7 +168,7 @@ const ProfileSettings: React.FC = () => {
     setMessage(null);
 
     if (!session?.user?.id) {
-      setError('User not authenticated.');
+      setError(t('user_not_authenticated')); // MODIFIED
       setIsSaving(false);
       return;
     }
@@ -189,10 +191,10 @@ const ProfileSettings: React.FC = () => {
         throw updateError;
       }
 
-      setMessage('Profile updated successfully!');
+      setMessage(t('profile_updated_successfully')); // MODIFIED
     } catch (err: any) {
       console.error('Error updating profile:', err);
-      setError(err.message || 'Failed to update profile.');
+      setError(err.message || t('failed_to_update_profile')); // MODIFIED
     } finally {
       setIsSaving(false);
     }
@@ -203,7 +205,7 @@ const ProfileSettings: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Loading profile...</p>
+          <p className="text-gray-500 mt-2">{t('loading_profile')}</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -215,7 +217,7 @@ const ProfileSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <User className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Profile Information</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('profile_information')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
@@ -232,7 +234,7 @@ const ProfileSettings: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
+                {t('full_name')} {/* MODIFIED */}
               </label>
               <input
                 type="text"
@@ -247,7 +249,7 @@ const ProfileSettings: React.FC = () => {
             {/* Business Name Input */}
             <div>
               <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
-                Business Name 
+                {t('business_name')} {/* MODIFIED */}
               </label>
               <input
                 type="text"
@@ -261,7 +263,7 @@ const ProfileSettings: React.FC = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+                {t('email_address')} {/* MODIFIED */}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -279,7 +281,7 @@ const ProfileSettings: React.FC = () => {
             {/* Mobile Phone Number Input with Country Code */}
             <div>
               <label htmlFor="mobilePhoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Mobile Phone Number
+                {t('mobile_phone_number')} {/* MODIFIED */}
               </label>
               <div className="relative flex">
                 <select
@@ -303,7 +305,7 @@ const ProfileSettings: React.FC = () => {
                     autoComplete="tel"
                     value={formData.mobilePhoneNumber}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="e.g., 1234567890"
                   />
                 </div>
@@ -317,7 +319,7 @@ const ProfileSettings: React.FC = () => {
                 disabled={isSaving}
                 icon={<Save className="w-4 h-4" />}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('saving') : t('save_changes')} {/* MODIFIED */}
               </Button>
             </div>
           </form>
