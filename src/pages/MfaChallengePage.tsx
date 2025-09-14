@@ -5,12 +5,14 @@ import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Smartphone, Loader2, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
 import { Database } from '../types/supabase';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const MfaChallengePage: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation(); // ADDED
 
   const [totpCode, setTotpCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,24 +42,24 @@ const MfaChallengePage: React.FC = () => {
         const totpFactor = factors.totp.find(f => f.status === 'verified');
         if (totpFactor) {
           setFactorId(totpFactor.id);
-          setMessage('Please enter your 2FA code.');
+          setMessage(t('enter_6_digit_code')); // MODIFIED
         } else {
           // No TOTP factor found, redirect to dashboard (or login if unexpected)
           // This means the user was incorrectly sent to MFA challenge page.
           console.warn('MfaChallengePage: User has no verified TOTP factors but is on MFA challenge page. Redirecting.');
-          navigate(redirectPath); // Or navigate('/login') if this is a critical error
+          navigate(redirectPath);
         }
       } catch (err: any) {
         console.error('MfaChallengePage: Error fetching MFA factors:', err);
-        setError(err.message || 'Failed to load MFA factors.');
-        navigate('/login'); // Redirect to login on error
+        setError(err.message || t('failed_to_load_mfa_factors')); // MODIFIED
+        navigate('/login');
       } finally {
         setLoading(false);
       }
     };
 
     fetchMfaFactors();
-  }, [session, isSessionLoading, navigate, supabase, redirectPath]);
+  }, [session, isSessionLoading, navigate, supabase, redirectPath, t]); // MODIFIED: Added t to dependency array
 
   const handleVerifyMfa = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +68,7 @@ const MfaChallengePage: React.FC = () => {
     setMessage(null);
 
     if (!factorId) {
-      setError('MFA factor not found. Please try logging in again.');
+      setError(t('mfa_factor_not_found')); // MODIFIED
       setLoading(false);
       return;
     }
@@ -116,7 +118,7 @@ const MfaChallengePage: React.FC = () => {
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
-      setError(err.message || 'Invalid 2FA code. Please try again.');
+      setError(err.message || t('invalid_2fa_code')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -128,11 +130,11 @@ const MfaChallengePage: React.FC = () => {
     setMessage(null);
     try {
       await supabase.auth.signOut();
-      localStorage.removeItem('mfa_passed'); // ADDED: Clear the flag on logout
-      navigate('/login'); // Redirect to login page after logout
+      localStorage.removeItem('mfa_passed');
+      navigate('/login');
     } catch (err: any) {
       console.error('Error logging out:', err);
-      setError(err.message || 'Failed to log out.');
+      setError(err.message || t('failed_to_log_out')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -157,15 +159,15 @@ const MfaChallengePage: React.FC = () => {
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <Smartphone className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900">Two-Factor Authentication</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('two_factor_auth')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            Please enter the 6-digit code from your authenticator app.
+            {t('enter_6_digit_code')} {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleVerifyMfa} className="space-y-6">
             <div>
-              <label htmlFor="totpCode" className="sr-only">2FA Code</label>
+              <label htmlFor="totpCode" className="sr-only">{t('2fa_code')}</label> {/* MODIFIED */}
               <input
                 id="totpCode"
                 name="totpCode"
@@ -204,7 +206,7 @@ const MfaChallengePage: React.FC = () => {
                 className="w-full"
                 disabled={loading || totpCode.length !== 6}
               >
-                {loading ? 'Verifying...' : 'Verify Code'}
+                {loading ? t('verifying') : t('verify_code')} {/* MODIFIED */}
               </Button>
             </div>
           </form>
@@ -218,7 +220,7 @@ const MfaChallengePage: React.FC = () => {
               disabled={loading}
               icon={<LogOut className="h-5 w-5" />}
             >
-              Logout
+              {t('logout_button')} {/* MODIFIED */}
             </Button>
           </div>
         </CardBody>
