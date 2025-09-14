@@ -3,23 +3,23 @@ import { Link } from 'react-router-dom';
 import ContractList from '../contracts/ContractList';
 import SampleAnalysisResults from '../analysis/SampleAnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
-import { sampleContracts } from '../../data/sampleData'; // Import sample data
+import { sampleContracts } from '../../data/sampleData';
 import { Contract } from '../../types';
 import Button from '../ui/Button';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const SampleDashboardContent: React.FC = () => {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
-    // Automatically select the first completed sample contract
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
       setSelectedContractId(firstCompletedSample.id);
     } else if (sampleContracts.length > 0) {
-      // If no completed, select the first available sample contract
-      setSelectedContractId(sampleContracts[0].id);
+      setSelectedContractId(sampleContracts.id);
     }
   }, []);
 
@@ -32,41 +32,34 @@ const SampleDashboardContent: React.FC = () => {
     }
   }, [selectedContractId]);
 
-  // Function to handle selecting a contract from the list
   const handleSelectContract = (contractId: string) => {
     setSelectedContractId(contractId);
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Sidebar for Sample Contracts */}
       <div className="lg:col-span-1 space-y-6">
         <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
-          <p className="font-bold">Sample Data View</p>
-          <p className="text-sm">This dashboard shows sample analysis results. Upgrade to analyze your own contracts!</p>
+          <p className="font-bold">{t('sample_data_view_dashboard')}</p> {/* MODIFIED */}
+          <p className="text-sm">{t('upgrade_to_analyze_own_contracts')}</p> {/* MODIFIED */}
           <Link to="/pricing" className="mt-2 inline-block">
             <Button variant="primary" size="sm" icon={<Sparkles className="w-4 h-4" />}>
-              Upgrade Now
+              {t('upgrade_now')} {/* MODIFIED */}
             </Button>
           </Link>
         </div>
-        {/* Pass the handleSelectContract function to ContractList */}
-        {/* MODIFIED: Pass isSample={true} */}
         <ContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
       </div>
       
-      {/* Main Content for Sample Analysis */}
       <div className="lg:col-span-2">
         {selectedContract && selectedContract.analysisResult ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">Sample Contract Analysis: {selectedContract.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
             
-            {/* MODIFIED: Pass isSample={true} */}
             <SampleAnalysisResults analysisResult={selectedContract.analysisResult} isSample={true} />
             
-            {/* Jurisdiction Summaries */}
             <div className="mt-8">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                   <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
@@ -82,14 +75,14 @@ const SampleDashboardContent: React.FC = () => {
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No Completed Sample Contract Selected
+              {t('no_completed_sample_contract_selected')} {/* MODIFIED */}
             </h2>
             <p className="text-gray-600 mb-6">
-              Select a completed sample contract from the list to view its analysis.
+              {t('select_sample_contract_to_view')} {/* MODIFIED */}
             </p>
             <Link to="/pricing">
               <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                Upgrade to Analyze Your Own Contracts
+                {t('upgrade_to_analyze_own_contracts')} {/* MODIFIED */}
               </Button>
             </Link>
           </div>
