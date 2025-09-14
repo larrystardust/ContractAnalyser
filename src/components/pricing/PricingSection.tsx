@@ -3,11 +3,13 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import PricingCard from './PricingCard';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useSubscription } from '../../hooks/useSubscription';
-import StructuredData from '../StructuredData'; // ADDED: Import StructuredData
+import StructuredData from '../StructuredData';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const { t } = useTranslation(); // ADDED
 
   const { session, isLoading: isSessionLoading } = useSession();
   const { subscription, membership, loading: loadingSubscription } = useSubscription();
@@ -28,7 +30,7 @@ const PricingSection: React.FC = () => {
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (Monthly)`
+        "name": `${product.name} (${t('monthly')})` // MODIFIED
       });
     }
     if (product.pricing.yearly) {
@@ -40,7 +42,7 @@ const PricingSection: React.FC = () => {
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (Yearly)`
+        "name": `${product.name} (${t('yearly')})` // MODIFIED
       });
     }
     if (product.pricing.one_time) {
@@ -52,20 +54,20 @@ const PricingSection: React.FC = () => {
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (One-Time)`
+        "name": `${product.name} (${t('one_time')})` // MODIFIED
       });
     }
 
     return {
       "@context": "https://schema.org",
-      "@type": "Product", // Or Service, depending on how you categorize
+      "@type": "Product",
       "name": product.name,
       "description": product.description,
       "brand": {
         "@type": "Brand",
         "name": "ContractAnalyser"
       },
-      "offers": offers.length > 1 ? offers : offers[0] // If multiple offers, use array, else single object
+      "offers": offers.length > 1 ? offers : offers
     };
   });
 
@@ -75,7 +77,7 @@ const PricingSection: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-        <p className="text-gray-500 mt-4">Loading pricing information...</p>
+        <p className="text-gray-500 mt-4">{t('loading_pricing_information')}...</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -85,7 +87,7 @@ const PricingSection: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-        <p className="text-gray-500 mt-4">Loading user data...</p>
+        <p className="text-gray-500 mt-4">{t('loading_user_data')}...</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -95,15 +97,15 @@ const PricingSection: React.FC = () => {
     <>
       {productSchema.map((schema, index) => (
         <StructuredData key={index} schema={schema} />
-      ))} {/* ADDED: Structured Data for each product */}
+      ))}
       <div className="py-12 bg-gray-50 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Simple, transparent pricing
+              {t('simple_transparent_pricing')} {/* MODIFIED */}
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              Choose the plan that best fits your needs
+              {t('choose_best_plan')} {/* MODIFIED */}
             </p>
           </div>
           
@@ -115,7 +117,7 @@ const PricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'monthly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                Monthly Billing
+                {t('monthly_billing')} {/* MODIFIED */}
               </button>
               <button
                 type="button"
@@ -123,7 +125,7 @@ const PricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                Yearly Billing
+                {t('yearly_billing')} {/* MODIFIED */}
               </button>
             </div>
           </div>
