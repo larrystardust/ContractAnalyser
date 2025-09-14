@@ -9,6 +9,7 @@ import adminService, { AdminProfile, AdminProfileUpdate, AvailableSubscription }
 import Button from '../components/ui/Button';
 import { JurisdictionBadge } from '../components/ui/Badge';
 import { Jurisdiction } from '../types';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<AdminProfile[]>([]);
@@ -19,6 +20,7 @@ const AdminUsersPage: React.FC = () => {
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminProfile | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation(); // ADDED
 
   const fetchUsersAndSubscriptions = async () => {
     setLoading(true);
@@ -29,7 +31,7 @@ const AdminUsersPage: React.FC = () => {
       setAllSubscriptions(fetchedSubscriptions);
     } catch (err: any) {
       console.error('Error fetching users and subscriptions:', err);
-      setError(err.message || 'Failed to load users and subscriptions.');
+      setError(err.message || t('failed_to_load_users_subscriptions')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -45,14 +47,14 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const handleDelete = async (user: AdminProfile) => {
-    if (window.confirm(`Are you sure you want to delete user: ${user.email}? This action cannot be undone.`)) {
+    if (window.confirm(t('confirm_delete_user', { email: user.email }))) { // MODIFIED
       try {
         await adminService.deleteUser(user.id);
-        alert('User deleted successfully!');
+        alert(t('user_deleted_successfully')); // MODIFIED
         fetchUsersAndSubscriptions(); // Refresh the list
       } catch (err: any) {
         console.error('Error deleting user:', err);
-        alert(`Failed to delete user: ${err.message}`);
+        alert(t('failed_to_delete_user', { message: err.message })); // MODIFIED
       }
     }
   };
@@ -63,13 +65,13 @@ const AdminUsersPage: React.FC = () => {
     setIsSaving(true);
     try {
       await adminService.updateUser(selectedUser.id, updates);
-      alert('User profile updated successfully!');
+      alert(t('user_profile_updated_successfully')); // MODIFIED
       setIsEditModalOpen(false);
       setSelectedUser(null);
       fetchUsersAndSubscriptions(); // Refresh the list
     } catch (err: any) {
       console.error('Error updating user:', err);
-      alert(`Failed to update user: ${err.message}`);
+      alert(t('failed_to_update_user', { message: err.message })); // MODIFIED
     } finally {
       setIsSaving(false);
     }
@@ -78,22 +80,22 @@ const AdminUsersPage: React.FC = () => {
   const handleGrantSingleUse = async (userId: string) => {
     try {
       await adminService.grantSingleUseCredit(userId);
-      alert('Single-use credit granted successfully!');
+      alert(t('single_use_credit_granted_successfully')); // MODIFIED
       fetchUsersAndSubscriptions(); // Refresh the list to show updated credits
     } catch (err: any) {
       console.error('Error granting single-use credit:', err);
-      alert(`Failed to grant single-use credit: ${err.message}`);
+      alert(t('failed_to_grant_single_use_credit', { message: err.message })); // MODIFIED
     }
   };
 
   const handleManageSubscription = async (userId: string, subscriptionId: string | null, role: 'owner' | 'member' | null) => {
     try {
       await adminService.manageUserSubscription(userId, subscriptionId, role);
-      alert('User subscription and role updated successfully!');
+      alert(t('user_subscription_role_updated_successfully')); // MODIFIED
       fetchUsersAndSubscriptions(); // Refresh the list to show updated subscription/role
     } catch (err: any) {
       console.error('Error managing user subscription:', err);
-      alert(`Failed to manage user subscription: ${err.message}`);
+      alert(t('failed_to_manage_user_subscription', { message: err.message })); // MODIFIED
     }
   };
 
@@ -103,7 +105,7 @@ const AdminUsersPage: React.FC = () => {
       window.open(portalUrl, '_blank');
     } catch (err: any) {
       console.error('Error creating customer portal:', err);
-      alert(`Failed to create customer portal: ${err.message}`);
+      alert(t('failed_to_create_customer_portal', { message: err.message })); // MODIFIED
     }
   };
 
@@ -123,36 +125,36 @@ const AdminUsersPage: React.FC = () => {
   };
 
   const columns = [
-    { key: 'full_name', header: 'Full Name' },
-    { key: 'email', header: 'Email' },
-    { key: 'business_name', header: 'Business Name' },
-    { key: 'is_admin', header: 'Admin', render: (item: AdminProfile) => (item.is_admin ? 'Yes' : 'No') },
+    { key: 'full_name', header: t('full_name_table') }, // MODIFIED
+    { key: 'email', header: t('email_address') }, // MODIFIED
+    { key: 'business_name', header: t('business_name_table') }, // MODIFIED
+    { key: 'is_admin', header: t('admin_label'), render: (item: AdminProfile) => (item.is_admin ? t('yes') : t('no')) }, // MODIFIED
     {
       key: 'subscription_details',
-      header: 'Subscription',
+      header: t('subscription_label'), // MODIFIED
       render: (item: AdminProfile) => {
         if (item.single_use_credits > 0) {
-          return `Single Use (Credits: ${item.single_use_credits})`;
+          return `${t('single_use')} (Credits: ${item.single_use_credits})`; // MODIFIED
         }
         if (item.subscription_details) {
           const sub = allSubscriptions.find(s => s.subscription_id === item.subscription_details?.subscription_id);
-          return `${sub?.product_name || 'Unknown'} (${item.subscription_details.status})`;
+          return `${sub?.product_name || t('unknown_product')} (${item.subscription_details.status})`; // MODIFIED
         }
-        return 'None';
+        return t('none'); // MODIFIED
       },
     },
     {
       key: 'membership_details',
-      header: 'Role',
-      render: (item: AdminProfile) => item.membership_details?.role || 'N/A',
+      header: t('role_label'), // MODIFIED
+      render: (item: AdminProfile) => item.membership_details?.role || t('n_a'), // MODIFIED
     },
-    { key: 'mobile_phone_number', header: 'Phone' },
-    { key: 'country_code', header: 'Country Code' },
-    { key: 'theme_preference', header: 'Theme' },
-    { key: 'email_reports_enabled', header: 'Email Reports', render: (item: AdminProfile) => (item.email_reports_enabled ? 'Yes' : 'No') },
+    { key: 'mobile_phone_number', header: t('phone_label') }, // MODIFIED
+    { key: 'country_code', header: t('country_code_label') }, // MODIFIED
+    { key: 'theme_preference', header: t('theme_label') }, // MODIFIED
+    { key: 'email_reports_enabled', header: t('email_reports_label'), render: (item: AdminProfile) => (item.email_reports_enabled ? t('yes') : t('no')) }, // MODIFIED
     {
       key: 'default_jurisdictions',
-      header: 'Default Jurisdictions',
+      header: t('default_jurisdictions_label'), // MODIFIED
       render: (item: AdminProfile) => (
         <div className="flex flex-wrap gap-1">
           {(Array.isArray(item.default_jurisdictions) ? item.default_jurisdictions : []).map((j) => (
@@ -163,14 +165,14 @@ const AdminUsersPage: React.FC = () => {
     },
     {
       key: 'notification_settings',
-      header: 'Notification Settings',
+      header: t('notification_settings_label'), // MODIFIED
       render: (item: AdminProfile) => (
         <pre className="text-xs overflow-auto max-h-20">
-          {item.notification_settings ? JSON.stringify(item.notification_settings, null, 2) : 'N/A'}
+          {item.notification_settings ? JSON.stringify(item.notification_settings, null, 2) : t('n_a')} {/* MODIFIED */}
         </pre>
       ),
     },
-    { key: 'auth_created_at', header: 'Joined', render: (item: AdminProfile) => new Date(item.auth_created_at).toLocaleDateString() },
+    { key: 'auth_created_at', header: t('joined_label'), render: (item: AdminProfile) => new Date(item.auth_created_at).toLocaleDateString() }, // MODIFIED
   ];
 
   return (
@@ -178,15 +180,15 @@ const AdminUsersPage: React.FC = () => {
       <div className="mb-6 flex justify-between items-center">
         <Link to="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Admin Dashboard
+          {t('back_to_admin_dashboard')} {/* MODIFIED */}
         </Link>
         <Button variant="primary" icon={<UserPlus className="h-4 w-4" />} onClick={() => setIsCreateUserModalOpen(true)}>
-          Add New User
+          {t('add_new_user')} {/* MODIFIED */}
         </Button>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Manage Users</h1>
-      <p className="text-gray-700 mb-8">View and manage all user accounts registered in the system.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('manage_users')}</h1> {/* MODIFIED */}
+      <p className="text-gray-700 mb-8">{t('view_edit_delete_users')}</p> {/* MODIFIED */}
 
       <AdminDataTable
         data={users}
@@ -198,7 +200,7 @@ const AdminUsersPage: React.FC = () => {
       />
 
       {selectedUser && (
-        <Modal isOpen={isEditModalOpen} onClose={handleEditModalClose} title={`Edit User: ${selectedUser.email}`}>
+        <Modal isOpen={isEditModalOpen} onClose={handleEditModalClose} title={t('edit_user', { email: selectedUser.email })}> {/* MODIFIED */}
           <UserForm
             user={selectedUser}
             allSubscriptions={allSubscriptions}
@@ -212,7 +214,7 @@ const AdminUsersPage: React.FC = () => {
         </Modal>
       )}
 
-      <Modal isOpen={isCreateUserModalOpen} onClose={handleCreateUserModalClose} title="Create New User">
+      <Modal isOpen={isCreateUserModalOpen} onClose={handleCreateUserModalClose} title={t('create_new_user')}> {/* MODIFIED */}
         <CreateUserForm
           onSuccess={handleUserCreated}
           onCancel={handleCreateUserModalClose}
