@@ -4,6 +4,7 @@ import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle } from 'lucide-react';
 import Modal from '../ui/Modal';
 import SupportTicketForm from '../forms/SupportTicketForm';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface DashboardHelpModalProps {
   onReportIssue?: () => void;
@@ -13,6 +14,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
   const [isSupportTicketModalOpen, setIsSupportTicketModalOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation(); // ADDED
 
   // Check if password reset flow is active and block the modal
   useEffect(() => {
@@ -76,10 +78,9 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
     return (
       <div className="space-y-6 text-center py-8">
         <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('access_restricted_modal')}</h2> {/* MODIFIED */}
         <p className="text-gray-700 mb-4">
-          Help features are temporarily unavailable during password reset process.
-          Please complete your password reset first.
+          {t('help_unavailable_during_reset_modal')} {/* MODIFIED */}
         </p>
         <Button 
           variant="primary" 
@@ -88,7 +89,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
             navigate(`/reset-password${currentHash}`, { replace: true });
           }}
         >
-          Continue Password Reset
+          {t('continue_password_reset_modal')} {/* MODIFIED */}
         </Button>
       </div>
     );
@@ -98,61 +99,60 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
     <div className="space-y-6">
       <div className="text-center mb-6">
         <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
-          <Bug className="h-5 w-5 mr-2" /> Click Here To Report An Issue
+          <Bug className="h-5 w-5 mr-2" /> {t('click_here_report_issue')} {/* MODIFIED */}
         </Button>
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> Dashboard Overview
+        <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')} {/* MODIFIED */}
       </h3>
       <p className="text-gray-700 mb-4">
-        The Dashboard provides a quick overview of your contracts and analysis results.
-        On the left, you'll find a list of all your uploaded contracts. You can click on any completed contract to view its detailed analysis.
+        {t('dashboard_overview_desc_modal')} {/* MODIFIED */}
       </p>
       <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
         <li>
-          **Contract List**: Displays all your contracts with their current status (Pending, Analyzing, Completed, Failed).
+          **{t('contract_list_modal')}**: {t('contract_list_desc_modal')} {/* MODIFIED */}
         </li>
         <li>
-          **Analysis Progress**: For contracts that are still analyzing, a progress bar indicates the current stage of processing.
+          **{t('analysis_progress_modal')}**: {t('analysis_progress_desc_modal')} {/* MODIFIED */}
         </li>
         <li>
-          **Selecting Contracts**: Click on a contract in the list to load its analysis results in the main content area.
+          **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')} {/* MODIFIED */}
         </li>
       </ul>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> Understanding Analysis Results
+        <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')} {/* MODIFIED */}
       </h3>
       <p className="text-gray-700 mb-4">
-        Once a contract analysis is complete, the main section of the dashboard will display:
+        {t('analysis_results_desc_modal')} {/* MODIFIED */}
       </p>
       <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
         <li>
-          **Executive Summary**: A high-level overview of the contract's key findings and compliance score.
+          **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')} {/* MODIFIED */}
         </li>
         <li>
-          **Compliance Score**: An overall rating (0-100%) of the contract's adherence to legal standards.
+          **{t('compliance_score_modal')}**: {t('compliance_score_desc_modal')} {/* MODIFIED */}
         </li>
         <li>
-          **Findings**: Detailed breakdown of identified risks, compliance issues, data protection impacts, and enforceability concerns. Each finding includes a risk level, jurisdiction, category, and recommendations.
+          **{t('findings_modal')}**: {t('findings_desc_modal')} {/* MODIFIED */}
         </li>
         <li>
-          **Jurisdiction Summaries**: Specific insights and applicable laws relevant to each jurisdiction mentioned in the contract.
+          **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')} {/* MODIFIED */}
         </li>
       </ul>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> Need More Help?
+        <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')} {/* MODIFIED */}
       </h3>
       <p className="text-gray-700">
-        If you have further questions or encounter any issues, please use the "Report an Issue" button above to create a support ticket, or visit our full <Link to="/help" className="text-blue-600 hover:underline">Help Center</Link> for more detailed guides and FAQs.
+        {t('further_questions_contact_support_modal', { helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline">{t('help_center_modal')}</Link> })} {/* MODIFIED */}
       </p>
 
       <Modal
         isOpen={isSupportTicketModalOpen}
         onClose={() => setIsSupportTicketModalOpen(false)}
-        title="Report an Issue"
+        title={t('report_an_issue_modal')} {/* MODIFIED */}
       >
         <SupportTicketForm />
       </Modal>
