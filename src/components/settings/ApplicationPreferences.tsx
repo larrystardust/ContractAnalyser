@@ -220,7 +220,7 @@ const ApplicationPreferences: React.FC = () => {
                 {[
                   { value: 'light', label: t('light') }, {/* MODIFIED */}
                   { value: 'dark', label: t('dark') }, 
-                  { value: 'system', label: t('system') } {/* MODIFIED */}
+                  { value: 'system', label: t('system') } 
                 ].map((option) => (
                   <button
                     key={option.value}
