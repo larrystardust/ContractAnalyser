@@ -4,16 +4,18 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const EmailSentPage: React.FC = () => {
-  const [searchParams] = useSearchParams(); // ADDED
+  const [searchParams] = useSearchParams();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
-  const [redirectParam, setRedirectParam] = useState<string | null>(null); // ADDED
+  const [redirectParam, setRedirectParam] = useState<string | null>(null);
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
     // Attempt to retrieve the email from local storage
@@ -23,7 +25,7 @@ const EmailSentPage: React.FC = () => {
     } else {
       // If no email found, maybe redirect to signup or show a different message
       // For now, we'll just set a generic message
-      setUserEmail('your email address');
+      setUserEmail(t('your_email_address')); // MODIFIED
     }
 
     // ADDED: Retrieve redirect parameter from URL
@@ -31,15 +33,15 @@ const EmailSentPage: React.FC = () => {
     if (param) {
       setRedirectParam(param);
     }
-  }, [searchParams]); // ADDED searchParams to dependency array
+  }, [searchParams, t]); // MODIFIED: Added t to dependency array
 
   const handleResendEmail = async () => {
     setLoading(true);
     setResendError(null);
     setResendMessage(null);
 
-    if (!userEmail || userEmail === 'your email address') {
-      setResendError('Please go back to signup and provide a valid email.');
+    if (!userEmail || userEmail === t('your_email_address')) { // MODIFIED
+      setResendError(t('go_back_signup_valid_email')); // MODIFIED
       setLoading(false);
       return;
     }
@@ -54,8 +56,8 @@ const EmailSentPage: React.FC = () => {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: userEmail,
-        options: { // ADDED options object
-          emailRedirectTo: emailRedirectToUrl, // MODIFIED: Use the constructed URL
+        options: {
+          emailRedirectTo: emailRedirectToUrl,
         }
       });
 
@@ -63,10 +65,10 @@ const EmailSentPage: React.FC = () => {
         throw error;
       }
 
-      setResendMessage('Another confirmation email has been sent!');
+      setResendMessage(t('another_email_sent')); // MODIFIED
     } catch (err: any) {
       console.error('Error resending confirmation email:', err);
-      setResendError(err.message || 'Failed to resend confirmation email.');
+      setResendError(err.message || t('failed_to_resend_email')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -86,10 +88,9 @@ const EmailSentPage: React.FC = () => {
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <Mail className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('email_sent_page_title')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            A confirmation link has been sent to <span className="font-medium text-blue-600">{userEmail}</span>.
-            Please click the link in the email to verify your account and proceed to the dashboard.
+            {t('email_sent_message', { email: userEmail })} {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
@@ -115,12 +116,7 @@ const EmailSentPage: React.FC = () => {
               onClick={handleResendEmail}
               disabled={loading}
             >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Mail className="h-5 w-5 mr-2" />
-              )}
-              {loading ? 'Sending...' : 'Resend Confirmation Email'}
+              {loading ? t('sending_email') : t('resend_confirmation_email')} {/* MODIFIED */}
             </Button>
             <Button
               type="button"
@@ -130,7 +126,7 @@ const EmailSentPage: React.FC = () => {
               onClick={handleBackToLogin}
               disabled={loading}
             >
-              Back to Login
+              {t('back_to_login_button')} {/* MODIFIED */}
             </Button>
           </div>
         </CardBody>
