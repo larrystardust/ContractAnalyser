@@ -8,6 +8,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import { useContracts } from '../../context/ContractContext';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Link } from 'react-router-dom'; // Import Link
+import { useTranslation } from 'react-i18next'; // ADDED
 
 // ADDED: Define a type for the combined plan information
 interface CurrentPlanInfo {
@@ -20,6 +21,7 @@ const BillingSettings: React.FC = () => {
   const { contracts, loadingContracts } = useContracts();
   const supabase = useSupabaseClient();
   const session = useSession();
+  const { t } = useTranslation(); // ADDED
 
   // MODIFIED: Update getCurrentPlan to correctly find the product and its pricing option
   const getCurrentPlan = (): CurrentPlanInfo | null => {
@@ -54,7 +56,7 @@ const BillingSettings: React.FC = () => {
 
   const handleManageBilling = async () => {
     if (!session) {
-      alert('You must be logged in to manage billing.');
+      alert(t('must_be_logged_in_to_manage_billing')); // MODIFIED
       return;
     }
     try {
@@ -70,12 +72,12 @@ const BillingSettings: React.FC = () => {
         // This error object from supabase.functions.invoke will have a 'message' property
         // that contains the error message from the Edge Function.
         if (error.message.includes('No associated Stripe customer found')) {
-          alert('You do not have an associated billing account yet. Please make a purchase first.');
+          alert(t('no_associated_billing_account')); // MODIFIED
         } else if (error.message.includes('Forbidden: Only administrators can manage other users\' billing.')) {
-          alert('You do not have permission to manage other users\' billing.');
+          alert(t('no_permission_manage_other_users_billing')); // MODIFIED
         }
         else {
-          alert(`Failed to open billing portal: ${error.message}`);
+          alert(t('failed_to_open_billing_portal', { message: error.message })); // MODIFIED
         }
         console.error('Error invoking create-customer-portal:', error);
         return; // Stop execution here
@@ -84,11 +86,11 @@ const BillingSettings: React.FC = () => {
       if (data && data.url) {
         window.location.href = data.url;
       } else {
-        alert('Failed to get billing portal URL.');
+        alert(t('failed_to_get_billing_portal_url')); // MODIFIED
       }
     } catch (error: any) {
       console.error('Unexpected error managing billing:', error);
-      alert(`An unexpected error occurred: ${error.message}`);
+      alert(t('unexpected_error_occurred_with_message', { message: error.message })); // MODIFIED
     }
   };
 
@@ -111,7 +113,7 @@ const BillingSettings: React.FC = () => {
         <Card>
           <CardBody className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading billing information...</p>
+            <p className="text-gray-500 mt-2">{t('loading_billing_info')}</p> {/* MODIFIED */}
           </CardBody>
         </Card>
       </div>
@@ -128,7 +130,7 @@ const BillingSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <CreditCard className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Current Plan</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('current_plan')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
@@ -143,14 +145,14 @@ const BillingSettings: React.FC = () => {
                   </p>
                 </div>
                 <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
-                  Active
+                  {t('active')} {/* MODIFIED */}
                 </span>
               </div>
 
               {subscription && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                   <div>
-                    <p className="text-sm text-gray-500">Current Period</p>
+                    <p className="text-sm text-gray-500">{t('current_period')}</p> {/* MODIFIED */}
                     <p className="text-sm font-medium text-gray-900">
                       {formatDate(subscription.current_period_start!)} - {formatDate(subscription.current_period_end!)}
                     </p>
@@ -159,7 +161,7 @@ const BillingSettings: React.FC = () => {
                   {/* MODIFIED: Conditionally render payment method based on membership role */}
                   {membership?.role === 'owner' && subscription.payment_method_brand && subscription.payment_method_last4 && (
                     <div>
-                      <p className="text-sm text-gray-500">Payment Method</p>
+                      <p className="text-sm text-gray-500">{t('payment_method')}</p> {/* MODIFIED */}
                       <p className="text-sm font-medium text-gray-900">
                         {subscription.payment_method_brand.toUpperCase()} •••• {subscription.payment_method_last4}
                       </p>
@@ -171,17 +173,17 @@ const BillingSettings: React.FC = () => {
               {subscription?.cancel_at_period_end && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-sm text-amber-800">
-                    Your subscription will be cancelled at the end of the current billing period.
+                    {t('subscription_will_cancel')} {/* MODIFIED */}
                   </p>
                 </div>
               )}
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-gray-600 mb-4">You don't have an active subscription.</p>
+              <p className="text-gray-600 mb-4">{t('no_active_subscription')}</p> {/* MODIFIED */}
               <Link to="/pricing"> {/* Changed to Link component */}
                 <Button variant="primary" type="button"> {/* type="button" is good practice for buttons inside Link */}
-                  View Plans
+                  {t('view_plans')} {/* MODIFIED */}
                 </Button>
               </Link>
             </div>
@@ -195,36 +197,36 @@ const BillingSettings: React.FC = () => {
           <CardHeader>
             <div className="flex items-center">
               <Download className="h-5 w-5 text-blue-900 mr-2" />
-              <h3 className="text-lg font-medium text-gray-900">Billing Management</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t('billing_management')}</h3> {/* MODIFIED */}
             </div>
           </CardHeader>
           <CardBody>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900">Manage Billing</h4>
-                  <p className="text-sm text-gray-500">Update payment methods, view invoices, and manage your subscription</p>
+                  <h4 className="text-sm font-medium text-gray-900">{t('manage_billing')}</h4> {/* MODIFIED */}
+                  <p className="text-sm text-gray-500">{t('update_payment_methods')}</p> {/* MODIFIED */}
                 </div>
                 <Button
                   variant="outline"
                   onClick={handleManageBilling}
                   icon={<ExternalLink className="w-4 h-4" />}
                 >
-                  Manage Billing
+                  {t('manage_billing')} {/* MODIFIED */}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900">Download Latest Invoice</h4>
-                  <p className="text-sm text-gray-500">Get a copy of your most recent billing statement</p>
+                  <h4 className="text-sm font-medium text-gray-900">{t('download_latest_invoice')}</h4> {/* MODIFIED */}
+                  <p className="text-sm text-gray-500">{t('get_copy_invoice')}</p> {/* MODIFIED */}
                 </div>
                 <Button
                   variant="outline"
                   onClick={handleDownloadInvoice}
                   icon={<Download className="w-4 h-4" />}
                 >
-                  Download
+                  {t('download')} {/* MODIFIED */}
                 </Button>
               </div>
             </div>
@@ -235,27 +237,27 @@ const BillingSettings: React.FC = () => {
       {/* Usage Statistics */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-medium text-gray-900">Usage This Month</h3>
+          <h3 className="text-lg font-medium text-gray-900">{t('usage_this_month')}</h3> {/* MODIFIED */}
         </CardHeader>
         <CardBody>
           {loadingContracts ? (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-              <p className="text-gray-500 mt-2">Loading usage data...</p>
+              <p className="text-gray-500 mt-2">{t('loading_usage_data')}</p> {/* MODIFIED */}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-900">{contractsAnalyzedCount}</p>
-                <p className="text-sm text-gray-600">Contracts Analyzed</p>
+                <p className="text-sm text-gray-600">{t('contracts_analyzed')}</p> {/* MODIFIED */}
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-900">{findingsIdentifiedCount}</p>
-                <p className="text-sm text-gray-600">Findings Identified</p>
+                <p className="text-sm text-gray-600">{t('findings_identified')}</p> {/* MODIFIED */}
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-900">{reportsGeneratedCount}</p>
-                <p className="text-sm text-gray-600">Reports Generated</p>
+                <p className="text-sm text-gray-600">{t('reports_generated')}</p> {/* MODIFIED */}
               </div>
             </div>
           )}
