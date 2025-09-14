@@ -178,7 +178,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         size="sm"
                         onClick={(e) => handleDownload(contract.file_path, contract.name, e)}
                         icon={<Download className="h-4 w-4" />}
-                        title={t('download_contract')} {/* MODIFIED */}
+                        title={t('download_contract')} 
                       >
                         {t('download')} {/* MODIFIED */}
                       </Button>
