@@ -152,7 +152,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
       <Modal
         isOpen={isSupportTicketModalOpen}
         onClose={() => setIsSupportTicketModalOpen(false)}
-        title={t('report_an_issue_modal')} {/* MODIFIED */}
+        title={t('report_an_issue_modal')} 
       >
         <SupportTicketForm />
       </Modal>
