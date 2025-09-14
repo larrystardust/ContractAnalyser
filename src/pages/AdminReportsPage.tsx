@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart, Users, FileText, MessageSquare, LifeBuoy, DollarSign, Loader2, ListChecks } from 'lucide-react'; // ADDED ListChecks
+import { ArrowLeft, BarChart, Users, FileText, MessageSquare, LifeBuoy, DollarSign, Loader2, ListChecks } from 'lucide-react';
 import Card, { CardBody } from '../components/ui/Card';
-import adminService, { SystemReports, AuditLog } from '../services/adminService'; // ADDED AuditLog
+import adminService, { SystemReports, AuditLog } from '../services/adminService';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const AdminReportsPage: React.FC = () => {
   const [reports, setReports] = useState<SystemReports | null>(null);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]); // ADDED state for audit logs
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingAuditLogs, setLoadingAuditLogs] = useState(true); // ADDED loading state for audit logs
+  const [loadingAuditLogs, setLoadingAuditLogs] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [errorAuditLogs, setErrorAuditLogs] = useState<string | null>(null); // ADDED error state for audit logs
+  const [errorAuditLogs, setErrorAuditLogs] = useState<string | null>(null);
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -21,13 +23,13 @@ const AdminReportsPage: React.FC = () => {
         setReports(fetchedReports);
       } catch (err: any) {
         console.error('Error fetching system reports:', err);
-        setError(err.message || 'Failed to load system reports.');
+        setError(err.message || t('failed_to_load_system_reports')); // MODIFIED
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchAuditLogs = async () => { // ADDED function to fetch audit logs
+    const fetchAuditLogs = async () => {
       setLoadingAuditLogs(true);
       setErrorAuditLogs(null);
       try {
@@ -35,14 +37,14 @@ const AdminReportsPage: React.FC = () => {
         setAuditLogs(fetchedLogs);
       } catch (err: any) {
         console.error('Error fetching audit logs:', err);
-        setErrorAuditLogs(err.message || 'Failed to load audit logs.');
+        setErrorAuditLogs(err.message || t('failed_to_load_audit_logs')); // MODIFIED
       } finally {
         setLoadingAuditLogs(false);
       }
     };
 
     fetchReports();
-    fetchAuditLogs(); // Call fetch audit logs
+    fetchAuditLogs();
   }, []);
 
   const formatLogDate = (dateString: string) => {
@@ -62,7 +64,7 @@ const AdminReportsPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
         <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">Loading system reports...</p>
+        <p className="text-gray-500">{t('loading_system_reports')}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -70,7 +72,7 @@ const AdminReportsPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-red-600">Error: {error}</p>
+        <p className="text-red-600">{t('error_label')}: {error}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -78,7 +80,7 @@ const AdminReportsPage: React.FC = () => {
   if (!reports) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-gray-600">No reports data available.</p>
+        <p className="text-gray-600">{t('no_reports_data_available')}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -88,33 +90,33 @@ const AdminReportsPage: React.FC = () => {
       <div className="mb-6">
         <Link to="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Admin Dashboard
+          {t('back_to_admin_dashboard')} {/* MODIFIED */}
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">System Reports</h1>
-      <p className="text-gray-700 mb-8">Access key analytics and insights into application usage.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('system_reports')}</h1> {/* MODIFIED */}
+      <p className="text-gray-700 mb-8">{t('access_analytics_system_logs')}</p> {/* MODIFIED */}
 
       {/* User Statistics */}
       <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-        <Users className="h-6 w-6 mr-2 text-blue-600" /> User Statistics
+        <Users className="h-6 w-6 mr-2 text-blue-600" /> {t('user_statistics')} {/* MODIFIED */}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Total Users</p>
+            <p className="text-sm text-gray-600">{t('total_users')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.user_stats.total_users}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">New Users (Last 7 Days)</p>
+            <p className="text-sm text-gray-600">{t('new_users_last_7_days')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.user_stats.new_users_last_7_days}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Active Users (Last 30 Days Login)</p>
+            <p className="text-sm text-gray-600">{t('active_users_last_30_days')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.user_stats.active_users_last_30_days}</p>
           </CardBody>
         </Card>
@@ -122,30 +124,30 @@ const AdminReportsPage: React.FC = () => {
 
       {/* Contract Usage */}
       <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-        <FileText className="h-6 w-6 mr-2 text-green-600" /> Contract Usage
+        <FileText className="h-6 w-6 mr-2 text-green-600" /> {t('contract_usage')} {/* MODIFIED */}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Total Contracts</p>
+            <p className="text-sm text-gray-600">{t('total_contracts')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.contract_stats.total_contracts}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Completed Analyses</p>
+            <p className="text-sm text-gray-600">{t('completed_analyses')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.contract_stats.completed_contracts}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Failed Analyses</p>
+            <p className="text-sm text-gray-600">{t('failed_analyses')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.contract_stats.failed_contracts}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Uploaded (Last 7 Days)</p>
+            <p className="text-sm text-gray-600">{t('uploaded_last_7_days')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.contract_stats.contracts_uploaded_last_7_days}</p>
           </CardBody>
         </Card>
@@ -153,24 +155,24 @@ const AdminReportsPage: React.FC = () => {
 
       {/* Support & Inquiries */}
       <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-        <MessageSquare className="h-6 w-6 mr-2 text-indigo-600" /> Support & Inquiries
+        <MessageSquare className="h-6 w-6 mr-2 text-indigo-600" /> {t('support_inquiries')} {/* MODIFIED */}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Total Inquiries</p>
+            <p className="text-sm text-gray-600">{t('total_inquiries')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.support_stats.total_inquiries}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">New Inquiries (Last 7 Days)</p>
+            <p className="text-sm text-gray-600">{t('new_inquiries_last_7_days')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.support_stats.new_inquiries_last_7_days}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Open Support Tickets</p>
+            <p className="text-sm text-gray-600">{t('open_support_tickets')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.support_stats.open_support_tickets}</p>
           </CardBody>
         </Card>
@@ -178,18 +180,18 @@ const AdminReportsPage: React.FC = () => {
 
       {/* Subscription Overview */}
       <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-        <DollarSign className="h-6 w-6 mr-2 text-purple-600" /> Subscription Overview
+        <DollarSign className="h-6 w-6 mr-2 text-purple-600" /> {t('subscription_overview')} {/* MODIFIED */}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Active Subscriptions</p>
+            <p className="text-sm text-gray-600">{t('active_subscriptions')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.subscription_stats.active_subscriptions}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody className="text-center">
-            <p className="text-sm text-gray-600">Single-Use Purchases</p>
+            <p className="text-sm text-gray-600">{t('single_use_purchases')}</p> {/* MODIFIED */}
             <p className="text-3xl font-bold text-gray-900">{reports.subscription_stats.single_use_purchases}</p>
           </CardBody>
         </Card>
@@ -197,32 +199,32 @@ const AdminReportsPage: React.FC = () => {
 
       {/* Audit Logs / Recent Activity */}
       <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center">
-        <ListChecks className="h-6 w-6 mr-2 text-red-600" /> Recent Activity Logs
+        <ListChecks className="h-6 w-6 mr-2 text-red-600" /> {t('recent_activity_logs')} {/* MODIFIED */}
       </h2>
       <Card>
         <CardBody>
           {loadingAuditLogs ? (
             <div className="text-center py-8">
               <Loader2 className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-4" />
-              <p className="text-gray-500">Loading activity logs...</p>
+              <p className="text-gray-500">{t('loading_activity_logs')}</p> {/* MODIFIED */}
             </div>
           ) : errorAuditLogs ? (
             <div className="text-center py-8">
-              <p className="text-red-600">Error loading activity logs: {errorAuditLogs}</p>
+              <p className="text-red-600">{t('error_loading_activity_logs', { error: errorAuditLogs })}</p> {/* MODIFIED */}
             </div>
           ) : auditLogs.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">No recent activity found.</p>
+              <p className="text-gray-600">{t('no_recent_activity_found')}</p> {/* MODIFIED */}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('timestamp')}</th> {/* MODIFIED */}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('event_type')}</th> {/* MODIFIED */}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('description')}</th> {/* MODIFIED */}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('user')}</th> {/* MODIFIED */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
