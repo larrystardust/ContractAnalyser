@@ -3,22 +3,22 @@ import { Link } from 'react-router-dom';
 import SampleContractList from '../contracts/SampleContractList';
 import SampleAnalysisResults from '../analysis/SampleAnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
-import { sampleContracts } from '../../data/sampleData'; // Import sample data
+import { sampleContracts } from '../../data/sampleData';
 import { Contract } from '../../types';
-import { ArrowLeft } from 'lucide-react'; // Import ArrowLeft icon
+import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const LandingPageSampleDashboard: React.FC = () => {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
-    // Automatically select the first completed sample contract
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
       setSelectedContractId(firstCompletedSample.id);
     } else if (sampleContracts.length > 0) {
-      // If no completed, select the first available sample contract
-      setSelectedContractId(sampleContracts[0].id);
+      setSelectedContractId(sampleContracts.id);
     }
   }, []);
 
@@ -31,40 +31,33 @@ const LandingPageSampleDashboard: React.FC = () => {
     }
   }, [selectedContractId]);
 
-  // Function to handle selecting a contract from the list
   const handleSelectContract = (contractId: string) => {
     setSelectedContractId(contractId);
   };
 
   return (
-    // MODIFIED: Added mt-16 to push content below the fixed header
     <div className="container mx-auto px-4 py-6 mt-16">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Back to Landing Page Link */}
-        {/* MODIFIED: Removed text-center and added px-4 for left alignment and padding */}
         <div className="lg:col-span-3 mb-6 px-4">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Landing Page
+            {t('back_to_landing_page_button')} {/* MODIFIED */}
           </Link>
         </div>
 
-        {/* Sidebar for Sample Contracts */}
         <div className="lg:col-span-1 space-y-6">
           <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
         </div>
         
-        {/* Main Content for Sample Analysis */}
         <div className="lg:col-span-2">
           {selectedContract && selectedContract.analysisResult ? (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-900">Sample Contract Analysis: {selectedContract.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
               
               <SampleAnalysisResults analysisResult={selectedContract.analysisResult} />
               
-              {/* Jurisdiction Summaries */}
               <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                     <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
@@ -80,10 +73,10 @@ const LandingPageSampleDashboard: React.FC = () => {
                 </svg>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                No Completed Sample Contract Selected
+                {t('no_completed_sample_contract_selected_sidebar')} {/* MODIFIED */}
               </h2>
               <p className="text-gray-600 mb-6">
-                Select a completed sample contract from the list to view its analysis.
+                {t('select_completed_sample_contract_to_view_analysis')} {/* MODIFIED */}
               </p>
             </div>
           )}
