@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const AcceptInvitationPage: React.FC = () => {
   console.log('AcceptInvitationPage: Component rendered. Current URL:', window.location.href);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
     const invitationToken = searchParams.get('token');
@@ -25,7 +27,7 @@ const AcceptInvitationPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="text-center">
-        <p className="text-gray-600">Redirecting to signup page...</p>
+        <p className="text-gray-600">{t('redirecting_to_signup')}...</p> {/* MODIFIED */}
       </div>
     </div>
   );
