@@ -54,7 +54,7 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
         <Card>
           <CardBody className="text-center py-8">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">{t('no_analysis_results_available_modal')}</p> {/* MODIFIED */}
+            <p className="text-gray-500">{t('no_analysis_results_available_modal')}</p> 
             {contract.status === 'analyzing' && (
               <p className="text-gray-500 mt-2">{t('analysis_in_progress_modal', { progress: contract.processing_progress || 0 })}</p> 
             )}
