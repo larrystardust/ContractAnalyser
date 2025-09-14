@@ -219,7 +219,7 @@ const ApplicationPreferences: React.FC = () => {
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { value: 'light', label: t('light') }, {/* MODIFIED */}
-                  { value: 'dark', label: t('dark') }, {/* MODIFIED */}
+                  { value: 'dark', label: t('dark') }, 
                   { value: 'system', label: t('system') } {/* MODIFIED */}
                 ].map((option) => (
                   <button
