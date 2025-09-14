@@ -1,11 +1,12 @@
 import React from 'react';
 import Button from '../ui/Button';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface Column<T> {
   key: keyof T;
   header: string;
-  render?: (item: T) => React.ReactNode; // Custom render function for complex data
+  render?: (item: T) => React.ReactNode;
 }
 
 interface AdminDataTableProps<T> {
@@ -15,17 +16,19 @@ interface AdminDataTableProps<T> {
   error: string | null;
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
-  customActions?: (item: T) => React.ReactNode; // This prop exists
+  customActions?: (item: T) => React.ReactNode;
 }
 
-const AdminDataTable = <T extends { id: string | number }>( // T must have an 'id' property
+const AdminDataTable = <T extends { id: string | number }>(
   { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
 ) => {
+  const { t } = useTranslation(); // ADDED
+
   if (loading) {
     return (
       <div className="text-center py-8">
         <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">Loading data...</p>
+        <p className="text-gray-500">{t('loading_data')}...</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -33,7 +36,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error: {error}</p>
+        <p className="text-red-600">{t('error_label')}: {error}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -41,7 +44,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
   if (data.length === 0) {
     return (
       <div className="text-center py-8 text-gray-600">
-        <p>No data found.</p>
+        <p>{t('no_data_found')}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -61,7 +64,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
               </th>
             ))}
             <th scope="col" className="relative px-6 py-3">
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('actions_table')}</span> {/* MODIFIED */}
             </th>
           </tr>
         </thead>
@@ -75,7 +78,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex items-center justify-end space-x-2">
-                  {customActions ? ( // MODIFIED: Conditionally render custom actions
+                  {customActions ? (
                     customActions(item)
                   ) : (
                     <>
@@ -85,7 +88,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
                         onClick={() => onEdit(item)}
                         icon={<Edit className="h-4 w-4" />}
                       >
-                        Edit
+                        {t('edit_button')} {/* MODIFIED */}
                       </Button>
                       <Button
                         variant="danger"
@@ -93,7 +96,7 @@ const AdminDataTable = <T extends { id: string | number }>( // T must have an 'i
                         onClick={() => onDelete(item)}
                         icon={<Trash2 className="h-4 w-4" />}
                       >
-                        Delete
+                        {t('delete_button')} {/* MODIFIED */}
                       </Button>
                     </>
                   )}
