@@ -294,7 +294,7 @@ const AdminInquiriesPage: React.FC = () => {
                             {inquiryReplies.map(reply => (
                               <div key={reply.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
                                 <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
-                                  <span>{t('replied_by')}: {reply.profiles?.full_name || t('admin_label')}</span> {/* MODIFIED */}
+                                  <span>{t('replied_by')}: {reply.profiles?.full_name || t('admin_label')}</span> 
                                   <span>{formatDate(reply.created_at)}</span>
                                 </div>
                                 <p className="text-sm text-gray-800">{reply.reply_message}</p>
