@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 // Define the structure for the default settings (including display info)
 const notificationTypes = {
@@ -36,6 +37,7 @@ const notificationTypes = {
 const NotificationSettings: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
+  const { t } = useTranslation(); // ADDED
 
   // State to hold the actual user preferences (only email/inApp status)
   const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
@@ -88,13 +90,13 @@ const NotificationSettings: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error fetching notification preferences:', err);
-        setError(err.message || 'Failed to load notification preferences.');
+        setError(err.message || t('failed_to_load_notification_preferences')); // MODIFIED
       } finally {
         setIsLoading(false);
       }
     };
     fetchNotificationPreferences();
-  }, [session?.user?.id, supabase]);
+  }, [session?.user?.id, supabase, t]); // MODIFIED: Added t to dependency array
 
   const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
     setPreferences(prev => ({
@@ -108,7 +110,7 @@ const NotificationSettings: React.FC = () => {
 
   const handleSavePreferences = async () => {
     if (!session?.user?.id) {
-      setError('You must be logged in to save preferences.');
+      setError(t('must_be_logged_in_to_save_preferences')); // MODIFIED
       return;
     }
     setIsSaving(true);
@@ -128,10 +130,10 @@ const NotificationSettings: React.FC = () => {
       if (updateError) {
         throw updateError;
       }
-      setMessage('Notification preferences saved successfully!');
+      setMessage(t('notification_preferences_saved_successfully')); // MODIFIED
     } catch (err: any) {
       console.error('Error saving notification preferences:', err);
-      setError(err.message || 'Failed to save notification preferences.');
+      setError(err.message || t('failed_to_save_notification_preferences')); // MODIFIED
     } finally {
       setIsSaving(false);
     }
@@ -163,7 +165,7 @@ const NotificationSettings: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-          <p className="text-gray-500 mt-2">Loading notification preferences...</p>
+          <p className="text-gray-500 mt-2">{t('loading_notification_preferences')}...</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -175,7 +177,7 @@ const NotificationSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Bell className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t('notification_preferences')}</h3> {/* MODIFIED */}
           </div>
         </CardHeader>
         <CardBody>
@@ -191,14 +193,14 @@ const NotificationSettings: React.FC = () => {
           )}
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-200">
-              <div className="text-sm font-medium text-gray-700">Notification Type</div>
+              <div className="text-sm font-medium text-gray-700">{t('notification_type')}</div> {/* MODIFIED */}
               <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
                 <Mail className="h-4 w-4 mr-1" />
-                Email
+                {t('email')} {/* MODIFIED */}
               </div>
               <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
                 <Smartphone className="h-4 w-4 mr-1" />
-                In-App
+                {t('in_app')} {/* MODIFIED */}
               </div>
             </div>
 
@@ -209,8 +211,8 @@ const NotificationSettings: React.FC = () => {
               return (
                 <div key={id} className="grid grid-cols-3 gap-4 items-center py-3">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">{typeInfo.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1">{typeInfo.description}</p>
+                    <h4 className="text-sm font-medium text-gray-900">{t(typeInfo.title.toLowerCase().replace(/\s/g, '_'))}</h4> {/* MODIFIED */}
+                    <p className="text-xs text-gray-500 mt-1">{t(typeInfo.description.toLowerCase().replace(/\s/g, '_'))}</p> {/* MODIFIED */}
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
@@ -234,11 +236,11 @@ const NotificationSettings: React.FC = () => {
               onClick={handleSavePreferences}
               disabled={isSaving}
             >
-              {isSaving ? 'Saving...' : 'Save Notification Settings'}
+              {isSaving ? t('saving') : t('save_notification_settings')} {/* MODIFIED */}
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            Note: The "Email Reports" setting is managed under "Preferences" for overall email report delivery. You would need to enable it if you prefer to receive Email Reports.
+            {t('note_email_reports_setting')} {/* MODIFIED */}
           </p>
         </CardBody>
       </Card>
