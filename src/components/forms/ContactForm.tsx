@@ -199,7 +199,7 @@ const ContactForm: React.FC = () => {
               type="text"
               id="firstName"
               name="firstName"
-              placeholder={t('first_name')} {/* MODIFIED */}
+              placeholder={t('first_name')} 
               value={formData.firstName}
               onChange={handleChange}
               required
@@ -215,7 +215,7 @@ const ContactForm: React.FC = () => {
               type="text"
               id="lastName"
               name="lastName"
-              placeholder={t('last_name')} {/* MODIFIED */}
+              placeholder={t('last_name')} 
               value={formData.lastName}
               onChange={handleChange}
               required
@@ -233,7 +233,7 @@ const ContactForm: React.FC = () => {
             type="email"
             id="email"
             name="email"
-            placeholder={t('email_address')} {/* MODIFIED */}
+            placeholder={t('email_address')} 
             value={formData.email}
             onChange={handleChange}
             required
@@ -268,7 +268,7 @@ const ContactForm: React.FC = () => {
               type="text"
               id="otpCode"
               name="otpCode"
-              placeholder={t('enter_otp')} {/* MODIFIED */}
+              placeholder={t('enter_otp')} 
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value)}
               required
@@ -297,7 +297,7 @@ const ContactForm: React.FC = () => {
             type="text"
             id="subject"
             name="subject"
-            placeholder={t('subject')} {/* MODIFIED */}
+            placeholder={t('subject')} 
             value={formData.subject}
             onChange={handleChange}
             required
@@ -312,7 +312,7 @@ const ContactForm: React.FC = () => {
           id="message"
           name="message"
           rows={5}
-          placeholder={t('your_message')} {/* MODIFIED */}
+          placeholder={t('your_message')} 
           value={formData.message}
           onChange={handleChange}
           required
