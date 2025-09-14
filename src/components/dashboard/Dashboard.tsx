@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import ContractList from '../components/contracts/ContractList';
-import AnalysisResults from '../components/analysis/AnalysisResults';
-import JurisdictionSummary from '../components/analysis/JurisdictionSummary';
-import { useContracts } from '../context/ContractContext';
-import { Contract } from '../types';
+import ContractList from '../contracts/ContractList';
+import AnalysisResults from '../analysis/AnalysisResults';
+import JurisdictionSummary from '../analysis/JurisdictionSummary';
+import { useContracts } from '../../context/ContractContext';
+import { Contract } from '../../types';
 import { useSearchParams } from 'react-router-dom';
-import { useSubscription } from '../hooks/useSubscription';
-import { useUserOrders } from '../hooks/useUserOrders';
+import { useSubscription } from '../../hooks/useSubscription';
+import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Modal from '../components/ui/Modal';
+import Modal from '../ui/Modal';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next'; // ADDED
 
