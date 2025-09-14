@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap } from 'lucide-react';
 import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData'; // ADDED: Import StructuredData
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation(); // ADDED
+
   const websiteSchema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -58,27 +61,27 @@ const LandingPage: React.FC = () => {
           <div className="container mx-auto px-4 text-center relative z-10">
             <Scale className="h-24 w-24 mx-auto mb-6 text-blue-200 drop-shadow-lg" />
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 drop-shadow-lg">
-              Unlock Legal Clarity. Instantly.
+              {t('landing_hero_title')} {/* MODIFIED */}
             </h1>
             <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-4xl mx-auto">
-              Transform complex legal documents into actionable insights with AI. Identify risks, ensure compliance, and make informed decisions faster than ever before.
+              {t('landing_hero_description')} {/* MODIFIED */}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/signup">
                 <Button variant="primary" size="lg" className="shadow-lg animate-pulse-slow">
-                  Start Your Instant Analysis Now!
+                  {t('landing_hero_cta_start_analysis')} {/* MODIFIED */}
                 </Button>
               </Link>
               {/* MODIFIED: Link to new landing-page-specific pricing page */}
               <Link to="/landing-pricing">
                 <Button variant="secondary" size="lg" className="shadow-lg">
-                  Explore Pricing
+                  {t('landing_hero_cta_explore_pricing')} {/* MODIFIED */}
                 </Button>
               </Link>
               {/* ADDED: Link to Sample Dashboard */}
               <Link to="/sample-dashboard">
                 <Button variant="outline" size="lg" className="shadow-lg">
-                  View Sample Analysis
+                  {t('landing_hero_cta_view_sample')} {/* MODIFIED */}
                 </Button>
               </Link>
             </div>
@@ -88,25 +91,23 @@ const LandingPage: React.FC = () => {
         {/* The Problem Section */}
         <section className="py-16 bg-white dark:bg-gray-900">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">The Challenge: Manual Contract Review is Slow, Costly, and Risky</h2>
-            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-12">
-              In today's fast-paced legal and business landscape, manually reviewing contracts is a bottleneck. It consumes valuable time, drains resources, and is prone to human error, leaving you exposed to hidden liabilities and compliance gaps.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">{t('landing_problem_title')}</h2> {/* MODIFIED */}
+            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-12">{t('landing_problem_description')}</p> {/* MODIFIED */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex flex-col items-center">
                 <Clock className="h-12 w-12 text-red-600 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Time-Consuming</h3>
-                <p className="text-gray-600 dark:text-gray-400">Hours spent poring over dense legal text, delaying critical decisions and transactions.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_problem_time_consuming_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_problem_time_consuming_description')}</p> {/* MODIFIED */}
               </div>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex flex-col items-center">
                 <DollarSign className="h-12 w-12 text-red-600 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Expensive</h3>
-                <p className="text-gray-600 dark:text-gray-400">High legal fees for review, or internal resources diverted from core business activities.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_problem_expensive_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_problem_expensive_description')}</p> {/* MODIFIED */}
               </div>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex flex-col items-center">
                 <AlertTriangle className="h-12 w-12 text-red-600 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">High Risk</h3>
-                <p className="text-gray-600 dark:text-gray-400">Missed clauses, overlooked risks, and non-compliance can lead to costly disputes and penalties.</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_problem_high_risk_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_problem_high_risk_description')}</p> {/* MODIFIED */}
               </div>
             </div>
           </div>
@@ -117,21 +118,21 @@ const LandingPage: React.FC = () => {
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url(https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
           <div className="container mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Introducing ContractAnalyser: Your AI Legal Co-Pilot</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing_intro_title')}</h2> {/* MODIFIED */}
               <p className="text-lg opacity-90 max-w-3xl mx-auto">
-                Imagine a dedicated legal analyst, tirelessly working 24/7, meticulously reviewing every clause of your contracts. ContractAnalyser is that analyst, distilled into a powerful, intuitive digital platform.
+                {t('landing_intro_description')} {/* MODIFIED */}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
                 <p className="text-lg leading-relaxed">
-                  It's not just a software; it's your AI-powered legal co-pilot, housed securely in the cloud, accessible from any device. Think of it as a high-precision scanner for legal risks, a smart compliance auditor, and a strategic advisor, all rolled into one seamless experience.
+                  {t('landing_intro_co_pilot_description')} {/* MODIFIED */}
                 </p>
                 <ul className="list-disc list-inside space-y-3 text-lg">
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **Instant Deployment**: No complex installations. Access from your browser.</li>
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **Universal Compatibility**: Handles PDFs, DOCX, and DOC files with ease.</li>
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **Global Expertise**: Analyzes contracts across multiple jurisdictions (UK, EU, US, Canada, Australia, Ireland and Others).</li>
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **Actionable Output**: Delivers clear executive summaries, risk assessments, and practical recommendations.</li>
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_instant_deployment_title')}**: {t('landing_intro_instant_deployment_description')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_global_expertise_title')}**: {t('landing_intro_global_expertise_description')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_actionable_output_title')}**: {t('landing_intro_actionable_output_description')}</li> {/* MODIFIED */}
                 </ul>
               </div>
               <div className="flex justify-center">
@@ -144,28 +145,28 @@ const LandingPage: React.FC = () => {
         {/* How It Works Section */}
         <section className="py-16 bg-white dark:bg-gray-900">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-12">How ContractAnalyser Works: Simple Steps to Legal Clarity</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-12">{t('landing_how_it_works_title')}</h2> {/* MODIFIED */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="flex flex-col items-center text-center">
                 <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-full mb-6 shadow-lg">
                   <Upload className="h-16 w-16 text-blue-700 dark:text-blue-300" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">1. Upload Your Contract</h3>
-                <p className="text-gray-600 dark:text-gray-400">Securely upload your PDF, DOCX, or DOC file. Select the relevant jurisdictions for analysis.</p>
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_how_it_works_upload_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_how_it_works_upload_description')}</p> {/* MODIFIED */}
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="bg-green-100 dark:bg-green-900 p-6 rounded-full mb-6 shadow-lg">
                   <Zap className="h-16 w-16 text-green-700 dark:text-green-300" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">2. AI Analysis in Minutes</h3>
-                <p className="text-gray-600 dark:text-gray-400">Our advanced AI meticulously scans every clause, identifying risks, compliance issues, and key terms.</p>
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_how_it_works_ai_analysis_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_how_it_works_ai_analysis_description')}</p> {/* MODIFIED */}
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="bg-purple-100 dark:bg-purple-900 p-6 rounded-full mb-6 shadow-lg">
                   <BarChart className="h-16 w-16 text-purple-700 dark:text-purple-300" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">3. Get Actionable Reports</h3>
-                <p className="text-gray-600 dark:text-gray-400">Receive a comprehensive report with an executive summary, compliance score, detailed findings, and practical recommendations.</p>
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">{t('landing_how_it_works_actionable_reports_title')}</h3> {/* MODIFIED */}
+                <p className="text-gray-600 dark:text-gray-400">{t('landing_how_it_works_actionable_reports_description')}</p> {/* MODIFIED */}
               </div>
             </div>
           </div>
@@ -174,48 +175,48 @@ const LandingPage: React.FC = () => {
         {/* Key Benefits Section */}
         <section className="py-16 bg-gray-100 dark:bg-gray-700">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">Experience Unmatched Benefits</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">{t('landing_benefits_title')}</h2> {/* MODIFIED */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <CheckCircle className="h-8 w-8 text-blue-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Save Time & Resources</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Automate tedious review tasks, freeing up your valuable time and reducing reliance on expensive external counsel.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_save_time_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_save_time_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <ShieldCheck className="h-8 w-8 text-green-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Mitigate Risks Effectively</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Proactively identify and address potential liabilities, unfavorable clauses, and compliance gaps before they become problems.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_mitigate_risks_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_mitigate_risks_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <FileText className="h-8 w-8 text-purple-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Ensure Ironclad Compliance</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Stay ahead of regulatory changes with AI-driven checks against relevant jurisdictional laws.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_ensure_compliance_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_ensure_compliance_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <Lightbulb className="h-8 w-8 text-yellow-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Gain Deeper Insights</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Receive clear, concise executive summaries and actionable recommendations, transforming legal jargon into strategic intelligence.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_gain_insights_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_gain_insights_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <Handshake className="h-8 w-8 text-orange-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Accelerate Deal-Making</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Speed up due diligence and contract negotiation cycles, enabling faster and more confident business decisions.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_accelerate_deals_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_accelerate_deals_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <Users className="h-8 w-8 text-teal-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Empower Your Team</h3>
-                  <p className="text-gray-600 dark:text-gray-400">Provide your legal and business teams with a powerful tool to enhance their efficiency and accuracy.</p>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_empower_team_title')}</h3> {/* MODIFIED */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_empower_team_description')}</p> {/* MODIFIED */}
                 </div>
               </div>
             </div>
@@ -225,30 +226,30 @@ const LandingPage: React.FC = () => {
         {/* Who Benefits Section */}
         <section className="py-16 bg-white dark:bg-gray-900">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-12">Who Benefits from ContractAnalyser?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-12">{t('landing_who_benefits_title')}</h2> {/* MODIFIED */}
             <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-12">
-              ContractAnalyser is built for anyone who deals with legal documents and needs to understand them quickly and accurately.
+              {t('landing_who_benefits_description')} {/* MODIFIED */}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
                 <Briefcase className="h-10 w-10 text-blue-600 mb-4 mx-auto" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Legal Professionals</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_who_benefits_legal_professionals_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400">
-                  In-house counsel, private practice lawyers, paralegals, and legal tech specialists. Ideal for Mergers & Acquisitions, real estate, corporate law, and litigation support.
+                  {t('landing_who_benefits_legal_professionals_description')} {/* MODIFIED */}
                 </p>
               </div>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
                 <Building className="h-10 w-10 text-green-600 mb-4 mx-auto" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Businesses & Entrepreneurs</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_who_benefits_businesses_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400">
-                  Small, medium and large enterprises, startups, and business owners needing to quickly understand vendor agreements, partnership deeds, and client contracts.
+                  {t('landing_who_benefits_businesses_description')} {/* MODIFIED */}
                 </p>
               </div>
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md">
                 <Users className="h-10 w-10 text-purple-600 mb-4 mx-auto" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Compliance & HR Teams</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_who_benefits_compliance_hr_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400">
-                  Compliance officers, HR managers, and risk analysts who need to ensure internal policies and employment contracts meet regulatory standards.
+                  {t('landing_who_benefits_compliance_hr_description')} {/* MODIFIED */}
                 </p>
               </div>
             </div>
@@ -258,56 +259,56 @@ const LandingPage: React.FC = () => {
         {/* Transparent Pricing Section */}
         <section className="py-16 bg-gray-100 dark:bg-gray-700">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">Flexible Pricing, No Commitments</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8">{t('landing_pricing_title')}</h2> {/* MODIFIED */}
             <p className="text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-12">
-              We believe in transparency and flexibility. Our plans are designed to scale with your needs, whether you're a solo practitioner or a large enterprise.
+              {t('landing_pricing_description')} {/* MODIFIED */}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col items-center">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No Contract. No Obligation.</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('landing_pricing_no_contract_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  You're in control. Our service is month-to-month, with no hidden fees or long-term commitments.
+                  {t('landing_pricing_no_contract_description')} {/* MODIFIED */}
                 </p>
                 <DollarSign className="h-16 w-16 text-blue-600 mb-6" />
                 <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                  Upgrade, downgrade, or cancel your subscription anytime, directly from your dashboard.
+                  {t('landing_pricing_no_contract_cta_description')} {/* MODIFIED */}
                 </p>
                 {/* MODIFIED: Link to new landing-page-specific pricing page */}
                 <Link to="/landing-pricing">
                   <Button variant="primary" size="lg">
-                    View All Plans
+                    {t('landing_pricing_no_contract_cta_button')} {/* MODIFIED */}
                   </Button>
                 </Link>
               </div>
               <div className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col items-center">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pay-As-You-Go Option</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('landing_pricing_pay_as_you_go_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Need a single analysis? Our one-time purchase option is perfect for occasional use.
+                  {t('landing_pricing_pay_as_you_go_description')} {/* MODIFIED */}
                 </p>
                 <FileText className="h-16 w-16 text-green-600 mb-6" />
                 <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                  Get a full, detailed analysis report without a recurring subscription.
+                  {t('landing_pricing_pay_as_you_go_cta_description')} {/* MODIFIED */}
                 </p>
                 {/* MODIFIED: Link to new landing-page-specific pricing page */}
                 <Link to="/landing-pricing">
                   <Button variant="secondary" size="lg">
-                    Get a Single Analysis
+                    {t('landing_pricing_pay_as_you_go_cta_button')} {/* MODIFIED */}
                   </Button>
                 </Link>
               </div>
               <div className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col items-center">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Scalable Subscriptions</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('landing_pricing_scalable_subscriptions_title')}</h3> {/* MODIFIED */}
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  For regular users, our Professional and Enterprise plans offer comprehensive features.
+                  {t('landing_pricing_scalable_subscriptions_description')} {/* MODIFIED */}
                 </p>
                 <Users className="h-16 w-16 text-purple-600 mb-6" />
                 <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                  Benefit from multi-user unlimited access, higher analysis limits, and priority support.
+                  {t('landing_pricing_scalable_subscriptions_cta_description')} {/* MODIFIED */}
                 </p>
                 {/* MODIFIED: Link to new landing-page-specific pricing page */}
                 <Link to="/landing-pricing">
                   <Button variant="primary" size="lg">
-                    Choose Your Plan
+                    {t('landing_pricing_scalable_subscriptions_cta_button')} {/* MODIFIED */}
                   </Button>
                 </Link>
               </div>
@@ -319,15 +320,14 @@ const LandingPage: React.FC = () => {
         <section className="py-16 bg-blue-900 text-white text-center">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight">
-              Stop Drowning in Legal Jargon. Start Analyzing Smarter.
+              {t('landing_cta_title')} {/* MODIFIED */}
             </h2>
             <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-3xl mx-auto">
-              Join the growing number of professionals who are revolutionizing their contract review process.
-              Sign up today and experience the power of AI-driven legal analysis.
+              {t('landing_cta_description')} {/* MODIFIED */}
             </p>
             <Link to="/signup">
               <Button variant="primary" size="lg" className="shadow-xl animate-bounce-slow">
-                Sign Up Now & Get Instant Clarity!
+                {t('landing_cta_button')} {/* MODIFIED */}
               </Button>
             </Link>
           </div>
@@ -336,12 +336,12 @@ const LandingPage: React.FC = () => {
         {/* Footer */}
         <footer className="py-8 bg-gray-800 text-white text-center text-sm">
           <div className="container mx-auto px-4">
-            <p>&copy; {new Date().getFullYear()} ContractAnalyser. All rights reserved.</p>
+            <p>{t('footer_copyright', { year: new Date().getFullYear() })}</p> {/* MODIFIED */}
             <div className="mt-4 flex justify-center space-x-4">
-              <Link to="/disclaimer" className="text-gray-300 hover:text-white transition-colors">Disclaimer</Link>
-              <Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms</Link>
-              <Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link to="/help" className="text-gray-300 hover:text-white transition-colors">Help</Link>
+              <Link to="/disclaimer" className="text-gray-300 hover:text-white transition-colors">{t('disclaimer')}</Link> {/* MODIFIED */}
+              <Link to="/terms" className="text-gray-300 hover:text-white transition-colors">{t('terms')}</Link> {/* MODIFIED */}
+              <Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">{t('privacy_policy')}</Link> {/* MODIFIED */}
+              <Link to="/help" className="text-gray-300 hover:text-white transition-colors">{t('help_page')}</Link> {/* MODIFIED */}
             </div>
           </div>
         </footer>
