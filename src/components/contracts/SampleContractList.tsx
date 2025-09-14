@@ -2,21 +2,20 @@ import React from 'react';
 import { Contract } from '../../types';
 import Card, { CardBody } from '../ui/Card';
 import { JurisdictionBadge } from '../ui/Badge';
-import { FileText, Clock, AlertTriangle, CheckCircle } from 'lucide-react'; // REMOVED: Trash2, Download
+import { FileText, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-// REMOVED: useContracts and useSupabaseClient imports as they are not needed for a static sample
+import { useTranslation } from 'react-i18next'; // ADDED
 
-interface SampleContractListProps { // MODIFIED: Renamed interface
+interface SampleContractListProps {
   contractsToDisplay?: Contract[];
   onSelectContract?: (contractId: string) => void;
 }
 
-const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisplay, onSelectContract }) => { // MODIFIED: Renamed component
-  // REMOVED: const { contracts, deleteContract } = useContracts();
-  // REMOVED: const supabase = useSupabaseClient();
+const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisplay, onSelectContract }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation(); // ADDED
 
-  const contractsToRender = contractsToDisplay; // MODIFIED: Always use contractsToDisplay for sample list
+  const contractsToRender = contractsToDisplay;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -34,11 +33,11 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return t('pending');
       case 'analyzing':
-        return 'Analyzing';
+        return t('analyzing');
       case 'completed':
-        return 'Completed';
+        return t('completed');
       default:
         return status;
     }
@@ -53,19 +52,14 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
     }).format(date);
   };
 
-  // REMOVED: handleDelete function
-  // REMOVED: handleDownload function
-
   return (
     <div className="space-y-4">
-      {/* REMOVED: Conditional rendering for "Your Contracts" heading */}
-      
       {contractsToRender.length === 0 ? (
         <Card>
           <CardBody className="text-center py-8">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No contracts found</p>
-            <p className="text-sm text-gray-400 mt-1">Select a sample contract to view its analysis</p> {/* MODIFIED: Specific message for sample */}
+            <p className="text-gray-500">{t('no_contracts_found_sidebar')}</p> {/* MODIFIED */}
+            <p className="text-sm text-gray-400 mt-1">{t('select_sample_contract_to_view_analysis')}</p> {/* MODIFIED */}
           </CardBody>
         </Card>
       ) : (
@@ -78,7 +72,6 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                 if (onSelectContract) {
                   onSelectContract(contract.id);
                 } else {
-                  // This else block should ideally not be hit if onSelectContract is always provided for sample
                   navigate(`/dashboard?contractId=${contract.id}`);
                 }
               }}
@@ -108,7 +101,6 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {/* Group status vertically */}
                   <div className="flex flex-col items-center">
                     <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
                       {getStatusIcon(contract.status)}
@@ -124,9 +116,7 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                         ></div>
                       </div>
                     )}
-                    {/* REMOVED: Download Button */}
                   </div>
-                  {/* REMOVED: Delete Button */}
                 </div>
               </CardBody>
             </Card>
