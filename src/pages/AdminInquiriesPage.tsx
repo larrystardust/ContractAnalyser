@@ -319,7 +319,7 @@ const AdminInquiriesPage: React.FC = () => {
                         <textarea
                           rows={4}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          placeholder={t('reply_to_name', { name: `${inquiry.first_name} ${inquiry.last_name}` })} {/* MODIFIED */}
+                          placeholder={t('reply_to_name', { name: `${inquiry.first_name} ${inquiry.last_name}` })} 
                           value={replyMessage[inquiry.id] || ''}
                           onChange={(e) => setReplyMessage(prev => ({ ...prev, [inquiry.id]: e.target.value }))}
                           disabled={replyLoading[inquiry.id]}
