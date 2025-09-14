@@ -285,7 +285,7 @@ const AdminInquiriesPage: React.FC = () => {
                         {loadingReplies ? (
                           <div className="text-center py-2">
                             <Loader2 className="h-5 w-5 text-blue-500 animate-spin mx-auto" />
-                            <p className="text-gray-500 text-sm">{t('loading_replies')}...</p> {/* MODIFIED */}
+                            <p className="text-gray-500 text-sm">{t('loading_replies')}...</p> 
                           </div>
                         ) : inquiryReplies.length === 0 ? (
                           <p className="text-gray-500 text-sm mb-4">{t('no_replies_yet')}</p> 
