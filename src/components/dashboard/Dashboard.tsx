@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
           <Modal
             isOpen={showReanalysisModal}
             onClose={() => setShowReanalysisModal(false)}
-            title={t('contract_analysis_in_progress')} {/* MODIFIED */}
+            title={t('contract_analysis_in_progress')} 
             className="max-w-sm"
           >
             <div className="text-center py-4">
