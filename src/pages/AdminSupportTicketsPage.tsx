@@ -5,10 +5,11 @@ import { Database } from '../types/supabase';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { ArrowLeft, LifeBuoy, Loader2, Calendar, User, Tag, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface SupportTicket {
   id: string;
-  profiles: { email: string; full_name: string | null } | null; // Updated type for joined data
+  profiles: { email: string; full_name: string | null } | null;
   subject: string;
   description: string;
   status: 'open' | 'in progress' | 'closed' | 'resolved';
@@ -20,10 +21,10 @@ interface SupportTicket {
 interface SupportTicketReply {
   id: string;
   ticket_id: string;
-  admin_user_id: string; // Now explicitly a string
+  admin_user_id: string;
   reply_message: string;
   created_at: string;
-  profiles?: { full_name: string | null } | null; // Optional profiles object for rendering
+  profiles?: { full_name: string | null } | null;
 }
 
 const AdminSupportTicketsPage: React.FC = () => {
@@ -45,6 +46,7 @@ const AdminSupportTicketsPage: React.FC = () => {
   // State for fetched replies
   const [ticketReplies, setTicketReplies] = useState<SupportTicketReply[]>([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
+  const { t } = useTranslation(); // ADDED
 
   const fetchTickets = async () => {
     setLoading(true);
@@ -63,7 +65,7 @@ const AdminSupportTicketsPage: React.FC = () => {
       setTickets(data.tickets || []);
     } catch (err: any) {
       console.error('Error fetching support tickets:', err);
-      setError(err.message || 'Failed to load support tickets.');
+      setError(err.message || t('failed_to_load_support_tickets')); // MODIFIED
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ const AdminSupportTicketsPage: React.FC = () => {
       }
     };
     fetchAdminProfile();
-  }, [session, supabase]);
+  }, [session, supabase, t]); // MODIFIED: Added t to dependency array
 
   const fetchRepliesForTicket = async (ticketId: string) => {
     setLoadingReplies(true);
@@ -137,7 +139,7 @@ const AdminSupportTicketsPage: React.FC = () => {
       setTicketReplies(mappedReplies);
     } catch (err: any) {
       console.error('Error fetching ticket replies:', err);
-      setError(err.message || 'Failed to load replies.');
+      setError(err.message || t('failed_to_load_replies')); // MODIFIED
     } finally {
       setLoadingReplies(false);
     }
@@ -146,10 +148,10 @@ const AdminSupportTicketsPage: React.FC = () => {
   const toggleExpand = (id: string) => {
     if (expandedTicketId === id) {
       setExpandedTicketId(null);
-      setTicketReplies([]); // Clear replies when collapsing
+      setTicketReplies([]);
     } else {
       setExpandedTicketId(id);
-      fetchRepliesForTicket(id); // Fetch replies when expanding
+      fetchRepliesForTicket(id);
     }
   };
 
@@ -164,7 +166,7 @@ const AdminSupportTicketsPage: React.FC = () => {
           // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
           // when the body is a JavaScript object.
         },
-        body: { ticket_id: ticketId, status: newStatus }, // This is the corrected line
+        body: { ticket_id: ticketId, status: newStatus },
       });
 
       if (updateError) {
@@ -178,7 +180,7 @@ const AdminSupportTicketsPage: React.FC = () => {
       );
     } catch (err: any) {
       console.error('Error updating ticket status:', err);
-      setError(err.message || 'Failed to update ticket status.');
+      setError(err.message || t('failed_to_update_ticket_status')); // MODIFIED
     } finally {
       setUpdatingTicketId(null);
     }
@@ -195,7 +197,7 @@ const AdminSupportTicketsPage: React.FC = () => {
           // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
           // when the body is a JavaScript object.
         },
-        body: { ticket_id: ticketId, priority: newPriority }, // This is the corrected line
+        body: { ticket_id: ticketId, priority: newPriority },
       });
 
       if (updateError) {
@@ -209,7 +211,7 @@ const AdminSupportTicketsPage: React.FC = () => {
       );
     } catch (err: any) {
       console.error('Error updating ticket priority:', err);
-      setError(err.message || 'Failed to update ticket priority.');
+      setError(err.message || t('failed_to_update_ticket_priority')); // MODIFIED
     } finally {
       setUpdatingTicketId(null);
     }
@@ -230,14 +232,14 @@ const AdminSupportTicketsPage: React.FC = () => {
     if (ticket.profiles && ticket.profiles.email) {
       return ticket.profiles.email;
     }
-    return 'N/A';
+    return t('n_a'); // MODIFIED
   };
 
   const getUserFullName = (ticket: SupportTicket) => {
     if (ticket.profiles && ticket.profiles.full_name) {
       return ticket.profiles.full_name;
     }
-    return 'N/A';
+    return t('n_a'); // MODIFIED
   };
 
   const handleReply = async (ticket: SupportTicket) => {
@@ -246,7 +248,7 @@ const AdminSupportTicketsPage: React.FC = () => {
     setReplySuccess(prev => ({ ...prev, [ticket.id]: null }));
 
     if (!replyMessage[ticket.id] || replyMessage[ticket.id].trim() === '') {
-      setReplyError(prev => ({ ...prev, [ticket.id]: 'Reply message cannot be empty.' }));
+      setReplyError(prev => ({ ...prev, [ticket.id]: t('reply_cannot_be_empty') })); // MODIFIED
       setReplyLoading(prev => ({ ...prev, [ticket.id]: false }));
       return;
     }
@@ -259,8 +261,8 @@ const AdminSupportTicketsPage: React.FC = () => {
           message: replyMessage[ticket.id],
           recipientName: getUserFullName(ticket),
           adminName: adminFullName,
-          replyType: 'support_ticket', // Specify reply type
-          entityId: ticket.id, // Pass ticket ID
+          replyType: 'support_ticket',
+          entityId: ticket.id,
         },
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
@@ -271,12 +273,12 @@ const AdminSupportTicketsPage: React.FC = () => {
         throw error;
       }
 
-      setReplySuccess(prev => ({ ...prev, [ticket.id]: data.message || 'Reply sent successfully!' }));
-      setReplyMessage(prev => ({ ...prev, [ticket.id]: '' })); // Clear reply message
-      fetchRepliesForTicket(ticket.id); // Refresh replies after sending
+      setReplySuccess(prev => ({ ...prev, [ticket.id]: data.message || t('reply_sent_successfully') })); // MODIFIED
+      setReplyMessage(prev => ({ ...prev, [ticket.id]: '' }));
+      fetchRepliesForTicket(ticket.id);
     } catch (err: any) {
       console.error('Error sending reply:', err);
-      setReplyError(prev => ({ ...prev, [ticket.id]: err.message || 'Failed to send reply.' }));
+      setReplyError(prev => ({ ...prev, [ticket.id]: err.message || t('failed_to_send_reply') })); // MODIFIED
     } finally {
       setReplyLoading(prev => ({ ...prev, [ticket.id]: false }));
     }
@@ -286,7 +288,7 @@ const AdminSupportTicketsPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
         <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">Loading support tickets...</p>
+        <p className="text-gray-500">{t('loading_support_tickets')}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -294,7 +296,7 @@ const AdminSupportTicketsPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-red-600">Error: {error}</p>
+        <p className="text-red-600">{t('error_label')}: {error}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -304,18 +306,18 @@ const AdminSupportTicketsPage: React.FC = () => {
       <div className="mb-6">
         <Link to="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Admin Dashboard
+          {t('back_to_admin_dashboard')} {/* MODIFIED */}
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Manage Support Tickets</h1>
-      <p className="text-gray-700 mb-8">Handle user support requests and track their status.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('manage_support_tickets')}</h1> {/* MODIFIED */}
+      <p className="text-gray-700 mb-8">{t('handle_user_support_requests')}</p> {/* MODIFIED */}
 
       {tickets.length === 0 ? (
         <Card>
           <CardBody className="text-center py-8">
             <LifeBuoy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No support tickets found.</p>
+            <p className="text-gray-500">{t('no_support_tickets_found')}</p> {/* MODIFIED */}
           </CardBody>
         </Card>
       ) : (
@@ -343,7 +345,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                           onClick={() => toggleExpand(ticket.id)}
                           className="text-blue-600 hover:underline text-sm"
                         >
-                          {expandedTicketId === ticket.id ? 'Show Less' : 'Read More'}
+                          {expandedTicketId === ticket.id ? t('show_less') : t('read_more')} {/* MODIFIED */}
                         </button>
                       )}
                       <Button
@@ -352,12 +354,12 @@ const AdminSupportTicketsPage: React.FC = () => {
                         onClick={() => toggleExpand(ticket.id)}
                         icon={<Send className="h-4 w-4" />}
                       >
-                        Reply
+                        {t('reply')} {/* MODIFIED */}
                       </Button>
                     </div>
                     <div className="mt-4 flex items-center space-x-4">
                       <div>
-                        <label htmlFor={`status-${ticket.id}`} className="sr-only">Status</label>
+                        <label htmlFor={`status-${ticket.id}`} className="sr-only">{t('status_label')}</label> {/* MODIFIED */}
                         <select
                           id={`status-${ticket.id}`}
                           value={ticket.status}
@@ -365,14 +367,14 @@ const AdminSupportTicketsPage: React.FC = () => {
                           className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           disabled={updatingTicketId === ticket.id}
                         >
-                          <option value="open">Open</option>
-                          <option value="in progress">In Progress</option>
-                          <option value="resolved">Resolved</option>
-                          <option value="closed">Closed</option>
+                          <option value="open">{t('open')}</option> {/* MODIFIED */}
+                          <option value="in progress">{t('in_progress')}</option> {/* MODIFIED */}
+                          <option value="resolved">{t('resolved')}</option> {/* MODIFIED */}
+                          <option value="closed">{t('closed')}</option> {/* MODIFIED */}
                         </select>
                       </div>
                       <div>
-                        <label htmlFor={`priority-${ticket.id}`} className="sr-only">Priority</label>
+                        <label htmlFor={`priority-${ticket.id}`} className="sr-only">{t('priority_label')}</label> {/* MODIFIED */}
                         <select
                           id={`priority-${ticket.id}`}
                           value={ticket.priority}
@@ -380,10 +382,10 @@ const AdminSupportTicketsPage: React.FC = () => {
                           className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                           disabled={updatingTicketId === ticket.id}
                         >
-                          <option value="low">Low</option>
-                          <option value="medium">Medium</option>
-                          <option value="high">High</option>
-                          <option value="urgent">Urgent</option>
+                          <option value="low">{t('low')}</option> {/* MODIFIED */}
+                          <option value="medium">{t('medium')}</option> {/* MODIFIED */}
+                          <option value="high">{t('high')}</option> {/* MODIFIED */}
+                          <option value="urgent">{t('urgent')}</option> {/* MODIFIED */}
                         </select>
                       </div>
                       {updatingTicketId === ticket.id && (
@@ -393,20 +395,20 @@ const AdminSupportTicketsPage: React.FC = () => {
 
                     {expandedTicketId === ticket.id && (
                       <div className="mt-6 pt-4 border-t border-gray-200">
-                        <h4 className="text-md font-semibold text-gray-800 mb-2">Reply History</h4>
+                        <h4 className="text-md font-semibold text-gray-800 mb-2">{t('reply_history')}</h4> {/* MODIFIED */}
                         {loadingReplies ? (
                           <div className="text-center py-2">
                             <Loader2 className="h-5 w-5 text-blue-500 animate-spin mx-auto" />
-                            <p className="text-gray-500 text-sm">Loading replies...</p>
+                            <p className="text-gray-500 text-sm">{t('loading_replies')}...</p> {/* MODIFIED */}
                           </div>
                         ) : ticketReplies.length === 0 ? (
-                          <p className="text-gray-500 text-sm mb-4">No replies yet.</p>
+                          <p className="text-gray-500 text-sm mb-4">{t('no_replies_yet')}</p> {/* MODIFIED */}
                         ) : (
                           <div className="space-y-3 mb-4">
                             {ticketReplies.map(reply => (
                               <div key={reply.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
                                 <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
-                                  <span>Replied by: {reply.profiles?.full_name || 'Admin'}</span>
+                                  <span>{t('replied_by')}: {reply.profiles?.full_name || t('admin_label')}</span> {/* MODIFIED */}
                                   <span>{formatDate(reply.created_at)}</span>
                                 </div>
                                 <p className="text-sm text-gray-800">{reply.reply_message}</p>
@@ -415,7 +417,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                           </div>
                         )}
 
-                        <h4 className="text-md font-semibold text-gray-800 mb-2">Send New Reply</h4>
+                        <h4 className="text-md font-semibold text-gray-800 mb-2">{t('send_new_reply')}</h4> {/* MODIFIED */}
                         {replySuccess[ticket.id] && (
                           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-3 flex items-center">
                             <CheckCircle className="h-5 w-5 mr-2" />
@@ -431,7 +433,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                         <textarea
                           rows={4}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          placeholder={`Reply to ${getUserFullName(ticket)}...`}
+                          placeholder={t('reply_to_name', { name: getUserFullName(ticket) })} {/* MODIFIED */}
                           value={replyMessage[ticket.id] || ''}
                           onChange={(e) => setReplyMessage(prev => ({ ...prev, [ticket.id]: e.target.value }))}
                           disabled={replyLoading[ticket.id]}
@@ -444,7 +446,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                             disabled={replyLoading[ticket.id]}
                             icon={<Send className="h-4 w-4" />}
                           >
-                            {replyLoading[ticket.id] ? 'Sending...' : 'Send Reply'}
+                            {replyLoading[ticket.id] ? t('sending') : t('send_reply')} {/* MODIFIED */}
                           </Button>
                         </div>
                       </div>
