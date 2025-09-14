@@ -10,16 +10,18 @@ import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
-// REMOVED: import Modal from '../ui/Modal'; // Modal is now handled by Dashboard
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface AnalysisResultsProps {
-  analysisResult?: AnalysisResult; // MODIFIED: Made optional
+  analysisResult?: AnalysisResult;
   isSample?: boolean;
-  onReanalyzeInitiated?: (contractName: string) => void; // MODIFIED: Pass contract name
+  onReanalyzeInitiated?: (contractName: string) => void;
   // REMOVED: onReanalyzeCompleted and onReanalyzeFailed as modal dismissal is handled by parent
 }
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated }) => {
+  const { t } = useTranslation(); // ADDED
+
   // ADDED: Defensive check for analysisResult
   if (!analysisResult) {
     // This case should ideally not be hit if Dashboard.tsx renders correctly,
@@ -28,7 +30,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       <Card>
         <CardBody className="text-center py-8">
           <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No analysis results available.</p>
+          <p className="text-gray-500">{t('no_analysis_results_available')}</p> {/* MODIFIED */}
         </CardBody>
       </Card>
     );
@@ -37,7 +39,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
-  const [isReanalyzing, setIsReanalyzing] = useState(false); // Keep this for button loading state
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
@@ -62,15 +64,13 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
   const handleEmailReport = async () => {
     if (!session?.access_token || !session?.user?.id || !session?.user?.email) {
-      alert('You must be logged in to email reports.');
+      alert(t('must_be_logged_in_to_email_reports')); // MODIFIED
       return;
     }
 
-    // This check is still valid even if analysisResult is guaranteed by parent,
-    // as it checks for internal completeness of the object.
     if (!analysisResult.contract_id || !analysisResult.executiveSummary || !analysisResult.reportFilePath) {
       console.error('Email Error: analysisResult or required fields are missing.', { analysisResult });
-      alert('Cannot email report: Analysis data is incomplete. Please try again later or contact support.');
+      alert(t('cannot_email_report_incomplete_data')); // MODIFIED
       return;
     }
 
@@ -84,7 +84,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
       if (profileError) {
         console.error('Error fetching user profile for email preference:', profileError);
-        alert('Failed to fetch user email preferences. Please try again.');
+        alert(t('failed_to_fetch_email_preferences')); // MODIFIED
         return;
       }
 
@@ -92,7 +92,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       const sendEmail = profileData?.email_reports_enabled || false;
 
       if (!sendEmail) {
-        alert('Your email reports setting is currently disabled. Please enable it in your "Settings" Preferences to receive reports via email.');
+        alert(t('email_reports_disabled_alert')); // MODIFIED
         return;
       }
 
@@ -108,7 +108,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
       if (signedUrlError) {
         console.error('Error invoking get-signed-report-url Edge Function:', signedUrlError);
-        alert(`Failed to generate a link for the report: ${signedUrlError.message}. Please try again.`);
+        alert(t('failed_to_generate_report_link', { message: signedUrlError.message })); // MODIFIED
         return;
       }
 
@@ -120,7 +120,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
       if (fetchHtmlError) {
         console.error('Error downloading HTML report from storage:', fetchHtmlError);
-        alert('Failed to retrieve report content. Please try again.');
+        alert(t('failed_to_retrieve_report_content')); // MODIFIED
         return;
       }
 
@@ -130,7 +130,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         body: {
           userId: session.user.id,
           contractId: analysisResult.contract_id,
-          reportSummary: analysisResult.executiveSummary,
+          reportSummary: executiveSummary,
           reportLink: reportLink,
           reportHtmlContent: reportHtmlContent,
         },
@@ -141,25 +141,23 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
       if (error) {
         const errorData = await error.context.json();
-        throw new Error(errorData.error || 'Edge Function returned an error');
+        throw new Error(errorData.error || t('edge_function_returned_error')); // MODIFIED
       }
 
-      alert('Report email sent successfully!');
+      alert(t('report_email_sent_successfully')); // MODIFIED
     } catch (error: any) {
       console.error('Error emailing report:', error);
-      alert(`Failed to email report: ${error.message}`);
+      alert(t('failed_to_email_report', { message: error.message })); // MODIFIED
     } finally {
       setIsEmailing(false);
     }
   };
 
-  // REMOVED: handleReanalyze function as the button is being removed.
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Executive Summary</h2>
+          <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2> {/* MODIFIED */}
           {!isSample && (
             <div className="flex space-x-2">
               <Button
@@ -169,7 +167,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 disabled={isEmailing}
                 icon={<Mail className="w-4 h-4" />}
               >
-                {isEmailing ? 'Emailing...' : 'Email Full Report'}
+                {isEmailing ? t('emailing') : t('email_full_report')} {/* MODIFIED */}
               </Button>
               {/* REMOVED: Re-analyze Contract Button */}
             </div>
@@ -184,7 +182,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 <FilePlus className="h-6 w-6 text-green-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-green-700">Compliance Score</p>
+                <p className="text-sm text-green-700">{t('compliance_score')}</p> {/* MODIFIED */}
                 <p className="text-2xl font-bold text-green-800">{analysisResult.complianceScore}%</p>
               </div>
             </div>
@@ -196,7 +194,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 <AlertCircle className="h-6 w-6 text-red-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-red-700">High Risk Issues</p>
+                <p className="text-sm text-red-700">{t('high_risk_issues')}</p> {/* MODIFIED */}
                 <p className="text-2xl font-bold text-red-800">{riskCounts.high}</p>
               </div>
             </div>
@@ -208,7 +206,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 <Info className="h-6 w-6 text-amber-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-amber-700">Medium Risk Issues</p>
+                <p className="text-sm text-amber-700">{t('medium_risk_issues')}</p> {/* MODIFIED */}
                 <p className="text-2xl font-bold text-amber-800">{riskCounts.medium}</p>
               </div>
             </div>
@@ -220,7 +218,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 <Info className="h-6 w-6 text-blue-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-blue-700">Low Risk Issues</p>
+                <p className="text-sm text-blue-700">{t('low_risk_issues')}</p> {/* MODIFIED */}
                 <p className="text-2xl font-bold text-blue-800">{riskCounts.low}</p>
               </div>
             </div>
@@ -237,7 +235,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
         >
-          All Jurisdictions
+          {t('all_jurisdictions')} {/* MODIFIED */}
         </button>
         
         {jurisdictions.map((jurisdiction) => {
@@ -264,10 +262,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-800">
           {selectedJurisdiction === 'all' 
-            ? 'All Findings' 
-            : `${getJurisdictionLabel(selectedJurisdiction)} Findings`}
+            ? t('all_findings') 
+            : t('jurisdiction_findings', { jurisdiction: getJurisdictionLabel(selectedJurisdiction) })} {/* MODIFIED */}
           <span className="ml-2 text-sm font-normal text-gray-500">
-            ({filteredFindings.length} {filteredFindings.length === 1 ? 'issue' : 'issues'})
+            ({filteredFindings.length} {filteredFindings.length === 1 ? t('issue') : t('issues')}) {/* MODIFIED */}
           </span>
         </h2>
         
@@ -275,7 +273,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           <Card>
             <CardBody className="text-center py-8">
               <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No findings for this jurisdiction</p>
+              <p className="text-gray-500">{t('no_findings_for_jurisdiction')}</p> {/* MODIFIED */}
             </CardBody>
           </Card>
         ) : (
@@ -308,7 +306,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                     
                     {expandedFindings.includes(finding.id) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Recommendations</h4>
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4> {/* MODIFIED */}
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
                             <li key={index} className="text-sm text-gray-700">{rec}</li>
@@ -324,7 +322,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                     onClick={() => toggleFindingExpanded(finding.id)}
                     className="ml-4"
                   >
-                    {expandedFindings.includes(finding.id) ? 'Hide Details' : 'Show Details'}
+                    {expandedFindings.includes(finding.id) ? t('hide_details') : t('show_details')} {/* MODIFIED */}
                   </Button>
                 </div>
               </CardBody>
@@ -335,7 +333,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Data Protection Impact</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2> {/* MODIFIED */}
           <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p>
         </div>
       )}
