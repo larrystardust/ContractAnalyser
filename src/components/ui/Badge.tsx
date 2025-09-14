@@ -2,6 +2,7 @@ import React from 'react';
 import { RiskLevel, Jurisdiction } from '../../types';
 import { getRiskColor, getRiskLevelLabel } from '../../utils/riskUtils';
 import { getJurisdictionColor, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface RiskBadgeProps {
   risk: RiskLevel;
@@ -9,11 +10,12 @@ interface RiskBadgeProps {
 }
 
 export const RiskBadge: React.FC<RiskBadgeProps> = ({ risk, className = '' }) => {
+  const { t } = useTranslation(); // ADDED
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(risk)} ${className}`}
     >
-      {getRiskLevelLabel(risk)}
+      {t(getRiskLevelLabel(risk).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
     </span>
   );
 };
@@ -29,12 +31,13 @@ export const JurisdictionBadge: React.FC<JurisdictionBadgeProps> = ({
   className = '',
   showLabel = true
 }) => {
+  const { t } = useTranslation(); // ADDED
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getJurisdictionColor(jurisdiction)} ${className}`}
-      title={getJurisdictionLabel(jurisdiction)}
+      title={t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
     >
-      {showLabel ? getJurisdictionLabel(jurisdiction) : jurisdiction}
+      {showLabel ? t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_')) : jurisdiction} {/* MODIFIED */}
     </span>
   );
 };
@@ -45,6 +48,8 @@ interface CategoryBadgeProps {
 }
 
 export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, className = '' }) => {
+  const { t } = useTranslation(); // ADDED
+
   const getCategoryColor = (category: string): string => {
     switch (category) {
       case 'compliance':
@@ -79,7 +84,7 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(category)} ${className}`}
     >
-      {getCategoryLabel(category)}
+      {t(getCategoryLabel(category).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
     </span>
   );
 };
