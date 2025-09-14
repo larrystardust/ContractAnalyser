@@ -327,7 +327,7 @@ const MembersSettings: React.FC = () => {
               <p className="text-gray-500 mt-2">{t('loading_members')}</p> {/* MODIFIED */}
             </div>
           ) : members.length === 0 ? (
-            <p className="text-gray-600">{t('no_members_found')}</p> {/* MODIFIED */}
+            <p className="text-gray-600">{t('no_members_found')}</p> 
           ) : (
             <ul className="divide-y divide-gray-200">
               {members.map((member) => (
