@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react'; // MODIFIED: Import Suspense
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -19,9 +19,11 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <ToastProvider>
             <HelmetProvider>
-              {/* ADDED: Wrap App with I18nextProvider */}
+              {/* ADDED: Wrap App with I18nextProvider and Suspense */}
               <I18nextProvider i18n={i18n}>
-                <App />
+                <Suspense fallback={<div>Loading translations...</div>}> {/* ADDED: Suspense fallback */}
+                  <App />
+                </Suspense>
               </I18nextProvider>
             </HelmetProvider>
           </ToastProvider>
