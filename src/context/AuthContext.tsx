@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface AuthContextType {
   sendPasswordResetEmail: (email: string) => Promise<void>; // MODIFIED: Removed redirectTo parameter
@@ -19,6 +20,8 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { t } = useTranslation(); // ADDED
+
   const sendPasswordResetEmail = useCallback(async (email: string) => { // MODIFIED: Removed redirectTo parameter
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -27,13 +30,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (error) throw error;
 
-      alert("Password reset email sent! Please check your inbox. The link will direct you to update your password.");
+      alert(t('password_reset_email_sent_alert')); // MODIFIED
     } catch (error: any) {
       console.error("Password reset email error:", error);
-      alert("Failed to send password reset email");
+      alert(t('failed_to_send_password_reset_alert')); // MODIFIED
       throw error;
     }
-  }, []);
+  }, [t]); // MODIFIED: Added t to dependency array
 
   const resetPassword = useCallback(async (newPassword: string) => {
     try {
@@ -43,13 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (error) throw error;
 
-      alert("Password successfully reset!");
+      alert(t('password_successfully_reset_alert')); // MODIFIED
     } catch (error: any) {
       console.error("Password reset error:", error);
-      alert("Failed to reset password");
+      alert(t('failed_to_reset_password_alert')); // MODIFIED
       throw error;
     }
-  }, []);
+  }, [t]); // MODIFIED: Added t to dependency array
 
   const memoizedValue = React.useMemo(() => ({
     sendPasswordResetEmail,
