@@ -35,7 +35,7 @@ export const JurisdictionBadge: React.FC<JurisdictionBadgeProps> = ({
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getJurisdictionColor(jurisdiction)} ${className}`}
-      title={t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
+      title={t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_'))} 
     >
       {showLabel ? t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_')) : jurisdiction} {/* MODIFIED */}
     </span>
