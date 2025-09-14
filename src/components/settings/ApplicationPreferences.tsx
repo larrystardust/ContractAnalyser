@@ -218,7 +218,7 @@ const ApplicationPreferences: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('theme')}</label> {/* MODIFIED */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: 'light', label: t('light') }, {/* MODIFIED */}
+                  { value: 'light', label: t('light') }, 
                   { value: 'dark', label: t('dark') }, 
                   { value: 'system', label: t('system') } 
                 ].map((option) => (
