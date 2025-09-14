@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import ContractList from '../contracts/ContractList';
-import AnalysisResults from '../analysis/AnalysisResults';
-import JurisdictionSummary from '../analysis/JurisdictionSummary';
-import { useContracts } from '../../context/ContractContext';
-import { Contract } from '../../types';
+import ContractList from '../components/contracts/ContractList';
+import AnalysisResults from '../components/analysis/AnalysisResults';
+import JurisdictionSummary from '../components/analysis/JurisdictionSummary';
+import { useContracts } from '../context/ContractContext';
+import { Contract } from '../types';
 import { useSearchParams } from 'react-router-dom';
-import { useSubscription } from '../../hooks/useSubscription';
-import { useUserOrders } from '../../hooks/useUserOrders';
+import { useSubscription } from '../hooks/useSubscription';
+import { useUserOrders } from '../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import Modal from '../ui/Modal';
+import Modal from '../components/ui/Modal';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation(); // ADDED
 
   const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
   const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
@@ -25,7 +27,7 @@ const Dashboard: React.FC = () => {
   // ADDED: State for the re-analysis modal
   const [showReanalysisModal, setShowReanalysisModal] = useState(false);
   const [reanalyzingContractName, setReanalyzingContractName] = useState<string | null>(null);
-  const [contractIdBeingAnalyzed, setContractIdBeingAnalyzed] = useState<string | null>(null); // ADDED: Track contract ID
+  const [contractIdBeingAnalyzed, setContractIdBeingAnalyzed] = useState<string | null>(null);
 
   // Temporary log for debugging
   useEffect(() => {
@@ -73,11 +75,11 @@ const Dashboard: React.FC = () => {
   }, [selectedContractId, contracts]);
 
   // Callback to be passed to AnalysisResults when re-analysis is initiated
-  const handleReanalyzeInitiated = (contractName: string) => { // MODIFIED: Receive contract name
+  const handleReanalyzeInitiated = (contractName: string) => {
     setShowReanalysisModal(true);
-    setReanalyzingContractName(contractName); // Set the name for the modal
+    setReanalyzingContractName(contractName);
     if (selectedContract) {
-      setContractIdBeingAnalyzed(selectedContract.id); // Store the ID of the contract being analyzed
+      setContractIdBeingAnalyzed(selectedContract.id);
     }
   };
 
@@ -102,12 +104,12 @@ const Dashboard: React.FC = () => {
       if (currentContractState && currentContractState.status === 'completed') {
         setShowReanalysisModal(false);
         setReanalyzingContractName(null);
-        setContractIdBeingAnalyAnalyzed(null);
+        setContractIdBeingAnalyzed(null);
       } else if (currentContractState && currentContractState.status === 'failed') {
         // Also close modal if analysis fails
         setShowReanalysisModal(false);
         setReanalyzingContractName(null);
-        setContractIdBeingAnalyAnalyzed(null);
+        setContractIdBeingAnalyzed(null);
       }
     }
   }, [contracts, contractIdBeingAnalyzed]);
@@ -139,15 +141,15 @@ const Dashboard: React.FC = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('error_loading_dashboard')}</h2> {/* MODIFIED */}
           <p className="text-gray-600 mb-4">
-            There was a problem fetching your data. This might be due to a temporary issue or a configuration problem.
+            {t('problem_fetching_data')} {/* MODIFIED */}
           </p>
-          {errorContracts && <p className="text-sm text-red-500">Contracts Error: {errorContracts.message}</p>}
-          {errorSubscription && <p className="text-sm text-red-500">Subscription Error: {errorSubscription.message}</p>}
-          {errorOrders && <p className="text-sm text-red-500">Orders Error: {errorOrders.message}</p>}
+          {errorContracts && <p className="text-sm text-red-500">{t('contracts_error')} {errorContracts.message}</p>} {/* MODIFIED */}
+          {errorSubscription && <p className="text-sm text-red-500">{t('subscription_error')} {errorSubscription.message}</p>} {/* MODIFIED */}
+          {errorOrders && <p className="text-sm text-red-500">{t('orders_error')} {errorOrders.message}</p>} {/* MODIFIED */}
           <p className="text-sm text-gray-500 mt-4">
-            Please check your Supabase RLS policies and database logs for more details.
+            {t('check_supabase_rls')} {/* MODIFIED */}
           </p>
         </div>
       </div>
@@ -170,7 +172,7 @@ const Dashboard: React.FC = () => {
           <div className="lg:col-span-2">
             {selectedContract && selectedContract.analysisResult ? (
               <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-gray-900">Contract Analysis: {selectedContract.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
                 
                 {/* Analysis Results */}
                 <AnalysisResults
@@ -183,7 +185,7 @@ const Dashboard: React.FC = () => {
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">Jurisdiction Summaries</h2>
+                  <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                       <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
@@ -200,13 +202,13 @@ const Dashboard: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedContract && selectedContract.status !== 'completed'
-                    ? `Analyzing "${selectedContract.name}"... (${selectedContract.processing_progress || 0}%)`
-                    : 'No Completed Contract Selected'}
+                    ? t('analysis_in_progress', { name: selectedContract.name, progress: selectedContract.processing_progress || 0 }) // MODIFIED
+                    : t('no_completed_contract_selected')} {/* MODIFIED */}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {selectedContract && selectedContract.status !== 'completed'
-                    ? 'Please wait while the analysis is in progress.'
-                    : 'Select a completed contract from the list or upload a new one to begin analysis.'}
+                    ? t('please_wait_analysis_in_progress') // MODIFIED
+                    : t('select_contract_or_upload')} {/* MODIFIED */}
                 </p>
               </div>
             )}
@@ -217,16 +219,16 @@ const Dashboard: React.FC = () => {
         {showReanalysisModal && (
           <Modal
             isOpen={showReanalysisModal}
-            onClose={() => setShowReanalysisModal(false)} // Allow manual close if needed
-            title="Contract Analysis In Progress"
-            className="max-w-sm" // Make modal smaller
+            onClose={() => setShowReanalysisModal(false)}
+            title={t('contract_analysis_in_progress')} {/* MODIFIED */}
+            className="max-w-sm"
           >
             <div className="text-center py-4">
               <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-700 text-lg">
-                {reanalyzingContractName ? `"${reanalyzingContractName}" is being analyzed` : 'The contract is being analyzed'} and will be ready shortly.
+                {reanalyzingContractName ? t('contract_being_analyzed', { contractName: reanalyzingContractName }) : t('the_contract_is_being_analyzed')} {/* MODIFIED */}
               </p>
-              <p className="text-sm text-gray-500 mt-2">This may take a few minutes depending on contract size.</p>
+              <p className="text-sm text-gray-500 mt-2">{t('may_take_minutes')}</p> {/* MODIFIED */}
             </div>
           </Modal>
         )}
