@@ -136,7 +136,7 @@ const SupportTicketForm: React.FC = () => {
             type="text"
             id="subject"
             name="subject"
-            placeholder={t('subject')} {/* MODIFIED */}
+            placeholder={t('subject')} 
             value={formData.subject}
             onChange={handleChange}
             required
@@ -151,7 +151,7 @@ const SupportTicketForm: React.FC = () => {
           id="description"
           name="description"
           rows={5}
-          placeholder={t('describe_issue')} {/* MODIFIED */}
+          placeholder={t('describe_issue')} 
           value={formData.description}
           onChange={handleChange}
           required
