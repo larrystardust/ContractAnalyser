@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { Mail, User, MessageSquare, AlertCircle, CheckCircle, Loader2, Lock } from 'lucide-react'; // ADDED Lock and Loader2
+import { Mail, User, MessageSquare, AlertCircle, CheckCircle, Loader2, Lock } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ const ContactForm: React.FC = () => {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpMessage, setOtpMessage] = useState<string | null>(null);
+  const { t } = useTranslation(); // ADDED
 
   // Reset OTP status if email changes
   useEffect(() => {
@@ -48,7 +50,7 @@ const ContactForm: React.FC = () => {
     setOtpMessage(null);
 
     if (!formData.email) {
-      setOtpError('Please enter your email address.');
+      setOtpError(t('please_enter_email_address')); // MODIFIED
       setOtpLoading(false);
       return;
     }
@@ -64,13 +66,13 @@ const ContactForm: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send OTP.');
+        throw new Error(errorData.error || t('failed_to_send_otp')); // MODIFIED
       }
 
       setOtpSent(true);
-      setOtpMessage('OTP sent to your email. Please check your inbox.');
+      setOtpMessage(t('otp_sent_to_email')); // MODIFIED
     } catch (err: any) {
-      setOtpError(err.message || 'An error occurred while sending OTP.');
+      setOtpError(err.message || t('error_sending_otp')); // MODIFIED
       console.error('Send OTP error:', err);
     } finally {
       setOtpLoading(false);
@@ -83,7 +85,7 @@ const ContactForm: React.FC = () => {
     setOtpMessage(null);
 
     if (!otpCode) {
-      setOtpError('Please enter the OTP.');
+      setOtpError(t('please_enter_the_otp')); // MODIFIED
       setOtpLoading(false);
       return;
     }
@@ -99,13 +101,13 @@ const ContactForm: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to verify OTP.');
+        throw new Error(errorData.error || t('failed_to_verify_otp')); // MODIFIED
       }
 
       setIsEmailVerified(true);
-      setOtpMessage('Email verified successfully!');
+      setOtpMessage(t('email_verified_successfully')); // MODIFIED
     } catch (err: any) {
-      setOtpError(err.message || 'An error occurred while verifying OTP.');
+      setOtpError(err.message || t('error_verifying_otp')); // MODIFIED
       console.error('Verify OTP error:', err);
     } finally {
       setOtpLoading(false);
@@ -119,13 +121,13 @@ const ContactForm: React.FC = () => {
     setSuccess(false);
 
     if (!recaptchaToken) {
-      setError('Please complete the reCAPTCHA verification.');
+      setError(t('complete_recaptcha_verification')); // MODIFIED
       setLoading(false);
       return;
     }
 
     if (!isEmailVerified) {
-      setError('Please verify your email address first.');
+      setError(t('verify_email_first')); // MODIFIED
       setLoading(false);
       return;
     }
@@ -148,7 +150,7 @@ const ContactForm: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit inquiry.');
+        throw new Error(errorData.error || t('failed_to_submit_inquiry')); // MODIFIED
       }
 
       setSuccess(true);
@@ -166,7 +168,7 @@ const ContactForm: React.FC = () => {
       setOtpError(null);
       setOtpMessage(null);
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || t('unexpected_error_occurred')); // MODIFIED
       console.error('Inquiry submission error:', err);
     } finally {
       setLoading(false);
@@ -178,7 +180,7 @@ const ContactForm: React.FC = () => {
       {success && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center">
           <CheckCircle className="h-5 w-5 mr-2" />
-          <span>Your message has been sent successfully! We will get back to you soon.</span>
+          <span>{t('your_message_sent')}</span> {/* MODIFIED */}
         </div>
       )}
       {error && (
@@ -190,14 +192,14 @@ const ContactForm: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="firstName" className="sr-only">First Name</label>
+          <label htmlFor="firstName" className="sr-only">{t('first_name')}</label> {/* MODIFIED */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               id="firstName"
               name="firstName"
-              placeholder="First Name"
+              placeholder={t('first_name')} {/* MODIFIED */}
               value={formData.firstName}
               onChange={handleChange}
               required
@@ -206,14 +208,14 @@ const ContactForm: React.FC = () => {
           </div>
         </div>
         <div>
-          <label htmlFor="lastName" className="sr-only">Last Name</label>
+          <label htmlFor="lastName" className="sr-only">{t('last_name')}</label> {/* MODIFIED */}
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               id="lastName"
               name="lastName"
-              placeholder="Last Name"
+              placeholder={t('last_name')} {/* MODIFIED */}
               value={formData.lastName}
               onChange={handleChange}
               required
@@ -224,19 +226,19 @@ const ContactForm: React.FC = () => {
       </div>
 
       <div>
-        <label htmlFor="email" className="sr-only">Email</label>
+        <label htmlFor="email" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
         <div className="relative flex items-center">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="email"
             id="email"
             name="email"
-            placeholder="Email"
+            placeholder={t('email_address')} {/* MODIFIED */}
             value={formData.email}
             onChange={handleChange}
             required
             className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            disabled={otpSent || isEmailVerified} // Disable email input after OTP sent or verified
+            disabled={otpSent || isEmailVerified}
           />
           <Button
             type="button"
@@ -246,7 +248,7 @@ const ContactForm: React.FC = () => {
             disabled={otpLoading || otpSent || !formData.email || isEmailVerified}
             className="ml-2 rounded-r-md"
           >
-            {otpLoading && !otpSent ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify Email'}
+            {otpLoading && !otpSent ? <Loader2 className="h-4 w-4 animate-spin" /> : t('verify_email')} {/* MODIFIED */}
           </Button>
         </div>
         {otpError && (
@@ -259,14 +261,14 @@ const ContactForm: React.FC = () => {
 
       {otpSent && !isEmailVerified && (
         <div>
-          <label htmlFor="otpCode" className="sr-only">OTP Code</label>
+          <label htmlFor="otpCode" className="sr-only">{t('otp_code')}</label> {/* MODIFIED */}
           <div className="relative flex items-center">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               id="otpCode"
               name="otpCode"
-              placeholder="Enter OTP"
+              placeholder={t('enter_otp')} {/* MODIFIED */}
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value)}
               required
@@ -281,21 +283,21 @@ const ContactForm: React.FC = () => {
               disabled={otpLoading || !otpCode}
               className="ml-2 rounded-r-md"
             >
-              {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify OTP'}
+              {otpLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('verify_otp')} {/* MODIFIED */}
             </Button>
           </div>
         </div>
       )}
 
       <div>
-        <label htmlFor="subject" className="sr-only">Subject</label>
+        <label htmlFor="subject" className="sr-only">{t('subject')}</label> {/* MODIFIED */}
         <div className="relative">
           <MessageSquare className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
             id="subject"
             name="subject"
-            placeholder="Subject"
+            placeholder={t('subject')} {/* MODIFIED */}
             value={formData.subject}
             onChange={handleChange}
             required
@@ -305,12 +307,12 @@ const ContactForm: React.FC = () => {
       </div>
 
       <div>
-        <label htmlFor="message" className="sr-only">Message</label>
+        <label htmlFor="message" className="sr-only">{t('your_message')}</label> {/* MODIFIED */}
         <textarea
           id="message"
           name="message"
           rows={5}
-          placeholder="Your Message"
+          placeholder={t('your_message')} {/* MODIFIED */}
           value={formData.message}
           onChange={handleChange}
           required
@@ -331,9 +333,9 @@ const ContactForm: React.FC = () => {
         variant="primary"
         size="lg"
         className="w-full"
-        disabled={loading || !recaptchaToken || !isEmailVerified} // Disable if not verified
+        disabled={loading || !recaptchaToken || !isEmailVerified}
       >
-        {loading ? 'Sending Message...' : 'Send Message'}
+        {loading ? t('sending_message') : t('send_message')} {/* MODIFIED */}
       </Button>
     </form>
   );
