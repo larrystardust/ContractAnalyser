@@ -5,6 +5,7 @@ import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../s
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
+import { useTranslation } from 'react-i18next'; // ADDED
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -115,6 +116,8 @@ const UserForm: React.FC<UserFormProps> = ({
   onManageSubscription,
   onCreateCustomerPortal
 }) => {
+  const { t } = useTranslation(); // ADDED
+
   const [formData, setFormData] = useState<AdminProfileUpdate>({
     full_name: user.full_name || '',
     business_name: user.business_name || '',
@@ -191,11 +194,11 @@ const UserForm: React.FC<UserFormProps> = ({
       // MODIFIED: Pass selectedPriceId instead of selectedSubscriptionId
       console.log('UserForm: Calling onManageSubscription with:', user.id, selectedPriceId, selectedRole);
       await onManageSubscription(user.id, selectedPriceId, selectedRole);
-      alert('User subscription updated successfully!');
+      alert(t('user_subscription_updated_successfully')); // MODIFIED
       onCancel();
     } catch (error: any) {
       console.error('UserForm: Error in handleSubscriptionChange:', error);
-      alert(`Failed to update subscription: ${error.message}`);
+      alert(t('failed_to_update_subscription', { message: error.message })); // MODIFIED
     } finally {
       setIsManagingSubscription(false);
     }
@@ -209,10 +212,10 @@ const UserForm: React.FC<UserFormProps> = ({
     setIsGrantingCredit(true);
     try {
       await onGrantSingleUse(user.id);
-      alert('Single-use credit granted successfully!');
+      alert(t('single_use_credit_granted_successfully')); // MODIFIED
       onCancel();
     } catch (error: any) {
-      alert(`Failed to grant credit: ${error.message}`);
+      alert(t('failed_to_grant_credit', { message: error.message })); // MODIFIED
     } finally {
       setIsGrantingCredit(false);
     }
@@ -224,7 +227,7 @@ const UserForm: React.FC<UserFormProps> = ({
       const portalUrl = await onCreateCustomerPortal(user.id);
       window.open(portalUrl, '_blank'); // Open in new tab
     } catch (error) {
-      alert(`Failed to open customer portal: ${error.message}`);
+      alert(t('failed_to_open_customer_portal', { message: error.message })); // MODIFIED
     } finally {
       setIsCreatingPortal(false);
     }
@@ -241,10 +244,10 @@ const UserForm: React.FC<UserFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Profile Information */}
       <h3 className="text-lg font-medium text-gray-900 flex items-center mb-2">
-        <User className="h-5 w-5 text-blue-900 mr-2" /> Profile Information
+        <User className="h-5 w-5 text-blue-900 mr-2" /> {t('profile_information')} {/* MODIFIED */}
       </h3>
       <div>
-        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">{t('full_name')}</label> {/* MODIFIED */}
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -260,7 +263,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
       {/* Business Name Input */}
       <div>
-        <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+        <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">{t('business_name')}</label> {/* MODIFIED */}
         <div className="relative">
           <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -275,7 +278,7 @@ const UserForm: React.FC<UserFormProps> = ({
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label> {/* MODIFIED */}
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -290,7 +293,7 @@ const UserForm: React.FC<UserFormProps> = ({
       </div>
 
       <div>
-        <label htmlFor="mobile_phone_number" className="block text-sm font-medium text-gray-700 mb-1">Mobile Phone Number</label>
+        <label htmlFor="mobile_phone_number" className="block text-sm font-medium text-gray-700 mb-1">{t('mobile_phone_number')}</label> {/* MODIFIED */}
         <div className="relative flex">
           <select
             id="country_code"
@@ -329,13 +332,13 @@ const UserForm: React.FC<UserFormProps> = ({
             onChange={handleChange}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span className="ml-2">Is Admin</span>
+          <span className="ml-2">{t('is_admin')}</span> {/* MODIFIED */}
         </label>
       </div>
 
       {/* Theme Preference */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Theme Preference</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('theme_preference')}</label> {/* MODIFIED */}
         <select
           id="theme_preference"
           name="theme_preference"
@@ -343,9 +346,9 @@ const UserForm: React.FC<UserFormProps> = ({
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="system">System</option>
+          <option value="light">{t('light')}</option> {/* MODIFIED */}
+          <option value="dark">{t('dark')}</option> {/* MODIFIED */}
+          <option value="system">{t('system')}</option> {/* MODIFIED */}
         </select>
       </div>
 
@@ -360,13 +363,13 @@ const UserForm: React.FC<UserFormProps> = ({
             onChange={handleChange}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span className="ml-2">Email Reports Enabled</span>
+          <span className="ml-2">{t('email_reports_enabled')}</span> {/* MODIFIED */}
         </label>
       </div>
 
       {/* Default Jurisdictions */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Default Jurisdictions</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('default_jurisdictions')}</label> {/* MODIFIED */}
         <div className="flex flex-wrap gap-2">
           {getAllJurisdictions().map((jurisdiction) => (
             <button
@@ -387,11 +390,11 @@ const UserForm: React.FC<UserFormProps> = ({
 
       {/* Subscription & Role Management */}
       <h3 className="text-lg font-medium text-gray-900 flex items-center mb-2 pt-4 border-t border-gray-200">
-        <CreditCard className="h-5 w-5 text-blue-900 mr-2" /> Subscription & Role
+        <CreditCard className="h-5 w-5 text-blue-900 mr-2" /> {t('subscription_role')} {/* MODIFIED */}
       </h3>
       <div className="space-y-3">
         <div>
-          <label htmlFor="subscription_plan" className="block text-sm font-medium text-gray-700 mb-1">Assign Subscription Plan:</label>
+          <label htmlFor="subscription_plan" className="block text-sm font-medium text-gray-700 mb-1">{t('assign_subscription_plan')}:</label> {/* MODIFIED */}
           <select
             id="subscription_plan"
             name="subscription_plan"
@@ -400,7 +403,7 @@ const UserForm: React.FC<UserFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             disabled={isManagingSubscription}
           >
-            <option value="">-- No subscription --</option>
+            <option value="">{t('no_subscription')}</option> {/* MODIFIED */}
             {stripeProducts
               .filter(product => product.mode === 'admin_assigned') // Filter for admin_assigned products only
               .map((product) => (
@@ -417,7 +420,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
         {selectedPriceId && ( // Only show role if a priceId is selected
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role in Subscription:</label>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">{t('role_in_subscription')}:</label> {/* MODIFIED */}
             <select
               id="role"
               name="role"
@@ -426,9 +429,9 @@ const UserForm: React.FC<UserFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isManagingSubscription}
             >
-              <option value="">-- No Role --</option>
-              <option value="owner">Owner</option>
-              <option value="member">Member</option>
+              <option value="">{t('select_role')}</option> {/* MODIFIED */}
+              <option value="owner">{t('owner')}</option> {/* MODIFIED */}
+              <option value="member">{t('member')}</option> {/* MODIFIED */}
             </select>
           </div>
         )}
@@ -442,7 +445,7 @@ const UserForm: React.FC<UserFormProps> = ({
             disabled={isManagingSubscription || (selectedPriceId !== null && selectedRole === null)}
             icon={<UsersIcon className="h-4 w-4" />}
           >
-            {isManagingSubscription ? 'Updating Subscription...' : 'Assign/Update Subscription'}
+            {isManagingSubscription ? t('updating_subscription') : t('assign_update_subscription')} {/* MODIFIED */}
           </Button>
           <Button
             type="button"
@@ -451,7 +454,7 @@ const UserForm: React.FC<UserFormProps> = ({
             disabled={isGrantingCredit}
             icon={<Sparkles className="h-4 w-4" />}
           >
-            {isGrantingCredit ? 'Granting Credit...' : 'Grant Single-Use Credit'}
+            {isGrantingCredit ? t('granting_credit') : t('grant_single_use_credit')} {/* MODIFIED */}
           </Button>
           <Button
             type="button"
@@ -460,20 +463,20 @@ const UserForm: React.FC<UserFormProps> = ({
             disabled={isCreatingPortal || !user.customer_id}
             icon={<CreditCard className="h-4 w-4" />}
           >
-            {isCreatingPortal ? 'Opening Portal...' : 'Manage Subscription in Stripe'}
+            {isCreatingPortal ? t('opening_portal') : t('manage_subscription_stripe')} {/* MODIFIED */}
           </Button>
           {!user.customer_id && (
-            <p className="text-xs text-gray-500">User has no associated Stripe customer ID.</p>
+            <p className="text-xs text-gray-500">{t('no_stripe_customer_id')}</p> {/* MODIFIED */}
           )}
         </div>
       </div>
 
       <div className="flex justify-end space-x-3 mt-6">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>
-          Cancel
+          {t('cancel')} {/* MODIFIED */}
         </Button>
         <Button type="submit" variant="primary" disabled={isSaving}>
-          {isSaving ? 'Saving Profile...' : 'Save Profile Changes'}
+          {isSaving ? t('saving_profile') : t('save_profile_changes')} {/* MODIFIED */}
         </Button>
       </div>
     </form>
