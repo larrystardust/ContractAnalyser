@@ -433,7 +433,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                         <textarea
                           rows={4}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          placeholder={t('reply_to_name', { name: getUserFullName(ticket) })} {/* MODIFIED */}
+                          placeholder={t('reply_to_name', { name: getUserFullName(ticket) })} 
                           value={replyMessage[ticket.id] || ''}
                           onChange={(e) => setReplyMessage(prev => ({ ...prev, [ticket.id]: e.target.value }))}
                           disabled={replyLoading[ticket.id]}
