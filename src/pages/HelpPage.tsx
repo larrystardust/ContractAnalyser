@@ -4,10 +4,12 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ContactForm from '../components/forms/ContactForm';
 import { ArrowLeft } from 'lucide-react';
-import StructuredData from '../components/StructuredData'; // ADDED: Import StructuredData
+import StructuredData from '../components/StructuredData';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const HelpPage: React.FC = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const { t } = useTranslation(); // ADDED
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -15,34 +17,34 @@ const HelpPage: React.FC = () => {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What is ContractAnalyser?",
+        "name": t('what_is_contractanalyser_q'), // MODIFIED
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "ContractAnalyser is an AI-powered platform designed to help legal professionals, business owners, compliance officers, HR managers quickly analyze legal contracts/agreements for risks, compliance issues, and key insights."
+          "text": t('what_is_contractanalyser_a') // MODIFIED
         }
       },
       {
         "@type": "Question",
-        "name": "How do I sign up?",
+        "name": t('how_do_i_sign_up_q'), // MODIFIED
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "You can sign up for a free account by clicking the \"Sign Up\" button on our homepage and following the registration steps."
+          "text": t('how_do_i_sign_up_a') // MODIFIED
         }
       },
       {
         "@type": "Question",
-        "name": "What file types do you support?",
+        "name": t('what_file_types_q'), // MODIFIED
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We currently support PDF, DOCX, and DOC file formats for contract uploads. We do not support OCR for scanned documents or images. Please ensure your uploaded files contain selectable (clear) text. If your document is a scan or an image, you must perform OCR on it manually before uploading."
+          "text": t('what_file_types_a') // MODIFIED
         }
       },
       {
         "@type": "Question",
-        "name": "How long are my uploaded files and analysis results retained?",
+        "name": t('how_long_retained_q'), // MODIFIED
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The retention period for your uploaded contracts and their analysis results depends on your plan: Single-Use Purchases: Files and their analysis results are automatically deleted after 30 days from the upload date. Active Subscription Plans: Your files and analysis results will be retained for the entire duration of your active subscription. The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. If your subscription ends or is canceled, your data will be subject to deletion after a grace period of 30 days. To add more files after reaching your limit, please delete old files from your Contracts page."
+          "text": t('how_long_retained_a') // MODIFIED
         }
       }
     ]
@@ -59,174 +61,171 @@ const HelpPage: React.FC = () => {
 
   return (
     <>
-      <StructuredData schema={faqSchema} /> {/* ADDED: FAQ Structured Data */}
-      <StructuredData schema={contactPointSchema} /> {/* ADDED: ContactPoint Structured Data */}
+      <StructuredData schema={faqSchema} />
+      <StructuredData schema={contactPointSchema} />
       <div className="container mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Landing Page
+            {t('back_to_landing_page')} {/* MODIFIED */}
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Help Center</h1>
-        <p className="text-sm text-gray-500 mb-8">Last Updated: August 12, 2025</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('help_center')}</h1> {/* MODIFIED */}
+        <p className="text-sm text-gray-500 mb-8">{t('last_updated')}: August 12, 2025</p> {/* MODIFIED */}
 
         <p className="text-gray-700 mb-6">
-          Welcome to the ContractAnalyser Help Center! Here you'll find answers to common questions and resources to help you get the most out of our service.
+          {t('welcome_help_center')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Getting Started</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('getting_started')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>What is ContractAnalyser?</strong>
-            <p className="ml-4">ContractAnalyser is an AI-powered platform designed to help legal professionals, business owners, compliance officers, HR managers quickly analyze legal contracts/agreements for risks, compliance issues, and key insights.</p>
+            <strong>{t('what_is_contractanalyser_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_is_contractanalyser_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>How do I sign up?</strong>
-            <p className="ml-4">You can sign up for a free account by clicking the "Sign Up" button on our homepage and following the registration steps.</p>
+            <strong>{t('how_do_i_sign_up_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('how_do_i_sign_up_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What file types do you support?</strong>
-            <p className="ml-4">We currently support PDF, DOCX, and DOC file formats for contract uploads. We **do not support OCR** for scanned documents or images. Please ensure your uploaded files contain **selectable (clear) text**. If your document is a scan or an image, you must perform OCR on it manually before uploading.</p>
+            <strong>{t('what_file_types_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_file_types_a')}</p> {/* MODIFIED */}
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Uploading Contracts</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('uploading_contracts')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>How do I upload a contract?</strong>
-            <p className="ml-4">After logging in, navigate to the "Upload" section. You can drag and drop your contract file or click "Browse Files" to select it from your computer.</p>
+            <strong>{t('how_to_upload_contract_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('how_to_upload_contract_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What jurisdictions do you cover?</strong>
-            <p className="ml-4">Our AI is trained to analyze contracts across various jurisdictions, including UK, EU, Ireland, US, Canada, Australia and Others. You can select the relevant jurisdictions during the upload process.</p>
+            <strong>{t('what_jurisdictions_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_jurisdictions_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>How long does analysis take?</strong>
-            <p className="ml-4">Analysis time varies depending on the length and complexity of the contract. You can monitor the processing progress on your Dashboard.</p>
+            <strong>{t('how_long_analysis_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('how_long_analysis_a')}</p> {/* MODIFIED */}
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Understanding Analysis Results</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('understanding_analysis_results')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>What is an Executive Summary?</strong>
-            <p className="ml-4">The Executive Summary provides a high-level overview of the contract's key aspects, risks, and compliance status.</p>
+            <strong>{t('what_is_executive_summary_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_is_executive_summary_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What are Findings?</strong>
-            <p className="ml-4">Findings are specific issues or points of interest identified by our AI within the contract. Each finding includes a title, description, risk level, relevant jurisdiction, category, and recommendations.</p>
+            <strong>{t('what_are_findings_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_are_findings_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What do the Risk Levels mean?</strong>
-            <p className="ml-4">Risk levels (High, Medium, Low, None) indicate the severity of a finding.</p>
+            <strong>{t('what_risk_levels_mean_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_risk_levels_mean_a')}</p> {/* MODIFIED */}
             <ul className="list-circle list-inside text-gray-700 ml-8 mt-1">
-              <li><strong>High Risk:</strong> Significant legal or financial implications.</li>
-              <li><strong>Medium Risk:</strong> Potential issues that require attention.</li>
-              <li><strong>Low Risk:</strong> Minor issues or areas for improvement.</li>
-              <li><strong>No Risk:</strong> No identified issues.</li>
+              <li><strong>{t('high_risk_label')}:</strong> {t('high_risk_desc')}.</li> {/* MODIFIED */}
+              <li><strong>{t('medium_risk_label')}:</strong> {t('medium_risk_desc')}.</li> {/* MODIFIED */}
+              <li><strong>{t('low_risk_label')}:</strong> {t('low_risk_desc')}.</li> {/* MODIFIED */}
+              <li><strong>{t('no_risk_label')}:</strong> {t('no_risk_desc')}.</li> {/* MODIFIED */}
             </ul>
           </li>
           <li>
-            <strong>What is the Compliance Score?</strong>
-            <p className="ml-4">The Compliance Score (0-100) is an overall assessment of how well the contract adheres to relevant legal and regulatory standards. A higher score indicates better compliance.</p>
+            <strong>{t('what_is_compliance_score_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_is_compliance_score_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What is Data Protection Impact?</strong>
-            <p className="ml-4">This section highlights any clauses or aspects of the contract that relate to data processing and privacy, assessing their impact on data protection compliance.</p>
+            <strong>{t('what_is_data_protection_impact_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('what_is_data_protection_impact_a')}</p> {/* MODIFIED */}
           </li>
         </ul>
 
         {/* MODIFIED: Data Retention Policy Section */}
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Retention Policy</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('data_retention_policy_title')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>How long are my uploaded files and analysis results retained?</strong>
+            <strong>{t('how_long_retained_q')}</strong> {/* MODIFIED */}
             <p className="ml-4">
-              The retention period for your uploaded contracts and their analysis results depends on your plan:
+              {t('retention_period_depends')} {/* MODIFIED */}
             </p>
             <ul className="list-circle list-inside text-gray-700 ml-8 mt-1">
               <li>
-                <strong>Single-Use Purchases:</strong> Files and their analysis results are automatically deleted after 30 days from the upload date.
+                <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_desc')}
               </li>
               <li>
-                <strong>Active Subscription Plans:</strong> Your files and analysis results will be retained for the entire duration of your active subscription.
-                The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'.
-                If your subscription ends or is canceled, your data will be subject to deletion after a grace period of 30 days.
-                To add more files after reaching your limit, please delete old files from your Contracts page.
+                <strong>{t('active_subscription_plans_label')}:</strong> {t('active_subscription_plans_desc')}
               </li>
             </ul>
           </li>
           <li>
-            <strong>Why is there a data retention policy?</strong>
+            <strong>{t('why_data_retention_policy_q')}</strong> {/* MODIFIED */}
             <p className="ml-4">
-              This policy helps us manage storage resources efficiently and ensures that we only retain data for as long as necessary, aligning with best practices for data privacy and security.
+              {t('why_data_retention_policy_a')} {/* MODIFIED */}
             </p>
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Account & Billing</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('account_billing')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>How do I update my profile information?</strong>
-            <p className="ml-4">Go to "Settings" and then "Profile" to update your personal and company details.</p>
+            <strong>{t('update_profile_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('update_profile_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>How do I change my password?</strong>
-            <p className="ml-4">In "Settings," navigate to "Security" to change your password and manage other security settings.</p>
+            <strong>{t('change_password_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('change_password_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>How do I manage my subscription?</strong>
-            <p className="ml-4">Under "Settings," select "Billing" to view your current plan, manage your subscription, and access invoices.</p>
+            <strong>{t('manage_subscription_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('manage_subscription_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>What payment methods do you accept?</strong>
-            <p className="ml-4">We accept major credit cards through our secure payment gateway (Stripe).</p>
+            <strong>{t('payment_methods_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('payment_methods_a')}</p> {/* MODIFIED */}
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Troubleshooting</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('troubleshooting')}</h2> {/* MODIFIED */}
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>My upload failed. What should I do?</strong>
-            <p className="ml-4">Ensure your file is in a supported format (PDF, DOCX, DOC) and try again. If the issue persists, please contact support with details of the error.</p>
+            <strong>{t('upload_failed_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('upload_failed_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>My contract is stuck in "Analyzing" status.</strong>
-            <p className="ml-4">Analysis can take some time. If it remains stuck for an unusually long period (e.g., over an hour for a standard contract), please contact our support team.</p>
+            <strong>{t('contract_stuck_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('contract_stuck_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>Analysis failed or incomplete.</strong>
-            <p className="ml-4">Scanned documents and images with text cannot be properly analyzed. If your document is a scan or an image, you must perform OCR on it manually before uploading.</p>
+            <strong>{t('analysis_failed_q')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('analysis_failed_a')}</p> {/* MODIFIED */}
           </li>
           <li>
-            <strong>I forgot my password.</strong>
-            <p className="ml-4">On the login page, click "Forgot password?" and follow the instructions to reset it.</p>
+            <strong>{t('forgot_password_q_troubleshoot')}</strong> {/* MODIFIED */}
+            <p className="ml-4">{t('forgot_password_a_troubleshoot')}</p> {/* MODIFIED */}
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Support</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('contact_support')}</h2> {/* MODIFIED */}
         <p className="text-gray-700 mb-4">
-          If you can't find the answer to your question here, please don't hesitate to contact our support team:
+          {t('cant_find_answer')} {/* MODIFIED */}
         </p>
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
-          <li><strong>Click:</strong> Contact Us below</li>        
+          <li><strong>{t('click_contact_us')}:</strong> {t('contact_us_below')}</li> {/* MODIFIED */}
         </ul>
         <p className="text-gray-700 mb-6">
-          Our support team is available Monday - Friday, 9 AM - 5 PM GMT.
+          {t('support_team_hours')} {/* MODIFIED */}
         </p>
 
         <div className="mt-8 text-center">
           <Button variant="primary" onClick={() => setIsContactModalOpen(true)}>
-            Contact Us
+            {t('contact_us')} {/* MODIFIED */}
           </Button>
         </div>
 
         <Modal
           isOpen={isContactModalOpen}
           onClose={() => setIsContactModalOpen(false)}
-          title="Contact Us"
+          title={t('contact_us')} {/* MODIFIED */}
         >
           <ContactForm />
         </Modal>
