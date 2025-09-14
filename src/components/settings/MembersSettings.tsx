@@ -282,7 +282,7 @@ const MembersSettings: React.FC = () => {
                   type="email"
                   id="invitedEmail"
                   name="invitedEmail"
-                  placeholder={t('members_email_address')} {/* MODIFIED */}
+                  placeholder={t('members_email_address')} 
                   value={invitedEmail}
                   onChange={(e) => setInvitedEmail(e.target.value)}
                   required
