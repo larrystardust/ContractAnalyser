@@ -112,7 +112,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">{t('no_contracts_found')}</p> {/* MODIFIED */}
             {contractsToDisplay === undefined && (
-              <p className="text-sm text-gray-400 mt-1">{t('upload_to_get_started')}</p> {/* MODIFIED */}
+              <p className="text-sm text-gray-400 mt-1">{t('upload_to_get_started')}</p> 
             )}
           </CardBody>
         </Card>
