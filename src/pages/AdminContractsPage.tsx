@@ -122,7 +122,7 @@ const AdminContractsPage: React.FC = () => {
         <Modal
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
-          title={t('contract_details', { name: selectedContract.name })} {/* MODIFIED */}
+          title={t('contract_details', { name: selectedContract.name })} 
           className="max-w-4xl"
         >
           <AdminContractDetailsModal contract={selectedContract} />
