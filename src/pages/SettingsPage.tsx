@@ -7,44 +7,46 @@ import SecuritySettings from '../components/settings/SecuritySettings';
 import ApplicationPreferences from '../components/settings/ApplicationPreferences';
 import BillingSettings from '../components/settings/BillingSettings';
 import MembersSettings from '../components/settings/MembersSettings'; // ADDED MembersSettings
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const SettingsPage: React.FC = () => {
   console.log('SettingsPage component rendered'); // Added console.log
   const location = useLocation();
+  const { t } = useTranslation(); // ADDED
 
   const settingsNavigation = [
     {
-      name: 'Profile',
+      name: t('profile'), // MODIFIED
       href: '/settings/profile',
       icon: User,
       component: ProfileSettings
     },
     {
-      name: 'Notifications',
+      name: t('notifications'), // MODIFIED
       href: '/settings/notifications',
       icon: Bell,
       component: NotificationSettings
     },
     {
-      name: 'Security',
+      name: t('security'), // MODIFIED
       href: '/settings/security',
       icon: Shield,
       component: SecuritySettings
     },
     {
-      name: 'Preferences',
+      name: t('preferences'), // MODIFIED
       href: '/settings/preferences',
       icon: Settings,
       component: ApplicationPreferences
     },
     {
-      name: 'Billing',
+      name: t('billing'), // MODIFIED
       href: '/settings/billing',
       icon: CreditCard,
       component: BillingSettings
     },
     { // ADDED Members navigation item
-      name: 'Members',
+      name: t('members'), // MODIFIED
       href: '/settings/members',
       icon: Users,
       component: MembersSettings
@@ -58,7 +60,7 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6 mt-16">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">{t('settings')}</h1> {/* MODIFIED */}
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Settings Navigation Sidebar */}
