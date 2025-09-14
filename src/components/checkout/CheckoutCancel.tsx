@@ -1,20 +1,21 @@
-import React, { useEffect } from 'react'; // ADDED useEffect
-import { useNavigate } from 'react-router-dom'; // ADDED useNavigate
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
-// REMOVED: import Button from '../ui/Button'; // Button is no longer needed for navigation
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const CheckoutCancel: React.FC = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const { t } = useTranslation(); // ADDED
 
   useEffect(() => {
     // Redirect to the upload page after 3 seconds
     const timer = setTimeout(() => {
       navigate('/upload');
-    }, 3000); // 3000 milliseconds = 3 seconds
+    }, 3000);
 
     // Cleanup the timer if the component unmounts before the redirect
     return () => clearTimeout(timer);
-  }, [navigate]); // Dependency array ensures effect runs once on mount
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
@@ -24,20 +25,12 @@ const CheckoutCancel: React.FC = () => {
         </div>
         
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Payment Cancelled
+          {t('payment_cancelled')} {/* MODIFIED */}
         </h2>
         
         <p className="text-gray-600 mb-6">
-          Your payment was cancelled. No charges were made to your account.
-          You will be redirected to the upload page shortly.
+          {t('payment_cancelled_message')} {/* MODIFIED */}
         </p>
-        
-        {/* REMOVED: Link component as redirection is now automatic */}
-        {/* <Link to="/upload">
-          <Button variant="primary" size="lg" className="w-full">
-            Return to Upload Page
-          </Button>
-        </Link> */}
       </div>
     </div>
   );
