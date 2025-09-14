@@ -189,7 +189,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                     <button
                       onClick={(e) => handleDelete(contract.id, contract.file_path, e)}
                       className="p-2 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                      title={t('delete_contract')} {/* MODIFIED */}
+                      title={t('delete_contract')} 
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>
