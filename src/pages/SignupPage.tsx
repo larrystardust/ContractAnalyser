@@ -4,7 +4,7 @@ import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-rea
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
+import { useTranslation } from 'react-i18next';
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -115,7 +115,7 @@ const SignupPage: React.FC = () => {
   const { isLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
-  const { t } = useTranslation(); // ADDED: useTranslation hook
+  const { t } = useTranslation();
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get('invitation_token');
@@ -130,14 +130,14 @@ const SignupPage: React.FC = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError(t('passwords_do_not_match')); // MODIFIED
+      setError(t('passwords_do_not_match'));
       setLoading(false);
       return;
     }
 
     const phoneRegex = /^[0-9]+$/;
     if (mobilePhoneNumber && !phoneRegex.test(mobilePhoneNumber)) {
-      setError(t('mobile_phone_number_digits_only')); // MODIFIED
+      setError(t('mobile_phone_number_digits_only'));
       setLoading(false);
       return;
     }
@@ -226,16 +226,16 @@ const SignupPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h2> {/* MODIFIED */}
+          <h2 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t('start_analyzing')} {/* MODIFIED */}
+            {t('start_analyzing')}
           </p>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSignup} className="space-y-6">
             {/* Full Name Input */}
             <div>
-              <label htmlFor="fullName" className="sr-only">{t('full_name')}</label> {/* MODIFIED */}
+              <label htmlFor="fullName" className="sr-only">{t('full_name')}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -245,7 +245,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="name"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('full_name')} {/* MODIFIED */}
+                  placeholder={t('full_name')}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
@@ -254,7 +254,7 @@ const SignupPage: React.FC = () => {
 
             {/* Business Name Input */}
             <div>
-              <label htmlFor="businessName" className="sr-only">{t('business_name')}</label> {/* MODIFIED */}
+              <label htmlFor="businessName" className="sr-only">{t('business_name')}</label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -263,7 +263,7 @@ const SignupPage: React.FC = () => {
                   name="businessName"
                   autoComplete="organization"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('business_name')} {/* MODIFIED */}
+                  placeholder={t('business_name')}
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                 />
@@ -271,7 +271,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="sr-only">{t('email_address')}</label> {/* MODIFIED */}
+              <label htmlFor="email" className="sr-only">{t('email_address')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -281,7 +281,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="email"
                   required
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('email_address')} {/* MODIFIED */}
+                  placeholder={t('email_address')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -290,7 +290,7 @@ const SignupPage: React.FC = () => {
 
             {/* Mobile Phone Number Input with Country Code */}
             <div>
-              <label htmlFor="mobilePhoneNumber" className="sr-only">{t('mobile_phone_number')}</label> {/* MODIFIED */}
+              <label htmlFor="mobilePhoneNumber" className="sr-only">{t('mobile_phone_number')}</label>
               <div className="relative flex">
                 <select
                   id="countryCode"
@@ -315,7 +315,7 @@ const SignupPage: React.FC = () => {
                     autoComplete="tel"
                     required
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder={t('mobile_phone_number')} {/* MODIFIED */}
+                    placeholder={t('mobile_phone_number')}
                     value={mobilePhoneNumber}
                     onChange={(e) => setMobilePhoneNumber(e.target.value)}
                   />
@@ -324,7 +324,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="sr-only">{t('password')}</label> {/* MODIFIED */}
+              <label htmlFor="password" className="sr-only">{t('password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -334,7 +334,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('password')} {/* MODIFIED */}
+                  placeholder={t('password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -349,7 +349,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="confirm-password" className="sr-only">{t('confirm_password')}</label> {/* MODIFIED */}
+              <label htmlFor="confirm-password" className="sr-only">{t('confirm_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -359,7 +359,7 @@ const SignupPage: React.FC = () => {
                   autoComplete="new-password"
                   required
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder={t('confirm_password')} {/* MODIFIED */}
+                  placeholder={t('confirm_password')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -385,16 +385,16 @@ const SignupPage: React.FC = () => {
                 className="w-full"
                 disabled={loading}
               >
-                {loading ? t('signing_up') : t('signup')} {/* MODIFIED */}
+                {loading ? t('signing_up') : t('signup')}
               </Button>
             </div>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              {t('already_have_account')}{' '} {/* MODIFIED */}
+              {t('already_have_account')}{' '}
               <Link to={loginLink} className="font-medium text-blue-600 hover:text-blue-500">
-                {t('login')} {/* MODIFIED */}
+                {t('login')}
               </Link>
             </p>
           </div>
