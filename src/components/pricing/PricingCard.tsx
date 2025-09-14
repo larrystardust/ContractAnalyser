@@ -4,7 +4,7 @@ import { StripeProduct } from '../../../supabase/functions/_shared/stripe_produc
 import Button from '../ui/Button';
 import { useStripe } from '../../hooks/useStripe';
 import { Subscription, SubscriptionMembership } from '../../hooks/useSubscription';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -24,7 +24,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   isDataLoading,
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const currentPricingOption = product.mode === 'payment'
     ? product.pricing.one_time
@@ -54,6 +54,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
+
+  // FIX: Define isMemberNotOwner
+  const isMemberNotOwner = userMembership && userMembership.role === 'member';
 
   // --- DEBUG LOGS START ---
   console.log(`PricingCard: ${product.name} (${billingPeriod})`);
@@ -86,18 +89,18 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   let buttonText: string;
   if (isCurrentPlan) {
-    buttonText = t('current_plan_button'); // MODIFIED
+    buttonText = t('current_plan_button');
   } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
-    buttonText = t('zero_payment'); // MODIFIED
+    buttonText = t('zero_payment');
   } else if (isDowngradeOption) {
-    buttonText = t('downgrade'); // MODIFIED
+    buttonText = t('downgrade');
     if (isMemberNotOwner) {
-      buttonText = t('owner_only'); // MODIFIED
+      buttonText = t('owner_only');
     }
   } else if (product.name === 'Enterprise Use') {
-    buttonText = isMemberNotOwner ? t('owner_only') : t('upgrade'); // MODIFIED
+    buttonText = isMemberNotOwner ? t('owner_only') : t('upgrade');
   } else {
-    buttonText = t('purchase'); // MODIFIED
+    buttonText = t('purchase');
   }
 
   const handlePurchase = () => {
@@ -132,18 +135,18 @@ const PricingCard: React.FC<PricingCardProps> = ({
         <span className="text-4xl font-extrabold text-gray-900">
           ${currentPricingOption.price.toFixed(2)}
         </span>
-        {currentPricingOption.interval === 'month' && <span className="text-gray-600">/{t('month')}</span>} {/* MODIFIED */}
-        {currentPricingOption.interval === 'year' && <span className="text-gray-600">/{t('year')}</span>} {/* MODIFIED */}
-        {currentPricingOption.interval === 'one_time' && <span className="text-gray-600"> {t('one_time')}</span>} {/* MODIFIED */}
+        {currentPricingOption.interval === 'month' && <span className="text-gray-600">/{t('month')}</span>}
+        {currentPricingOption.interval === 'year' && <span className="text-gray-600">/{t('year')}</span>}
+        {currentPricingOption.interval === 'one_time' && <span className="text-gray-600"> {t('one_time')}</span>}
       </div>
 
       {product.fileRetentionPolicy && (
         <p className="text-sm text-gray-500 mb-6">
-          <span className="font-semibold">{t('data_retention')}:</span> {product.fileRetentionPolicy} {/* MODIFIED */}
+          <span className="font-semibold">{t('data_retention')}:</span> {product.fileRetentionPolicy}
           {product.maxFiles && (
             <>
               <br />
-              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_at_any_time')}. {/* MODIFIED */}
+              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_at_any_time')}.
             </>
           )}
         </p>
@@ -160,22 +163,22 @@ const PricingCard: React.FC<PricingCardProps> = ({
       </Button>
       {isDisabledForSubscribers && product.mode === 'payment' && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          {t('already_covered_by_subscription')} {/* MODIFIED */}
+          {t('already_covered_by_subscription')}
         </p>
       )}
       {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          {t('no_payment_needed_admin_assigned')} {/* MODIFIED */}
+          {t('no_payment_needed_admin_assigned')}
         </p>
       )}
       {isDowngradeOption && isMemberNotOwner && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          {t('only_owner_manage_downgrades')} {/* MODIFIED */}
+          {t('only_owner_manage_downgrades')}
         </p>
       )}
       {product.name === 'Enterprise Use' && isMemberNotOwner && (
         <p className="text-xs text-gray-500 mt-2 text-center">
-          {t('only_owner_upgrade_enterprise')} {/* MODIFIED */}
+          {t('only_owner_upgrade_enterprise')}
         </p>
       )}
     </div>
