@@ -120,7 +120,7 @@ const SupportTicketForm: React.FC = () => {
             type="text"
             id="userName"
             name="userName"
-            placeholder={t('your_name_field')} {/* MODIFIED */}
+            placeholder={t('your_name_field')} 
             value={loadingUserName ? t('loading') : userName} {/* MODIFIED */}
             readOnly
             className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-100 cursor-not-allowed"
