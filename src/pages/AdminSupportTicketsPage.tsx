@@ -402,7 +402,7 @@ const AdminSupportTicketsPage: React.FC = () => {
                             <p className="text-gray-500 text-sm">{t('loading_replies')}...</p> {/* MODIFIED */}
                           </div>
                         ) : ticketReplies.length === 0 ? (
-                          <p className="text-gray-500 text-sm mb-4">{t('no_replies_yet')}</p> {/* MODIFIED */}
+                          <p className="text-gray-500 text-sm mb-4">{t('no_replies_yet')}</p> 
                         ) : (
                           <div className="space-y-3 mb-4">
                             {ticketReplies.map(reply => (
