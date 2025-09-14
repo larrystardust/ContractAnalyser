@@ -1,23 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom'; // MODIFIED: Added Link import
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
-import Button from '../components/ui/Button'; // ADDED: Import Button component
+import Button from '../components/ui/Button';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Keep for other potential query params
-  const location = useLocation(); // ADDED: To access hash
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const { t } = useTranslation(); // ADDED
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState<string>('Processing authentication...');
+  const [message, setMessage] = useState<string>(t('processing_authentication')); // MODIFIED
 
-  const processingRef = useRef(false); // Ref to prevent multiple executions
+  const processingRef = useRef(false);
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered.');
@@ -39,7 +41,7 @@ const AuthCallbackPage: React.FC = () => {
     const hashRedirectTo = hashParams.get('redirect_to');
     if (hashRedirectTo) {
       finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', finalRedirectTo);
+      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
     }
 
     // Check if the finalRedirectPath contains an invitation token
@@ -123,19 +125,19 @@ const AuthCallbackPage: React.FC = () => {
             if (inviteError) {
               console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
               setStatus('error');
-              setMessage(`Failed to accept invitation: ${inviteError.message}`);
+              setMessage(t('failed_to_accept_invitation', { message: inviteError.message })); // MODIFIED
               processingRef.current = false;
               navigate('/login', { replace: true });
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
-              setMessage('Authentication and invitation successful! Redirecting...');
+              setMessage(t('authentication_invitation_successful')); // MODIFIED
               // After successful invitation acceptance, always redirect to the dashboard
               navigate('/dashboard', { replace: true });
               return; // Exit early after successful invitation and redirect
             }
           } else {
-            setMessage('Authentication successful! Redirecting...');
+            setMessage(t('authentication_successful')); // MODIFIED
           }
 
           setStatus('success');
@@ -159,24 +161,24 @@ const AuthCallbackPage: React.FC = () => {
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
-          setMessage(`An unexpected error occurred: ${overallError.message}`);
+          setMessage(t('unexpected_error_occurred_auth', { message: overallError.message })); // MODIFIED
           navigate('/login', { replace: true });
         } finally {
           processingRef.current = false;
         }
       } else if (event === 'SIGNED_OUT') {
         setStatus('error');
-        setMessage('Your session has ended. Please log in again.');
+        setMessage(t('session_ended')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
         navigate('/login', { replace: true });
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
-        setMessage('Authentication failed or no active session. Please sign up or try again.');
+        setMessage(t('auth_failed_no_session')); // MODIFIED
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
         navigate('/login', { replace: true });
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
-        setMessage('Email not confirmed. Please check your email for a confirmation link.');
+        setMessage(t('email_not_confirmed')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
         navigate('/login', { replace: true });
       }
@@ -188,7 +190,7 @@ const AuthCallbackPage: React.FC = () => {
       // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams, location.hash]);
+  }, [navigate, supabase.auth, searchParams, location.hash, t]); // MODIFIED: Added t to dependency array
 
   const renderContent = () => {
     switch (status) {
@@ -196,7 +198,7 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing...</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('processing')}...</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
           </>
         );
@@ -204,18 +206,18 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('success_message')}</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
             {/* The buttons below will still be visible for 3 seconds before redirection */}
             {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
-                Log In
+                {t('login_button')} {/* MODIFIED */}
               </Button>
             </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
-                Return to Home
+                {t('return_to_home')} {/* MODIFIED */}
               </Button>
             </Link>
           </>
@@ -224,18 +226,18 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('error_message')}</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
             {/* The buttons below will still be visible for 3 seconds before redirection */}
             {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
-                Log In
+                {t('login_button')} {/* MODIFIED */}
               </Button>
             </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
-                Return to Home
+                {t('return_to_home')} {/* MODIFIED */}
               </Button>
             </Link>
           </>
