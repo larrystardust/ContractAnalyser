@@ -135,7 +135,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           reportHtmlContent: reportHtmlContent,
         },
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -173,7 +173,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
             </div>
           )}
         </div>
-        <p className="text-gray-700">{analysisResult.executiveSummary}</p>
+        <p className="text-gray-700">{t(analysisResult.executiveSummary, { complianceScore: analysisResult.complianceScore })}</p> {/* MODIFIED */}
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -253,7 +253,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {getJurisdictionLabel(jurisdiction)}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
@@ -263,7 +263,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         <h2 className="text-lg font-semibold text-gray-800">
           {selectedJurisdiction === 'all' 
             ? t('all_findings') 
-            : t('jurisdiction_findings', { jurisdiction: getJurisdictionLabel(selectedJurisdiction) })}
+            : t('jurisdiction_findings', { jurisdiction: t(getJurisdictionLabel(selectedJurisdiction)) })}
           <span className="ml-2 text-sm font-normal text-gray-500">
             ({filteredFindings.length} {filteredFindings.length === 1 ? t('issue') : t('issues')})
           </span>
