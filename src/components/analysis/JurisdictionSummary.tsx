@@ -23,7 +23,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
         <div className="flex items-center">
           <span className="text-2xl mr-2">{getJurisdictionFlag(summary.jurisdiction)}</span>
           <h3 className="text-lg font-medium text-gray-900">
-            {getJurisdictionLabel(summary.jurisdiction)}
+            {t(getJurisdictionLabel(summary.jurisdiction))} {/* MODIFIED: Apply t() */}
           </h3>
         </div>
         <RiskBadge risk={summary.riskLevel} />
@@ -36,11 +36,11 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Shield className="h-4 w-4 mr-1 text-blue-900" />
-                {t('applicable_laws')} {/* MODIFIED */}
+                {t('applicable_laws')} {/* MODIFIED: Apply t() */}
               </h4>
               <ul className="list-disc pl-5 space-y-1">
                 {summary.applicableLaws.map((law, index) => (
-                  <li key={index} className="text-sm text-gray-600">{law}</li>
+                  <li key={index} className="text-sm text-gray-600">{t(law)}</li> {/* MODIFIED: Apply t() */}
                 ))}
               </ul>
             </div>
@@ -49,10 +49,10 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
           {/* Key Findings */}
           {summary.keyFindings.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('key_findings')}</h4> {/* MODIFIED */}
+              <h4 className="text-sm font-medium text-gray-700 mb-2">{t('key_findings')}</h4> {/* MODIFIED: Apply t() */}
               <ul className="list-disc pl-5 space-y-1">
                 {summary.keyFindings.map((finding, index) => (
-                  <li key={index} className="text-sm text-gray-600">{finding}</li>
+                  <li key={index} className="text-sm text-gray-600">{t(finding)}</li> {/* MODIFIED: Apply t() */}
                 ))}
               </ul>
             </div>
