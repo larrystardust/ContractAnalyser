@@ -41,7 +41,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2>
         </div>
-        <p className="text-gray-700">{t(analysisResult.executiveSummary)}</p>
+        <p className="text-gray-700">{t(analysisResult.executiveSummary, { complianceScore: analysisResult.complianceScore })}</p> {/* MODIFIED */}
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
