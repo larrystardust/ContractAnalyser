@@ -573,5 +573,10 @@
   "totp_code": "Code TOTP",
   "confirming": "Confirmation...",
   "confirm_modal": "Confirmer",
-  "cancel_modal": "Annuler"
+  "cancel_modal": "Annuler",
+
+  "user_not_authenticated": "Utilisateur non authentifié.",
+  "failed_to_load_preferences": "Échec du chargement des préférences.",
+  "preferences_saved_successfully": "Préférences enregistrées avec succès !",
+  "failed_to_save_preferences": "Échec de l'enregistrement des préférences."
 }
