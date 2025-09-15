@@ -164,7 +164,7 @@ const MembersSettings: React.FC = () => {
         throw error; // Re-throw to stop execution
       }
 
-      setInviteSuccess(data.message || t('invitation_sent_successfully')); // MODIFIED
+      setInviteSuccess(t('invitation_sent_successfully')); // MODIFIED
       setInvitedEmail('');
       fetchMembers(); // Re-fetch members to update the list
     } catch (err: any) {
