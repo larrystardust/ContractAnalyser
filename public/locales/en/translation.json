@@ -565,5 +565,10 @@
   "totp_code": "TOTP Code",
   "confirming": "Confirming...",
   "confirm_modal": "Confirm",
-  "cancel_modal": "Cancel"
+  "cancel_modal": "Cancel",
+
+  "user_not_authenticated": "User not authenticated.",
+  "failed_to_load_preferences": "Failed to load preferences.",
+  "preferences_saved_successfully": "Preferences saved successfully!",
+  "failed_to_save_preferences": "Failed to save preferences."
 }
