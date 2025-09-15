@@ -36,14 +36,14 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string): string => { // MODIFIED: Return type is string (key)
     switch (status) {
       case 'pending':
-        return t('pending'); // MODIFIED
+        return 'status_pending'; // MODIFIED: Returns translation key
       case 'analyzing':
-        return t('analyzing'); // MODIFIED
+        return 'status_analyzing'; // MODIFIED: Returns translation key
       case 'completed':
-        return t('completed'); // MODIFIED
+        return 'status_completed'; // MODIFIED: Returns translation key
       default:
         return status;
     }
@@ -60,12 +60,12 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
 
   const handleDelete = async (contractId: string, filePath: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (window.confirm(t('confirm_delete_contract_and_results'))) { // MODIFIED
+    if (window.confirm(t('confirm_delete_contract_and_results'))) {
       try {
         await deleteContract(contractId, filePath);
-        alert(t('contract_deleted_successfully')); // MODIFIED
+        alert(t('contract_deleted_successfully'));
       } catch (error) {
-        alert(t('failed_to_delete_contract')); // MODIFIED
+        alert(t('failed_to_delete_contract'));
         console.error('Delete failed:', error);
       }
     }
@@ -94,7 +94,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
 
     } catch (error: any) {
       console.error('Error generating signed URL or downloading file:', error);
-      alert(t('failed_to_download_file', { message: error.message })); // MODIFIED
+      alert(t('failed_to_download_file', { message: error.message }));
     }
   };
 
@@ -102,7 +102,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
     <div className="space-y-4">
       {contractsToDisplay === undefined && (
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">{t('your_contracts')}</h2> {/* MODIFIED */}
+          <h2 className="text-lg font-semibold text-gray-800">{t('your_contracts')}</h2>
         </div>
       )}
       
@@ -110,7 +110,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
         <Card>
           <CardBody className="text-center py-8">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">{t('no_contracts_found')}</p> {/* MODIFIED */}
+            <p className="text-gray-500">{t('no_contracts_found')}</p>
             {contractsToDisplay === undefined && (
               <p className="text-sm text-gray-400 mt-1">{t('upload_to_get_started')}</p> 
             )}
@@ -160,7 +160,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                     <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
                       {getStatusIcon(contract.status)}
                       <span className="ml-1 text-xs font-medium text-gray-700">
-                        {getStatusLabel(contract.status)}
+                        {t(getStatusLabel(contract.status))} {/* MODIFIED: Apply t() */}
                       </span>
                     </div>
                     {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
@@ -180,7 +180,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         icon={<Download className="h-4 w-4" />}
                         title={t('download_contract')} 
                       >
-                        {t('download')} {/* MODIFIED */}
+                        {t('download')}
                       </Button>
                     )}
                   </div>
