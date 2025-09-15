@@ -36,6 +36,7 @@ export const sampleContracts: Contract[] = [
     jurisdictions: ['Others', 'UK'], // MODIFIED: Changed to 'Others'
     status: 'pending', // Keep one pending for demo
     size: '3.4 MB',
+    processing_progress: 0,
     analysisResult: undefined
   },
   {
@@ -71,7 +72,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f1_recommendation_2',
       'sample_finding_f1_recommendation_3'
     ],
-    clauseReference: 'Section 12.3',
+    clauseReference: 'clause_reference_section_12_3', // MODIFIED: Now a translation key
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
@@ -88,7 +89,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f2_recommendation_2',
       'sample_finding_f2_recommendation_3'
     ],
-    clauseReference: 'Section 22.1',
+    clauseReference: 'clause_reference_section_22_1', // MODIFIED: Now a translation key
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
@@ -105,7 +106,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f3_recommendation_2',
       'sample_finding_f3_recommendation_3'
     ],
-    clauseReference: 'Section 8',
+    clauseReference: 'clause_reference_section_8', // MODIFIED: Now a translation key
     created_at: '2025-04-08T09:15:00Z',
     updated_at: '2025-04-08T09:15:00Z',
     analysis_result_id: 'ar2'
@@ -122,7 +123,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f4_recommendation_2',
       'sample_finding_f4_recommendation_3'
     ],
-    clauseReference: 'Section 14.2',
+    clauseReference: 'clause_reference_section_14_2', // MODIFIED: Now a translation key
     created_at: '2025-04-05T16:45:00Z',
     updated_at: '2025-04-05T16:45:00Z',
     analysis_result_id: 'ar3'
@@ -139,7 +140,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f5_recommendation_2',
       'sample_finding_f5_recommendation_3'
     ],
-    clauseReference: 'Section 17.4',
+    clauseReference: 'clause_reference_section_17_4', // MODIFIED: Now a translation key
     created_at: '2025-04-02T11:20:00Z',
     updated_at: '2025-04-02T11:20:00Z',
     analysis_result_id: 'ar4'
@@ -156,7 +157,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f6_recommendation_2',
       'sample_finding_f6_recommendation_3'
     ],
-    clauseReference: 'N/A',
+    clauseReference: 'clause_reference_n_a', // MODIFIED: Now a translation key
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
@@ -173,7 +174,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f7_recommendation_2',
       'sample_finding_f7_recommendation_3'
     ],
-    clauseReference: 'Section 18',
+    clauseReference: 'clause_reference_section_18', // MODIFIED: Now a translation key
     created_at: '2025-04-08T09:15:00Z',
     updated_at: '2025-04-08T09:15:00Z',
     analysis_result_id: 'ar2'
@@ -190,7 +191,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f8_recommendation_2',
       'sample_finding_f8_recommendation_3'
     ],
-    clauseReference: 'Section 14.2',
+    clauseReference: 'clause_reference_section_14_2', // MODIFIED: Now a translation key
     created_at: '2025-04-01T10:00:00Z',
     updated_at: '2025-04-01T10:00:00Z',
     analysis_result_id: 'ar5'
@@ -207,7 +208,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f9_recommendation_2',
       'sample_finding_f9_recommendation_3'
     ],
-    clauseReference: 'Article 5.1',
+    clauseReference: 'clause_reference_article_5_1', // MODIFIED: Now a translation key
     created_at: '2025-03-28T14:00:00Z',
     updated_at: '2025-03-28T14:00:00Z',
     analysis_result_id: 'ar6'
@@ -224,7 +225,7 @@ export const allSampleFindings: Finding[] = [
       'sample_finding_f10_recommendation_2',
       'sample_finding_f10_recommendation_3'
     ],
-    clauseReference: 'Schedule 2, Section 23',
+    clauseReference: 'clause_reference_schedule_2_section_23', // MODIFIED: Now a translation key
     created_at: '2025-03-28T14:00:00Z',
     updated_at: '2025-03-28T14:00:00Z',
     analysis_result_id: 'ar6'
