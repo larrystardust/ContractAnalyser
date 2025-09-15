@@ -52,7 +52,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
               <h4 className="text-sm font-medium text-gray-700 mb-2">{t('key_findings')}</h4> {/* MODIFIED: Apply t() */}
               <ul className="list-disc pl-5 space-y-1">
                 {summary.keyFindings.map((finding, index) => (
-                  <li key={index} className="text-sm text-gray-600">{t(finding)}</li> {/* MODIFIED: Apply t() */}
+                  <li key={index} className="text-sm text-gray-600">{t(finding)}</li> 
                 ))}
               </ul>
             </div>
