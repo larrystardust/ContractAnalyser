@@ -79,7 +79,7 @@ const LandingPagePricingSection: React.FC = () => {
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('back_to_landing_page')} {/* MODIFIED */}
+              {t('back_to_landing_page_button')} {/* MODIFIED */}
             </Link>
           </div>
 
