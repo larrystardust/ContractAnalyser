@@ -4,7 +4,7 @@ import Card, { CardBody } from '../ui/Card';
 import { JurisdictionBadge } from '../ui/Badge';
 import { FileText, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 interface SampleContractListProps {
   contractsToDisplay?: Contract[];
@@ -13,7 +13,7 @@ interface SampleContractListProps {
 
 const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisplay, onSelectContract }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const contractsToRender = contractsToDisplay;
 
@@ -30,16 +30,16 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string): string => { // MODIFIED: Return translation key
     switch (status) {
       case 'pending':
-        return t('pending');
+        return 'status_pending';
       case 'analyzing':
-        return t('analyzing');
+        return 'status_analyzing';
       case 'completed':
-        return t('completed');
+        return 'status_completed';
       default:
-        return status;
+        return status; // Fallback, though ideally all statuses have keys
     }
   };
 
@@ -58,8 +58,8 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
         <Card>
           <CardBody className="text-center py-8">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">{t('no_contracts_found_sidebar')}</p> {/* MODIFIED */}
-            <p className="text-sm text-gray-400 mt-1">{t('select_sample_contract_to_view_analysis')}</p> {/* MODIFIED */}
+            <p className="text-gray-500">{t('no_contracts_found_sidebar')}</p>
+            <p className="text-sm text-gray-400 mt-1">{t('select_sample_contract_to_view_analysis')}</p>
           </CardBody>
         </Card>
       ) : (
@@ -105,7 +105,7 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                     <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
                       {getStatusIcon(contract.status)}
                       <span className="ml-1 text-xs font-medium text-gray-700">
-                        {getStatusLabel(contract.status)}
+                        {t(getStatusLabel(contract.status))} {/* MODIFIED: Apply t() */}
                       </span>
                     </div>
                     {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
