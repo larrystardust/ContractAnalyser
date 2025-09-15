@@ -141,7 +141,7 @@ const BillingSettings: React.FC = () => {
                   {/* MODIFIED: Access product name and pricing option correctly */}
                   <h4 className="text-lg font-medium text-gray-900">{currentPlan.product.name}</h4>
                   <p className="text-sm text-gray-600">
-                    ${currentPlan.pricingOption.price.toFixed(2)} / {currentPlan.pricingOption.interval}
+                    ${currentPlan.pricingOption.price.toFixed(2)} / {t(currentPlan.pricingOption.interval)} {/* MODIFIED */}
                   </p>
                 </div>
                 <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
