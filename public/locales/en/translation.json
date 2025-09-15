@@ -456,11 +456,13 @@
   "sample_applicable_law_others_2": "Global Standard 2",
   "sample_applicable_law_EU_GDPR": "GDPR (Regulation 2016/679)",
   "sample_applicable_law_EU_Directive_X": "EU Directive X",
+  "findings_by_risk_level": "Findings by Risk Level",
   "risk_level_high": "High Risk",
   "risk_level_medium": "Medium Risk",
   "risk_level_low": "Low Risk",
   "risk_level_none": "No Risk",
   "risk_level_unknown": "Unknown",
+  "loading_reports": "Loading reports"
 
   "category_compliance": "Regulatory Compliance",
   "category_risk": "Legal Risk",
@@ -507,10 +509,4 @@
   "status_pending": "Pending",
   "status_analyzing": "Analyzing",
   "status_completed": "Completed",
-  "findings_by_risk_level": "Findings by Risk Level",
-  "risk_level_high": "High Risk",
-  "risk_level_medium": "Medium Risk",
-  "risk_level_low": "Low Risk",
-  "risk_level_none": "No Risk",
-  "loading_reports": "Loading reports"
 }
