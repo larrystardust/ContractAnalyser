@@ -570,5 +570,17 @@
   "user_not_authenticated": "User not authenticated.",
   "failed_to_load_preferences": "Failed to load preferences.",
   "preferences_saved_successfully": "Preferences saved successfully!",
-  "failed_to_save_preferences": "Failed to save preferences."
+  "failed_to_save_preferences": "Failed to save preferences.",
+
+   "month": "month",
+  "year": "year",
+  "one_time": "one-time",
+  "must_be_logged_in_to_manage_billing": "You must be logged in to manage billing.",
+  "no_associated_billing_account": "No associated billing account found.",
+  "no_permission_manage_other_users_billing": "Forbidden: Only administrators can manage other users' billing.",
+  "failed_to_open_billing_portal": "Failed to open billing portal: {{message}}",
+  "failed_to_get_billing_portal_url": "Failed to get billing portal URL.",
+  "unexpected_error_occurred_with_message": "An unexpected error occurred: {{message}}",
+  "loading_pricing_information": "Loading pricing information",
+  "loading_user_data": "Loading user data"
 }
