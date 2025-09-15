@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, Smartphone, Eye, EyeOff, Save, QrCode, CheckCircle, XCircle, Copy, Lock } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
-import { useToast } from '../../context/ToastContext'; // ADDED: Import useToast
-import { useNavigate } from 'react-router-dom'; // ADDED: Import useNavigate
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useToast } from '../../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const SecuritySettings: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
-  const { addToast } = useToast(); // ADDED: Use the toast hook
-  const navigate = useNavigate(); // ADDED: Initialize useNavigate
-  const { t } = useTranslation(); // ADDED
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -35,7 +35,6 @@ const SecuritySettings: React.FC = () => {
   const [secret, setSecret] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
-  const [factorId, setFactorId] = useState<string | null>(null);
 
   // Re-authentication states for disabling 2FA
   const [showReauthModal, setShowReauthModal] = useState(false);
@@ -44,14 +43,12 @@ const SecuritySettings: React.FC = () => {
   const [reauthError, setReauthError] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
-  // REMOVED: const [error, setError] = useState<string | null>(null);
-  // REMOVED: const [message, setMessage] = useState<string | null>(null);
+  const [factorId, setFactorId] = useState<string | null>(null); // Moved factorId state here
 
   useEffect(() => {
     const fetch2FAStatus = async () => {
       if (!session?.user) return;
       setIsLoading(true);
-      // REMOVED: setError(null);
       try {
         const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
         if (getFactorsError) throw getFactorsError;
@@ -66,14 +63,14 @@ const SecuritySettings: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error fetching 2FA status:', err);
-        addToast(err.message || t('failed_to_fetch_2fa_status'), 'error'); // MODIFIED: Use addToast
+        addToast(err.message || t('failed_to_fetch_2fa_status'), 'error');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetch2FAStatus();
-  }, [session?.user, supabase, addToast, t]); // MODIFIED: Added t to dependencies
+  }, [session?.user, supabase, addToast, t]);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -93,11 +90,9 @@ const SecuritySettings: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // REMOVED: setError(null);
-    // REMOVED: setMessage(null);
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      addToast(t('new_passwords_do_not_match'), 'error'); // MODIFIED: Use addToast
+      addToast(t('new_passwords_do_not_match'), 'error');
       setIsLoading(false);
       return;
     }
@@ -111,11 +106,11 @@ const SecuritySettings: React.FC = () => {
         throw updateError;
       }
 
-      addToast(t('password_updated_successfully'), 'success'); // MODIFIED: Use addToast
+      addToast(t('password_updated_successfully'), 'success');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err: any) {
       console.error('Error updating password:', err);
-      addToast(err.message || t('failed_to_update_password'), 'error'); // MODIFIED: Use addToast
+      addToast(err.message || t('failed_to_update_password'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -123,8 +118,6 @@ const SecuritySettings: React.FC = () => {
 
   const handleTwoFactorToggle = async () => {
     setIsLoading(true);
-    // REMOVED: setError(null);
-    // REMOVED: setMessage(null);
 
     if (twoFactorEnabled) {
       setShowReauthModal(true);
@@ -141,24 +134,24 @@ const SecuritySettings: React.FC = () => {
         if (enrollError) throw enrollError;
 
         if (!enrollData?.id) {
-          throw new Error('Failed to enroll 2FA factor. Please try again.');
+          throw new Error(t('failed_to_enroll_2fa_factor'));
         }
 
         setFactorId(enrollData.id);
 
         if (!enrollData.totp) {
-          throw new Error('Failed to generate 2FA enrollment data. Please check your Supabase project\'s TOTP MFA configuration.');
+          throw new Error(t('failed_to_generate_2fa_enrollment_data'));
         }
 
         if (!enrollData.totp.qr_code || !enrollData.totp.secret) {
-          throw new Error('Incomplete 2FA enrollment data received. Please try again or check your Supabase project\'s TOTP MFA configuration.');
+          throw new Error(t('incomplete_2fa_enrollment_data_received'));
         }
 
         setQrCodeUrl(enrollData.totp.qr_code);
         setSecret(enrollData.totp.secret);
       } catch (err: any) {
         console.error('Error enrolling 2FA:', err);
-        addToast(err.message || t('failed_to_start_2fa_enrollment'), 'error'); // MODIFIED: Use addToast
+        addToast(err.message || t('failed_to_start_2fa_enrollment'), 'error');
         setShowEnrollmentFlow(false);
         setEnrollmentStep('initial');
       } finally {
@@ -173,48 +166,42 @@ const SecuritySettings: React.FC = () => {
     setReauthError(null);
 
     if (!reauthPassword || !reauthTotpCode) {
-      setReauthError(t('please_enter_password_and_totp_code')); // MODIFIED
+      setReauthError(t('please_enter_password_and_totp_code'));
       setIsLoading(false);
       return;
     }
 
     if (!factorId) {
-      setReauthError(t('no_2fa_factor_to_disable')); // MODIFIED
+      setReauthError(t('no_2fa_factor_to_disable'));
       setIsLoading(false);
       return;
     }
 
     try {
-      // Step 1: Reauthenticate with password to ensure password is correct and elevate AAL if needed.
-      // This also implicitly checks if the user is who they say they are.
       const { error: passwordReauthError } = await supabase.auth.reauthenticate({
         password: reauthPassword,
       });
       if (passwordReauthError) {
-        throw passwordReauthError; // This will catch incorrect passwords
+        throw passwordReauthError;
       }
 
-      // Step 2: Challenge the MFA factor to get a challengeId for TOTP verification.
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
       if (challengeError) {
         throw challengeError;
       }
       if (!challengeData?.id) {
-        throw new Error('Failed to create MFA challenge for TOTP verification.');
+        throw new Error(t('failed_to_create_mfa_challenge_for_totp'));
       }
 
-      // Step 3: Explicitly verify the TOTP code. This is where the code validation happens.
       const { error: verifyTotpError } = await supabase.auth.mfa.verify({
         factorId,
         challengeId: challengeData.id,
         code: reauthTotpCode,
       });
       if (verifyTotpError) {
-        throw verifyTotpError; // This will catch invalid TOTP codes
+        throw verifyTotpError;
       }
 
-      // Step 4: If both password re-authentication and TOTP verification succeed, unenroll the factor.
-      // The session should now be AAL2 due to the reauthenticate call.
       const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
       if (unenrollError) {
         throw unenrollError;
@@ -222,7 +209,7 @@ const SecuritySettings: React.FC = () => {
 
       setTwoFactorEnabled(false);
       setFactorId(null);
-      addToast(t('two_factor_authentication_disabled_successfully'), 'success'); // MODIFIED: Use addToast
+      addToast(t('two_factor_authentication_disabled_successfully'), 'success');
       setShowEnrollmentFlow(false);
       setEnrollmentStep('initial');
       setShowReauthModal(false);
@@ -230,7 +217,7 @@ const SecuritySettings: React.FC = () => {
       setReauthTotpCode('');
     } catch (err: any) {
       console.error('Error during 2FA disable process:', err);
-      setReauthError(err.message || t('failed_to_disable_2fa')); // MODIFIED
+      setReauthError(err.message || t('failed_to_disable_2fa'));
     } finally {
       setIsLoading(false);
     }
@@ -239,11 +226,9 @@ const SecuritySettings: React.FC = () => {
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // REMOVED: setError(null);
-    // REMOVED: setMessage(null);
 
     if (!factorId) {
-      addToast(t('no_2fa_factor_to_verify'), 'error'); // MODIFIED: Use addToast
+      addToast(t('no_2fa_factor_to_verify'), 'error');
       setIsLoading(false);
       return;
     }
@@ -253,7 +238,7 @@ const SecuritySettings: React.FC = () => {
       if (challengeError) throw challengeError;
 
       if (!challengeData?.id) {
-        throw new Error('Failed to create MFA challenge');
+        throw new Error(t('failed_to_create_mfa_challenge'));
       }
 
       const { error: verifyError } = await supabase.auth.mfa.verify({
@@ -263,20 +248,17 @@ const SecuritySettings: React.FC = () => {
       });
       if (verifyError) throw verifyError;
 
-      // --- START MODIFIED LOGIC ---
       setTwoFactorEnabled(true);
-      localStorage.setItem('mfa_passed', 'true'); // Set flag for AuthGuard
+      localStorage.setItem('mfa_passed', 'true');
       addToast(t('two_factor_authentication_enabled_successfully'), 'success');
-      setShowEnrollmentFlow(false); // Hide the enrollment flow
-      setEnrollmentStep('initial'); // Reset enrollment step
-      setVerificationCode(''); // Clear verification code
-      navigate('/dashboard', { replace: true }); // Navigate to dashboard
-      // --- END MODIFIED LOGIC ---
+      setShowEnrollmentFlow(false);
+      setEnrollmentStep('initial');
+      setVerificationCode('');
+      navigate('/dashboard', { replace: true });
 
     } catch (err: any) {
       console.error('Error verifying 2FA:', err);
-      addToast(err.message || t('invalid_2fa_code'), 'error'); // MODIFIED: Use addToast
-      // If verification fails, reset 2FA state to initial
+      addToast(err.message || t('invalid_2fa_code'), 'error');
       setTwoFactorEnabled(false);
       setShowEnrollmentFlow(false);
       setEnrollmentStep('initial');
@@ -288,23 +270,19 @@ const SecuritySettings: React.FC = () => {
 
   const handleGenerateRecoveryCodes = async () => {
     setIsLoading(true);
-    // REMOVED: setError(null);
     try {
-      // Check if recoveryCodes functionality is available
       if (!supabase.auth.mfa || !supabase.auth.mfa.recoveryCodes) {
-        throw new Error('Recovery codes functionality is not available. Please ensure MFA is fully enabled and configured in your Supabase project settings, including recovery codes.');
+        throw new Error(t('recovery_codes_functionality_not_available'));
       }
 
       const { codes, error: generateError } = await supabase.auth.mfa.recoveryCodes.generate();
       if (generateError) throw generateError;
       
       setRecoveryCodes(codes);
-      // Show success message ONLY after recovery codes are generated
-      addToast(t('two_factor_authentication_enabled_successfully_save_codes'), 'success', 10000); // MODIFIED: Use addToast with longer duration
+      addToast(t('two_factor_authentication_enabled_successfully_save_codes'), 'success', 10000);
     } catch (err: any) {
       console.error('Error generating recovery codes:', err);
-      addToast(err.message || t('failed_to_generate_recovery_codes'), 'error'); // MODIFIED: Use addToast
-      // If recovery code generation fails, consider 2FA setup incomplete or problematic
+      addToast(err.message || t('failed_to_generate_recovery_codes'), 'error');
       setTwoFactorEnabled(false);
       setShowEnrollmentFlow(false);
       setEnrollmentStep('initial');
@@ -316,22 +294,20 @@ const SecuritySettings: React.FC = () => {
 
   const handleCopyRecoveryCodes = () => {
     navigator.clipboard.writeText(recoveryCodes.join('\n'));
-    addToast(t('recovery_codes_copied_to_clipboard'), 'info'); // MODIFIED: Use addToast
+    addToast(t('recovery_codes_copied_to_clipboard'), 'info');
   };
 
   const handleSignOutOtherSessions = async () => {
     setIsLoading(true);
-    // REMOVED: setError(null);
-    // REMOVED: setMessage(null);
     try {
       const { error: signOutError } = await supabase.auth.signOut({ scope: 'others' });
       if (signOutError) {
         throw signOutError;
       }
-      addToast(t('successfully_signed_out_of_all_other_sessions'), 'success'); // MODIFIED: Use addToast
+      addToast(t('successfully_signed_out_of_all_other_sessions'), 'success');
     } catch (err: any) {
       console.error('Error signing out other sessions:', err);
-      addToast(err.message || t('failed_to_sign_out_other_sessions'), 'error'); // MODIFIED: Use addToast
+      addToast(err.message || t('failed_to_sign_out_other_sessions'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -344,15 +320,14 @@ const SecuritySettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Key className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('change_password')}</h3> {/* MODIFIED */}
+            <h3 className="text-lg font-medium text-gray-900">{t('change_password')}</h3>
           </div>
         </CardHeader>
         <CardBody>
-          {/* REMOVED: Error and Message display divs */}
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             {/* Current Password Input */}
             <div>
-              <label htmlFor="currentPassword" className="sr-only">{t('current_password')}</label> {/* MODIFIED */}
+              <label htmlFor="currentPassword" className="sr-only">{t('current_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -377,7 +352,7 @@ const SecuritySettings: React.FC = () => {
 
             {/* New Password Input */}
             <div>
-              <label htmlFor="newPassword" className="sr-only">{t('new_password')}</label> {/* MODIFIED */}
+              <label htmlFor="newPassword" className="sr-only">{t('new_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -402,7 +377,7 @@ const SecuritySettings: React.FC = () => {
 
             {/* Confirm New Password Input */}
             <div>
-              <label htmlFor="confirmPassword" className="sr-only">{t('confirm_password')}</label> {/* MODIFIED */}
+              <label htmlFor="confirmPassword" className="sr-only">{t('confirm_password')}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -432,7 +407,7 @@ const SecuritySettings: React.FC = () => {
                 disabled={isLoading || !passwordData.newPassword || !passwordData.confirmPassword}
                 icon={<Save className="w-4 h-4" />}
               >
-                {isLoading ? t('updating') : t('update_password')} {/* MODIFIED */}
+                {isLoading ? t('updating') : t('update_password')}
               </Button>
             </div>
           </form>
@@ -444,21 +419,19 @@ const SecuritySettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Smartphone className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('two_factor_authentication')}</h3> {/* MODIFIED */}
+            <h3 className="text-lg font-medium text-gray-900">{t('two_factor_authentication')}</h3>
           </div>
         </CardHeader>
         <CardBody>
-          {/* REMOVED: Error and Message display divs */}
-
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-sm font-medium text-gray-900">
-                {twoFactorEnabled ? t('account_protected') : t('enable_two_factor_authentication')} {/* MODIFIED */}
+                {twoFactorEnabled ? t('account_protected') : t('enable_two_factor_authentication')}
               </h4>
               <p className="text-sm text-gray-500 mt-1">
                 {twoFactorEnabled
-                  ? t('account_protected_description') // MODIFIED
-                  : t('add_extra_security') // MODIFIED
+                  ? t('account_protected_description')
+                  : t('add_extra_security')
                 }
               </p>
             </div>
@@ -467,7 +440,7 @@ const SecuritySettings: React.FC = () => {
               onClick={handleTwoFactorToggle}
               disabled={isLoading}
             >
-              {isLoading ? t('processing') : (twoFactorEnabled ? t('disable') : t('enable'))} {/* MODIFIED */}
+              {isLoading ? t('processing') : (twoFactorEnabled ? t('disable') : t('enable'))}
             </Button>
           </div>
 
@@ -476,14 +449,14 @@ const SecuritySettings: React.FC = () => {
               {enrollmentStep === 'qr_display' && qrCodeUrl && secret && (
                 <>
                   <h5 className="text-md font-semibold text-gray-800 flex items-center">
-                    <QrCode className="h-5 w-5 mr-2" /> {t('step_1_scan_qr')} {/* MODIFIED */}
+                    <QrCode className="h-5 w-5 mr-2" /> {t('step_1_scan_qr')}
                   </h5>
                   <p className="text-sm text-gray-600">
-                    {t('scan_qr_desc')} {/* MODIFIED */}
+                    {t('scan_qr_desc')}
                   </p>
                   <div className="flex flex-col items-center justify-center p-4 bg-white rounded-md border border-gray-200">
-                    <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32 mb-2" />
-                    <p className="text-xs font-mono text-gray-700 break-all">{t('secret')}: {secret}</p> {/* MODIFIED */}
+                    <img src={qrCodeUrl} alt={t('qr_code_alt_text')} className="w-32 h-32 mb-2" />
+                    <p className="text-xs font-mono text-gray-700 break-all">{t('secret')}: {secret}</p>
                   </div>
                   <Button
                     variant="primary"
@@ -491,7 +464,7 @@ const SecuritySettings: React.FC = () => {
                     disabled={isLoading}
                     className="w-full"
                   >
-                    {t('next_verify_code')} {/* MODIFIED */}
+                    {t('next_verify_code')}
                   </Button>
                 </>
               )}
@@ -499,13 +472,13 @@ const SecuritySettings: React.FC = () => {
               {enrollmentStep === 'verify_code' && (
                 <form onSubmit={handleVerify2FA} className="space-y-4">
                   <h5 className="text-md font-semibold text-gray-800 flex items-center">
-                    <CheckCircle className="h-5 w-5 mr-2" /> {t('step_2_verify_code')} {/* MODIFIED */}
+                    <CheckCircle className="h-5 w-5 mr-2" /> {t('step_2_verify_code')}
                   </h5>
                   <p className="text-sm text-gray-600">
-                    {t('enter_6_digit_code_app')} {/* MODIFIED */}
+                    {t('enter_6_digit_code_app')}
                   </p>
                   <div>
-                    <label htmlFor="verificationCode" className="sr-only">{t('verification_code')}</label> {/* MODIFIED */}
+                    <label htmlFor="verificationCode" className="sr-only">{t('verification_code')}</label>
                     <input
                       id="verificationCode"
                       name="verificationCode"
@@ -525,7 +498,7 @@ const SecuritySettings: React.FC = () => {
                     disabled={isLoading || verificationCode.length !== 6}
                     className="w-full"
                   >
-                    {isLoading ? t('verifying') : t('verify_enable_2fa')} {/* MODIFIED */}
+                    {isLoading ? t('verifying') : t('verify_enable_2fa')}
                   </Button>
                   <Button
                     type="button"
@@ -534,7 +507,7 @@ const SecuritySettings: React.FC = () => {
                     disabled={isLoading}
                     className="w-full"
                   >
-                    {t('back_to_qr_code')} {/* MODIFIED */}
+                    {t('back_to_qr_code')}
                   </Button>
                 </form>
               )}
@@ -542,10 +515,10 @@ const SecuritySettings: React.FC = () => {
               {enrollmentStep === 'recovery_codes' && recoveryCodes.length > 0 && (
                 <div className="space-y-4">
                   <h5 className="text-md font-semibold text-gray-800 flex items-center">
-                    <Key className="h-5 w-5 mr-2" /> {t('step_3_recovery_codes')} {/* MODIFIED */}
+                    <Key className="h-5 w-5 mr-2" /> {t('step_3_recovery_codes')}
                   </h5>
                   <p className="text-sm text-gray-600">
-                    {t('recovery_codes_desc')} {/* MODIFIED */}
+                    {t('recovery_codes_desc')}
                   </p>
                   <div className="bg-white p-4 rounded-md border border-gray-200 font-mono text-sm space-y-1">
                     {recoveryCodes.map((code, index) => (
@@ -558,14 +531,14 @@ const SecuritySettings: React.FC = () => {
                     icon={<Copy className="h-4 w-4" />}
                     className="w-full"
                   >
-                    {t('copy_codes')} {/* MODIFIED */}
+                    {t('copy_codes')}
                   </Button>
                   <Button
                     variant="primary"
                     onClick={() => setShowEnrollmentFlow(false)}
                     className="w-full"
                   >
-                    {t('done')} {/* MODIFIED */}
+                    {t('done')}
                   </Button>
                 </div>
               )}
@@ -579,30 +552,30 @@ const SecuritySettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Shield className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('active_sessions')}</h3> {/* MODIFIED */}
+            <h3 className="text-lg font-medium text-gray-900">{t('active_sessions')}</h3>
           </div>
         </CardHeader>
         <CardBody>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">{t('current_session')}</h4> {/* MODIFIED */}
-                <p className="text-xs text-gray-500">Chrome on Windows • London, UK</p>
-                <p className="text-xs text-gray-500">Last active: Now</p>
+                <h4 className="text-sm font-medium text-gray-900">{t('current_session')}</h4>
+                <p className="text-xs text-gray-500">{t('current_session_details')}</p>
+                <p className="text-xs text-gray-500">{t('last_active_now')}</p>
               </div>
               <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                {t('current')} {/* MODIFIED */}
+                {t('current')}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div>
-                <h4 className="text-sm font-medium text-gray-900">{t('mobile_session')}</h4> {/* MODIFIED */}
-                <p className="text-xs text-gray-500">Safari on iPhone • London, UK</p>
-                <p className="text-xs text-gray-500">Last active: 2 hours ago</p>
+                <h4 className="text-sm font-medium text-gray-900">{t('mobile_session')}</h4>
+                <p className="text-xs text-gray-500">{t('mobile_session_details')}</p>
+                <p className="text-xs text-gray-500">{t('last_active_2_hours_ago')}</p>
               </div>
               <Button variant="outline" size="sm">
-                {t('revoke')} {/* MODIFIED */}
+                {t('revoke')}
               </Button>
             </div>
 
@@ -613,7 +586,7 @@ const SecuritySettings: React.FC = () => {
                 onClick={handleSignOutOtherSessions}
                 disabled={isLoading}
               >
-                {t('sign_out_other_sessions')} {/* MODIFIED */}
+                {t('sign_out_other_sessions')}
               </Button>
             </div>
           </div>
@@ -634,10 +607,10 @@ const SecuritySettings: React.FC = () => {
       >
         <form onSubmit={handleReauthenticateAndDisable2FA} className="space-y-4">
           <p className="text-sm text-gray-700">
-            {t('enter_password_totp_to_confirm_modal')} {/* MODIFIED */}
+            {t('enter_password_totp_to_confirm_modal')}
           </p>
           <div>
-            <label htmlFor="reauthPassword" className="sr-only">{t('password')}</label> {/* MODIFIED */}
+            <label htmlFor="reauthPassword" className="sr-only">{t('password')}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -654,7 +627,7 @@ const SecuritySettings: React.FC = () => {
             </div>
           </div>
           <div>
-            <label htmlFor="reauthTotpCode" className="sr-only">{t('totp_code')}</label> {/* MODIFIED */}
+            <label htmlFor="reauthTotpCode" className="sr-only">{t('totp_code')}</label>
             <div className="relative">
               <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -688,14 +661,14 @@ const SecuritySettings: React.FC = () => {
               }}
               disabled={isLoading}
             >
-              {t('cancel_modal')} {/* MODIFIED */}
+              {t('cancel_modal')}
             </Button>
             <Button
               type="submit"
               variant="primary"
               disabled={isLoading || !reauthPassword || !reauthTotpCode || reauthTotpCode.length !== 6}
             >
-              {isLoading ? t('confirming') : t('confirm_modal')} {/* MODIFIED */}
+              {isLoading ? t('confirming') : t('confirm_modal')}
             </Button>
           </div>
         </form>
