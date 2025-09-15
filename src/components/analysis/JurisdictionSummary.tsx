@@ -40,7 +40,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
               </h4>
               <ul className="list-disc pl-5 space-y-1">
                 {summary.applicableLaws.map((law, index) => (
-                  <li key={index} className="text-sm text-gray-600">{t(law)}</li> {/* MODIFIED: Apply t() */}
+                  <li key={index} className="text-sm text-gray-600">{t(law)}</li> 
                 ))}
               </ul>
             </div>
