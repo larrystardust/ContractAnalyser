@@ -39,9 +39,9 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2> {/* MODIFIED */}
+          <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2>
         </div>
-        <p className="text-gray-700">{t(analysisResult.executiveSummary)}</p> {/* MODIFIED: Apply t() */}
+        <p className="text-gray-700">{t(analysisResult.executiveSummary)}</p>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -50,7 +50,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                 <FilePlus className="h-6 w-6 text-green-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-green-700">{t('compliance_score')}</p> {/* MODIFIED */}
+                <p className="text-sm text-green-700">{t('compliance_score')}</p>
                 <p className="text-2xl font-bold text-green-800">{analysisResult.complianceScore}%</p>
               </div>
             </div>
@@ -62,7 +62,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                 <AlertCircle className="h-6 w-6 text-red-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-red-700">{t('high_risk_issues')}</p> {/* MODIFIED */}
+                <p className="text-sm text-red-700">{t('high_risk_issues')}</p>
                 <p className="text-2xl font-bold text-red-800">{riskCounts.high}</p>
               </div>
             </div>
@@ -74,7 +74,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                 <Info className="h-6 w-6 text-amber-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-amber-700">{t('medium_risk_issues')}</p> {/* MODIFIED */}
+                <p className="text-sm text-amber-700">{t('medium_risk_issues')}</p>
                 <p className="text-2xl font-bold text-amber-800">{riskCounts.medium}</p>
               </div>
             </div>
@@ -86,7 +86,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                 <Info className="h-6 w-6 text-blue-700" />
               </div>
               <div className="ml-4">
-                <p className="text-sm text-blue-700">{t('low_risk_issues')}</p> {/* MODIFIED */}
+                <p className="text-sm text-blue-700">{t('low_risk_issues')}</p>
                 <p className="text-2xl font-bold text-blue-800">{riskCounts.low}</p>
               </div>
             </div>
@@ -103,7 +103,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
               : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
         >
-          {t('all_jurisdictions')} {/* MODIFIED */}
+          {t('all_jurisdictions')}
         </button>
         
         {jurisdictions.map((jurisdiction) => {
@@ -121,7 +121,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {getJurisdictionLabel(jurisdiction)}
+              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Apply t() */}
             </button>
           );
         })}
@@ -131,9 +131,9 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         <h2 className="text-lg font-semibold text-gray-800">
           {selectedJurisdiction === 'all' 
             ? t('all_findings') 
-            : t('jurisdiction_findings', { jurisdiction: getJurisdictionLabel(selectedJurisdiction) })} {/* MODIFIED */}
+            : t('jurisdiction_findings', { jurisdiction: t(getJurisdictionLabel(selectedJurisdiction)) })} {/* MODIFIED: Apply t() to jurisdiction label */}
           <span className="ml-2 text-sm font-normal text-gray-500">
-            ({filteredFindings.length} {filteredFindings.length === 1 ? t('issue') : t('issues')}) {/* MODIFIED */}
+            ({filteredFindings.length} {filteredFindings.length === 1 ? t('issue') : t('issues')})
           </span>
         </h2>
         
@@ -141,7 +141,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
           <Card>
             <CardBody className="text-center py-8">
               <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">{t('no_findings_for_jurisdiction')}</p> {/* MODIFIED */}
+              <p className="text-gray-500">{t('no_findings_for_jurisdiction')}</p>
             </CardBody>
           </Card>
         ) : (
@@ -155,11 +155,11 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   <div className="flex-1">
                     <div className="flex items-center">
                       <h3 className={`text-base font-medium ${getRiskTextColor(finding.riskLevel)}`}>
-                        {t(finding.title)} {/* MODIFIED: Apply t() */}
+                        {t(finding.title)}
                       </h3>
                       {finding.clauseReference && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          {finding.clauseReference}
+                          {t(finding.clauseReference)} {/* MODIFIED: Apply t() */}
                         </span>
                       )}
                     </div>
@@ -170,11 +170,11 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                       <CategoryBadge category={finding.category} />
                     </div>
                     
-                    <p className="mt-3 text-gray-700">{t(finding.description)}</p> {/* MODIFIED: Apply t() */}
+                    <p className="mt-3 text-gray-700">{t(finding.description)}</p>
                     
                     {expandedFindings.includes(finding.id) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4> {/* MODIFIED */}
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
                             <li key={index} className="text-sm text-gray-700">{t(rec)}</li> 
@@ -189,7 +189,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                     onClick={() => toggleFindingExpanded(finding.id)}
                     className="ml-4 text-blue-600 hover:underline text-sm"
                   >
-                    {expandedFindings.includes(finding.id) ? t('hide_details') : t('show_details')} {/* MODIFIED */}
+                    {expandedFindings.includes(finding.id) ? t('hide_details') : t('show_details')}
                   </button>
                 </div>
               </CardBody>
@@ -200,8 +200,8 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
       
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2> {/* MODIFIED */}
-          <p className="text-gray-700">{t(analysisResult.dataProtectionImpact)}</p> {/* MODIFIED: Apply t() */}
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2>
+          <p className="text-gray-700">{t(analysisResult.dataProtectionImpact)}</p>
         </div>
       )}
     </div>
