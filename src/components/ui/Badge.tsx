@@ -1,8 +1,8 @@
 import React from 'react';
 import { RiskLevel, Jurisdiction } from '../../types';
-import { getRiskColor, getRiskLevelLabel } from '../../utils/riskUtils';
+import { getRiskColor, getRiskLevelLabel, getCategoryLabel } from '../../utils/riskUtils'; // MODIFIED: Import getCategoryLabel
 import { getJurisdictionColor, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 interface RiskBadgeProps {
   risk: RiskLevel;
@@ -10,12 +10,12 @@ interface RiskBadgeProps {
 }
 
 export const RiskBadge: React.FC<RiskBadgeProps> = ({ risk, className = '' }) => {
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(risk)} ${className}`}
     >
-      {t(getRiskLevelLabel(risk))} {/* MODIFIED: Apply t() */}
+      {t(getRiskLevelLabel(risk))}
     </span>
   );
 };
@@ -31,13 +31,13 @@ export const JurisdictionBadge: React.FC<JurisdictionBadgeProps> = ({
   className = '',
   showLabel = true
 }) => {
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getJurisdictionColor(jurisdiction)} ${className}`}
-      title={t(getJurisdictionLabel(jurisdiction))} /* MODIFIED: Apply t() */
+      title={t(getJurisdictionLabel(jurisdiction))}
     >
-      {showLabel ? t(getJurisdictionLabel(jurisdiction)) : jurisdiction} {/* MODIFIED: Apply t() */}
+      {showLabel ? t(getJurisdictionLabel(jurisdiction)) : jurisdiction}
     </span>
   );
 };
@@ -48,7 +48,7 @@ interface CategoryBadgeProps {
 }
 
 export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, className = '' }) => {
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const getCategoryColor = (category: string): string => {
     switch (category) {
@@ -60,23 +60,12 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
         return 'bg-teal-600 text-white';
       case 'enforceability':
         return 'bg-indigo-600 text-white';
+      case 'drafting': // ADDED for completeness
+        return 'bg-pink-600 text-white';
+      case 'commercial': // ADDED for completeness
+        return 'bg-yellow-600 text-white';
       default:
         return 'bg-gray-600 text-white';
-    }
-  };
-
-  const getCategoryLabel = (category: string): string => {
-    switch (category) {
-      case 'compliance':
-        return 'Compliance';
-      case 'risk':
-        return 'Risk';
-      case 'data-protection':
-        return 'Data Protection';
-      case 'enforceability':
-        return 'Enforceability';
-      default:
-        return category.charAt(0).toUpperCase() + category.slice(1);
     }
   };
 
@@ -84,7 +73,7 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(category)} ${className}`}
     >
-      {t(getCategoryLabel(category))} {/* MODIFIED: Apply t() */}
+      {t(getCategoryLabel(category))} {/* Correctly uses imported getCategoryLabel */}
     </span>
   );
 };
