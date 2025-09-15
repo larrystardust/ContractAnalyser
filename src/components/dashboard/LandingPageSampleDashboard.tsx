@@ -41,7 +41,7 @@ const LandingPageSampleDashboard: React.FC = () => {
         <div className="lg:col-span-3 mb-6 px-4">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('back_to_landing_page_button')} {/* MODIFIED */}
+            {t('back_to_landing_page_button')}
           </Link>
         </div>
 
@@ -52,12 +52,12 @@ const LandingPageSampleDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           {selectedContract && selectedContract.analysisResult ? (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
+              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1>
               
               <SampleAnalysisResults analysisResult={selectedContract.analysisResult} />
               
               <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                     <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
@@ -73,10 +73,10 @@ const LandingPageSampleDashboard: React.FC = () => {
                 </svg>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                {t('no_completed_sample_contract_selected_sidebar')} {/* MODIFIED */}
+                {t('no_completed_sample_contract_selected_sidebar')}
               </h2>
               <p className="text-gray-600 mb-6">
-                {t('select_completed_sample_contract_to_view_analysis')} {/* MODIFIED */}
+                {t('select_completed_sample_contract_to_view_analysis')}
               </p>
             </div>
           )}
