@@ -63,33 +63,33 @@ export const countFindingsByRisk = (findings: Finding[]): Record<RiskLevel, numb
 export const getRiskLevelLabel = (risk: RiskLevel): string => {
   switch (risk) {
     case 'high':
-      return 'risk_level_high'; // MODIFIED: Returns translation key
+      return 'risk_level_high';
     case 'medium':
-      return 'risk_level_medium'; // MODIFIED: Returns translation key
+      return 'risk_level_medium';
     case 'low':
-      return 'risk_level_low'; // MODIFIED: Returns translation key
+      return 'risk_level_low';
     case 'none':
-      return 'risk_level_none'; // MODIFIED: Returns translation key
+      return 'risk_level_none';
     default:
-      return 'risk_level_unknown'; // MODIFIED: Returns translation key
+      return 'risk_level_unknown';
   }
 };
 
 export const getCategoryLabel = (category: string): string => {
   switch (category) {
     case 'compliance':
-      return 'category_compliance'; // MODIFIED: Returns translation key
+      return 'category_compliance';
     case 'risk':
-      return 'category_risk'; // MODIFIED: Returns translation key
+      return 'category_risk';
     case 'data-protection':
-      return 'category_data_protection'; // MODIFIED: Returns translation key
+      return 'category_data_protection';
     case 'enforceability':
-      return 'category_enforceability'; // MODIFIED: Returns translation key
+      return 'category_enforceability';
     case 'drafting':
-      return 'category_drafting'; // MODIFIED: Returns translation key
+      return 'category_drafting';
     case 'commercial':
-      return 'category_commercial'; // MODIFIED: Returns translation key
+      return 'category_commercial';
     default:
-      return `category_${category.toLowerCase()}`; // MODIFIED: Returns translation key
+      return `category_${category.toLowerCase()}`;
   }
 };
