@@ -14,7 +14,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
   const { t } = useTranslation();
 
   // Only render if there are key findings or applicable laws to display
-  if (!summary.keyFindings || summary.keyFindings.length === 0 && (!summary.applicableLaws || summary.applicableLaws.length === 0)) {
+  if (!summary.keyFindings || (summary.keyFindings.length === 0 && (!summary.applicableLaws || summary.applicableLaws.length === 0))) {
     return null;
   }
   
@@ -41,10 +41,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
               </h4>
               <ul className="list-disc pl-5 space-y-1">
                 {summary.applicableLaws.map((law, index) => (
-                  <> {/* Wrap the li and comment in a fragment */}
-                    <li key={index} className="text-sm text-gray-600">{t(law)}</li>
-                    {/* CRITICAL: Ensure t(law) is applied here */}
-                  </>
+                  <li key={index} className="text-sm text-gray-600">{t(law)}</li>
                 ))}
               </ul>
             </div>
@@ -56,10 +53,7 @@ const JurisdictionSummary: React.FC<JurisdictionSummaryProps> = ({ summary }) =>
               <h4 className="text-sm font-medium text-gray-700 mb-2">{t('key_findings')}</h4>
               <ul className="list-disc pl-5 space-y-1">
                 {summary.keyFindings.map((finding, index) => (
-                  <> {/* Wrap the li and comment in a fragment */}
-                    <li key={index} className="text-sm text-gray-600">{t(finding)}</li>
-                    {/* CRITICAL: Ensure t(finding) is applied here */}
-                  </>
+                  <li key={index} className="text-sm text-gray-600">{t(finding)}</li>
                 ))}
               </ul>
             </div>
