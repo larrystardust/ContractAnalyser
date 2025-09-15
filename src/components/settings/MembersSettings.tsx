@@ -86,7 +86,7 @@ const MembersSettings: React.FC = () => {
       setMembers([]);
       setLoadingMembers(false);
     }
-  }, [subscription?.subscription_id, session?.user?.id]); // Re-fetch if subscription or user changes
+  }, [subscription?.subscription_id, session?.user?.id, supabase, t]); // MODIFIED: Added supabase and t to dependency array
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
