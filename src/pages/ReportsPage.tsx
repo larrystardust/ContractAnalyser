@@ -126,7 +126,15 @@ const ReportsPage: React.FC = () => {
             {Object.entries(aggregatedRiskCounts).map(([riskLevel, count]) => (
               <Card key={riskLevel}>
                 <CardBody className="text-center">
-                  <p className="text-sm text-gray-600">{getRiskLevelLabel(riskLevel as any)}</p>
+                  {/* MODIFIED: Add console.log for debugging */}
+                  <p className="text-sm text-gray-600">
+                    {(() => {
+                      const keyToTranslate = getRiskLevelLabel(riskLevel as any);
+                      const translatedValue = t(keyToTranslate);
+                      console.log(`ReportsPage Debug: Attempting to translate key "${keyToTranslate}". Result: "${translatedValue}"`);
+                      return translatedValue;
+                    })()}
+                  </p>
                   <p className="text-3xl font-bold text-gray-900">{count}</p>
                 </CardBody>
               </Card>
