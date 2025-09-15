@@ -506,5 +506,10 @@
   "data_protection_impact": "Data Protection Impact",
   "status_pending": "Pending",
   "status_analyzing": "Analyzing",
-  "status_completed": "Completed"
+  "status_completed": "Completed",
+  "findings_by_risk_level": "Findings by Risk Level",
+  "risk_level_high": "High Risk",
+  "risk_level_medium": "Medium Risk",
+  "risk_level_low": "Low Risk",
+  "risk_level_none": "No Risk"
 }
