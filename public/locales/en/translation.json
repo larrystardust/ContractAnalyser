@@ -462,7 +462,7 @@
   "risk_level_low": "Low Risk",
   "risk_level_none": "No Risk",
   "risk_level_unknown": "Unknown",
-  "loading_reports": "Loading reports"
+  "loading_reports": "Loading reports",
 
   "category_compliance": "Regulatory Compliance",
   "category_risk": "Legal Risk",
@@ -508,5 +508,5 @@
   "data_protection_impact": "Data Protection Impact",
   "status_pending": "Pending",
   "status_analyzing": "Analyzing",
-  "status_completed": "Completed",
+  "status_completed": "Completed"
 }
