@@ -572,7 +572,7 @@
   "preferences_saved_successfully": "Preferences saved successfully!",
   "failed_to_save_preferences": "Failed to save preferences.",
 
-   "month": "month",
+  "month": "month",
   "year": "year",
   "one_time": "one-time",
   "must_be_logged_in_to_manage_billing": "You must be logged in to manage billing.",
