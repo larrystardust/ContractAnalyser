@@ -63,29 +63,33 @@ export const countFindingsByRisk = (findings: Finding[]): Record<RiskLevel, numb
 export const getRiskLevelLabel = (risk: RiskLevel): string => {
   switch (risk) {
     case 'high':
-      return 'High Risk';
+      return 'risk_level_high'; // MODIFIED: Returns translation key
     case 'medium':
-      return 'Medium Risk';
+      return 'risk_level_medium'; // MODIFIED: Returns translation key
     case 'low':
-      return 'Low Risk';
+      return 'risk_level_low'; // MODIFIED: Returns translation key
     case 'none':
-      return 'No Risk';
+      return 'risk_level_none'; // MODIFIED: Returns translation key
     default:
-      return 'Unknown';
+      return 'risk_level_unknown'; // MODIFIED: Returns translation key
   }
 };
 
 export const getCategoryLabel = (category: string): string => {
   switch (category) {
     case 'compliance':
-      return 'Regulatory Compliance';
+      return 'category_compliance'; // MODIFIED: Returns translation key
     case 'risk':
-      return 'Legal Risk';
+      return 'category_risk'; // MODIFIED: Returns translation key
     case 'data-protection':
-      return 'Data Protection';
+      return 'category_data_protection'; // MODIFIED: Returns translation key
     case 'enforceability':
-      return 'Enforceability';
+      return 'category_enforceability'; // MODIFIED: Returns translation key
+    case 'drafting':
+      return 'category_drafting'; // MODIFIED: Returns translation key
+    case 'commercial':
+      return 'category_commercial'; // MODIFIED: Returns translation key
     default:
-      return category.charAt(0).toUpperCase() + category.slice(1);
+      return `category_${category.toLowerCase()}`; // MODIFIED: Returns translation key
   }
 };
