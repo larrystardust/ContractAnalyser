@@ -9,10 +9,10 @@ import { useTranslation } from 'react-i18next';
 interface PricingCardProps {
   product: StripeProduct;
   billingPeriod: 'monthly' | 'yearly';
-  currentSessionUserId: string | null;
-  userSubscription: Subscription | null;
-  userMembership: SubscriptionMembership | null;
-  isDataLoading: boolean;
+  currentSessionUserId?: string | null; // Made optional for LandingPage
+  userSubscription?: Subscription | null; // Made optional for LandingPage
+  userMembership?: SubscriptionMembership | null; // Made optional for LandingPage
+  isDataLoading?: boolean; // Made optional for LandingPage
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -21,7 +21,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   currentSessionUserId,
   userSubscription,
   userMembership,
-  isDataLoading,
+  isDataLoading = false, // Default to false if not provided
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { t } = useTranslation();
@@ -98,7 +98,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
       buttonText = t('owner_only');
     }
   } else if (product.name === 'Enterprise Use') {
-    buttonText = isMemberNotOwner ? t('owner_only') : t('upgrade');
+    buttonText = isMemberNotOwner ? t('only_owner_upgrade_enterprise_button') : t('upgrade'); // MODIFIED
   } else {
     buttonText = t('purchase');
   }
@@ -142,7 +142,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
       {product.fileRetentionPolicy && (
         <p className="text-sm text-gray-500 mb-6">
-          <span className="font-semibold">{t('data_retention')}:</span> {product.fileRetentionPolicy}
+          <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)} {/* MODIFIED */}
           {product.maxFiles && (
             <>
               <br />
