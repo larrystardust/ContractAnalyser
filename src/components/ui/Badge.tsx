@@ -15,7 +15,7 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({ risk, className = '' }) =>
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(risk)} ${className}`}
     >
-      {t(getRiskLevelLabel(risk).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
+      {t(getRiskLevelLabel(risk))} {/* MODIFIED: Apply t() */}
     </span>
   );
 };
@@ -35,9 +35,9 @@ export const JurisdictionBadge: React.FC<JurisdictionBadgeProps> = ({
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getJurisdictionColor(jurisdiction)} ${className}`}
-      title={t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_'))} 
+      title={t(getJurisdictionLabel(jurisdiction))} /* MODIFIED: Apply t() */
     >
-      {showLabel ? t(getJurisdictionLabel(jurisdiction).toLowerCase().replace(/\s/g, '_')) : jurisdiction} {/* MODIFIED */}
+      {showLabel ? t(getJurisdictionLabel(jurisdiction)) : jurisdiction} {/* MODIFIED: Apply t() */}
     </span>
   );
 };
@@ -84,7 +84,7 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(category)} ${className}`}
     >
-      {t(getCategoryLabel(category).toLowerCase().replace(/\s/g, '_'))} {/* MODIFIED */}
+      {t(getCategoryLabel(category))} {/* MODIFIED: Apply t() */}
     </span>
   );
 };
