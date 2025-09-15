@@ -578,5 +578,17 @@
   "user_not_authenticated": "Utilisateur non authentifié.",
   "failed_to_load_preferences": "Échec du chargement des préférences.",
   "preferences_saved_successfully": "Préférences enregistrées avec succès !",
-  "failed_to_save_preferences": "Échec de l'enregistrement des préférences."
+  "failed_to_save_preferences": "Échec de l'enregistrement des préférences.",
+
+  "month": "mois",
+  "year": "an",
+  "one_time": "unique",
+  "must_be_logged_in_to_manage_billing": "Vous devez être connecté pour gérer la facturation.",
+  "no_associated_billing_account": "Aucun compte de facturation associé trouvé.",
+  "no_permission_manage_other_users_billing": "Interdit : Seuls les administrateurs peuvent gérer la facturation des autres utilisateurs.",
+  "failed_to_open_billing_portal": "Échec de l'ouverture du portail de facturation : {{message}}",
+  "failed_to_get_billing_portal_url": "Échec de l'obtention de l'URL du portail de facturation.",
+  "unexpected_error_occurred_with_message": "Une erreur inattendue est survenue : {{message}}",
+  "loading_pricing_information": "Chargement des informations de tarification",
+  "loading_user_data": "Chargement des données utilisateur"
 }
