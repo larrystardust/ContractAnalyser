@@ -504,5 +504,15 @@
   "clause_reference_schedule_2_section_23": "Annexe 2, Section 23",
   "sample_contract_analysis": "Analyse de contrat exemple",
   "no_completed_sample_contract_selected_sidebar": "Aucun contrat exemple terminé sélectionné",
-  "select_completed_sample_contract_to_view_analysis": "Sélectionnez un contrat exemple terminé dans la liste pour voir son analyse."
+  "select_completed_sample_contract_to_view_analysis": "Sélectionnez un contrat exemple terminé dans la liste pour voir son analyse.",
+  "category_compliance": "Conformité",
+  "category_risk": "Risque",
+  "category_data_protection": "Protection des données",
+  "category_enforceability": "Applicabilité",
+  "category_drafting": "Rédaction",
+  "category_commercial": "Commercial",
+  "data_protection_impact": "Impact sur la protection des données",
+  "status_pending": "En attente",
+  "status_analyzing": "Analyse en cours",
+  "status_completed": "Terminé"
 }
