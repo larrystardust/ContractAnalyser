@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Globe, Palette, FileText } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
@@ -95,7 +95,7 @@ const ApplicationPreferences: React.FC = () => {
 
   const handleSave = async () => {
     if (!session?.user?.id) {
-      setError(t('must_be_logged_in_to_save_preferences')); // MODIFIED
+      setError(t('user_not_authenticated')); // MODIFIED
       return;
     }
 
