@@ -4,31 +4,31 @@ import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 // Define the structure for the default settings (including display info)
 const notificationTypes = {
   'analysis-complete': {
-    title: 'Analysis Complete',
-    description: 'Get notified when contract analysis is finished',
+    titleKey: 'analysis_complete',
+    descriptionKey: 'get_notified_when_contract_analysis_is_finished',
     defaultEmail: true,
     defaultInApp: true
   },
   'high-risk-findings': {
-    title: 'High Risk Findings',
-    description: 'Immediate alerts for high-risk compliance issues',
+    titleKey: 'high_risk_findings',
+    descriptionKey: 'immediate_alerts_for_high-risk_compliance_issues',
     defaultEmail: true,
     defaultInApp: true
   },
   'weekly-reports': {
-    title: 'Weekly Reports',
-    description: 'Summary of all contract analyses from the past week',
+    titleKey: 'weekly_reports',
+    descriptionKey: 'summary_of_all_contract_analyses_from_the_past_week',
     defaultEmail: false,
     defaultInApp: false
   },
   'system-updates': {
-    title: 'System Updates',
-    description: 'Information about new features and system maintenance',
+    titleKey: 'system_updates',
+    descriptionKey: 'information_about_new_features_and_system_maintenance',
     defaultEmail: false,
     defaultInApp: true
   },
@@ -37,7 +37,7 @@ const notificationTypes = {
 const NotificationSettings: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   // State to hold the actual user preferences (only email/inApp status)
   const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
@@ -90,13 +90,13 @@ const NotificationSettings: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error fetching notification preferences:', err);
-        setError(err.message || t('failed_to_load_notification_preferences')); // MODIFIED
+        setError(err.message || t('failed_to_load_notification_preferences'));
       } finally {
         setIsLoading(false);
       }
     };
     fetchNotificationPreferences();
-  }, [session?.user?.id, supabase, t]); // MODIFIED: Added t to dependency array
+  }, [session?.user?.id, supabase, t]);
 
   const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
     setPreferences(prev => ({
@@ -110,7 +110,7 @@ const NotificationSettings: React.FC = () => {
 
   const handleSavePreferences = async () => {
     if (!session?.user?.id) {
-      setError(t('must_be_logged_in_to_save_preferences')); // MODIFIED
+      setError(t('must_be_logged_in_to_save_preferences'));
       return;
     }
     setIsSaving(true);
@@ -130,10 +130,10 @@ const NotificationSettings: React.FC = () => {
       if (updateError) {
         throw updateError;
       }
-      setMessage(t('notification_preferences_saved_successfully')); // MODIFIED
+      setMessage(t('notification_preferences_saved_successfully'));
     } catch (err: any) {
       console.error('Error saving notification preferences:', err);
-      setError(err.message || t('failed_to_save_notification_preferences')); // MODIFIED
+      setError(err.message || t('failed_to_save_notification_preferences'));
     } finally {
       setIsSaving(false);
     }
@@ -165,7 +165,7 @@ const NotificationSettings: React.FC = () => {
       <Card>
         <CardBody className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
-          <p className="text-gray-500 mt-2">{t('loading_notification_preferences')}...</p> {/* MODIFIED */}
+          <p className="text-gray-500 mt-2">{t('loading_notification_preferences')}...</p>
         </CardBody>
       </Card>
     );
@@ -177,7 +177,7 @@ const NotificationSettings: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <Bell className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('notification_preferences')}</h3> {/* MODIFIED */}
+            <h3 className="text-lg font-medium text-gray-900">{t('notification_preferences')}</h3>
           </div>
         </CardHeader>
         <CardBody>
@@ -193,26 +193,26 @@ const NotificationSettings: React.FC = () => {
           )}
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-200">
-              <div className="text-sm font-medium text-gray-700">{t('notification_type')}</div> {/* MODIFIED */}
+              <div className="text-sm font-medium text-gray-700">{t('notification_type')}</div>
               <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
                 <Mail className="h-4 w-4 mr-1" />
-                {t('email')} {/* MODIFIED */}
+                {t('email')}
               </div>
               <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
                 <Smartphone className="h-4 w-4 mr-1" />
-                {t('in_app')} {/* MODIFIED */}
+                {t('in_app')}
               </div>
             </div>
 
             {Object.entries(preferences).map(([id, pref]) => {
               const typeInfo = notificationTypes[id as keyof typeof notificationTypes];
-              if (!typeInfo) return null; // Should not happen if notificationTypes is comprehensive
+              if (!typeInfo) return null;
 
               return (
                 <div key={id} className="grid grid-cols-3 gap-4 items-center py-3">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">{t(typeInfo.title.toLowerCase().replace(/\s/g, '_'))}</h4> {/* MODIFIED */}
-                    <p className="text-xs text-gray-500 mt-1">{t(typeInfo.description.toLowerCase().replace(/\s/g, '_'))}</p> {/* MODIFIED */}
+                    <h4 className="text-sm font-medium text-gray-900">{t(typeInfo.titleKey)}</h4>
+                    <p className="text-xs text-gray-500 mt-1">{t(typeInfo.descriptionKey)}</p>
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
@@ -236,11 +236,11 @@ const NotificationSettings: React.FC = () => {
               onClick={handleSavePreferences}
               disabled={isSaving}
             >
-              {isSaving ? t('saving') : t('save_notification_settings')} {/* MODIFIED */}
+              {isSaving ? t('saving') : t('save_notification_settings')}
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            {t('note_email_reports_setting')} {/* MODIFIED */}
+            {t('note_email_reports_setting')}
           </p>
         </CardBody>
       </Card>
