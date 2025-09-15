@@ -496,5 +496,15 @@
   "clause_reference_schedule_2_section_23": "Schedule 2, Section 23",
   "sample_contract_analysis": "Sample Contract Analysis",
   "no_completed_sample_contract_selected_sidebar": "No Completed Sample Contract Selected",
-  "select_completed_sample_contract_to_view_analysis": "Select a completed sample contract from the list to view its analysis."
+  "select_completed_sample_contract_to_view_analysis": "Select a completed sample contract from the list to view its analysis.",
+  "category_compliance": "Compliance",
+  "category_risk": "Risk",
+  "category_data_protection": "Data Protection",
+  "category_enforceability": "Enforceability",
+  "category_drafting": "Drafting",
+  "category_commercial": "Commercial",
+  "data_protection_impact": "Data Protection Impact",
+  "status_pending": "Pending",
+  "status_analyzing": "Analyzing",
+  "status_completed": "Completed"
 }
