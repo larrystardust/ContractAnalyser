@@ -621,5 +621,23 @@
   "loading_profile": "Chargement du profil...",
   "failed_to_load_profile_data": "Échec du chargement des données de profil.",
   "profile_updated_successfully": "Profil mis à jour avec succès !",
-  "failed_to_update_profile": "Échec de la mise à jour du profil."
+  "failed_to_update_profile": "Échec de la mise à jour du profil.",
+
+  "simple_transparent_pricing_landing": "Tarifs simples et transparents",
+  "choose_best_plan_landing": "Choisissez le plan qui correspond le mieux à vos besoins",
+  "monthly_billing_landing": "Facturation mensuelle",
+  "yearly_billing_landing": "Facturation annuelle",
+  "data_retention": "Conservation des données",
+  "file_limit": "Limite de fichiers",
+  "up_to": "Jusqu'à",
+  "files_at_any_time": "fichiers à tout moment",
+  "already_covered_by_subscription": "Déjà couvert par votre abonnement actif.",
+  "no_payment_needed_admin_assigned": "Aucun paiement nécessaire avec votre abonnement attribué actuel.",
+  "only_owner_manage_downgrades": "Seul le propriétaire de l'abonnement peut gérer les rétrogradations.",
+  "only_owner_upgrade_enterprise": "Seul le propriétaire de l'abonnement peut passer à l'utilisation Entreprise.",
+  "only_owner_upgrade_enterprise_button": "Propriétaire uniquement",
+  "simple_transparent_pricing": "Tarifs simples et transparents",
+  "choose_best_plan": "Choisissez le plan qui correspond le mieux à vos besoins",
+  "monthly_billing": "Facturation mensuelle",
+  "yearly_billing": "Facturation annuelle"
 }
