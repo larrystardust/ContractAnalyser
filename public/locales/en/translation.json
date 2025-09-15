@@ -511,5 +511,6 @@
   "risk_level_high": "High Risk",
   "risk_level_medium": "Medium Risk",
   "risk_level_low": "Low Risk",
-  "risk_level_none": "No Risk"
+  "risk_level_none": "No Risk",
+  "loading_reports": "Loading reports"
 }
