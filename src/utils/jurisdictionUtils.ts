@@ -3,21 +3,21 @@ import { Jurisdiction } from '../types';
 export const getJurisdictionLabel = (jurisdiction: Jurisdiction): string => {
   switch (jurisdiction) {
     case 'UK':
-      return 'United Kingdom';
+      return 'jurisdiction_uk'; // MODIFIED: Returns translation key
     case 'EU':
-      return 'European Union';
+      return 'jurisdiction_eu'; // MODIFIED: Returns translation key
     case 'Ireland':
-      return 'Republic of Ireland';
+      return 'jurisdiction_ireland'; // MODIFIED: Returns translation key
     case 'US':
-      return 'United States';
+      return 'jurisdiction_us'; // MODIFIED: Returns translation key
     case 'Canada':
-      return 'Canada';
+      return 'jurisdiction_canada'; // MODIFIED: Returns translation key
     case 'Australia':
-      return 'Australia';
-    case 'Others': // ADDED
-      return 'Other Jurisdictions';
+      return 'jurisdiction_australia'; // MODIFIED: Returns translation key
+    case 'Others':
+      return 'jurisdiction_others'; // MODIFIED: Returns translation key
     default:
-      return jurisdiction;
+      return `jurisdiction_${jurisdiction.toLowerCase()}`; // MODIFIED: Returns translation key
   }
 };
 
@@ -35,7 +35,7 @@ export const getJurisdictionFlag = (jurisdiction: Jurisdiction): string => {
       return '🇨🇦';
     case 'Australia':
       return '🇦🇺';
-    case 'Others': // ADDED
+    case 'Others':
       return '🌍';
     default:
       return '';
@@ -56,7 +56,7 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
       return 'bg-red-600 text-white';
     case 'Australia':
       return 'bg-yellow-600 text-white';
-    case 'Others': // ADDED
+    case 'Others':
       return 'bg-gray-500 text-white';
     default:
       return 'bg-gray-500 text-white';
@@ -64,7 +64,7 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
 };
 
 export const getAllJurisdictions = (): Jurisdiction[] => {
-  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Others']; // MODIFIED: Updated list
+  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Others'];
 };
 
 export const getJurisdictionBorderColor = (jurisdiction: Jurisdiction): string => {
@@ -81,7 +81,7 @@ export const getJurisdictionBorderColor = (jurisdiction: Jurisdiction): string =
       return 'border-red-600';
     case 'Australia':
       return 'border-yellow-600';
-    case 'Others': // ADDED
+    case 'Others':
       return 'border-gray-500';
     default:
       return 'border-gray-500';
