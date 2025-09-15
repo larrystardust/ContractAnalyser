@@ -464,11 +464,13 @@
   "sample_applicable_law_others_2": "Norme mondiale 2",
   "sample_applicable_law_EU_GDPR": "RGPD (Règlement 2016/679)",
   "sample_applicable_law_EU_Directive_X": "Directive UE X",
+  "findings_by_risk_level": "Constatations par niveau de risque",
   "risk_level_high": "Risque élevé",
   "risk_level_medium": "Risque moyen",
   "risk_level_low": "Faible risque",
   "risk_level_none": "Aucun risque",
   "risk_level_unknown": "Inconnu",
+  "loading_reports": "Chargement des rapports",
 
   "category_compliance": "Conformité",
   "category_risk": "Risque",
@@ -514,11 +516,5 @@
   "data_protection_impact": "Impact sur la protection des données",
   "status_pending": "En attente",
   "status_analyzing": "Analyse en cours",
-  "status_completed": "Terminé",
-  "findings_by_risk_level": "Constatations par niveau de risque",
-  "risk_level_high": "Risque élevé",
-  "risk_level_medium": "Risque moyen",
-  "risk_level_low": "Faible risque",
-  "risk_level_none": "Aucun risque",
-  "loading_reports": "Chargement des rapports"
+  "status_completed": "Terminé"
 }
