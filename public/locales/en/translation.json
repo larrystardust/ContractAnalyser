@@ -613,5 +613,23 @@
   "loading_profile": "Loading profile...",
   "failed_to_load_profile_data": "Failed to load profile data.",
   "profile_updated_successfully": "Profile updated successfully!",
-  "failed_to_update_profile": "Failed to update profile."
+  "failed_to_update_profile": "Failed to update profile.",
+
+  "simple_transparent_pricing_landing": "Simple, Transparent Pricing",
+  "choose_best_plan_landing": "Choose the plan that best fits your needs",
+  "monthly_billing_landing": "Monthly Billing",
+  "yearly_billing_landing": "Yearly Billing",
+  "data_retention": "Data Retention",
+  "file_limit": "File Limit",
+  "up_to": "Up to",
+  "files_at_any_time": "files at any time",
+  "already_covered_by_subscription": "Already covered by your active subscription.",
+  "no_payment_needed_admin_assigned": "No payment needed with your current assigned subscription.",
+  "only_owner_manage_downgrades": "Only the subscription owner can manage downgrades.",
+  "only_owner_upgrade_enterprise": "Only the subscription owner can upgrade to Enterprise Use.",
+  "only_owner_upgrade_enterprise_button": "Owner Only",
+  "simple_transparent_pricing": "Simple, Transparent Pricing",
+  "choose_best_plan": "Choose the plan that best fits your needs",
+  "monthly_billing": "Monthly Billing",
+  "yearly_billing": "Yearly Billing"
 }
