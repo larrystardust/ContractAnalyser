@@ -216,7 +216,7 @@
   "is_admin_form": "Est Administrateur",
   "theme_preference_form": "Préférence de Thème",
   "email_reports_enabled_form": "Rapports par E-mail Activés",
-  "assign_subscription_plan": "Attribuer un Plan d'Abonnement :",
+  "assign_subscription_plan": "Attribuer un Plan d'Abonnement",
   "assign_update_subscription_button": "Attribuer/Mettre à jour l'Abonnement",
   "grant_single_use_credit_button": "Accorder un Crédit à Usage Unique",
   "manage_subscription_stripe_button": "Gérer l'Abonnement dans Stripe",
