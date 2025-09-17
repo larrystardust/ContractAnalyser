@@ -4,7 +4,7 @@ import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle } from 'lucide-react';
 import Modal from '../ui/Modal';
 import SupportTicketForm from '../forms/SupportTicketForm';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation, Trans } from 'react-i18next'; // ADDED Trans import
 
 interface DashboardHelpModalProps {
   onReportIssue?: () => void;
@@ -14,7 +14,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
   const [isSupportTicketModalOpen, setIsSupportTicketModalOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   // Check if password reset flow is active and block the modal
   useEffect(() => {
@@ -78,9 +78,9 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
     return (
       <div className="space-y-6 text-center py-8">
         <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('access_restricted_modal')}</h2> {/* MODIFIED */}
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('access_restricted_modal')}</h2>
         <p className="text-gray-700 mb-4">
-          {t('help_unavailable_during_reset_modal')} {/* MODIFIED */}
+          {t('help_unavailable_during_reset_modal')}
         </p>
         <Button 
           variant="primary" 
@@ -89,7 +89,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
             navigate(`/reset-password${currentHash}`, { replace: true });
           }}
         >
-          {t('continue_password_reset_modal')} {/* MODIFIED */}
+          {t('continue_password_reset_modal')}
         </Button>
       </div>
     );
@@ -99,60 +99,64 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
     <div className="space-y-6">
       <div className="text-center mb-6">
         <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
-          <Bug className="h-5 w-5 mr-2" /> {t('click_here_report_issue')} {/* MODIFIED */}
+          <Bug className="h-5 w-5 mr-2" /> {t('click_here_report_issue')}
         </Button>
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')} {/* MODIFIED */}
+        <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')}
       </h3>
       <p className="text-gray-700 mb-4">
-        {t('dashboard_overview_desc_modal')} {/* MODIFIED */}
+        {t('dashboard_overview_desc_modal')}
       </p>
       <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
         <li>
-          **{t('contract_list_modal')}**: {t('contract_list_desc_modal')} {/* MODIFIED */}
+          **{t('contract_list_modal')}**: {t('contract_list_desc_modal')}
         </li>
         <li>
-          **{t('analysis_progress_modal')}**: {t('analysis_progress_desc_modal')} {/* MODIFIED */}
+          **{t('analysis_progress_modal')}**: {t('analysis_progress_desc_modal')}
         </li>
         <li>
-          **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')} {/* MODIFIED */}
+          **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')}
         </li>
       </ul>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')} {/* MODIFIED */}
+        <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')}
       </h3>
       <p className="text-gray-700 mb-4">
-        {t('analysis_results_desc_modal')} {/* MODIFIED */}
+        {t('analysis_results_desc_modal')}
       </p>
       <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
         <li>
-          **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')} {/* MODIFIED */}
+          **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')}
         </li>
         <li>
-          **{t('compliance_score_modal')}**: {t('compliance_score_desc_modal')} {/* MODIFIED */}
+          **{t('compliance_score_modal')}**: {t('compliance_score_desc_modal')}
         </li>
         <li>
-          **{t('findings_modal')}**: {t('findings_desc_modal')} {/* MODIFIED */}
+          **{t('findings_modal')}**: {t('findings_desc_modal')}
         </li>
         <li>
-          **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')} {/* MODIFIED */}
+          **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')}
         </li>
       </ul>
 
       <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')} {/* MODIFIED */}
+        <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')}
       </h3>
       <p className="text-gray-700">
-        {t('further_questions_contact_support_modal', { helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline">{t('help_center_modal')}</Link> })} {/* MODIFIED */}
+        <Trans i18nKey="further_questions_contact_support_modal"
+          components={{
+            helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline" />
+          }}
+        />
       </p>
 
       <Modal
         isOpen={isSupportTicketModalOpen}
         onClose={() => setIsSupportTicketModalOpen(false)}
-        title={t('report_an_issue_modal')} 
+        title={t('report_an_issue_modal')}
       >
         <SupportTicketForm />
       </Modal>
