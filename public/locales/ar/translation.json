@@ -216,7 +216,7 @@
   "is_admin_form": "هل هو مشرف",
   "theme_preference_form": "تفضيل المظهر",
   "email_reports_enabled_form": "تم تمكين التقارير الإلكترونية",
-  "assign_subscription_plan": "تعيين خطة الاشتراك:",
+  "assign_subscription_plan": "تعيين خطة الاشتراك",
   "assign_update_subscription_button": "تعيين/تحديث الاشتراك",
   "grant_single_use_credit_button": "منح رصيد لمرة واحدة",
   "manage_subscription_stripe_button": "إدارة الاشتراك في Stripe",
