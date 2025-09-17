@@ -909,5 +909,11 @@
   "must_be_logged_in_to_submit_ticket": "Debe iniciar sesión para enviar un ticket",
   "is_admin": "Es Administrador",
   "theme_preference": "Preferencia de Tema",
-  "subscription_role": "Suscripción y Rol"
+  "subscription_role": "Suscripción y Rol",
+
+  "loading_subscription_details": "Cargando detalles de la suscripción...",
+  "loading_preferences": "Cargando preferencias",
+  "failed_to_email_report": "Error al enviar el informe por correo electrónico",
+  "emailing": "Enviando correo...",
+  "confirm_delete_contract_and_results": "¿Está seguro de que desea eliminar este contrato y sus resultados de análisis? Esta acción no se puede deshacer."
 }
