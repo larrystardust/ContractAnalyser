@@ -137,10 +137,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               value={i18n.language}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
             >
-              <option value="en">EN</option>
-              <option value="fr">FR</option>
-              <option value="es">ES</option>
-              <option value="ar">AR</option>
+              <option value="en">ENGLISH</option>
+              <option value="fr">FRANCAIS</option>
+              <option value="es">ESPANOL</option>
+              <option value="ar">العربية</option>
             </select>
 
             {session?.user ? (
