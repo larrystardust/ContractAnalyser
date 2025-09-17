@@ -933,5 +933,11 @@
   "must_be_logged_in_to_submit_ticket": "Vous devez être connecté pour soumettre un ticket",
   "is_admin": "Est Administrateur",
   "theme_preference": "Préférence de Thème",
-  "subscription_role": "Abonnement et Rôle"
+  "subscription_role": "Abonnement et Rôle",
+
+  "loading_subscription_details": "Chargement des détails de l'abonnement...",
+  "loading_preferences": "Chargement des préférences",
+  "failed_to_email_report": "Échec de l'envoi du rapport par e-mail",
+  "emailing": "Envoi d'e-mail...",
+  "confirm_delete_contract_and_results": "Êtes-vous sûr de vouloir supprimer ce contrat et ses résultats d'analyse ? Cette action ne peut pas être annulée."
 }
