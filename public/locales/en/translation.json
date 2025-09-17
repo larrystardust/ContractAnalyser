@@ -216,7 +216,7 @@
   "is_admin_form": "Is Admin",
   "theme_preference_form": "Theme Preference",
   "email_reports_enabled_form": "Email Reports Enabled",
-  "assign_subscription_plan": "Assign Subscription Plan:",
+  "assign_subscription_plan": "Assign Subscription Plan",
   "assign_update_subscription_button": "Assign/Update Subscription",
   "grant_single_use_credit_button": "Grant Single-Use Credit",
   "manage_subscription_stripe_button": "Manage Subscription in Stripe",
