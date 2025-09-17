@@ -932,5 +932,11 @@
   "must_be_logged_in_to_submit_ticket": "يجب تسجيل الدخول لإرسال تذكرة",
   "is_admin": "هل هو مسؤول",
   "theme_preference": "تفضيل السمة",
-  "subscription_role": "الاشتراك والدور"
+  "subscription_role": "الاشتراك والدور",
+
+  "loading_subscription_details": "جاري تحميل تفاصيل الاشتراك...",
+  "loading_preferences": "جاري تحميل التفضيلات",
+  "failed_to_email_report": "فشل في إرسال التقرير عبر البريد الإلكتروني",
+  "emailing": "جاري إرسال البريد...",
+  "confirm_delete_contract_and_results": "هل أنت متأكد أنك تريد حذف هذا العقد ونتائج تحليله؟ لا يمكن التراجع عن هذا الإجراء."
 }
