@@ -932,5 +932,11 @@
   "must_be_logged_in_to_submit_ticket": "You must be logged in to submit a ticket",
   "is_admin": "Is Admin",
   "theme_preference": "Theme Preference",
-  "subscription_role": "Subscription & Role"
+  "subscription_role": "Subscription & Role",
+
+  "loading_subscription_details": "Loading subscription details...",
+  "loading_preferences": "Loading preferences",
+  "failed_to_email_report": "Failed to send email report",
+  "emailing": "Emailing...",
+  "confirm_delete_contract_and_results": "Are you sure you want to delete this contract and its analysis results? This action cannot be undone."
 }
