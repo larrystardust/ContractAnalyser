@@ -947,7 +947,7 @@
   "another_email_sent": "¡Se ha enviado otro correo de confirmación!",
   "failed_to_resend_email": "Error al reenviar el correo de confirmación.",
   "email_sent_page_title": "Revise Su Correo Electrónico",
-  "email_sent_message": "Se ha enviado un enlace de confirmación a {{userEmail}}. Por favor, haga clic en el enlace del correo para verificar su cuenta y proceder al panel de control.",
+  "email_sent_message": "Se ha enviado un enlace de confirmación a <highlight>{{userEmail}}</highlight>. Por favor, haga clic en el enlace del correo para verificar su cuenta y proceder al panel de control.",
   "sending_email": "Enviando...",
   "resend_confirmation_email": "Reenviar Correo de Confirmación",
   "back_to_login_button": "Volver al Inicio de Sesión",
