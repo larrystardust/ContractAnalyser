@@ -1037,5 +1037,6 @@
   "notification_title_subscription_plan_changed": "Plan de suscripción cambiado",
   "notification_title_subscription_active": "¡Suscripción activa!",
   "notification_title_subscription_alert": "¡Alerta de suscripción!",
-  "notification_title_credit_granted": "¡Crédito concedido!"
+  "notification_title_credit_granted": "¡Crédito concedido!",
+  "previous_plan": "plan anterior"
 }
