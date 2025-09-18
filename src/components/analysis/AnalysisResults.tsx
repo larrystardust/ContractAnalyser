@@ -130,12 +130,12 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         body: {
           userId: session.user.id,
           contractId: analysisResult.contract_id,
-          reportSummary: executiveSummary,
+          reportSummary: analysisResult.executiveSummary, // MODIFIED: Use direct value
           reportLink: reportLink,
           reportHtmlContent: reportHtmlContent,
         },
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${session.access_token}`, // MODIFIED: Use session.access_token
         },
       });
 
@@ -173,7 +173,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
             </div>
           )}
         </div>
-        <p className="text-gray-700">{t(analysisResult.executiveSummary, { complianceScore: analysisResult.complianceScore })}</p> {/* MODIFIED */}
+        <p className="text-gray-700">{analysisResult.executiveSummary}</p> {/* MODIFIED: Removed t() */}
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -287,11 +287,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   <div className="flex-1">
                     <div className="flex items-center">
                       <h3 className={`text-base font-medium ${getRiskTextColor(finding.riskLevel)}`}>
-                        {finding.title}
+                        {finding.title} {/* MODIFIED: Removed t() */}
                       </h3>
                       {finding.clauseReference && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          {finding.clauseReference}
+                          {finding.clauseReference} {/* MODIFIED: Removed t() */}
                         </span>
                       )}
                     </div>
@@ -302,14 +302,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                       <CategoryBadge category={finding.category} />
                     </div>
                     
-                    <p className="mt-3 text-gray-700">{finding.description}</p>
+                    <p className="mt-3 text-gray-700">{finding.description}</p> {/* MODIFIED: Removed t() */}
                     
                     {expandedFindings.includes(finding.id) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{rec}</li>
+                            <li key={index} className="text-sm text-gray-700">{rec}</li> {/* MODIFIED: Removed t() */}
                           ))}
                         </ul>
                       </div>
@@ -333,8 +333,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2> {/* MODIFIED */}
-          <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2>
+          <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p> {/* MODIFIED: Removed t() */}
         </div>
       )}
     </div>
