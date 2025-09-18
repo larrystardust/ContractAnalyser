@@ -161,7 +161,7 @@ const MfaChallengePage: React.FC = () => {
           <Smartphone className="h-12 w-12 text-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900">{t('two_factor_auth')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            {t('enter_6_digit_code')} {/* MODIFIED */}
+            {t('enter_6_digit_code_header')} {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
