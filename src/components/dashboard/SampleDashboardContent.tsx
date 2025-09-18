@@ -82,7 +82,7 @@ const SampleDashboardContent: React.FC = () => {
             </p>
             <Link to="/pricing">
               <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                {t('upgrade_to_analyze_own_contracts')} {/* MODIFIED */}
+                {t('upgrade_to_analyze_own_contracts_button')} {/* MODIFIED */}
               </Button>
             </Link>
           </div>
