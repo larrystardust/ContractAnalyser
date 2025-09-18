@@ -1038,5 +1038,13 @@
   "notification_title_subscription_active": "¡Suscripción activa!",
   "notification_title_subscription_alert": "¡Alerta de suscripción!",
   "notification_title_credit_granted": "¡Crédito concedido!",
-  "previous_plan": "plan anterior"
+  "previous_plan": "plan anterior",
+  "analysis_complete_message": "Su contrato \"{{contractName}}\" ha sido analizado con éxito.",
+  "high_risk_findings_message": "Su contrato \"{{contractName}}\" tiene {{count}} hallazgos de alto riesgo. Revise inmediatamente.",
+  "analysis_failed_message": "El análisis del contrato \"{{contractName}}\" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.",
+  "subscription_plan_changed_message": "Su plan de suscripción ha cambiado de {{oldPlan}} a {{newPlan}}.",
+  "subscription_active_message": "Su suscripción a {{productName}} ya está activa.",
+  "subscription_alert_message": "El estado de su suscripción a {{productName}} es ahora {{status}}. Por favor, revise sus detalles de facturación.",
+  "subscription_canceled_at_period_end_message": "Su suscripción a {{productName}} ha sido cancelada y finalizará el {{endDate}}.",
+  "credit_granted_message": "Un administrador le ha concedido un crédito de un solo uso para {{productName}}."
 }
