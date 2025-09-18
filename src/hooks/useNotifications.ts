@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { useTranslation } from 'react-i18next';
 
 export type Notification = Database['public']['Tables']['notifications']['Row'];
 
@@ -13,7 +12,6 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const notificationChannelRef = useRef<RealtimeChannel | null>(null);
-  const { t } = useTranslation();
 
   const fetchNotifications = useCallback(async () => {
     if (!session?.user?.id) {
