@@ -136,7 +136,7 @@ async function handleEvent(event: Stripe.Event) {
           const productName = singleUseProduct?.name || 'Single Use Credit';
           await insertNotification(
             customerUser.user_id,
-            'Payment Successful!',
+            'notification_title_payment_successful',
             `Your one-time payment for ${productName} has been processed successfully.`,
             'success'
           );
@@ -160,7 +160,7 @@ async function syncCustomerFromStripe(customerId: string) {
     // 1. Fetch the current state of the subscription from our DB *before* any updates
     const { data: oldSubscriptionDb, error: oldSubError } = await supabase
       .from('stripe_subscriptions')
-      .select('status, price_id, subscription_id') // Select subscription_id here
+      .select('status, price_id, subscription_id')
       .eq('customer_id', customerId)
       .maybeSingle();
 
@@ -256,7 +256,7 @@ async function syncCustomerFromStripe(customerId: string) {
         const { count: nullifiedCount, error: nullifyContractsError } = await supabase
           .from('contracts')
           .update({ subscription_id: null })
-          .in('id', contractIds) // Use .in() to update specific IDs
+          .in('id', contractIds)
           .select('*', { count: 'exact' });
 
         if (nullifyContractsError) {
@@ -271,7 +271,7 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // Step 2: UPSERT the stripe_subscriptions table with the new subscription data.
     // This operation should now succeed because any conflicting foreign key references have been removed.
-    const { data: newSubscriptionDb, error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert( // MODIFIED: Capture upsert result
+    const { data: newSubscriptionDb, error: subUpsertError } = await supabase.from('stripe_subscriptions').upsert(
       {
         customer_id: stripeSubscription.customer as string,
         subscription_id: stripeSubscription.id,
@@ -285,14 +285,14 @@ async function syncCustomerFromStripe(customerId: string) {
               payment_method_last4: stripeSubscription.default_payment_method.card?.last4 ?? null,
             }
           : {}),
-        status: stripeSubscription.status, // Use status from Stripe
+        status: stripeSubscription.status,
         max_users: maxUsers,
         max_files: maxFiles,
       },
       {
-        onConflict: 'customer_id', // Conflict on customer_id to update the existing record
+        onConflict: 'customer_id',
       },
-    ).select().single(); // MODIFIED: Select the updated row
+    ).select().single();
 
     if (subUpsertError) {
       console.error('Error upserting subscription:', subUpsertError);
@@ -307,8 +307,8 @@ async function syncCustomerFromStripe(customerId: string) {
       const { error: relinkContractsError } = await supabase
         .from('contracts')
         .update({ subscription_id: newStripeSubscriptionId })
-        .eq('user_id', userId) // Only re-link contracts belonging to this user
-        .is('subscription_id', null); // Update only those that were just nullified
+        .eq('user_id', userId)
+        .is('subscription_id', null);
 
       if (relinkContractsError) {
         console.error('Error re-linking contracts to new subscription ID:', relinkContractsError);
@@ -324,12 +324,12 @@ async function syncCustomerFromStripe(customerId: string) {
       .upsert(
         {
           user_id: userId,
-          subscription_id: stripeSubscription.id, // Use the Stripe subscription ID
-          role: 'owner', // Assign 'owner' role
-          status: stripeSubscription.status === 'active' || stripeSubscription.status === 'trialing' ? 'active' : 'inactive', // Set status based on Stripe subscription status
-          accepted_at: new Date().toISOString(), // Set accepted_at for direct subscribers
+          subscription_id: stripeSubscription.id,
+          role: 'owner',
+          status: stripeSubscription.status === 'active' || stripeSubscription.status === 'trialing' ? 'active' : 'inactive',
+          accepted_at: new Date().toISOString(),
         },
-        { onConflict: ['user_id', 'subscription_id'] } // Conflict on user_id and subscription_id
+        { onConflict: ['user_id', 'subscription_id'] }
       );
 
     if (membershipUpsertError) {
@@ -339,16 +339,16 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // 7. Compare old and new DB states to decide on notifications
     const oldStatus = oldSubscriptionDb?.status;
-    const newStatus = newSubscriptionDb.status; // MODIFIED: Use captured newSubscriptionDb
+    const newStatus = newSubscriptionDb.status;
     const oldPriceId = oldSubscriptionDb?.price_id;
-    const newPriceId = newSubscriptionDb.price_id; // MODIFIED: Use captured newSubscriptionDb
+    const newPriceId = newSubscriptionDb.price_id;
 
     const currentProduct = stripeProducts.find(p =>
       p.pricing.monthly?.priceId === newPriceId ||
       p.pricing.yearly?.priceId === newPriceId ||
       p.pricing.one_time?.priceId === newPriceId
     );
-    const productName = currentProduct?.name || 'Subscription';
+    const productName = currentProduct?.name || 'Single Use Credit';
 
     // Only send notification if there was a meaningful change in status or price
     if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
@@ -363,7 +363,7 @@ async function syncCustomerFromStripe(customerId: string) {
                 const oldProductName = oldProduct?.name || 'previous plan';
                 await insertNotification(
                     userId,
-                    'Subscription Plan Changed',
+                    'notification_title_subscription_plan_changed',
                     `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
                     'info'
                 );
@@ -371,7 +371,7 @@ async function syncCustomerFromStripe(customerId: string) {
                 // Status changed to active (e.g., from canceled, past_due, not_started)
                 await insertNotification(
                     userId,
-                    'Subscription Active!',
+                    'notification_title_subscription_active',
                     `Your ${productName} subscription is now active.`,
                     'success'
                 );
@@ -383,7 +383,7 @@ async function syncCustomerFromStripe(customerId: string) {
             }
             await insertNotification(
                 userId,
-                'Subscription Alert!',
+                'notification_title_subscription_alert',
                 message,
                 'warning'
             );
