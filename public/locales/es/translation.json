@@ -1165,5 +1165,7 @@
   "sample_contract_irish_service_level_agreement": "Acuerdo de Nivel de Servicio Irlandés.pdf",
   "sample_contract_cross_border_joint_venture": "Joint Venture Transfronteriza.pdf",
   "sample_contract_us_software_licensing_agreement": "Acuerdo de Licencia de Software de EE. UU..pdf",
-  "sample_contract_canada_australia_partnership_deed": "Escritura de Asociación Canadá-Australia.pdf"
+  "sample_contract_canada_australia_partnership_deed": "Escritura de Asociación Canadá-Australia.pdf",
+
+  "dashboard_help_title": "Ayuda del Panel de Control"
 }
