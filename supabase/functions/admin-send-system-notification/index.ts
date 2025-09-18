@@ -36,7 +36,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Notification title and message are required.' }, 400);
     }
 
-    // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header missing' }, 401);
@@ -48,7 +47,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
-    // Verify if the user is an admin
     const { data: adminProfile, error: adminProfileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -73,7 +71,7 @@ Deno.serve(async (req) => {
       user_id: profile.id,
       title: title,
       message: message,
-      type: 'info', // System updates are typically 'info' type
+      type: 'info',
     }));
 
     // Insert notifications in batches if there are many users
