@@ -52,9 +52,9 @@ const LandingPageSampleDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           {selectedContract && selectedContract.analysisResult ? (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1>
               
-              <SampleAnalysisResults analysisResult={selectedContract.analysisResult} />
+              <SampleAnalysisResults analysisResult={selectedContract.analysisResult} contractName={selectedContract.name} />
               
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
