@@ -4,7 +4,7 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation, Trans } from 'react-i18next'; // ADDED
 
 const EmailSentPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -90,7 +90,7 @@ const EmailSentPage: React.FC = () => {
           <Mail className="h-12 w-12 text-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('email_sent_page_title')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            {t('email_sent_message', { email: userEmail })} {/* MODIFIED */}
+            <Trans i18nKey="email_sent_message" values={{ userEmail }} /> {/* MODIFIED */}
           </p>
         </CardHeader>
         <CardBody>
