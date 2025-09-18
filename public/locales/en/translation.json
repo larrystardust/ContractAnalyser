@@ -1061,5 +1061,13 @@
   "notification_title_subscription_active": "Subscription Active!",
   "notification_title_subscription_alert": "Subscription Alert!",
   "notification_title_credit_granted": "Credit Granted!",
-  "previous_plan": "previous plan"
+  "previous_plan": "previous plan",
+  "analysis_complete_message": "Your contract \"{{contractName}}\" has been successfully analyzed.",
+  "high_risk_findings_message": "Your contract \"{{contractName}}\" has {{count}} high-risk findings. Review immediately.",
+  "analysis_failed_message": "Contract analysis for \"{{contractName}}\" failed. Please try again or contact support.",
+  "subscription_plan_changed_message": "Your subscription plan has changed from {{oldPlan}} to {{newPlan}}.",
+  "subscription_active_message": "Your {{productName}} subscription is now active.",
+  "subscription_alert_message": "Your {{productName}} subscription status is now {{status}}. Please check your billing details.",
+  "subscription_canceled_at_period_end_message": "Your {{productName}} subscription has been cancelled and will end on {{endDate}}.",
+  "credit_granted_message": "An administrator has granted you a single-use credit for {{productName}}."
 }
