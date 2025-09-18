@@ -5,7 +5,7 @@ import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
 import { AlertCircle, Info, FilePlus } from 'lucide-react';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 interface SampleAnalysisResultsProps {
   analysisResult: AnalysisResult;
@@ -15,7 +15,7 @@ interface SampleAnalysisResultsProps {
 const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisResult, isSample = true }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
   
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -41,7 +41,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2>
         </div>
-        <p className="text-gray-700">{t(analysisResult.executiveSummary, { complianceScore: analysisResult.complianceScore })}</p> {/* MODIFIED */}
+        <p className="text-gray-700">{analysisResult.executiveSummary}</p> {/* MODIFIED: Removed t() */}
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -121,7 +121,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Apply t() */}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
@@ -131,7 +131,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         <h2 className="text-lg font-semibold text-gray-800">
           {selectedJurisdiction === 'all' 
             ? t('all_findings') 
-            : t('jurisdiction_findings', { jurisdiction: t(getJurisdictionLabel(selectedJurisdiction)) })} {/* MODIFIED: Apply t() to jurisdiction label */}
+            : t('jurisdiction_findings', { jurisdiction: t(getJurisdictionLabel(selectedJurisdiction)) })}
           <span className="ml-2 text-sm font-normal text-gray-500">
             ({filteredFindings.length} {filteredFindings.length === 1 ? t('issue') : t('issues')})
           </span>
@@ -155,11 +155,11 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   <div className="flex-1">
                     <div className="flex items-center">
                       <h3 className={`text-base font-medium ${getRiskTextColor(finding.riskLevel)}`}>
-                        {t(finding.title)}
+                        {finding.title} {/* MODIFIED: Removed t() */}
                       </h3>
                       {finding.clauseReference && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          {t(finding.clauseReference)} {/* MODIFIED: Apply t() */}
+                          {finding.clauseReference} {/* MODIFIED: Removed t() */}
                         </span>
                       )}
                     </div>
@@ -170,14 +170,14 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                       <CategoryBadge category={finding.category} />
                     </div>
                     
-                    <p className="mt-3 text-gray-700">{t(finding.description)}</p>
+                    <p className="mt-3 text-gray-700">{finding.description}</p> {/* MODIFIED: Removed t() */}
                     
                     {expandedFindings.includes(finding.id) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> 
+                            <li key={index} className="text-sm text-gray-700">{rec}</li> {/* MODIFIED: Removed t() */}
                           ))}
                         </ul>
                       </div>
@@ -201,7 +201,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2>
-          <p className="text-gray-700">{t(analysisResult.dataProtectionImpact)}</p>
+          <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p> {/* MODIFIED: Removed t() */}
         </div>
       )}
     </div>
