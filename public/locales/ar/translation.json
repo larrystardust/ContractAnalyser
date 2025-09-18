@@ -1060,5 +1060,6 @@
   "notification_title_subscription_plan_changed": "تم تغيير خطة الاشتراك",
   "notification_title_subscription_active": "الاشتراك نشط!",
   "notification_title_subscription_alert": "تنبيه الاشتراك!",
-  "notification_title_credit_granted": "تم منح الرصيد!"
+  "notification_title_credit_granted": "تم منح الرصيد!",
+  "previous_plan": "الخطة السابقة"
 }
