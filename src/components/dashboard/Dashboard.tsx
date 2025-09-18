@@ -181,7 +181,7 @@ const Dashboard: React.FC = () => {
                   onReanalyzeInitiated={handleReanalyzeInitiated}
                   onReanalyzeCompleted={handleReanalyzeCompleted}
                   onReanalyzeFailed={handleReanalyzeFailed}
-                  contractName={selectedContract.name} {/* MODIFIED: Added contractName prop */}
+                  contractName={selectedContract.name} 
                 />
                 
                 {/* Jurisdiction Summaries */}
