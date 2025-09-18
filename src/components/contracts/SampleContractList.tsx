@@ -85,7 +85,7 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">{contract.name}</h3>
+                    <h3 className="text-sm font-medium text-gray-900">{t(contract.name)}</h3> {/* MODIFIED: Added t() */}
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDate(contract.created_at)} • {contract.size}
                     </p>
