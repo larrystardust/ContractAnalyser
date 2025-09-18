@@ -970,7 +970,7 @@
   "another_email_sent": "Another confirmation email has been sent!",
   "failed_to_resend_email": "Failed to resend confirmation email.",
   "email_sent_page_title": "Check Your Email",
-  "email_sent_message": "A confirmation link has been sent to {{userEmail}}. Please click the link in the email to verify your account and proceed to the dashboard.",
+  "email_sent_message": "A confirmation link has been sent to <highlight>{{userEmail}}</highlight>. Please click the link in the email to verify your account and proceed to the dashboard.",
   "sending_email": "Sending...",
   "resend_confirmation_email": "Resend Confirmation Email",
   "back_to_login_button": "Back to Login",
