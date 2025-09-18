@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react'; // ADDED Bell icon
+import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react';
 import Card, { CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
 import { getAllJurisdictions } from '../utils/jurisdictionUtils';
-import { Jurisdiction } from '../types';
-import Modal from '../components/ui/Modal'; // ADDED Modal import
-import adminService from '../services/adminService'; // ADDED adminService import
+import { Jurisdiction } from '../../types';
+import Modal from '../components/ui/Modal';
+import adminService from '../services/adminService';
+import { useTranslation } from 'react-i18next';
 
 const AdminSettingsPage: React.FC = () => {
   const { settings, loading, error, updateSettings } = useAppSettings();
@@ -15,6 +16,7 @@ const AdminSettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // State for System Notification Modal
   const [showSystemNotificationModal, setShowSystemNotificationModal] = useState(false);
@@ -64,9 +66,9 @@ const AdminSettingsPage: React.FC = () => {
 
     const success = await updateSettings(formData);
     if (success) {
-      setSaveMessage('Settings updated successfully!');
+      setSaveMessage(t('settings_updated_successfully'));
     } else {
-      setSaveError('Failed to update settings. Please try again.');
+      setSaveError(t('failed_to_update_settings_try_again'));
     }
     setIsSaving(false);
   };
@@ -79,13 +81,13 @@ const AdminSettingsPage: React.FC = () => {
 
     try {
       await adminService.sendSystemNotification(notificationTitle, notificationMessage);
-      setNotificationSendSuccess('System notification sent successfully!');
+      setNotificationSendSuccess(t('system_notification_sent_successfully'));
       setNotificationTitle('');
       setNotificationMessage('');
       setShowSystemNotificationModal(false);
     } catch (err: any) {
       console.error('Error sending system notification:', err);
-      setNotificationSendError(err.message || 'Failed to send system notification.');
+      setNotificationSendError(err.message || t('failed_to_send_system_notification'));
     } finally {
       setSendingNotification(false);
     }
@@ -95,7 +97,7 @@ const AdminSettingsPage: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
-        <p className="text-gray-500 mt-2">Loading application settings...</p>
+        <p className="text-gray-500 mt-2">{t('loading_application_settings')}</p>
       </div>
     );
   }
@@ -103,7 +105,7 @@ const AdminSettingsPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-red-600">Error: {error}</p>
+        <p className="text-red-600">{t('error_label')}: {error}</p>
       </div>
     );
   }
@@ -113,12 +115,12 @@ const AdminSettingsPage: React.FC = () => {
       <div className="mb-6">
         <Link to="/admin" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Admin Dashboard
+          {t('back_to_admin_dashboard')}
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Application Settings</h1>
-      <p className="text-gray-700 mb-8">Configure global parameters for the entire application.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('application_settings')}</h1>
+      <p className="text-gray-700 mb-8">{t('configure_global_parameters')}</p>
 
       <Card>
         <CardBody>
@@ -136,7 +138,7 @@ const AdminSettingsPage: React.FC = () => {
             {/* Default Theme */}
             <div>
               <label htmlFor="default_theme" className="block text-sm font-medium text-gray-700 mb-2">
-                <Palette className="h-4 w-4 inline-block mr-1 text-blue-900" /> Default Theme for New Users
+                <Palette className="h-4 w-4 inline-block mr-1 text-blue-900" /> {t('default_theme_for_new_users')}
               </label>
               <select
                 id="default_theme"
@@ -146,17 +148,17 @@ const AdminSettingsPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 disabled={isSaving}
               >
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="system">System</option>
+                <option value="light">{t('light')}</option>
+                <option value="dark">{t('dark')}</option>
+                <option value="system">{t('system')}</option>
               </select>
-              <p className="text-xs text-gray-500 mt-1">This theme will be applied to new user accounts by default.</p>
+              <p className="text-xs text-gray-500 mt-1">{t('default_theme_hint')}</p>
             </div>
 
             {/* Default Jurisdictions */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Globe className="h-4 w-4 inline-block mr-1 text-blue-900" /> Default Jurisdictions for New Contracts
+                <Globe className="h-4 w-4 inline-block mr-1 text-blue-900" /> {t('default_jurisdictions_for_new_contracts')}
               </label>
               <div className="flex flex-wrap gap-2">
                 {getAllJurisdictions().map((jurisdiction) => (
@@ -175,13 +177,13 @@ const AdminSettingsPage: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">These jurisdictions will be pre-selected by default when any user uploads a new contract.</p>
+              <p className="text-xs text-gray-500 mt-1">{t('default_jurisdictions_hint_admin')}</p>
             </div>
 
             {/* Global Email Reports Enabled */}
             <div>
               <label htmlFor="global_email_reports_enabled" className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                <Mail className="h-4 w-4 inline-block mr-1 text-blue-900" /> Global Email Reports Enabled
+                <Mail className="h-4 w-4 inline-block mr-1 text-blue-900" /> {t('global_email_reports_enabled')}
               </label>
               <div className="flex items-center">
                 <input
@@ -193,9 +195,9 @@ const AdminSettingsPage: React.FC = () => {
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   disabled={isSaving}
                 />
-                <span className="ml-2 text-sm text-gray-700">Enable all email reports across the application.</span>
+                <span className="ml-2 text-sm text-gray-700">{t('enable_all_email_reports_across_application')}</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">If disabled, no email reports will be sent, regardless of individual user settings.</p>
+              <p className="text-xs text-gray-500 mt-1">{t('global_email_reports_hint')}</p>
             </div>
 
             <div className="flex justify-end pt-4">
@@ -205,7 +207,7 @@ const AdminSettingsPage: React.FC = () => {
                 disabled={isSaving}
                 icon={<Settings className="w-4 h-4" />}
               >
-                {isSaving ? 'Saving Settings...' : 'Save Settings'}
+                {isSaving ? t('saving_settings') : t('save_settings')}
               </Button>
             </div>
           </form>
@@ -216,10 +218,10 @@ const AdminSettingsPage: React.FC = () => {
       <Card>
         <CardBody>
           <h2 className="text-lg font-medium text-gray-900 flex items-center mb-4">
-            <Bell className="h-5 w-5 mr-2 text-blue-900" /> Send System Notification
+            <Bell className="h-5 w-5 mr-2" /> {t('send_system_notification')}
           </h2>
           <p className="text-gray-700 mb-4">
-            Send an in-app notification to all users. Use this for important announcements, new features, or maintenance alerts.
+            {t('send_system_notification_description')}
           </p>
           {notificationSendSuccess && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
@@ -236,7 +238,7 @@ const AdminSettingsPage: React.FC = () => {
             onClick={() => setShowSystemNotificationModal(true)}
             icon={<Bell className="w-4 h-4" />}
           >
-            Send New Notification
+            {t('send_new_notification')}
           </Button>
         </CardBody>
       </Card>
@@ -245,12 +247,12 @@ const AdminSettingsPage: React.FC = () => {
       <Modal
         isOpen={showSystemNotificationModal}
         onClose={() => setShowSystemNotificationModal(false)}
-        title="Send System Notification to All Users"
+        title={t('send_system_notification_to_all_users')}
       >
         <form onSubmit={handleSendSystemNotification} className="space-y-4">
           <div>
             <label htmlFor="notificationTitle" className="block text-sm font-medium text-gray-700 mb-1">
-              Notification Title
+              {t('notification_title')}
             </label>
             <input
               type="text"
@@ -265,7 +267,7 @@ const AdminSettingsPage: React.FC = () => {
           </div>
           <div>
             <label htmlFor="notificationMessage" className="block text-sm font-medium text-gray-700 mb-1">
-              Notification Message
+              {t('notification_message')}
             </label>
             <textarea
               id="notificationMessage"
@@ -285,14 +287,14 @@ const AdminSettingsPage: React.FC = () => {
               onClick={() => setShowSystemNotificationModal(false)}
               disabled={sendingNotification}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
               variant="primary"
               disabled={sendingNotification || !notificationTitle || !notificationMessage}
             >
-              {sendingNotification ? 'Sending...' : 'Send Notification'}
+              {sendingNotification ? t('sending') : t('send_notification')}
             </Button>
           </div>
         </form>
