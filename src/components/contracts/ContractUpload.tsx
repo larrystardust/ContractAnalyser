@@ -7,6 +7,7 @@ import { useContracts } from '../../context/ContractContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
@@ -31,6 +32,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation(); // ADDED: useTranslation hook
 
   // ADDED: State variables for language selection
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
@@ -38,11 +40,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
   // ADDED: Language options array
   const languageOptions = [
-    { value: 'auto', label: 'Auto-detect' },
-    { value: 'en', label: 'English' },
-    { value: 'fr', label: 'French' },
-    { value: 'es', label: 'Spanish' },
-    { value: 'ar', label: 'Arabic' },
+    { value: 'auto', label: t('auto_detect') }, // MODIFIED
+    { value: 'en', label: t('english') }, // MODIFIED
+    { value: 'fr', label: t('french') }, // MODIFIED
+    { value: 'es', label: t('spanish') }, // MODIFIED
+    { value: 'ar', label: t('arabic') }, // MODIFIED
   ];
 
   useEffect(() => {
@@ -93,7 +95,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           droppedFile.name.endsWith('.doc')) {
         setFile(droppedFile);
       } else {
-        alert('Unsupported file type. Please upload PDF, DOCX, or DOC.');
+        alert(t('unsupported_file_type_alert')); // MODIFIED
       }
     }
   };
@@ -106,7 +108,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           selectedFile.name.endsWith('.doc')) {
         setFile(selectedFile);
       } else {
-        alert('Unsupported file type. Please upload PDF, DOCX, or DOC.');
+        alert(t('unsupported_file_type_alert')); // MODIFIED
         e.target.value = '';
       }
     }
@@ -153,7 +155,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       return result.value;
     } else {
-      throw new Error('Unsupported file type for text extraction.');
+      throw new Error(t('unsupported_file_type_for_text_extraction')); // MODIFIED
     }
   };
 
@@ -161,9 +163,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     e.preventDefault();
     if (!canUpload) {
       if (subscription && currentFileCount >= maxAllowedFiles) {
-        alert(`You have reached your file storage limit of ${maxAllowedFiles} files. To add more files, please delete old files from your Contracts page.`);
+        alert(t('file_storage_limit_reached', { maxFiles: maxAllowedFiles })); // MODIFIED
       } else if (!hasAvailableSingleUse()) {
-        alert('You do not have an available single-use credit. Please purchase one to upload a contract.');
+        alert(t('no_single_use_credit_alert')); // MODIFIED
       }
       return;
     }
@@ -182,7 +184,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           outputLanguage, // ADDED
         });
         
-        alert('Contract uploaded and analysis initiated!');
+        alert(t('contract_uploaded_analysis_initiated')); // MODIFIED
         refetchContracts();
         
         if (newContractId) {
@@ -198,34 +200,37 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           fileInputRef.current.value = '';
         }
       } catch (error: any) {
-        alert(`Failed to upload contract or extract text: ${error.message}`);
+        alert(t('failed_to_upload_contract_or_extract_text', { message: error.message })); // MODIFIED
         console.error('Upload failed:', error);
       } finally {
         setUploading(false);
         onUploadStatusChange(false);
       }
     } else {
-      alert('Please select a file and at least one jurisdiction.');
+      alert(t('select_file_and_jurisdiction_alert')); // MODIFIED
     }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Upload New Contract</h2>
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('upload_new_contract')}</h2> {/* MODIFIED */}
 
       {loadingOrders || loadingSubscription ? (
-        <p className="text-gray-600 mb-4">Checking available credits and subscription status...</p>
+        <p className="text-gray-600 mb-4">{t('checking_credits_subscription_status')}</p> {/* MODIFIED */}
       ) : (
         <>
           {!hasAvailableSingleUse() && (!subscription || currentFileCount >= maxAllowedFiles) && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
               {subscription && currentFileCount >= maxAllowedFiles ? (
                 <p>
-                  You have reached your file storage limit of {maxAllowedFiles} files. To add more files, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>.
+                  {t('file_storage_limit_reached_message', { maxFiles: maxAllowedFiles })} {/* MODIFIED */}
+                  <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>. {/* MODIFIED */}
                 </p>
               ) : (
                 <p>
-                  You do not have an available single-use credit or a subscription plan. Please purchase one from the <Link to="/pricing" className="font-medium underline">Pricing page</Link> to start uploading and analyzing contracts.
+                  {t('no_single_use_credit_or_subscription_message')} {/* MODIFIED */}
+                  <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link> {/* MODIFIED */}
+                  {t('to_start_uploading_analyzing_contracts')}. {/* MODIFIED */}
                 </p>
               )}
             </div>
@@ -235,11 +240,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
       {/* File Retention Policy Message */}
       <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
-        <p className="font-bold">Important Data Retention Policy</p>
+        <p className="font-bold">{t('important_data_retention_policy')}</p> {/* MODIFIED */}
         <p className="text-sm">
-          For single-use purchases, your uploaded contracts and their analysis results will be automatically deleted after 30 days.
-          For active subscription plans, your data will be retained for the duration of your subscription plus a 30 day grace period.
-          The maximum number of files you can store at any given time is 200 for 'Professional Use' and 1000 for 'Enterprise Use'. To add more files after reaching your limit, please delete old files from your <Link to="/contracts" className="font-medium underline">Contracts page</Link>.
+          {t('single_use_retention_policy')} {/* MODIFIED */}
+          {t('subscription_retention_policy')} {/* MODIFIED */}
+          {t('max_files_storage_limit_policy', { maxProfessional: 200, maxEnterprise: 1000 })} {/* MODIFIED */}
+          <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>. {/* MODIFIED */}
         </p>
       </div>
 
@@ -257,8 +263,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           {!file ? (
             <>
               <Upload className="h-12 w-12 text-gray-400 mb-3" />
-              <p className="text-sm text-gray-700 font-medium">Drag and drop your contract file here</p>
-              <p className="text-xs text-gray-500 mt-1">Supports PDF, DOCX, DOC formats</p>
+              <p className="text-sm text-gray-700 font-medium">{t('drag_and_drop_file_here')}</p> {/* MODIFIED */}
+              <p className="text-xs text-gray-500 mt-1">{t('supports_pdf_docx_doc_formats')}</p> {/* MODIFIED */}
 
               <div className="mt-4">
                 <label htmlFor="file-upload" className="cursor-pointer">
@@ -269,7 +275,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                     onClick={handleBrowseFilesClick}
                     disabled={!canUpload}
                   >
-                    Browse Files
+                    {t('browse_files')} {/* MODIFIED */}
                   </Button>
                   <input
                     id="file-upload"
@@ -311,7 +317,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Jurisdictions
+            {t('select_jurisdictions')} {/* MODIFIED */}
           </label>
           <div className="flex flex-wrap gap-2">
             {getAllJurisdictions().map((jurisdiction) => (
@@ -335,7 +341,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         {/* ADDED: Document Language Selection */}
         <div className="mt-4">
           <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
-            Document Language
+            {t('document_language')} {/* MODIFIED */}
           </label>
           <select
             id="sourceLanguage"
@@ -351,13 +357,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">The original language of the contract document.</p>
+          <p className="text-xs text-gray-500 mt-1">{t('document_language_hint')}</p> {/* MODIFIED */}
         </div>
 
         {/* ADDED: Analysis Output Language Selection */}
         <div className="mt-4">
           <label htmlFor="outputLanguage" className="block text-sm font-medium text-gray-700 mb-2">
-            Analysis Output Language
+            {t('analysis_output_language')} {/* MODIFIED */}
           </label>
           <select
             id="outputLanguage"
@@ -373,7 +379,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">The language in which the analysis results will be provided.</p>
+          <p className="text-xs text-gray-500 mt-1">{t('analysis_output_language_hint')}</p> {/* MODIFIED */}
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -383,7 +389,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             disabled={!file || selectedJurisdictions.length === 0 || uploading || !canUpload}
             icon={<Upload className="w-4 h-4" />}
           >
-            {uploading ? 'Uploading...' : 'Upload Contract'}
+            {uploading ? t('uploading') : t('upload_contract_button')} {/* MODIFIED */}
           </Button>
         </div>
       </form>
