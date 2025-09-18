@@ -1062,5 +1062,13 @@
   "notification_title_subscription_active": "Abonnement actif !",
   "notification_title_subscription_alert": "Alerte d'abonnement !",
   "notification_title_credit_granted": "Crédit accordé !",
-  "previous_plan": "plan précédent"
+  "previous_plan": "plan précédent",
+  "analysis_complete_message": "Votre contrat \"{{contractName}}\" a été analysé avec succès.",
+  "high_risk_findings_message": "Votre contrat \"{{contractName}}\" contient {{count}} constatations à haut risque. Veuillez les examiner immédiatement.",
+  "analysis_failed_message": "L'analyse du contrat \"{{contractName}}\" a échoué. Veuillez réessayer ou contacter le support.",
+  "subscription_plan_changed_message": "Votre plan d'abonnement est passé de {{oldPlan}} à {{newPlan}}.",
+  "subscription_active_message": "Votre abonnement {{productName}} est maintenant actif.",
+  "subscription_alert_message": "Le statut de votre abonnement {{productName}} est maintenant {{status}}. Veuillez vérifier vos détails de facturation.",
+  "subscription_canceled_at_period_end_message": "Votre abonnement {{productName}} a été annulé et se terminera le {{endDate}}.",
+  "credit_granted_message": "Un administrateur vous a accordé un crédit à usage unique pour {{productName}}."
 }
