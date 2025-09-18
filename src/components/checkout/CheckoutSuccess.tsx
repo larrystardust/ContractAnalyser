@@ -29,7 +29,7 @@ const CheckoutSuccess: React.FC = () => {
         </h2>
         
         <p className="text-gray-600 mb-6">
-          {t('payment_successful_message')} {/* MODIFIED */}
+          {t('payment_successful_message_toast')} {/* MODIFIED */}
         </p>
       </div>
     </div>
