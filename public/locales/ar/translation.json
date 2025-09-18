@@ -883,7 +883,7 @@
   "payment_cancelled": "تم إلغاء الدفع",
   "payment_cancelled_message": "تم إلغاء دفعتك. لم يتم خصم أي مبالغ من حسابك. سيتم إعادة توجيهك إلى صفحة الرفع shortly.",
   "payment_successful": "تم الدفع بنجاح!",
-  "payment_successful_message": "شكرًا لك على شرائك. تمت معالجة دفعتك بنجاح. سيتم إعادة توجيهك إلى صفحة الرفع shortly.",
+  "payment_successful_message_toast": "شكرًا لك على شرائك. تمت معالجة دفعتك بنجاح. سيتم إعادة توجيهك إلى صفحة الرفع shortly.",
   "loading_user_profile_settings": "جاري تحميل ملف تعريف المستخدم وإعدادات التطبيق...",
   "uploading_processing_contract": "جاري رفع ومعالجة عقدك... خلال دقيقة أو دقيقتين تقريبًا",
 
