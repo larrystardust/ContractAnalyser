@@ -1189,5 +1189,7 @@
   "sample_contract_irish_service_level_agreement": "Accord de niveau de service irlandais.pdf",
   "sample_contract_cross_border_joint_venture": "Coentreprise transfrontalière.pdf",
   "sample_contract_us_software_licensing_agreement": "Accord de licence de logiciel américain.pdf",
-  "sample_contract_canada_australia_partnership_deed": "Acte de partenariat Canada-Australie.pdf"
+  "sample_contract_canada_australia_partnership_deed": "Acte de partenariat Canada-Australie.pdf",
+
+  "dashboard_help_title": "Aide du Tableau de Bord"
 }
