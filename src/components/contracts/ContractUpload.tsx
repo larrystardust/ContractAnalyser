@@ -216,7 +216,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('upload_new_contract')}</h2> {/* MODIFIED */}
 
       {loadingOrders || loadingSubscription ? (
-        <p className="text-gray-600 mb-4">{t('checking_credits_subscription_status')}</p> {/* MODIFIED */}
+        <p className="text-gray-600 mb-4">{t('checking_credits_subscription_status')}</p> 
       ) : (
         <>
           {!hasAvailableSingleUse() && (!subscription || currentFileCount >= maxAllowedFiles) && (
