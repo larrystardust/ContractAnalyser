@@ -141,10 +141,11 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to grant single-use credit.' }, 500);
     }
 
+    const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // MODIFIED: Use key
     await insertNotification(
       userId,
       'notification_title_credit_granted',
-      `An administrator has granted you a single-use credit for ${singleUseProduct?.name || 'ContractAnalyser Single Use'}.`,
+      `An administrator has granted you a single-use credit for ${productNameKey}.`, // MODIFIED: Use key
       'info'
     );
 
