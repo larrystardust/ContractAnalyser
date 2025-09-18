@@ -951,5 +951,15 @@
   "sending_email": "Enviando...",
   "resend_confirmation_email": "Reenviar Correo de Confirmación",
   "back_to_login_button": "Volver al Inicio de Sesión",
-  "redirecting_to_signup": "Redirigiendo a la página de registro..."
+  "redirecting_to_signup": "Redirigiendo a la página de registro...",
+
+  "sample_data_view_dashboard": "Vista de Datos de Ejemplo",
+  "upgrade_to_analyze_own_contracts": "Este panel muestra resultados de análisis de ejemplo. ¡Actualice para analizar sus propios contratos!",
+  "profile": "Perfil",
+  "billing": "Facturación",
+  "members": "Miembros",
+  "no_completed_sample_contract_selected": "Ningún Contrato de Ejemplo Completado Seleccionado",
+  "select_sample_contract_to_view": "Seleccione un contrato de ejemplo completado de la lista para ver su análisis.",
+  "view_plans_to_add_members": "No tiene una suscripción activa que admita múltiples usuarios.",
+  "upgrade_to_analyze_own_contracts_button": "Actualizar para Analizar Sus Propios Contratos"
 }
