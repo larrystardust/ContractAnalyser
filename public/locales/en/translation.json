@@ -974,5 +974,15 @@
   "sending_email": "Sending...",
   "resend_confirmation_email": "Resend Confirmation Email",
   "back_to_login_button": "Back to Login",
-  "redirecting_to_signup": "Redirecting to signup page..."
+  "redirecting_to_signup": "Redirecting to signup page...",
+
+  "sample_data_view_dashboard": "Sample Data View",
+  "upgrade_to_analyze_own_contracts": "This dashboard shows sample analysis results. Upgrade to analyze your own contracts!",
+  "profile": "Profile",
+  "billing": "Billing",
+  "members": "Members",
+  "no_completed_sample_contract_selected": "No Completed Sample Contract Selected",
+  "select_sample_contract_to_view": "Select a completed sample contract from the list to view its analysis.",
+  "view_plans_to_add_members": "You do not have an active subscription that supports multiple users.",
+  "upgrade_to_analyze_own_contracts_button": "Upgrade to Analyze Your Own Contracts"
 }
