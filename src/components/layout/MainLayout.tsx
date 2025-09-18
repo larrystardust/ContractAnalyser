@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Modal from '../ui/Modal';
 import DashboardHelpModal from '../dashboard/DashboardHelpModal';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface MainLayoutProps {
   onOpenHelpModal: () => void;
@@ -11,6 +12,8 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal, isDashboardHelpModalOpen, setIsDashboardHelpModal }) => {
+  const { t } = useTranslation(); // ADDED
+
   // This function is passed to DashboardHelpModal, which is part of this layout
   const handleReportIssue = () => {
     console.log('Report Issue button clicked!');
@@ -27,7 +30,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal, isDashboardHel
       <Modal
         isOpen={isDashboardHelpModalOpen}
         onClose={() => setIsDashboardHelpModal(false)}
-        title="Dashboard Help"
+        title={t('dashboard_help_title')} // MODIFIED
       >
         <DashboardHelpModal onReportIssue={handleReportIssue} />
       </Modal>
