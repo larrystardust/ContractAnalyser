@@ -1188,5 +1188,7 @@
   "sample_contract_irish_service_level_agreement": "Irish Service Level Agreement.pdf",
   "sample_contract_cross_border_joint_venture": "Cross-Border Joint Venture.pdf",
   "sample_contract_us_software_licensing_agreement": "US Software Licensing Agreement.pdf",
-  "sample_contract_canada_australia_partnership_deed": "Canada-Australia Partnership Deed.pdf"
+  "sample_contract_canada_australia_partnership_deed": "Canada-Australia Partnership Deed.pdf",
+
+  "dashboard_help_title": "Dashboard Help"
 }
