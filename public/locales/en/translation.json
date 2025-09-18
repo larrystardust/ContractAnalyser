@@ -1181,5 +1181,12 @@
   "applicable_law_gdpr": "General Data Protection Regulation (GDPR)",
   "applicable_law_eprivacy_directive": "ePrivacy Directive",
   "applicable_law_international_commercial_principles": "International Commercial Law Principles",
-  "applicable_law_private_international_law": "Private International Law"
+  "applicable_law_private_international_law": "Private International Law",
+
+  "sample_contract_uk_eu_distribution_agreement": "UK-EU Distribution Agreement.pdf",
+  "sample_contract_international_licensing_agreement": "International Licensing Agreement.pdf",
+  "sample_contract_irish_service_level_agreement": "Irish Service Level Agreement.pdf",
+  "sample_contract_cross_border_joint_venture": "Cross-Border Joint Venture.pdf",
+  "sample_contract_us_software_licensing_agreement": "US Software Licensing Agreement.pdf",
+  "sample_contract_canada_australia_partnership_deed": "Canada-Australia Partnership Deed.pdf"
 }
