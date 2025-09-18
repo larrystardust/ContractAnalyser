@@ -9,10 +9,10 @@ import { useTranslation } from 'react-i18next';
 interface PricingCardProps {
   product: StripeProduct;
   billingPeriod: 'monthly' | 'yearly';
-  currentSessionUserId?: string | null; // Made optional for LandingPage
-  userSubscription?: Subscription | null; // Made optional for LandingPage
-  userMembership?: SubscriptionMembership | null; // Made optional for LandingPage
-  isDataLoading?: boolean; // Made optional for LandingPage
+  currentSessionUserId?: string | null;
+  userSubscription?: Subscription | null;
+  userMembership?: SubscriptionMembership | null;
+  isDataLoading?: boolean;
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -21,7 +21,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   currentSessionUserId,
   userSubscription,
   userMembership,
-  isDataLoading = false, // Default to false if not provided
+  isDataLoading = false,
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { t } = useTranslation();
@@ -55,19 +55,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const isDisabledForSubscribers = product.mode === 'payment' &&
                                    (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
 
-  // FIX: Define isMemberNotOwner
-  const isMemberNotOwner = userMembership && userMembership.role === 'member';
-
-  // --- DEBUG LOGS START ---
-  console.log(`PricingCard: ${product.name} (${billingPeriod})`);
-  console.log(`  currentSessionUserId: ${currentSessionUserId}`);
-  console.log(`  userMembership:`, userMembership);
-  console.log(`  isMemberNotOwner: ${isMemberNotOwner}`);
-  console.log(`  usersCurrentProduct:`, usersCurrentProduct);
-  console.log(`  product.tier: ${product.tier}, usersCurrentProduct.tier: ${usersCurrentProduct?.tier}`);
-  console.log(`  isDowngradeOption: ${isDowngradeOption}`);
-  // --- DEBUG LOGS END ---
-
   let shouldBeDisabled = isDataLoading; 
 
   if (!shouldBeDisabled) { 
@@ -77,15 +64,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
       shouldBeDisabled = true;
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
-    } else if (isDowngradeOption && isMemberNotOwner) {
-      // Disable downgrade for invited members
+    } else if (isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Check for member or invited status
       shouldBeDisabled = true;
-    } else if (product.name === 'Enterprise Use' && isMemberNotOwner) {
-      // 🚫 Disable upgrade to Enterprise Use for invited members
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Check for member or invited status
       shouldBeDisabled = true;
     }
   }
-  console.log(`  Final shouldBeDisabled for ${product.name}: ${shouldBeDisabled}`);
 
   let buttonText: string;
   if (isCurrentPlan) {
@@ -93,14 +77,14 @@ const PricingCard: React.FC<PricingCardProps> = ({
   } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
     buttonText = t('zero_payment');
   } else if (isDowngradeOption) {
-    buttonText = t('downgrade');
-    if (isMemberNotOwner) {
-      buttonText = t('owner_only');
+    buttonText = t('downgrade_button'); // MODIFIED: New key for downgrade button
+    if (userMembership?.role === 'member' || userMembership?.status === 'invited') { // MODIFIED: Check for member or invited status
+      buttonText = t('owner_only_button'); // MODIFIED: New key for owner only button
     }
-  } else if (product.name === 'Enterprise Use') {
-    buttonText = isMemberNotOwner ? t('only_owner_upgrade_enterprise_button') : t('upgrade'); // MODIFIED
+  } else if (product.name === 'product_name_enterprise_use') { // MODIFIED: Use translation key
+    buttonText = (userMembership?.role === 'member' || userMembership?.status === 'invited') ? t('owner_only_upgrade_enterprise_button') : t('upgrade_button'); // MODIFIED: New key for upgrade button
   } else {
-    buttonText = t('purchase');
+    buttonText = t('purchase_button'); // MODIFIED: New key for purchase button
   }
 
   const handlePurchase = () => {
@@ -116,7 +100,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
     // If it's a downgrade option, direct to customer portal
     if (isDowngradeOption) {
       createCustomerPortalSession();
-    } else if (product.name === 'Enterprise Use' && isMemberNotOwner) {
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Use translation key and check for member/invited status
       // 🚫 Block member from purchasing Enterprise Use
       return;
     } else if (product.mode === 'payment') {
@@ -128,8 +112,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
-      <h3 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h3>
-      <p className="text-gray-600 mb-6">{product.description}</p>
+      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t(product.name)}</h3> {/* MODIFIED: Translate product name */}
+      <p className="text-gray-600 mb-6">{t(product.description)}</p> {/* MODIFIED: Translate product description */}
       
       <div className="mb-6">
         <span className="text-4xl font-extrabold text-gray-900">
@@ -142,7 +126,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
       {product.fileRetentionPolicy && (
         <p className="text-sm text-gray-500 mb-6">
-          <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)} {/* MODIFIED */}
+          <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)} {/* MODIFIED: Translate file retention policy */}
           {product.maxFiles && (
             <>
               <br />
@@ -171,12 +155,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
           {t('no_payment_needed_admin_assigned')}
         </p>
       )}
-      {isDowngradeOption && isMemberNotOwner && (
+      {isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // MODIFIED: Check for member or invited status
         <p className="text-xs text-gray-500 mt-2 text-center">
           {t('only_owner_manage_downgrades')}
         </p>
       )}
-      {product.name === 'Enterprise Use' && isMemberNotOwner && (
+      {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // MODIFIED: Use translation key and check for member/invited status
         <p className="text-xs text-gray-500 mt-2 text-center">
           {t('only_owner_upgrade_enterprise')}
         </p>
