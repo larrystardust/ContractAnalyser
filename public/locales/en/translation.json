@@ -883,7 +883,7 @@
   "payment_cancelled": "Payment Cancelled",
   "payment_cancelled_message": "Your payment was cancelled. No charges were made to your account. You will be redirected to the upload page shortly.",
   "payment_successful": "Payment Successful!",
-  "payment_successful_message": "Thank you for your purchase. Your payment has been processed successfully. You will be redirected to the upload page shortly.",
+  "payment_successful_message_toast": "Thank you for your purchase. Your payment has been processed successfully. You will be redirected to the upload page shortly.",
   "loading_user_profile_settings": "Loading user profile and application settings...",
   "uploading_processing_contract": "Uploading and processing your contract...in about a minute or two",
 
