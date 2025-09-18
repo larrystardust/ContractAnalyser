@@ -974,5 +974,15 @@
   "sending_email": "جاري الإرسال...",
   "resend_confirmation_email": "أعد إرسال البريد الإلكتروني التأكيدي",
   "back_to_login_button": "العودة إلى تسجيل الدخول",
-  "redirecting_to_signup": "جاري التوجيه إلى صفحة التسجيل..."
+  "redirecting_to_signup": "جاري التوجيه إلى صفحة التسجيل...",
+
+  "sample_data_view_dashboard": "عرض بيانات نموذجية",
+  "upgrade_to_analyze_own_contracts": "تعرض لوحة التحكم هذه نتائج تحليل نموذجية. قم بالترقية لتحليل عقودك الخاصة!",
+  "profile": "الملف الشخصي",
+  "billing": "الفواتير",
+  "members": "الأعضاء",
+  "no_completed_sample_contract_selected": "لم يتم اختيار أي عقد نموذجي منتهي",
+  "select_sample_contract_to_view": "حدد عقدًا نموذجيًا منتهيًا من القائمة لعرض تحليله.",
+  "view_plans_to_add_members": "ليس لديك اشتراك نشط يدعم مستخدمين متعددين.",
+  "upgrade_to_analyze_own_contracts_button": "الترقية لتحليل عقودك الخاصة"
 }
