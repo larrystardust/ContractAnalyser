@@ -860,7 +860,7 @@
   "payment_cancelled": "Pago Cancelado",
   "payment_cancelled_message": "Su pago fue cancelado. No se realizaron cargos a su cuenta. Será redirigido a la página de carga en breve.",
   "payment_successful": "¡Pago Exitoso!",
-  "payment_successful_message": "Gracias por su compra. Su pago ha sido procesado exitosamente. Será redirigido a la página de carga en breve.",
+  "payment_successful_message_toast": "Gracias por su compra. Su pago ha sido procesado exitosamente. Será redirigido a la página de carga en breve.",
   "loading_user_profile_settings": "Cargando perfil de usuario y configuraciones de la aplicación...",
   "uploading_processing_contract": "Subiendo y procesando su contrato... aproximadamente en uno o dos minutos",
 
