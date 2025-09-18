@@ -177,7 +177,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> *
+                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> {/* MODIFIED: Added t() */}
                           ))}
                         </ul>
                       </div>
