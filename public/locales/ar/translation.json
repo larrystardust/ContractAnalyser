@@ -1188,5 +1188,7 @@
   "sample_contract_irish_service_level_agreement": "اتفاقية مستوى الخدمة الأيرلندية.pdf",
   "sample_contract_cross_border_joint_venture": "مشروع مشترك عبر الحدود.pdf",
   "sample_contract_us_software_licensing_agreement": "اتفاقية ترخيص البرمجيات الأمريكية.pdf",
-  "sample_contract_canada_australia_partnership_deed": "صك شراكة كندا-أستراليا.pdf"
+  "sample_contract_canada_australia_partnership_deed": "صك شراكة كندا-أستراليا.pdf",
+
+  "dashboard_help_title": "مساعدة لوحة التحكم"
 }
