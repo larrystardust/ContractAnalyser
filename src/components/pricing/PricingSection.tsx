@@ -4,12 +4,12 @@ import PricingCard from './PricingCard';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import StructuredData from '../StructuredData';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 const PricingSection: React.FC = () => {
   console.log('PricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const { session, isLoading: isSessionLoading } = useSession();
   const { subscription, membership, loading: loadingSubscription } = useSubscription();
@@ -26,11 +26,10 @@ const PricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.monthly.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (${t('monthly')})` // MODIFIED
+        "name": `${t(product.name)} (${t('monthly')})` // MODIFIED: Translate product name
       });
     }
     if (product.pricing.yearly) {
@@ -38,11 +37,10 @@ const PricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.yearly.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (${t('yearly')})` // MODIFIED
+        "name": `${t(product.name)} (${t('yearly')})` // MODIFIED: Translate product name
       });
     }
     if (product.pricing.one_time) {
@@ -50,19 +48,18 @@ const PricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.one_time.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/pricing",
-        "name": `${product.name} (${t('one_time')})` // MODIFIED
+        "name": `${t(product.name)} (${t('one_time')})` // MODIFIED: Translate product name
       });
     }
 
     return {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": product.name,
-      "description": product.description,
+      "name": t(product.name), // MODIFIED: Translate product name
+      "description": t(product.description), // MODIFIED: Translate product description
       "brand": {
         "@type": "Brand",
         "name": "ContractAnalyser"
@@ -71,13 +68,12 @@ const PricingSection: React.FC = () => {
     };
   });
 
-  // --- START OF CRITICAL FIX ---
   // Block rendering until both session and subscription are fully loaded
   if (isSessionLoading || loadingSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-        <p className="text-gray-500 mt-4">{t('loading_pricing_information')}...</p> {/* MODIFIED */}
+        <p className="text-gray-500 mt-4">{t('loading_pricing_information')}...</p>
       </div>
     );
   }
@@ -87,11 +83,10 @@ const PricingSection: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
-        <p className="text-gray-500 mt-4">{t('loading_user_data')}...</p> {/* MODIFIED */}
+        <p className="text-gray-500 mt-4">{t('loading_user_data')}...</p>
       </div>
     );
   }
-  // --- END OF CRITICAL FIX ---
 
   return (
     <>
@@ -102,10 +97,10 @@ const PricingSection: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              {t('simple_transparent_pricing')} {/* MODIFIED */}
+              {t('simple_transparent_pricing')}
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              {t('choose_best_plan')} {/* MODIFIED */}
+              {t('choose_best_plan')}
             </p>
           </div>
           
@@ -117,7 +112,7 @@ const PricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'monthly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                {t('monthly_billing')} {/* MODIFIED */}
+                {t('monthly_billing')}
               </button>
               <button
                 type="button"
@@ -125,7 +120,7 @@ const PricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                {t('yearly_billing')} {/* MODIFIED */}
+                {t('yearly_billing')}
               </button>
             </div>
           </div>
@@ -136,7 +131,6 @@ const PricingSection: React.FC = () => {
                 key={product.id}
                 product={product}
                 billingPeriod={billingPeriod}
-                // session.user.id is guaranteed if session exists
                 currentSessionUserId={session?.user?.id || null}
                 userSubscription={subscription}
                 userMembership={membership}
