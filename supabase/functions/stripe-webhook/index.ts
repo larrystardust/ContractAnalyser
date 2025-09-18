@@ -15,6 +15,48 @@ const stripe = new Stripe(stripeSecret, {
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+// ADDED: Simple translation object for notification messages
+const translations = {
+  en: {
+    payment_successful_message: (productName: string) => `Your one-time payment for ${productName} has been processed successfully.`,
+    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`,
+    subscription_active_message: (productName: string) => `Your ${productName} subscription is now active.`,
+    subscription_alert_message: (productName: string, status: string) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`,
+    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`
+  },
+  es: {
+    payment_successful_message: (productName: string) => `Su pago único para ${productName} ha sido procesado con éxito.`,
+    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Su plan de suscripción ha cambiado de ${oldPlan} a ${newPlan}.`,
+    subscription_active_message: (productName: string) => `Su suscripción a ${productName} ya está activa.`,
+    subscription_alert_message: (productName: string, status: string) => `El estado de su suscripción a ${productName} es ahora ${status}. Por favor, revise sus detalles de facturación.`,
+    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Su suscripción a ${productName} ha sido cancelada y finalizará el ${endDate}.`
+  },
+  fr: {
+    payment_successful_message: (productName: string) => `Votre paiement unique pour ${productName} a été traité avec succès.`,
+    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Votre plan d'abonnement est passé de ${oldPlan} à ${newPlan}.`,
+    subscription_active_message: (productName: string) => `Votre abonnement ${productName} est maintenant actif.`,
+    subscription_alert_message: (productName: string, status: string) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`,
+    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`
+  },
+  ar: {
+    payment_successful_message: (productName: string) => `تمت معالجة دفعتك لمرة واحدة لـ ${productName} بنجاح.`,
+    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `لقد تغيرت خطة اشتراكك من ${oldPlan} إلى ${newPlan}.`,
+    subscription_active_message: (productName: string) => `اشتراكك في ${productName} نشط الآن.`,
+    subscription_alert_message: (productName: string, status: string) => `حالة اشتراكك في ${productName} هي الآن ${status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
+    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `تم إلغاء اشتراكك في ${productName} وسينتهي في ${endDate}.`
+  }
+};
+
+// ADDED: Helper function to get translated string
+function getTranslatedMessage(key: string, lang: string, ...args: any[]): string {
+  const langMap = (translations as any)[lang] || translations.en; // Fallback to English
+  const messageTemplate = langMap[key];
+  if (typeof messageTemplate === 'function') {
+    return messageTemplate(...args);
+  }
+  return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method === 'OPTIONS') {
@@ -71,6 +113,29 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  // ADDED: Fetch user's preferred language
+  let userPreferredLanguage = 'en'; // Default to English
+  let userId: string | null = null;
+
+  const { data: customerUser, error: customerUserError } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).maybeSingle();
+  if (customerUserError) {
+    console.error('Stripe Webhook: Error fetching user_id from stripe_customers:', customerUserError);
+  } else if (customerUser) {
+    userId = customerUser.user_id;
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('theme_preference').eq('id', userId).maybeSingle();
+    if (profileError) {
+      console.error('Stripe Webhook: Error fetching user profile for language:', profileError);
+    } else if (profileData?.theme_preference) {
+      // Assuming theme_preference can be used as a proxy for language, or add a dedicated language field
+      // For now, let's map 'dark'/'light' to 'en' and assume other values might be 'es', 'fr', 'ar' if stored.
+      // A more robust solution would be a dedicated language preference in the profile.
+      if (['es', 'fr', 'ar'].includes(profileData.theme_preference)) { // Example mapping
+        userPreferredLanguage = profileData.theme_preference;
+      }
+    }
+  }
+
+
   if (event.type === 'checkout.session.completed') {
     const session = stripeData as Stripe.Checkout.Session;
     console.log('Stripe Webhook: Received checkout.session.completed event. Session:', JSON.stringify(session, null, 2));
@@ -124,20 +189,14 @@ async function handleEvent(event: Stripe.Event) {
         }
         console.log('Stripe Webhook: Order successfully inserted into stripe_orders table.');
 
-        const { data: customerUser, error: customerUserError } = await supabase.from('stripe_customers').select('user_id').eq('customer_id', customerId).single();
-        if (customerUserError) {
-          console.error('Stripe Webhook: Error fetching user_id from stripe_customers:', customerUserError);
-          return;
-        }
-        console.log('Stripe Webhook: Retrieved customerUser:', JSON.stringify(customerUser, null, 2));
-
-        if (customerUser) {
+        if (userId) { // Only send notification if userId was successfully retrieved
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
-          const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // MODIFIED: Use key
+          const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // Use key
+          const notificationMessage = getTranslatedMessage('payment_successful_message', userPreferredLanguage, productNameKey);
           await insertNotification(
-            customerUser.user_id,
+            userId,
             'notification_title_payment_successful',
-            `Your one-time payment for ${productNameKey} has been processed successfully.`, // MODIFIED: Use key
+            notificationMessage,
             'success'
           );
           console.log('Stripe Webhook: Notification sent for one-time payment.');
@@ -149,13 +208,13 @@ async function handleEvent(event: Stripe.Event) {
     }
   } else if (event.type.startsWith('customer.subscription.')) {
     console.info(`Processing subscription event ${event.type} for customer: ${customerId}`);
-    await syncCustomerFromStripe(customerId);
+    await syncCustomerFromStripe(customerId, userId, userPreferredLanguage); // MODIFIED: Pass userId and userPreferredLanguage
   } else {
     console.log(`Unhandled event type: ${event.type}`);
   }
 }
 
-async function syncCustomerFromStripe(customerId: string) {
+async function syncCustomerFromStripe(customerId: string, userId: string | null, userPreferredLanguage: string) { // MODIFIED: Add userId and userPreferredLanguage
   try {
     // 1. Fetch the current state of the subscription from our DB *before* any updates
     const { data: oldSubscriptionDb, error: oldSubError } = await supabase
@@ -213,17 +272,20 @@ async function syncCustomerFromStripe(customerId: string) {
     const maxFiles = productMetadata?.max_files ?? null;
 
     // Get the user_id associated with this customer_id
-    const { data: customerUser, error: customerUserError } = await supabase
-      .from('stripe_customers')
-      .select('user_id')
-      .eq('user_id', customerId)
-      .single();
+    if (!userId) { // If userId was not found earlier, try to fetch it now
+      const { data: fetchedCustomerUser, error: fetchedCustomerUserError } = await supabase
+        .from('stripe_customers')
+        .select('user_id')
+        .eq('customer_id', customerId)
+        .single();
 
-    if (customerUserError || !customerUser) {
-      console.error(`Could not find user_id for customer ${customerId}:`, customerUserError);
-      return; // Cannot proceed without user_id
+      if (fetchedCustomerUserError || !fetchedCustomerUser) {
+        console.error(`Could not find user_id for customer ${customerId}:`, fetchedCustomerUserError);
+        return; // Cannot proceed without user_id
+      }
+      userId = fetchedCustomerUser.user_id;
     }
-    const userId = customerUser.user_id;
+
 
     const oldDbSubscriptionId = oldSubscriptionDb?.subscription_id;
     const newStripeSubscriptionId = stripeSubscription.id;
@@ -348,7 +410,7 @@ async function syncCustomerFromStripe(customerId: string) {
       p.pricing.yearly?.priceId === newPriceId ||
       p.pricing.one_time?.priceId === newPriceId
     );
-    const productNameKey = currentProduct?.name || 'product_name_single_use'; // MODIFIED: Use key
+    const productNameKey = currentProduct?.name || 'product_name_single_use'; // Use key
 
     // Only send notification if there was a meaningful change in status or price
     if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
@@ -360,31 +422,36 @@ async function syncCustomerFromStripe(customerId: string) {
                     p.pricing.yearly?.priceId === oldPriceId ||
                     p.pricing.one_time?.priceId === oldPriceId
                 );
-                const oldProductNameKey = oldProduct?.name || 'previous_plan'; // MODIFIED: Use key
+                const oldProductNameKey = oldProduct?.name || 'previous_plan'; // Use key
+                const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, oldProductNameKey, productNameKey);
                 await insertNotification(
                     userId,
                     'notification_title_subscription_plan_changed',
-                    `Your subscription plan has changed from ${oldProductNameKey} to ${productNameKey}.`, // MODIFIED: Use keys
+                    notificationMessage,
                     'info'
                 );
             } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
                 // Status changed to active (e.g., from canceled, past_due, not_started)
+                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, productNameKey);
                 await insertNotification(
                     userId,
                     'notification_title_subscription_active',
-                    `Your ${productNameKey} subscription is now active.`, // MODIFIED: Use key
+                    notificationMessage,
                     'success'
                 );
             }
         } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
-            let message = `Your ${productNameKey} subscription status is now ${newStatus}. Please check your billing details.`; // MODIFIED: Use key
+            let notificationMessage: string;
             if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
-                message = `Your ${productNameKey} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`; // MODIFIED: Use key
+                const endDate = new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString();
+                notificationMessage = getTranslatedMessage('subscription_canceled_at_period_end_message', userPreferredLanguage, productNameKey, endDate);
+            } else {
+                notificationMessage = getTranslatedMessage('subscription_alert_message', userPreferredLanguage, productNameKey, newStatus);
             }
             await insertNotification(
                 userId,
                 'notification_title_subscription_alert',
-                message,
+                notificationMessage,
                 'warning'
             );
         }
