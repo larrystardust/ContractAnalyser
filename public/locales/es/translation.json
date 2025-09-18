@@ -1158,5 +1158,12 @@
   "applicable_law_gdpr": "Reglamento General de Protección de Datos (RGPD)",
   "applicable_law_eprivacy_directive": "Directiva ePrivacy",
   "applicable_law_international_commercial_principles": "Principios del Derecho Comercial Internacional",
-  "applicable_law_private_international_law": "Derecho Internacional Privado"
+  "applicable_law_private_international_law": "Derecho Internacional Privado",
+
+  "sample_contract_uk_eu_distribution_agreement": "Acuerdo de Distribución Reino Unido-UE.pdf",
+  "sample_contract_international_licensing_agreement": "Acuerdo de Licencia Internacional.pdf",
+  "sample_contract_irish_service_level_agreement": "Acuerdo de Nivel de Servicio Irlandés.pdf",
+  "sample_contract_cross_border_joint_venture": "Joint Venture Transfronteriza.pdf",
+  "sample_contract_us_software_licensing_agreement": "Acuerdo de Licencia de Software de EE. UU..pdf",
+  "sample_contract_canada_australia_partnership_deed": "Escritura de Asociación Canadá-Australia.pdf"
 }
