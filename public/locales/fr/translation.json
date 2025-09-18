@@ -884,7 +884,7 @@
   "payment_cancelled": "Paiement Annulé",
   "payment_cancelled_message": "Votre paiement a été annulé. Aucun frais n'a été facturé à votre compte. Vous serez redirigé vers la page de téléversement sous peu.",
   "payment_successful": "Paiement Réussi !",
-  "payment_successful_message": "Merci pour votre achat. Votre paiement a été traité avec succès. Vous serez redirigé vers la page de téléversement sous peu.",
+  "payment_successful_message_toast": "Merci pour votre achat. Votre paiement a été traité avec succès. Vous serez redirigé vers la page de téléversement sous peu.",
   "loading_user_profile_settings": "Chargement du profil utilisateur et des paramètres de l'application...",
   "uploading_processing_contract": "Téléversement et traitement de votre contrat... dans environ une ou deux minutes",
 
