@@ -1,14 +1,13 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
-import { stripeProducts } from '../_shared/stripe_products_data.ts'; // Import stripeProducts
+import { stripeProducts } from '../_shared/stripe_products_data.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-// ADDED: Helper to insert notification
 async function insertNotification(userId: string, title: string, message: string, type: string) {
   const { error: notificationError } = await supabase.from('notifications').insert({
     user_id: userId,
@@ -125,16 +124,16 @@ Deno.serve(async (req) => {
 
     // Insert a new unconsumed single-use order
     const { error: insertOrderError } = await supabase.from('stripe_orders').insert({
-      checkout_session_id: `admin_granted_${Date.now()}`, // Unique ID
-      payment_intent_id: `admin_granted_pi_${Date.now()}`, // Unique ID
+      checkout_session_id: `admin_granted_${Date.now()}`,
+      payment_intent_id: `admin_granted_pi_${Date.now()}`,
       customer_id: customerId,
-      amount_subtotal: 999, // Placeholder amount for single use
+      amount_subtotal: 999,
       amount_total: 999,
-      currency: 'usd', // Default currency
+      currency: 'usd',
       payment_status: 'paid',
       status: 'completed',
       is_consumed: false,
-      price_id: singleUsePriceId, // Include the price_id
+      price_id: singleUsePriceId,
     });
 
     if (insertOrderError) {
@@ -142,10 +141,9 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to grant single-use credit.' }, 500);
     }
 
-    // ADDED: Send notification to the user
     await insertNotification(
       userId,
-      'Credit Granted!',
+      'notification_title_credit_granted',
       `An administrator has granted you a single-use credit for ${singleUseProduct?.name || 'ContractAnalyser Single Use'}.`,
       'info'
     );
