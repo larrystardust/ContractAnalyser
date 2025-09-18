@@ -133,11 +133,11 @@ async function handleEvent(event: Stripe.Event) {
 
         if (customerUser) {
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
-          const productName = singleUseProduct?.name || 'Single Use Credit';
+          const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // MODIFIED: Use key
           await insertNotification(
             customerUser.user_id,
             'notification_title_payment_successful',
-            `Your one-time payment for ${productName} has been processed successfully.`,
+            `Your one-time payment for ${productNameKey} has been processed successfully.`, // MODIFIED: Use key
             'success'
           );
           console.log('Stripe Webhook: Notification sent for one-time payment.');
@@ -216,7 +216,7 @@ async function syncCustomerFromStripe(customerId: string) {
     const { data: customerUser, error: customerUserError } = await supabase
       .from('stripe_customers')
       .select('user_id')
-      .eq('customer_id', customerId)
+      .eq('user_id', customerId)
       .single();
 
     if (customerUserError || !customerUser) {
@@ -348,7 +348,7 @@ async function syncCustomerFromStripe(customerId: string) {
       p.pricing.yearly?.priceId === newPriceId ||
       p.pricing.one_time?.priceId === newPriceId
     );
-    const productName = currentProduct?.name || 'Single Use Credit';
+    const productNameKey = currentProduct?.name || 'product_name_single_use'; // MODIFIED: Use key
 
     // Only send notification if there was a meaningful change in status or price
     if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
@@ -360,11 +360,11 @@ async function syncCustomerFromStripe(customerId: string) {
                     p.pricing.yearly?.priceId === oldPriceId ||
                     p.pricing.one_time?.priceId === oldPriceId
                 );
-                const oldProductName = oldProduct?.name || 'previous plan';
+                const oldProductNameKey = oldProduct?.name || 'previous_plan'; // MODIFIED: Use key
                 await insertNotification(
                     userId,
                     'notification_title_subscription_plan_changed',
-                    `Your subscription plan has changed from ${oldProductName} to ${productName}.`,
+                    `Your subscription plan has changed from ${oldProductNameKey} to ${productNameKey}.`, // MODIFIED: Use keys
                     'info'
                 );
             } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
@@ -372,14 +372,14 @@ async function syncCustomerFromStripe(customerId: string) {
                 await insertNotification(
                     userId,
                     'notification_title_subscription_active',
-                    `Your ${productName} subscription is now active.`,
+                    `Your ${productNameKey} subscription is now active.`, // MODIFIED: Use key
                     'success'
                 );
             }
         } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
-            let message = `Your ${productName} subscription status is now ${newStatus}. Please check your billing details.`;
+            let message = `Your ${productNameKey} subscription status is now ${newStatus}. Please check your billing details.`; // MODIFIED: Use key
             if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
-                message = `Your ${productName} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`;
+                message = `Your ${productNameKey} subscription has been cancelled and will end on ${new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString()}.`; // MODIFIED: Use key
             }
             await insertNotification(
                 userId,
