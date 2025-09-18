@@ -1093,6 +1093,5 @@
   "Consumer Law": "Consumer Law",
   "Ambiguity in Pension Options": "Ambiguity in Pension Options",
   "Pension & retirement": "Pension & retirement",
-  "payment_successful_message": "Your one-time payment for {{productName}} has been processed successfully.",
-  "contract_analysis_completed": "CONTRACT ANALYSIS COMPLETED"
+  "payment_successful_message": "Your one-time payment for {{productName}} has been processed successfully."
 }
