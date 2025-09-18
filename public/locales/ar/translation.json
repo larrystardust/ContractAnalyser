@@ -1061,5 +1061,13 @@
   "notification_title_subscription_active": "الاشتراك نشط!",
   "notification_title_subscription_alert": "تنبيه الاشتراك!",
   "notification_title_credit_granted": "تم منح الرصيد!",
-  "previous_plan": "الخطة السابقة"
+  "previous_plan": "الخطة السابقة",
+  "analysis_complete_message": "تم تحليل عقدك \"{{contractName}}\" بنجاح.",
+  "high_risk_findings_message": "عقدك \"{{contractName}}\" يحتوي على {{count}} نتائج عالية الخطورة. يرجى المراجعة فوراً.",
+  "analysis_failed_message": "فشل تحليل العقد \"{{contractName}}\". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.",
+  "subscription_plan_changed_message": "لقد تغيرت خطة اشتراكك من {{oldPlan}} إلى {{newPlan}}.",
+  "subscription_active_message": "اشتراكك في {{productName}} نشط الآن.",
+  "subscription_alert_message": "حالة اشتراكك في {{productName}} هي الآن {{status}}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.",
+  "subscription_canceled_at_period_end_message": "تم إلغاء اشتراكك في {{productName}} وسينتهي في {{endDate}}.",
+  "credit_granted_message": "لقد منحك المسؤول رصيدًا لمرة واحدة لـ {{productName}}."
 }
