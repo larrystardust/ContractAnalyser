@@ -1181,5 +1181,12 @@
   "applicable_law_gdpr": "اللائحة العامة لحماية البيانات (GDPR)",
   "applicable_law_eprivacy_directive": "توجيه الخصوصية الإلكترونية",
   "applicable_law_international_commercial_principles": "مبادئ القانون التجاري الدولي",
-  "applicable_law_private_international_law": "القانون الدولي الخاص"
+  "applicable_law_private_international_law": "القانون الدولي الخاص",
+
+  "sample_contract_uk_eu_distribution_agreement": "اتفاقية توزيع المملكة المتحدة والاتحاد الأوروبي.pdf",
+  "sample_contract_international_licensing_agreement": "اتفاقية الترخيص الدولية.pdf",
+  "sample_contract_irish_service_level_agreement": "اتفاقية مستوى الخدمة الأيرلندية.pdf",
+  "sample_contract_cross_border_joint_venture": "مشروع مشترك عبر الحدود.pdf",
+  "sample_contract_us_software_licensing_agreement": "اتفاقية ترخيص البرمجيات الأمريكية.pdf",
+  "sample_contract_canada_australia_partnership_deed": "صك شراكة كندا-أستراليا.pdf"
 }
