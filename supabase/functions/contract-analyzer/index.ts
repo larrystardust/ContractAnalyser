@@ -53,8 +53,8 @@ Deno.serve(async (req) => {
 
   let contractId: string;
   let contractText: string;
-  let sourceLanguage: string; // ADDED
-  let outputLanguage: string; // ADDED
+  let sourceLanguage: string;
+  let outputLanguage: string;
   let userId: string;
   let userEmail: string;
   let userName: string | null = null;
@@ -63,12 +63,11 @@ Deno.serve(async (req) => {
   let token: string;
 
   try {
-    // MODIFIED: Destructure source_language and output_language
     const { contract_id, contract_text, source_language, output_language } = await req.json();
     contractId = contract_id;
     contractText = contract_text;
-    sourceLanguage = source_language || 'auto'; // Default to 'auto' if not provided
-    outputLanguage = output_language || 'en'; // Default to 'en' if not provided
+    sourceLanguage = source_language || 'auto';
+    outputLanguage = output_language || 'en';
 
     if (!contractId || !contractText) {
       return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
@@ -197,7 +196,6 @@ Deno.serve(async (req) => {
 
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
-    // MODIFIED: Adjust the system prompt to include language instructions
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, Ireland, Malta, Cyprus, EU, US, Canada, Australia), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
@@ -271,7 +269,7 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       messages: [
         {
           role: "system",
-          content: systemPromptContent, // MODIFIED: Use the constructed system prompt
+          content: systemPromptContent,
         },
         {
           role: "user",
@@ -416,7 +414,7 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
-        title: 'Analysis Complete!',
+        title: 'notification_title_analysis_complete',
         message: notificationMessage,
         type: 'success',
       });
@@ -433,7 +431,7 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
-        title: 'High Risk Findings Detected!',
+        title: 'notification_title_high_risk_findings',
         message: notificationMessage,
         type: 'error',
       });
@@ -474,7 +472,7 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       const notificationMessage = `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`;
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
-        title: 'Analysis Failed!',
+        title: 'notification_title_analysis_failed',
         message: notificationMessage,
         type: 'error',
       });
