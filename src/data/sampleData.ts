@@ -62,170 +62,170 @@ export const sampleContracts: Contract[] = [
 export const allSampleFindings: Finding[] = [
   {
     id: 'f1',
-    title: 'sample_finding_f1_title',
-    description: 'sample_finding_f1_description',
+    title: 'Data Transfer Risk', // MODIFIED: Actual string
+    description: 'The contract allows for data transfer to third countries without specifying adequate safeguards, potentially violating GDPR.', // MODIFIED: Actual string
     riskLevel: 'high',
     jurisdiction: 'EU',
     category: 'data-protection',
     recommendations: [
-      'sample_finding_f1_recommendation_1',
-      'sample_finding_f1_recommendation_2',
-      'sample_finding_f1_recommendation_3'
+      'Implement Standard Contractual Clauses (SCCs) or Binding Corporate Rules (BCRs).', // MODIFIED: Actual string
+      'Conduct a Data Protection Impact Assessment (DPIA) for all international data transfers.', // MODIFIED: Actual string
+      'Ensure explicit consent from data subjects for international transfers.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_12_3', // MODIFIED: Now a translation key
+    clauseReference: 'Section 12.3', // MODIFIED: Actual string
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
   },
   {
     id: 'f2',
-    title: 'sample_finding_f2_title',
-    description: 'sample_finding_f2_description',
+    title: 'Ambiguous Termination Clause', // MODIFIED: Actual string
+    description: 'The contract\'s termination clause is unclear regarding notice periods and conditions for termination for convenience, leading to potential disputes.', // MODIFIED: Actual string
     riskLevel: 'medium',
     jurisdiction: 'UK',
     category: 'compliance',
     recommendations: [
-      'sample_finding_f2_recommendation_1',
-      'sample_finding_f2_recommendation_2',
-      'sample_finding_f2_recommendation_3'
+      'Clearly define notice periods for all types of termination.', // MODIFIED: Actual string
+      'Specify conditions under which termination for convenience can be exercised.', // MODIFIED: Actual string
+      'Include a clear dispute resolution mechanism for termination-related issues.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_22_1', // MODIFIED: Now a translation key
+    clauseReference: 'Section 22.1', // MODIFIED: Actual string
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
   },
   {
     id: 'f3',
-    title: 'sample_finding_f3_title',
-    description: 'sample_finding_f3_description',
+    title: 'Unspecified Governing Law', // MODIFIED: Actual string
+    description: 'The contract fails to explicitly state the governing law, which could lead to complex and costly legal battles in international disputes.', // MODIFIED: Actual string
     riskLevel: 'high',
     jurisdiction: 'Others',
     category: 'compliance',
     recommendations: [
-      'sample_finding_f3_recommendation_1',
-      'sample_finding_f3_recommendation_2',
-      'sample_finding_f3_recommendation_3'
+      'Clearly state the governing law for the contract.', // MODIFIED: Actual string
+      'Consider a jurisdiction with a well-established commercial law framework.', // MODIFIED: Actual string
+      'Ensure consistency between governing law and dispute resolution clauses.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_8', // MODIFIED: Now a translation key
+    clauseReference: 'Section 8', // MODIFIED: Actual string
     created_at: '2025-04-08T09:15:00Z',
     updated_at: '2025-04-08T09:15:00Z',
     analysis_result_id: 'ar2'
   },
   {
     id: 'f4',
-    title: 'sample_finding_f4_title',
-    description: 'sample_finding_f4_description',
+    title: 'Limited Liability Cap', // MODIFIED: Actual string
+    description: 'The liability cap is set too low, potentially exposing the client to significant financial risk in case of major breaches or damages.', // MODIFIED: Actual string
     riskLevel: 'medium',
     jurisdiction: 'Ireland',
     category: 'enforceability',
     recommendations: [
-      'sample_finding_f4_recommendation_1',
-      'sample_finding_f4_recommendation_2',
-      'sample_finding_f4_recommendation_3'
+      'Re-evaluate the liability cap to align with potential damages and industry standards.', // MODIFIED: Actual string
+      'Consider carve-outs for gross negligence or willful misconduct.', // MODIFIED: Actual string
+      'Ensure the cap is insurable and reflects the risk profile of the services.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_14_2', // MODIFIED: Now a translation key
+    clauseReference: 'Section 14.2', // MODIFIED: Actual string
     created_at: '2025-04-05T16:45:00Z',
     updated_at: '2025-04-05T16:45:00Z',
     analysis_result_id: 'ar3'
   },
   {
     id: 'f5',
-    title: 'sample_finding_f5_title',
-    description: 'sample_finding_f5_description',
+    title: 'Minor Formatting Inconsistencies', // MODIFIED: Actual string
+    description: 'Minor inconsistencies in formatting and numbering were found, which could lead to misinterpretation in complex clauses.', // MODIFIED: Actual string
     riskLevel: 'low',
     jurisdiction: 'Others',
     category: 'compliance',
     recommendations: [
-      'sample_finding_f5_recommendation_1',
-      'sample_finding_f5_recommendation_2',
-      'sample_finding_f5_recommendation_3'
+      'Conduct a thorough review for formatting consistency.', // MODIFIED: Actual string
+      'Utilize automated formatting tools for future drafting.', // MODIFIED: Actual string
+      'Ensure all cross-references are accurate and up-to-date.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_17_4', // MODIFIED: Now a translation key
+    clauseReference: 'Section 17.4', // MODIFIED: Actual string
     created_at: '2025-04-02T11:20:00Z',
     updated_at: '2025-04-02T11:20:00Z',
     analysis_result_id: 'ar4'
   },
   {
     id: 'f6',
-    title: 'sample_finding_f6_title',
-    description: 'sample_finding_f6_description',
+    title: 'Lack of Indemnification Clause', // MODIFIED: Actual string
+    description: 'The contract lacks a comprehensive indemnification clause, leaving parties exposed to third-party claims arising from the contract\'s performance.', // MODIFIED: Actual string
     riskLevel: 'medium',
     jurisdiction: 'UK',
     category: 'risk',
     recommendations: [
-      'sample_finding_f6_recommendation_1',
-      'sample_finding_f6_recommendation_2',
-      'sample_finding_f6_recommendation_3'
+      'Add a mutual indemnification clause covering typical business risks.', // MODIFIED: Actual string
+      'Specify the scope and limitations of indemnification.', // MODIFIED: Actual string
+      'Ensure indemnification aligns with insurance coverage.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_n_a', // MODIFIED: Now a translation key
+    clauseReference: 'N/A', // MODIFIED: Actual string
     created_at: '2025-04-10T14:30:00Z',
     updated_at: '2025-04-10T14:30:00Z',
     analysis_result_id: 'ar1'
   },
   {
     id: 'f7',
-    title: 'sample_finding_f7_title',
-    description: 'sample_finding_f7_description',
+    title: 'GDPR Compliance Gaps', // MODIFIED: Actual string
+    description: 'The contract does not fully address GDPR requirements for data processing agreements, particularly regarding data breach notification and sub-processor obligations.', // MODIFIED: Actual string
     riskLevel: 'high',
     jurisdiction: 'EU',
     category: 'enforceability',
     recommendations: [
-      'sample_finding_f7_recommendation_1',
-      'sample_finding_f7_recommendation_2',
-      'sample_finding_f7_recommendation_3'
+      'Integrate a comprehensive Data Processing Addendum (DPA) compliant with GDPR Article 28.', // MODIFIED: Actual string
+      'Clearly define roles and responsibilities for data controllers and processors.', // MODIFIED: Actual string
+      'Include specific clauses on data breach notification procedures and timelines.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_18', // MODIFIED: Now a translation key
+    clauseReference: 'Section 18', // MODIFIED: Actual string
     created_at: '2025-04-08T09:15:00Z',
     updated_at: '2025-04-08T09:15:00Z',
     analysis_result_id: 'ar2'
   },
   {
     id: 'f8',
-    title: 'sample_finding_f8_title',
-    description: 'sample_finding_f8_description',
+    title: 'CCPA Compliance Concerns', // MODIFIED: Actual string
+    description: 'The contract does not adequately address consumer rights under the California Consumer Privacy Act (CCPA), such as the right to opt-out of data sales.', // MODIFIED: Actual string
     riskLevel: 'medium',
     jurisdiction: 'US',
     category: 'data-protection',
     recommendations: [
-      'sample_finding_f8_recommendation_1',
-      'sample_finding_f8_recommendation_2',
-      'sample_finding_f8_recommendation_3'
+      'Review and update data handling clauses to comply with CCPA requirements.', // MODIFIED: Actual string
+      'Ensure mechanisms for consumers to exercise their CCPA rights are clearly outlined.', // MODIFIED: Actual string
+      'Consult with a US privacy law expert for specific guidance.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_section_14_2', // MODIFIED: Now a translation key
+    clauseReference: 'Section 14.2', // MODIFIED: Actual string
     created_at: '2025-04-01T10:00:00Z',
     updated_at: '2025-04-01T10:00:00Z',
     analysis_result_id: 'ar5'
   },
   {
     id: 'f9',
-    title: 'sample_finding_f9_title',
-    description: 'sample_finding_f9_description',
+    title: 'PIPEDA Non-Compliance', // MODIFIED: Actual string
+    description: 'The contract lacks specific provisions for consent and data security as required by the Personal Information Protection and Electronic Documents Act (PIPEDA) in Canada.', // MODIFIED: Actual string
     riskLevel: 'high',
     jurisdiction: 'Canada',
     category: 'compliance',
     recommendations: [
-      'sample_finding_f9_recommendation_1',
-      'sample_finding_f9_recommendation_2',
-      'sample_finding_f9_recommendation_3'
+      'Incorporate explicit consent mechanisms for personal information collection and use.', // MODIFIED: Actual string
+      'Detail data security measures in line with PIPEDA\'s fair information principles.', // MODIFIED: Actual string
+      'Ensure transparency regarding data handling practices.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_article_5_1', // MODIFIED: Now a translation key
+    clauseReference: 'Article 5.1', // MODIFIED: Actual string
     created_at: '2025-03-28T14:00:00Z',
     updated_at: '2025-03-28T14:00:00Z',
     analysis_result_id: 'ar6'
   },
   {
     id: 'f10',
-    title: 'sample_finding_f10_title',
-    description: 'sample_finding_f10_description',
+    title: 'Australian Consumer Law Discrepancies', // MODIFIED: Actual string
+    description: 'Certain clauses may be deemed unfair or misleading under the Australian Consumer Law (ACL), potentially rendering them unenforceable.', // MODIFIED: Actual string
     riskLevel: 'medium',
     jurisdiction: 'Australia',
     category: 'enforceability',
     recommendations: [
-      'sample_finding_f10_recommendation_1',
-      'sample_finding_f10_recommendation_2',
-      'sample_finding_f10_recommendation_3'
+      'Review clauses for compliance with ACL unfair contract terms provisions.', // MODIFIED: Actual string
+      'Ensure all representations are accurate and not misleading.', // MODIFIED: Actual string
+      'Seek legal advice on specific clauses under Australian law.' // MODIFIED: Actual string
     ],
-    clauseReference: 'clause_reference_schedule_2_section_23', // MODIFIED: Now a translation key
+    clauseReference: 'Schedule 2, Section 23', // MODIFIED: Actual string
     created_at: '2025-03-28T14:00:00Z',
     updated_at: '2025-03-28T14:00:00Z',
     analysis_result_id: 'ar6'
@@ -236,10 +236,10 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
   const relevantFindings = allSampleFindings.filter(f => jurisdictions.includes(f.jurisdiction) || f.jurisdiction === 'EU');
   const complianceScore = Math.floor(Math.random() * (95 - 50 + 1)) + 50;
 
-  const executiveSummary = `sample_executive_summary_prefix_${contractId}`;
+  const executiveSummary = `This contract analysis for ${contractId} reveals a compliance score of ${complianceScore}%. The document generally adheres to legal standards, but specific areas require attention to mitigate potential risks and ensure full enforceability.`; // MODIFIED: Actual string
   const dataProtectionImpact = (jurisdictions.includes('EU') || jurisdictions.includes('UK') || jurisdictions.includes('US') || jurisdictions.includes('Canada') || jurisdictions.includes('Australia') || jurisdictions.includes('Ireland') || jurisdictions.includes('Others')) ?
-    'sample_data_protection_impact_detailed' :
-    'sample_data_protection_impact_minimal';
+    'The contract involves the processing of personal data, necessitating careful consideration of data protection regulations. Key areas of impact include data transfer mechanisms, consent requirements, and data security protocols. Compliance with GDPR, CCPA, or PIPEDA may require additional clauses or amendments to ensure robust data protection and avoid regulatory penalties.' : // MODIFIED: Actual string
+    'The contract has minimal data protection impact, primarily focusing on general confidentiality. No significant personal data processing or cross-border transfers are identified that would trigger specific data protection regulations.'; // MODIFIED: Actual string
 
   const jurisdictionSummaries: Record<Jurisdiction, JurisdictionSummary> = {};
   jurisdictions.forEach(j => {
@@ -247,8 +247,8 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
     jurisdictionSummaries[j] = {
       jurisdiction: j,
       applicableLaws: [
-        `sample_applicable_law_${j}_1`,
-        `sample_applicable_law_${j}_2`
+        `General Contract Law of ${j}`, // MODIFIED: Actual string
+        `Commercial Code of ${j}` // MODIFIED: Actual string
       ],
       keyFindings: jFindings.map(f => f.title),
       riskLevel: jFindings.length > 2 ? 'high' : jFindings.length > 0 ? 'medium' : 'none'
@@ -259,7 +259,7 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
     const euFindings = relevantFindings.filter(f => f.jurisdiction === 'EU');
     jurisdictionSummaries['EU'] = {
       jurisdiction: 'EU',
-      applicableLaws: ['sample_applicable_law_EU_GDPR', 'sample_applicable_law_EU_Directive_X'],
+      applicableLaws: ['General Data Protection Regulation (GDPR)', 'ePrivacy Directive'], // MODIFIED: Actual string
       keyFindings: euFindings.map(f => f.title),
       riskLevel: euFindings.length > 0 ? 'high' : 'none'
     };
@@ -269,7 +269,7 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
     const othersFindings = relevantFindings.filter(f => f.jurisdiction === 'Others');
     jurisdictionSummaries['Others'] = {
       jurisdiction: 'Others',
-      applicableLaws: ['sample_applicable_law_others_1', 'sample_applicable_law_others_2'],
+      applicableLaws: ['International Commercial Law Principles', 'Private International Law'], // MODIFIED: Actual string
       keyFindings: othersFindings.map(f => f.title),
       riskLevel: othersFindings.length > 0 ? 'medium' : 'none'
     };
