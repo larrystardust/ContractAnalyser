@@ -975,5 +975,15 @@
   "sending_email": "Envoi en cours...",
   "resend_confirmation_email": "Renvoyer l'E-mail de Confirmation",
   "back_to_login_button": "Retour à la Connexion",
-  "redirecting_to_signup": "Redirection vers la page d'inscription..."
+  "redirecting_to_signup": "Redirection vers la page d'inscription...",
+
+  "sample_data_view_dashboard": "Vue des Données d'Exemple",
+  "upgrade_to_analyze_own_contracts": "Ce tableau de bord affiche des résultats d'analyse d'exemple. Mettez à niveau pour analyser vos propres contrats !",
+  "profile": "Profil",
+  "billing": "Facturation",
+  "members": "Membres",
+  "no_completed_sample_contract_selected": "Aucun Contrat d'Exemple Terminé Sélectionné",
+  "select_sample_contract_to_view": "Sélectionnez un contrat d'exemple terminé dans la liste pour voir son analyse.",
+  "view_plans_to_add_members": "Vous n'avez pas d'abonnement actif qui prenne en charge plusieurs utilisateurs.",
+  "upgrade_to_analyze_own_contracts_button": "Mettre à Niveau pour Analyser Vos Propres Contrats"
 }
