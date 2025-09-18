@@ -4,12 +4,12 @@ import { ArrowLeft } from 'lucide-react';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import PricingCard from './PricingCard';
 import StructuredData from '../StructuredData';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 const LandingPagePricingSection: React.FC = () => {
   console.log('LandingPagePricingSection component rendered');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   // Filter out products that are for admin assignment only
   const publicProducts = stripeProducts.filter(product => 
@@ -24,11 +24,10 @@ const LandingPagePricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.monthly.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/landing-pricing",
-        "name": `${product.name} (${t('monthly')})` // MODIFIED
+        "name": `${t(product.name)} (${t('monthly')})` // MODIFIED: Translate product name
       });
     }
     if (product.pricing.yearly) {
@@ -36,11 +35,10 @@ const LandingPagePricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.yearly.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/landing-pricing",
-        "name": `${product.name} (${t('yearly')})` // MODIFIED
+        "name": `${t(product.name)} (${t('yearly')})` // MODIFIED: Translate product name
       });
     }
     if (product.pricing.one_time) {
@@ -48,19 +46,18 @@ const LandingPagePricingSection: React.FC = () => {
         "@type": "Offer",
         "priceCurrency": "USD",
         "price": product.pricing.one_time.price.toFixed(2),
-        // "priceValidUntil": "2025-12-31", // REMOVED: priceValidUntil
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
         "url": "https://www.contractanalyser.com/landing-pricing",
-        "name": `${product.name} (${t('one_time')})` // MODIFIED
+        "name": `${t(product.name)} (${t('one_time')})` // MODIFIED: Translate product name
       });
     }
 
     return {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": product.name,
-      "description": product.description,
+      "name": t(product.name), // MODIFIED: Translate product name
+      "description": t(product.description), // MODIFIED: Translate product description
       "brand": {
         "@type": "Brand",
         "name": "ContractAnalyser"
@@ -79,16 +76,16 @@ const LandingPagePricingSection: React.FC = () => {
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('back_to_landing_page_button')} {/* MODIFIED */}
+              {t('back_to_landing_page_button')}
             </Link>
           </div>
 
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              {t('simple_transparent_pricing_landing')} {/* MODIFIED */}
+              {t('simple_transparent_pricing_landing')}
             </h2>
             <p className="mt-4 text-xl text-gray-600">
-              {t('choose_best_plan_landing')} {/* MODIFIED */}
+              {t('choose_best_plan_landing')}
             </p>
           </div>
           
@@ -100,7 +97,7 @@ const LandingPagePricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'monthly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                {t('monthly_billing_landing')} {/* MODIFIED */}
+                {t('monthly_billing_landing')}
               </button>
               <button
                 type="button"
@@ -108,7 +105,7 @@ const LandingPagePricingSection: React.FC = () => {
                 className={`px-4 py-2 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
                   ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
               >
-                {t('yearly_billing_landing')} {/* MODIFIED */}
+                {t('yearly_billing_landing')}
               </button>
             </div>
           </div>
