@@ -41,7 +41,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2>
         </div>
-        <p className="text-gray-700">{analysisResult.executiveSummary}</p> {/* MODIFIED: Removed t() */}
+        <p className="text-gray-700">{t(analysisResult.executiveSummary)}</p> {/* MODIFIED: Added t() */}
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -155,11 +155,11 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   <div className="flex-1">
                     <div className="flex items-center">
                       <h3 className={`text-base font-medium ${getRiskTextColor(finding.riskLevel)}`}>
-                        {finding.title} {/* MODIFIED: Removed t() */}
+                        {t(finding.title)} {/* MODIFIED: Added t() */}
                       </h3>
                       {finding.clauseReference && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          {finding.clauseReference} {/* MODIFIED: Removed t() */}
+                          {t(finding.clauseReference)} {/* MODIFIED: Added t() */}
                         </span>
                       )}
                     </div>
@@ -170,14 +170,14 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                       <CategoryBadge category={finding.category} />
                     </div>
                     
-                    <p className="mt-3 text-gray-700">{finding.description}</p> {/* MODIFIED: Removed t() */}
+                    <p className="mt-3 text-gray-700">{t(finding.description)}</p> {/* MODIFIED: Added t() */}
                     
                     {expandedFindings.includes(finding.id) && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{rec}</li> 
+                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> {/* MODIFIED: Added t() */}
                           ))}
                         </ul>
                       </div>
@@ -201,7 +201,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
       {analysisResult.dataProtectionImpact && (
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('data_protection_impact')}</h2>
-          <p className="text-gray-700">{analysisResult.dataProtectionImpact}</p> {/* MODIFIED: Removed t() */}
+          <p className="text-gray-700">{t(analysisResult.dataProtectionImpact)}</p> {/* MODIFIED: Added t() */}
         </div>
       )}
     </div>
