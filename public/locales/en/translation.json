@@ -1161,7 +1161,7 @@
   "finding_rec_ensure_pension_compliance": "Ensure all pension-related clauses comply with relevant regulations.",
   "finding_rec_provide_pension_enrollment_instructions": "Provide clear instructions on how to enroll or opt-out of pension schemes.",
   "clause_ref_pension_retirement": "Pension & retirement",
-  "executive_summary_template": "This contract analysis for {{contractId}} reveals a compliance score of {{complianceScore}}%. The document generally adheres to legal standards, but specific areas require attention to mitigate potential risks and ensure full enforceability.",
+  "executive_summary_template": "This contract analysis for {{contractName}} reveals a compliance score of {{complianceScore}}%. The document generally adheres to legal standards, but specific areas require attention to mitigate potential risks and ensure full enforceability.",
   "data_protection_impact_template_detailed": "The contract involves the processing of personal data, necessitating careful consideration of data protection regulations. Key areas of impact include data transfer mechanisms, consent requirements, and data security protocols. Compliance with GDPR, CCPA, or PIPEDA may require additional clauses or amendments to ensure robust data protection and avoid regulatory penalties.",
   "data_protection_impact_template_minimal": "The contract has minimal data protection impact, primarily focusing on general confidentiality. No significant personal data processing or cross-border transfers are identified that would trigger specific data protection regulations.",
   "applicable_law_general_contract_law_UK": "General Contract Law of UK",
