@@ -90,7 +90,13 @@ const EmailSentPage: React.FC = () => {
           <Mail className="h-12 w-12 text-blue-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('email_sent_page_title')}</h2> {/* MODIFIED */}
           <p className="mt-2 text-sm text-gray-600">
-            <Trans i18nKey="email_sent_message" values={{ userEmail }} /> {/* MODIFIED */}
+            <Trans 
+              i18nKey="email_sent_message" 
+              values={{ userEmail }}
+              components={{
+                highlight: <span className="font-medium text-blue-600" />
+              }}
+            />
           </p>
         </CardHeader>
         <CardBody>
