@@ -42,6 +42,41 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
+// ADDED: Simple translation object for notification messages
+const translations = {
+  en: {
+    analysis_complete_message: (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
+    high_risk_findings_message: (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
+    analysis_failed_message: (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
+  },
+  es: {
+    analysis_complete_message: (contractName: string) => `Su contrato "${contractName}" ha sido analizado con éxito.`,
+    high_risk_findings_message: (contractName: string, count: number) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`,
+    analysis_failed_message: (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`
+  },
+  fr: {
+    analysis_complete_message: (contractName: string) => `Votre contrat "${contractName}" a été analysé avec succès.`,
+    high_risk_findings_message: (contractName: string, count: number) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
+    analysis_failed_message: (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`
+  },
+  ar: {
+    analysis_complete_message: (contractName: string) => `تم تحليل عقدك "${contractName}" بنجاح.`,
+    high_risk_findings_message: (contractName: string, count: number) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
+    analysis_failed_message: (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`
+  }
+};
+
+// ADDED: Helper function to get translated string
+function getTranslatedMessage(key: string, lang: string, ...args: any[]): string {
+  const langMap = (translations as any)[lang] || translations.en; // Fallback to English
+  const messageTemplate = langMap[key];
+  if (typeof messageTemplate === 'function') {
+    return messageTemplate(...args);
+  }
+  return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsResponse(null, 204);
@@ -61,6 +96,7 @@ Deno.serve(async (req) => {
   let userSubscriptionId: string | null = null;
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
   let token: string;
+  let userPreferredLanguage: string = 'en'; // ADDED: Default user language
 
   try {
     const { contract_id, contract_text, source_language, output_language } = await req.json();
@@ -94,7 +130,7 @@ Deno.serve(async (req) => {
     const { data: profileData, error: profileError } = await retry(async () => {
       return await supabase
         .from('profiles')
-        .select('full_name, notification_settings')
+        .select('full_name, notification_settings, theme_preference') // MODIFIED: Fetch theme_preference
         .eq('id', userId)
         .maybeSingle();
     }, 5, 500);
@@ -117,6 +153,9 @@ Deno.serve(async (req) => {
         'weekly-reports': { email: false, inApp: false },
         'system-updates': { email: false, inApp: true },
       };
+      // ADDED: Set userPreferredLanguage from theme_preference or default to 'en'
+      // For notifications, we'll use the outputLanguage as the preferred language, as it's explicitly chosen by the user.
+      userPreferredLanguage = outputLanguage;
     }
 
     const { data: membershipData, error: membershipError } = await supabase
@@ -409,9 +448,11 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
     }
 
     // --- START: Notification Generation ---
-    // 1. Analysis Complete Notification
+    const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
+    const contractName = contractData.data?.name || 'Unknown Contract';
+
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has been successfully analyzed.`;
+      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, contractName);
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_complete',
@@ -420,15 +461,12 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       });
       if (notificationError) {
         console.error('Error inserting "Analysis Complete" notification:', notificationError);
-      } else {
-        // Successfully inserted 'Analysis Complete' notification.
       }
     }
 
-    // 2. High Risk Findings Notification
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      const notificationMessage = `Your contract "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" has ${highRiskFindings.length} high-risk findings. Review immediately.`;
+      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, contractName, highRiskFindings.length);
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_high_risk_findings',
@@ -437,8 +475,6 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       });
       if (notificationError) {
         console.error('Error inserting "High Risk Findings" notification:', notificationError);
-      } else {
-        // Successfully inserted 'High Risk Findings' notification.
       }
     }
     // --- END: Notification Generation ---
@@ -468,8 +504,11 @@ All text fields within the JSON output (executiveSummary, dataProtectionImpact, 
       { contract_id: contractId, error: error.message }
     );
 
+    const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
+    const contractName = contractData.data?.name || 'Unknown Contract';
+
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = `Contract analysis for "${(await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract'}" failed. Please try again or contact support.`;
+      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, contractName);
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_failed',
