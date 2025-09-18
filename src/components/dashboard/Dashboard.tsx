@@ -172,7 +172,7 @@ const Dashboard: React.FC = () => {
           <div className="lg:col-span-2">
             {selectedContract && selectedContract.analysisResult ? (
               <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
+                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {t(selectedContract.name)}</h1> {/* MODIFIED: Added t() */}
                 
                 {/* Analysis Results */}
                 <AnalysisResults
@@ -181,11 +181,12 @@ const Dashboard: React.FC = () => {
                   onReanalyzeInitiated={handleReanalyzeInitiated}
                   onReanalyzeCompleted={handleReanalyzeCompleted}
                   onReanalyzeFailed={handleReanalyzeFailed}
+                  contractName={selectedContract.name} {/* MODIFIED: Added contractName prop */}
                 />
                 
                 {/* Jurisdiction Summaries */}
                 <div className="mt-8">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
+                  <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                       <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
