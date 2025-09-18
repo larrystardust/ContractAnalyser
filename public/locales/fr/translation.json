@@ -971,7 +971,7 @@
   "another_email_sent": "Un autre e-mail de confirmation a été envoyé !",
   "failed_to_resend_email": "Échec de l'envoi de l'e-mail de confirmation.",
   "email_sent_page_title": "Vérifiez Votre E-mail",
-  "email_sent_message": "Un lien de confirmation a été envoyé à {{userEmail}}. Veuillez cliquer sur le lien dans l'e-mail pour vérifier votre compte et accéder au tableau de bord.",
+  "email_sent_message": "Un lien de confirmation a été envoyé à <highlight>{{userEmail}}</highlight>. Veuillez cliquer sur le lien dans l'e-mail pour vérifier votre compte et accéder au tableau de bord.",
   "sending_email": "Envoi en cours...",
   "resend_confirmation_email": "Renvoyer l'E-mail de Confirmation",
   "back_to_login_button": "Retour à la Connexion",
