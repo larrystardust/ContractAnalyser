@@ -1244,5 +1244,6 @@
   "error_boundary_something_went_wrong": "Quelque chose s'est mal passé.",
   "error_boundary_unexpected_error_occurred": "Nous sommes désolés, mais une erreur inattendue s'est produite. Veuillez essayer de rafraîchir la page.",
   "error_details": "Détails de l'erreur",
-  "refresh_page": "Actualiser la page"
+  "refresh_page": "Actualiser la page",
+  "phone_number_example": "ex: 1234567890"
 }
