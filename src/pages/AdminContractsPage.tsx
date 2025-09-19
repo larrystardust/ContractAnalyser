@@ -55,7 +55,7 @@ const AdminContractsPage: React.FC = () => {
       render: (item: AdminContract) => (
         <div className="flex flex-wrap gap-1">
           {(Array.isArray(item.jurisdictions) ? item.jurisdictions : []).map((j) => (
-            <JurisdictionBadge key={j} jurisdiction={j} showLabel={false} />
+            <JurisdictionBadge key={j} jurisdiction={j} showLabel={true} /> // MODIFIED: Changed to true
           ))}
         </div>
       ),
