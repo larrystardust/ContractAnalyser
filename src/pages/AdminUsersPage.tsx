@@ -134,11 +134,11 @@ const AdminUsersPage: React.FC = () => {
       header: t('subscription_label'), // MODIFIED
       render: (item: AdminProfile) => {
         if (item.single_use_credits > 0) {
-          return `${t('single_use')} (Credits: ${item.single_use_credits})`; // MODIFIED
+          return t('single_use_credits_display', { credits: item.single_use_credits }); // MODIFIED: Use translation key with interpolation
         }
         if (item.subscription_details) {
           const sub = allSubscriptions.find(s => s.subscription_id === item.subscription_details?.subscription_id);
-          return `${sub?.product_name || t('unknown_product')} (${item.subscription_details.status})`; // MODIFIED
+          return `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`; // MODIFIED: Translate product name and status
         }
         return t('none'); // MODIFIED
       },
@@ -146,7 +146,7 @@ const AdminUsersPage: React.FC = () => {
     {
       key: 'membership_details',
       header: t('role_label'), // MODIFIED
-      render: (item: AdminProfile) => item.membership_details?.role || t('n_a'), // MODIFIED
+      render: (item: AdminProfile) => t('role_' + item.membership_details?.role) || t('n_a'), // MODIFIED: Translate role
     },
     { key: 'mobile_phone_number', header: t('phone_label') }, // MODIFIED
     { key: 'country_code', header: t('country_code_label') }, // MODIFIED
