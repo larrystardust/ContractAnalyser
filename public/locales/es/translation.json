@@ -1031,6 +1031,7 @@
   "notification_message": "Mensaje de notificación",
   "send_notification": "Enviar notificación",
   "sending": "Enviando",
+  "reply_sent_and_saved_successfully": "¡Respuesta del administrador enviada y guardada con éxito!",
   "notification_title_analysis_complete": "¡Análisis completado!",
   "notification_title_high_risk_findings": "¡Hallazgos de alto riesgo detectados!",
   "notification_title_analysis_failed": "¡Análisis fallido!",
