@@ -382,7 +382,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                 }`}
             >
-              {jurisdiction}
+              {t(jurisdiction)} {/* MODIFIED: Added t() */}
             </button>
           ))}
         </div>
