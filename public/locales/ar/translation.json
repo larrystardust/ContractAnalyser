@@ -1194,5 +1194,7 @@
   "role_owner": "المالك",
   "role_member": "عضو",
   "status_active": "نشط",
-  "status_invited": "مدعو"
+  "status_invited": "مدعو",
+  "jurisdiction_sharia": "الشريعة",
+  "jurisdiction_unknown": "غير معروف"
 }
