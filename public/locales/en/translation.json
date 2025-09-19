@@ -1243,5 +1243,6 @@
   "error_boundary_something_went_wrong": "Something went wrong.",
   "error_boundary_unexpected_error_occurred": "We're sorry, but an unexpected error occurred. Please try refreshing the page.",
   "error_details": "Error Details",
-  "refresh_page": "Refresh Page"
+  "refresh_page": "Refresh Page",
+  "phone_number_example": "e.g., 1234567890"
 }
