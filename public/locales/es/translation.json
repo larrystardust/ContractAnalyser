@@ -1167,5 +1167,9 @@
   "sample_contract_us_software_licensing_agreement": "Acuerdo de Licencia de Software de EE. UU..pdf",
   "sample_contract_canada_australia_partnership_deed": "Escritura de Asociación Canadá-Australia.pdf",
 
-  "dashboard_help_title": "Ayuda del Panel de Control"
+  "dashboard_help_title": "Ayuda del Panel de Control",
+  "role_owner": "Propietario",
+  "role_member": "Miembro",
+  "status_active": "Activo",
+  "status_invited": "Invitado"
 }
