@@ -1201,5 +1201,7 @@
   "confirm_mark_for_deletion": "Are you sure you want to mark contract \"{{name}}\" for automatic deletion?",
   "confirm_unmark_for_deletion": "Are you sure you want to unmark contract \"{{name}}\" for automatic deletion?",
   "confirm_delete_contract": "Are you sure you want to permanently delete contract \"{{name}}\" by {{user_full_name}}? This action cannot be undone.",
-  "confirm_delete_user": "Are you sure you want to delete user: {{email}}? This action cannot be undone."
+  "confirm_delete_user": "Are you sure you want to delete user: {{email}}? This action cannot be undone.",
+  "contract_marked_for_deletion_successfully": "Contract marked for deletion successfully!",
+  "contract_unmarked_for_deletion_successfully": "Contract unmarked for deletion successfully!"
 }
