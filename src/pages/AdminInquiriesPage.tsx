@@ -191,7 +191,7 @@ const AdminInquiriesPage: React.FC = () => {
         throw error;
       }
 
-      setReplySuccess(prev => ({ ...prev, [inquiry.id]: data.message || t('reply_sent_successfully') })); // MODIFIED
+      setReplySuccess(prev => ({ ...prev, [inquiry.id]: t('reply_sent_and_saved_successfully') })); // MODIFIED: Use translation key
       setReplyMessage(prev => ({ ...prev, [inquiry.id]: '' }));
       fetchRepliesForInquiry(inquiry.id);
     } catch (err: any) {
