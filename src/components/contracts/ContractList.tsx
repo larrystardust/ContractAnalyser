@@ -148,7 +148,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         <JurisdictionBadge 
                           key={jurisdiction} 
                           jurisdiction={jurisdiction} 
-                          showLabel={false}
+                          showLabel={true} // MODIFIED: Changed to true
                         />
                       ))}
                     </div>
