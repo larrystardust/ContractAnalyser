@@ -233,8 +233,23 @@ Deno.serve(async (req) => {
       .update({ status: 'analyzing', processing_progress: 10 })
       .eq('id', contractId);
 
+    // Fetch the contract details, including contract_content and jurisdictions
+    const { data: contractDetails, error: fetchContractError } = await supabase
+      .from('contracts')
+      .select('contract_content, user_id, jurisdictions') // ADDED 'jurisdictions'
+      .eq('id', contractId)
+      .single();
+
+    if (fetchContractError) {
+      console.error('contract-analyzer: Error fetching contract details:', fetchContractError);
+      throw new Error('Failed to fetch contract details for analysis.');
+    }
+
+    const userSelectedJurisdictions = contractDetails.jurisdictions.join(', '); // Format for prompt
+
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
+    // MODIFIED: Moved systemPromptContent definition here
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
