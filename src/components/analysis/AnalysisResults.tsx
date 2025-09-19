@@ -256,7 +256,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))}
+              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
             </button>
           );
         })}
@@ -301,7 +301,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                     
                     <div className="flex flex-wrap gap-2 mt-2">
                       <RiskBadge risk={finding.riskLevel} />
-                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={false} />
+                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} /> {/* MODIFIED: Changed to true */}
                       <CategoryBadge category={finding.category} />
                     </div>
                     
@@ -319,14 +319,13 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                     )}
                   </div>
                   
-                  <Button
-                    variant="text"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={() => toggleFindingExpanded(finding.id)}
-                    className="ml-4"
+                    className="ml-4 text-blue-600 hover:underline text-sm"
                   >
                     {expandedFindings.includes(finding.id) ? t('hide_details') : t('show_details')}
-                  </Button>
+                  </button>
                 </div>
               </CardBody>
             </Card>
