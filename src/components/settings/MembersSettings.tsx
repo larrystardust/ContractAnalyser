@@ -337,11 +337,8 @@ const MembersSettings: React.FC = () => {
                       {member.full_name || member.email || t('n_a')} {/* MODIFIED */}
                       {member.user_id === session?.user?.id && <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">{t('you')}</span>} {/* MODIFIED */}
                     </p>
-                    {member.full_name && member.email && (
-                      <p className="text-xs text-gray-500">{member.email}</p>
-                    )}
-                    <p className="text-xs text-gray-500">{t('role')}: {member.role.charAt(0).toUpperCase() + member.role.slice(1)}</p> {/* MODIFIED */}
-                    <p className="text-xs text-gray-500">{t('status_member')}: {member.status.charAt(0).toUpperCase() + member.status.slice(1)}</p> {/* MODIFIED */}
+                    <p className="text-xs text-gray-500">{t('role')}: {t(`role_${member.role}`)}</p> {/* MODIFIED: Added t() for role */}
+                    <p className="text-xs text-gray-500">{t('status_member')}: {t(`status_${member.status}`)}</p> {/* MODIFIED: Added t() for status */}
                   </div>
                   {isOwner && member.user_id !== session?.user?.id && (
                     <Button
