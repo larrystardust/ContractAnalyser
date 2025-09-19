@@ -1196,5 +1196,15 @@
   "status_active": "نشط",
   "status_invited": "مدعو",
   "jurisdiction_sharia": "الشريعة",
-  "jurisdiction_unknown": "غير معروف"  
+  "jurisdiction_unknown": "غير معروف",
+
+  "confirm_mark_for_deletion": "هل أنت متأكد أنك تريد وضع علامة على العقد \"{{name}}\" للحذف التلقائي؟",
+  "confirm_unmark_for_deletion": "هل أنت متأكد أنك تريد إزالة علامة العقد \"{{name}}\" للحذف التلقائي؟",
+  "confirm_delete_contract": "هل أنت متأكد أنك تريد حذف العقد \"{{name}}\" بواسطة {{user_full_name}} بشكل دائم؟ لا يمكن التراجع عن هذا الإجراء.",
+  "confirm_delete_user": "هل أنت متأكد أنك تريد حذف المستخدم: {{email}}؟ لا يمكن التراجع عن هذا الإجراء.",
+  "contract_marked_for_deletion_successfully": "تم وضع علامة على العقد للحذف بنجاح!",
+  "contract_unmarked_for_deletion_successfully": "تمت إزالة علامة العقد للحذف بنجاح!",
+  "user_deleted_successfully": "تم حذف المستخدم بنجاح!",
+  "contract_deleted_successfully": "تم حذف العقد بنجاح!",
+  "user_profile_updated_successfully": "تم تحديث ملف تعريف المستخدم بنجاح!"
 }
