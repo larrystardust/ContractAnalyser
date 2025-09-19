@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/ui/LanguageSelector'; // ADDED
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -333,7 +334,7 @@ const SignupPage: React.FC = () => {
                   name="password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder={t('password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -358,7 +359,7 @@ const SignupPage: React.FC = () => {
                   name="confirm-password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder={t('confirm_password')}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -400,6 +401,9 @@ const SignupPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
+      <div className="mt-4 flex justify-center">
+        <LanguageSelector /> {/* ADDED */}
+      </div>
     </div>
   );
 };
