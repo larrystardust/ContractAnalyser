@@ -1054,6 +1054,7 @@
   "notification_title": "Titre de la notification",
   "notification_message": "Message de notification",
   "send_notification": "Envoyer la notification",
+  "sending": "Envoi en cours",
   "notification_title_analysis_complete": "Analyse terminée !",
   "notification_title_high_risk_findings": "Constatations à haut risque détectées !",
   "notification_title_analysis_failed": "Analyse échouée !",
