@@ -301,7 +301,7 @@ DOCUMENT LANGUAGE INSTRUCTIONS:
 The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', please detect the language of the document.
 
 OUTPUT LANGUAGE INSTRUCTIONS:
-All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.`;
+All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
