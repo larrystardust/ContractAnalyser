@@ -1054,6 +1054,7 @@
   "notification_message": "Notification Message",
   "send_notification": "Send Notification",
   "sending": "Sending",
+  "reply_sent_and_saved_successfully": "Admin reply sent and saved successfully!",
   "notification_title_analysis_complete": "Analysis Complete!",
   "notification_title_high_risk_findings": "High Risk Findings Detected!",
   "notification_title_analysis_failed": "Analysis Failed!",
