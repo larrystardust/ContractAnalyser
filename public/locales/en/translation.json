@@ -278,6 +278,8 @@
   "marked_for_deletion_modal": "Marked for Deletion:",
   "no_analysis_results_available_modal": "No analysis results available for this contract yet.",
   "analysis_in_progress_modal": "Analysis is in progress ({{progress}}% complete).",
+  "analysis_in_progress": "Analysis is in progress ({{progress}}% complete).",
+  "please_wait_analysis_in_progress": "Please wait your contract analysis is in progress",
   "overall_compliance_score_modal": "Overall Compliance Score",
   "data_protection_impact_section_modal": "Data Protection Impact",
   "detailed_findings_section_modal": "Detailed Findings",
