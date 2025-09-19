@@ -1218,5 +1218,23 @@
   "contract_unmarked_for_deletion_successfully": "Contract unmarked for deletion successfully!",
   "user_deleted_successfully": "User deleted successfully!",
   "contract_deleted_successfully": "Contract deleted successfully!",
-  "user_profile_updated_successfully": "User profile updated successfully!"
+  "user_profile_updated_successfully": "User profile updated successfully!",
+
+  "audit_event_type_SUBSCRIPTION_INVITATION_SENT": "Subscription Invitation Sent",
+  "audit_event_type_ADMIN_USER_UPDATED": "Admin User Updated",
+  "audit_event_type_ADMIN_USER_CREATED": "Admin User Created",
+  "audit_event_type_ADMIN_USER_DELETED": "Admin User Deleted",
+  "audit_event_type_CONTRACT_ANALYSIS_COMPLETED": "Contract Analysis Completed",
+  "audit_event_type_CONTRACT_ANALYSIS_STARTED": "Contract Analysis Started",
+  "audit_event_type_ADMIN_REPLIED_TO_SUPPORT_TICKET": "Admin Replied to Support Ticket",
+  "audit_event_type_ADMIN_REPLIED_TO_INQUIRY": "Admin Replied to Inquiry",
+  "audit_event_type_ADMIN_SUBSCRIPTION_REMOVED": "Admin Subscription Removed",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED_FREE": "Admin Assigned Free Subscription",
+  "audit_event_type_SUBSCRIPTION_INVITATION_ACCEPTED": "Subscription Invitation Accepted",
+  "audit_event_type_CONTRACT_REANALYSIS_INITIATED": "Contract Re-analysis Initiated",
+  "audit_event_type_CONTRACT_ANALYSIS_FAILED": "Contract Analysis Failed",
+  "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "Admin Single-Use Credit Granted",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "Admin Subscription Assigned",
+  "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "Admin System Notification Sent",
+  "audit_event_type_INQUIRY_SUBMITTED": "Inquiry Submitted"
 }
