@@ -278,7 +278,7 @@
   "marked_for_deletion_modal": "Marcado para Eliminación:",
   "no_analysis_results_available_modal": "Aún no hay resultados de análisis disponibles para este contrato.",
   "analysis_in_progress_modal": "El análisis está en curso ({{progress}}% completo).",
-  "analysis_in_progress": "Análisis en curso",
+  "analysis_in_progress": "El análisis está en curso ({{progress}}% completo).",
   "please_wait_analysis_in_progress": "Por favor, espere, el análisis de su contrato está en curso",
   "overall_compliance_score_modal": "Puntuación General de Cumplimiento",
   "data_protection_impact_section_modal": "Impacto en la Protección de Datos",
