@@ -158,7 +158,7 @@ const AdminUsersPage: React.FC = () => {
       render: (item: AdminProfile) => (
         <div className="flex flex-wrap gap-1">
           {(Array.isArray(item.default_jurisdictions) ? item.default_jurisdictions : []).map((j) => (
-            <JurisdictionBadge key={j} jurisdiction={j} showLabel={false} />
+            <JurisdictionBadge key={j} jurisdiction={j} showLabel={true} /> // MODIFIED: Changed to true
           ))}
         </div>
       ),
