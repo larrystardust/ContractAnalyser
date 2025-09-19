@@ -1203,5 +1203,7 @@
   "confirm_delete_contract": "Are you sure you want to permanently delete contract \"{{name}}\" by {{user_full_name}}? This action cannot be undone.",
   "confirm_delete_user": "Are you sure you want to delete user: {{email}}? This action cannot be undone.",
   "contract_marked_for_deletion_successfully": "Contract marked for deletion successfully!",
-  "contract_unmarked_for_deletion_successfully": "Contract unmarked for deletion successfully!"
+  "contract_unmarked_for_deletion_successfully": "Contract unmarked for deletion successfully!",
+  "user_deleted_successfully": "User deleted successfully!",
+  "contract_deleted_successfully": "Contract deleted successfully!"
 }
