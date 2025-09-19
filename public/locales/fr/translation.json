@@ -927,7 +927,7 @@
   "send_reply": "Envoyer la Réponse",
   "loading_system_reports": "Chargement des rapports système...",
   "loading_inquiries": "Chargement des demandes...",
-  "contract_details": "Détails du Contrat :",
+  "contract_details": "Détails du Contrat : {{name}}",
   "edit_user": "Modifier l'Utilisateur :",
   "must_be_logged_in_to_submit_ticket": "Vous devez être connecté pour soumettre un ticket",
   "is_admin": "Est Administrateur",
