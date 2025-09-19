@@ -187,7 +187,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         mobile_phone_number: formData.mobile_phone_number,
         country_code: formData.country_code,
         is_admin: formData.is_admin,
-        email_confirm: true,
+        email_confirm: true, // HARDCODED: Always send confirmation email
         default_jurisdictions: formData.default_jurisdictions,
         price_id: selectedPriceId,
         role: selectedRole,
@@ -431,7 +431,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
                   : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                 }`}
             >
-              {jurisdiction}
+              {t(jurisdiction)} {/* ADDED: Apply t() here */}
             </button>
           ))}
         </div>
