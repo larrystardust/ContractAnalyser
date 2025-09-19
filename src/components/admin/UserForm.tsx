@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import { Mail, User, Phone, Check as Checkbox, CreditCard, Users as UsersIcon, Sparkles, Briefcase } from 'lucide-react';
 import { AdminProfile, AdminProfileUpdate, AvailableSubscription } from '../../services/adminService';
-import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
+import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // MODIFIED: Import getJurisdictionLabel
 import { Jurisdiction } from '../../types';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data'; // ADDED: Import stripeProducts
 import { useTranslation } from 'react-i18next'; // ADDED
@@ -382,7 +382,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                 }`}
             >
-              {t(jurisdiction)} {/* MODIFIED: Added t() */}
+              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
             </button>
           ))}
         </div>
