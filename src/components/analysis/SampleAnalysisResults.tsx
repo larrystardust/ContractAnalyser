@@ -169,7 +169,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                     
                     <div className="flex flex-wrap gap-2 mt-2">
                       <RiskBadge risk={finding.riskLevel} />
-                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={false} />
+                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} /> {/* MODIFIED: Changed to true */}
                       <CategoryBadge category={finding.category} />
                     </div>
                     
