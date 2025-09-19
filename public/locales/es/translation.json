@@ -1030,6 +1030,7 @@
   "notification_title": "Título de la notificación",
   "notification_message": "Mensaje de notificación",
   "send_notification": "Enviar notificación",
+  "sending": "Enviando",
   "notification_title_analysis_complete": "¡Análisis completado!",
   "notification_title_high_risk_findings": "¡Hallazgos de alto riesgo detectados!",
   "notification_title_analysis_failed": "¡Análisis fallido!",
