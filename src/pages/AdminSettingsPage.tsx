@@ -4,7 +4,7 @@ import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react';
 import Card, { CardBody } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
-import { getAllJurisdictions } from '../utils/jurisdictionUtils';
+import { getAllJurisdictions, getJurisdictionLabel } from '../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import Modal from '../components/ui/Modal';
 import adminService from '../services/adminService';
@@ -173,7 +173,7 @@ const AdminSettingsPage: React.FC = () => {
                       }`}
                     disabled={isSaving}
                   >
-                    {jurisdiction}
+                    {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
                   </button>
                 ))}
               </div>
