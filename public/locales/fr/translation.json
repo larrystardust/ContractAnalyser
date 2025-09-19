@@ -1219,5 +1219,23 @@
   "contract_unmarked_for_deletion_successfully": "Contrat démarqué pour suppression avec succès !",
   "user_deleted_successfully": "Utilisateur supprimé avec succès !",
   "contract_deleted_successfully": "Contrat supprimé avec succès !",
-  "user_profile_updated_successfully": "Profil utilisateur mis à jour avec succès !"
+  "user_profile_updated_successfully": "Profil utilisateur mis à jour avec succès !",
+
+  "audit_event_type_SUBSCRIPTION_INVITATION_SENT": "Invitation d'abonnement envoyée",
+  "audit_event_type_ADMIN_USER_UPDATED": "Utilisateur Admin mis à jour",
+  "audit_event_type_ADMIN_USER_CREATED": "Utilisateur Admin créé",
+  "audit_event_type_ADMIN_USER_DELETED": "Utilisateur Admin supprimé",
+  "audit_event_type_CONTRACT_ANALYSIS_COMPLETED": "Analyse de contrat terminée",
+  "audit_event_type_CONTRACT_ANALYSIS_STARTED": "Analyse de contrat démarrée",
+  "audit_event_type_ADMIN_REPLIED_TO_SUPPORT_TICKET": "Admin a répondu au ticket de support",
+  "audit_event_type_ADMIN_REPLIED_TO_INQUIRY": "Admin a répondu à la demande",
+  "audit_event_type_ADMIN_SUBSCRIPTION_REMOVED": "Abonnement Admin supprimé",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED_FREE": "Abonnement gratuit Admin attribué",
+  "audit_event_type_SUBSCRIPTION_INVITATION_ACCEPTED": "Invitation d'abonnement acceptée",
+  "audit_event_type_CONTRACT_REANALYSIS_INITIATED": "Re-analyse de contrat initiée",
+  "audit_event_type_CONTRACT_ANALYSIS_FAILED": "Analyse de contrat échouée",
+  "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "Crédit à usage unique Admin accordé",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "Abonnement Admin attribué",
+  "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "Notification système Admin envoyée",
+  "audit_event_type_INQUIRY_SUBMITTED": "Demande soumise"
 }
