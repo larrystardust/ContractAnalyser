@@ -1243,5 +1243,6 @@
   "error_boundary_something_went_wrong": "حدث خطأ ما.",
   "error_boundary_unexpected_error_occurred": "نحن آسفون، ولكن حدث خطأ غير متوقع. يرجى محاولة تحديث الصفحة.",
   "error_details": "تفاصيل الخطأ",
-  "refresh_page": "تحديث الصفحة"
+  "refresh_page": "تحديث الصفحة",
+  "phone_number_example": "مثال: 1234567890"
 }
