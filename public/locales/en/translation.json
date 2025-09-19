@@ -1053,6 +1053,7 @@
   "notification_title": "Notification Title",
   "notification_message": "Notification Message",
   "send_notification": "Send Notification",
+  "sending": "Sending",
   "notification_title_analysis_complete": "Analysis Complete!",
   "notification_title_high_risk_findings": "High Risk Findings Detected!",
   "notification_title_analysis_failed": "Analysis Failed!",
