@@ -124,7 +124,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))}
+              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
             </button>
           );
         })}
