@@ -16,6 +16,22 @@ const AdminContractsPage: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const { t } = useTranslation(); // ADDED
 
+  // ADDED: Helper function to get translation key for contract status
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'pending':
+        return 'status_pending';
+      case 'analyzing':
+        return 'status_analyzing';
+      case 'completed':
+        return 'status_completed';
+      case 'failed':
+        return 'status_failed'; // Ensure you have this key in your translation files
+      default:
+        return status; // Fallback to original string if no translation key found
+    }
+  };
+
   const handleViewDetails = (contract: AdminContract) => {
     setSelectedContract(contract);
     setIsDetailsModalOpen(true);
@@ -48,7 +64,11 @@ const AdminContractsPage: React.FC = () => {
     { key: 'name', header: t('contract_name_table') }, // MODIFIED
     { key: 'user_full_name', header: t('user_name_table') }, // MODIFIED
     { key: 'user_email', header: t('user_email_table') }, // MODIFIED
-    { key: 'status', header: t('status_table') }, // MODIFIED
+    { 
+      key: 'status', 
+      header: t('status_table'), 
+      render: (item: AdminContract) => t(getStatusLabel(item.status)) // MODIFIED: Added render function
+    }, 
     {
       key: 'jurisdictions',
       header: t('jurisdictions_table_header'), // MODIFIED
