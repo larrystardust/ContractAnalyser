@@ -231,7 +231,7 @@ const AdminReportsPage: React.FC = () => {
                   {auditLogs.map((log) => (
                     <tr key={log.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatLogDate(log.created_at)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.event_type}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t('audit_event_type_' + log.event_type)}</td> {/* MODIFIED: Translate event_type */}
                       <td className="px-6 py-4 text-sm text-gray-900">{log.description}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {log.user_full_name !== 'N/A' ? log.user_full_name : log.user_email}
