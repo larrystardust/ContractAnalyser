@@ -1218,5 +1218,23 @@
   "contract_unmarked_for_deletion_successfully": "تمت إزالة علامة العقد للحذف بنجاح!",
   "user_deleted_successfully": "تم حذف المستخدم بنجاح!",
   "contract_deleted_successfully": "تم حذف العقد بنجاح!",
-  "user_profile_updated_successfully": "تم تحديث ملف تعريف المستخدم بنجاح!"
+  "user_profile_updated_successfully": "تم تحديث ملف تعريف المستخدم بنجاح!",
+
+  "audit_event_type_SUBSCRIPTION_INVITATION_SENT": "تم إرسال دعوة الاشتراك",
+  "audit_event_type_ADMIN_USER_UPDATED": "تم تحديث المستخدم المسؤول",
+  "audit_event_type_ADMIN_USER_CREATED": "تم إنشاء المستخدم المسؤول",
+  "audit_event_type_ADMIN_USER_DELETED": "تم حذف المستخدم المسؤول",
+  "audit_event_type_CONTRACT_ANALYSIS_COMPLETED": "اكتمل تحليل العقد",
+  "audit_event_type_CONTRACT_ANALYSIS_STARTED": "بدأ تحليل العقد",
+  "audit_event_type_ADMIN_REPLIED_TO_SUPPORT_TICKET": "رد المسؤول على تذكرة الدعم",
+  "audit_event_type_ADMIN_REPLIED_TO_INQUIRY": "رد المسؤول على الاستفسار",
+  "audit_event_type_ADMIN_SUBSCRIPTION_REMOVED": "تمت إزالة اشتراك المسؤول",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED_FREE": "تم تعيين اشتراك مجاني للمسؤول",
+  "audit_event_type_SUBSCRIPTION_INVITATION_ACCEPTED": "تم قبول دعوة الاشتراك",
+  "audit_event_type_CONTRACT_REANALYSIS_INITIATED": "بدأ إعادة تحليل العقد",
+  "audit_event_type_CONTRACT_ANALYSIS_FAILED": "فشل تحليل العقد",
+  "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "تم منح رصيد استخدام واحد للمسؤول",
+  "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "تم تعيين اشتراك المسؤول",
+  "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "تم إرسال إشعار نظام المسؤول",
+  "audit_event_type_INQUIRY_SUBMITTED": "تم إرسال الاستفسار"
 }
