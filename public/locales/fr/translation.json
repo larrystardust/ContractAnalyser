@@ -1209,6 +1209,7 @@
   "status_unpaid": "Impayé",
   "status_paused": "En pause",
   "role_undefined": "Rôle indéfini",
+  "n_a": "N/A",
 
   "confirm_mark_for_deletion": "Êtes-vous sûr de vouloir marquer le contrat \"{{name}}\" pour suppression automatique ?",
   "confirm_unmark_for_deletion": "Êtes-vous sûr de vouloir démarquer le contrat \"{{name}}\" pour suppression automatique ?",
