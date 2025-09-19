@@ -1196,5 +1196,9 @@
   "status_active": "Active",
   "status_invited": "Invited",
   "jurisdiction_sharia": "Sharia",
-  "jurisdiction_unknown": "Unknown"
+  "jurisdiction_unknown": "Unknown",
+
+  "confirm_mark_for_deletion": "Are you sure you want to mark contract \"{{contractName}}\" for automatic deletion?",
+  "confirm_delete_contract": "Are you sure you want to permanently delete contract \"{{contractName}}\" by {{userName}}? This action cannot be undone.",
+  "confirm_delete_user": "Are you sure you want to delete user: {{userEmail}}? This action cannot be undone."
 }
