@@ -545,6 +545,7 @@
   "no_2fa_factor_to_verify": "No 2FA factor to verify.",
   "failed_to_create_mfa_challenge": "Failed to create MFA challenge.",
   "invalid_2fa_code": "Invalid 2FA code entered",
+  "failed_to_send_otp": "Failed to send OTP",
   "two_factor_authentication_enabled_successfully": "Two-factor authentication enabled successfully!",
   "recovery_codes_functionality_not_available": "Recovery codes functionality not available.",
   "two_factor_authentication_enabled_successfully_save_codes": "Two-factor authentication enabled successfully! Please save your recovery codes.",
