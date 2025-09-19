@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
       );
       return {
         ...sub,
-        product_name: product ? product.name : 'Unknown Product',
+        product_name: product ? product.name : 'unknown_product', // MODIFIED: Changed to translation key
       };
     });
 
