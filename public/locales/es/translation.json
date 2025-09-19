@@ -1220,5 +1220,6 @@
   "error_boundary_something_went_wrong": "Algo salió mal.",
   "error_boundary_unexpected_error_occurred": "Lo sentimos, pero ocurrió un error inesperado. Por favor, intente actualizar la página.",
   "error_details": "Detalles del error",
-  "refresh_page": "Actualizar página"
+  "refresh_page": "Actualizar página",
+  "phone_number_example": "ej: 1234567890"
 }
