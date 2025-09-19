@@ -13,6 +13,22 @@ interface AdminContractDetailsModalProps {
 const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ contract }) => {
   const { t } = useTranslation(); // ADDED
 
+  // ADDED: Helper function to get translation key for contract status
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'pending':
+        return 'status_pending';
+      case 'analyzing':
+        return 'status_analyzing';
+      case 'completed':
+        return 'status_completed';
+      case 'failed':
+        return 'status_failed';
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Contract and User Info */}
@@ -22,7 +38,7 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
             <div>
               <p><strong className="font-medium">{t('contract_name')}:</strong> {contract.name}</p> {/* MODIFIED */}
-              <p><strong className="font-medium">{t('status')}:</strong> {contract.status}</p> {/* MODIFIED */}
+              <p><strong className="font-medium">{t('status')}:</strong> {t(getStatusLabel(contract.status))}</p> {/* MODIFIED */}
               <p><strong className="font-medium">{t('size')}:</strong> {contract.size}</p> {/* MODIFIED */}
               <p><strong className="font-medium">{t('uploaded_on_modal')}:</strong> {new Date(contract.created_at).toLocaleDateString()}</p> {/* MODIFIED */}
             </div>
