@@ -1215,5 +1215,10 @@
   "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "Crédito de un solo uso Admin concedido",
   "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "Suscripción Admin asignada",
   "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "Notificación del sistema Admin enviada",
-  "audit_event_type_INQUIRY_SUBMITTED": "Consulta enviada"
+  "audit_event_type_INQUIRY_SUBMITTED": "Consulta enviada",
+
+  "error_boundary_something_went_wrong": "Algo salió mal.",
+  "error_boundary_unexpected_error_occurred": "Lo sentimos, pero ocurrió un error inesperado. Por favor, intente actualizar la página.",
+  "error_details": "Detalles del error",
+  "refresh_page": "Actualizar página"
 }
