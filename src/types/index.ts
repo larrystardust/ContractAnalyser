@@ -12,7 +12,7 @@ export interface Contract {
   updated_at: string; // Added
 }
 
-export type Jurisdiction = 'UK' | 'EU' | 'Ireland' | 'US' | 'Canada' | 'Australia' | 'Others'; // MODIFIED: Updated Jurisdiction type
+export type Jurisdiction = 'UK' | 'EU' | 'Ireland' | 'US' | 'Canada' | 'Australia' | 'Sharia' | 'Others'; // MODIFIED: Added 'Sharia'
 
 export type RiskLevel = 'high' | 'medium' | 'low' | 'none';
 
