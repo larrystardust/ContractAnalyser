@@ -44,6 +44,8 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
         return 'status_analyzing'; // MODIFIED: Returns translation key
       case 'completed':
         return 'status_completed'; // MODIFIED: Returns translation key
+      case 'failed': // ADDED
+        return 'status_failed'; // ADDED: New translation key for 'failed' status
       default:
         return status;
     }
