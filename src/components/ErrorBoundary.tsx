@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-// REMOVED: import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 interface Props {
   children?: ReactNode;
@@ -41,38 +41,48 @@ class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      // REMOVED: const { t } = useTranslation(); // ADDED: Access t from useTranslation within render method
-
+      // Render the functional component wrapper to use the hook
       return (
-        <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md w-full">
-            <h1 className="text-2xl font-bold text-red-700 mb-4">Something went wrong.</h1> {/* MODIFIED */}
-            <p className="text-gray-700 mb-4">
-              We're sorry, but an unexpected error occurred. Please try refreshing the page. {/* MODIFIED */}
-            </p>
-            {this.state.error && (
-              <details className="text-left text-sm text-gray-600 bg-gray-100 p-3 rounded-md overflow-auto max-h-60">
-                <summary className="font-semibold cursor-pointer">Error Details</summary> {/* MODIFIED */}
-                <pre className="mt-2 whitespace-pre-wrap break-words">
-                  {this.state.error.toString()}
-                  <br />
-                  {this.state.errorInfo?.componentStack}
-                </pre>
-              </details>
-            )}
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Refresh Page {/* MODIFIED */}
-            </button>
-          </div>
-        </div>
+        <ErrorDisplayContent
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+        />
       );
     }
 
     return this.props.children;
   }
 }
+
+// ADDED: A functional component wrapper to use useTranslation hook
+const ErrorDisplayContent: React.FC<{ error: Error | null; errorInfo: ErrorInfo | null }> = ({ error, errorInfo }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md w-full">
+        <h1 className="text-2xl font-bold text-red-700 mb-4">{t('error_boundary_something_went_wrong')}</h1>
+        <p className="text-gray-700 mb-4">
+          {t('error_boundary_unexpected_error_occurred')}
+        </p>
+        {error && (
+          <details className="text-left text-sm text-gray-600 bg-gray-100 p-3 rounded-md overflow-auto max-h-60">
+            <summary className="font-semibold cursor-pointer">{t('error_details')}</summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words">
+              {error.toString()}
+              <br />
+              {errorInfo?.componentStack}
+            </pre>
+          </details>
+        )}
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          {t('refresh_page')}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default ErrorBoundary;
