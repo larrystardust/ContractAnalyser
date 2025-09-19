@@ -7,6 +7,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../components/ui/LanguageSelector'; // ADDED
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -265,6 +266,9 @@ const LoginPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
+      <div className="mt-4 flex justify-center">
+        <LanguageSelector /> {/* ADDED */}
+      </div>
     </div>
   );
 };
