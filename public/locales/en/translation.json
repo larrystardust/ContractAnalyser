@@ -1207,6 +1207,7 @@
   "status_canceled": "Canceled",
   "status_unpaid": "Unpaid",
   "status_paused": "Paused",
+  "role_undefined": "Role Undefined",
 
   "confirm_mark_for_deletion": "Are you sure you want to mark contract \"{{name}}\" for automatic deletion?",
   "confirm_unmark_for_deletion": "Are you sure you want to unmark contract \"{{name}}\" for automatic deletion?",
