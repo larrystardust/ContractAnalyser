@@ -139,6 +139,7 @@
   "contract_usage": "استخدام العقد",
   "completed_analyses": "التحليلات المكتملة",
   "failed_analyses": "التحليلات الفاشلة",
+  "status_failed": "فشل",
   "uploaded_last_7_days": "تم الرفع (آخر 7 أيام)",
   "support_inquiries": "الدعم والاستفسارات",
   "total_inquiries": "إجمالي الاستفسارات",
