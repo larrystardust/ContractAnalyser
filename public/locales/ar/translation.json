@@ -278,7 +278,7 @@
   "marked_for_deletion_modal": "معلم للحذف:",
   "no_analysis_results_available_modal": "لا توجد نتائج تحليل متاحة لهذا العقد حتى الآن.",
   "analysis_in_progress_modal": "التحليل قيد التقدم ({{progress}}% مكتمل).",
-  "analysis_in_progress": "التحليل قيد التقدم",
+  "analysis_in_progress": "التحليل قيد التقدم ({{progress}}% مكتمل).",
   "please_wait_analysis_in_progress": "يرجى الانتظار، تحليل عقدك قيد التقدم",
   "overall_compliance_score_modal": "نتيجة الامتثال العامة",
   "data_protection_impact_section_modal": "تأثير حماية البيانات",
