@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Globe, Palette, FileText } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
-import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
+import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // MODIFIED: Import getJurisdictionLabel
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
@@ -197,7 +197,7 @@ const ApplicationPreferences: React.FC = () => {
                     : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                   }`}
               >
-                {t(jurisdiction)} {/* MODIFIED: Added t() */}
+                {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
               </button>
             ))}
           </div>
