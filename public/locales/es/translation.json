@@ -1173,5 +1173,15 @@
   "status_active": "Activo",
   "status_invited": "Invitado",
   "jurisdiction_sharia": "Sharia",
-  "jurisdiction_unknown": "Desconocido"
+  "jurisdiction_unknown": "Desconocido",
+
+  "confirm_mark_for_deletion": "¿Está seguro de que desea marcar el contrato \"{{name}}\" para eliminación automática?",
+  "confirm_unmark_for_deletion": "¿Está seguro de que desea desmarcar el contrato \"{{name}}\" para eliminación automática?",
+  "confirm_delete_contract": "¿Está seguro de que desea eliminar permanentemente el contrato \"{{name}}\" de {{user_full_name}}? Esta acción no se puede deshacer.",
+  "confirm_delete_user": "¿Está seguro de que desea eliminar al usuario: {{email}}? Esta acción no se puede deshacer.",
+  "contract_marked_for_deletion_successfully": "Contrato marcado para eliminación con éxito.",
+  "contract_unmarked_for_deletion_successfully": "Contrato desmarcado para eliminación con éxito.",
+  "user_deleted_successfully": "Usuario eliminado con éxito.",
+  "contract_deleted_successfully": "Contrato eliminado con éxito.",
+  "user_profile_updated_successfully": "¡Perfil de usuario actualizado con éxito!"
 }
