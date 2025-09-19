@@ -14,10 +14,12 @@ export const getJurisdictionLabel = (jurisdiction: Jurisdiction): string => {
       return 'jurisdiction_canada'; // MODIFIED: Returns translation key
     case 'Australia':
       return 'jurisdiction_australia'; // MODIFIED: Returns translation key
+    case 'Sharia': // ADDED
+      return 'jurisdiction_sharia'; // ADDED
     case 'Others':
       return 'jurisdiction_others'; // MODIFIED: Returns translation key
     default:
-      return `jurisdiction_${jurisdiction.toLowerCase()}`; // MODIFIED: Returns translation key
+      return `jurisdiction_unknown`; // MODIFIED: Returns translation key for unknown
   }
 };
 
@@ -35,6 +37,8 @@ export const getJurisdictionFlag = (jurisdiction: Jurisdiction): string => {
       return '🇨🇦';
     case 'Australia':
       return '🇦🇺';
+    case 'Sharia': // ADDED
+      return '🇸🇦'; // ADDED: Using Saudi Arabia flag as a representative
     case 'Others':
       return '🌍';
     default:
@@ -56,6 +60,8 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
       return 'bg-red-600 text-white';
     case 'Australia':
       return 'bg-yellow-600 text-white';
+    case 'Sharia': // ADDED
+      return 'bg-green-800 text-white'; // ADDED: A new color for Sharia
     case 'Others':
       return 'bg-gray-500 text-white';
     default:
@@ -64,7 +70,7 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
 };
 
 export const getAllJurisdictions = (): Jurisdiction[] => {
-  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Others'];
+  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Sharia', 'Others']; // MODIFIED: Added 'Sharia'
 };
 
 export const getJurisdictionBorderColor = (jurisdiction: Jurisdiction): string => {
@@ -81,6 +87,8 @@ export const getJurisdictionBorderColor = (jurisdiction: Jurisdiction): string =
       return 'border-red-600';
     case 'Australia':
       return 'border-yellow-600';
+    case 'Sharia': // ADDED
+      return 'border-green-800'; // ADDED
     case 'Others':
       return 'border-gray-500';
     default:
