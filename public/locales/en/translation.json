@@ -1238,5 +1238,10 @@
   "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "Admin Single-Use Credit Granted",
   "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "Admin Subscription Assigned",
   "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "Admin System Notification Sent",
-  "audit_event_type_INQUIRY_SUBMITTED": "Inquiry Submitted"
+  "audit_event_type_INQUIRY_SUBMITTED": "Inquiry Submitted",
+
+  "error_boundary_something_went_wrong": "Something went wrong.",
+  "error_boundary_unexpected_error_occurred": "We're sorry, but an unexpected error occurred. Please try refreshing the page.",
+  "error_details": "Error Details",
+  "refresh_page": "Refresh Page"
 }
