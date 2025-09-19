@@ -197,7 +197,7 @@ const ApplicationPreferences: React.FC = () => {
                     : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                   }`}
               >
-                {jurisdiction}
+                {t(jurisdiction)} {/* MODIFIED: Added t() */}
               </button>
             ))}
           </div>
@@ -258,7 +258,7 @@ const ApplicationPreferences: React.FC = () => {
               <select
                 value={preferences.reportFormat}
                 onChange={(e) => handlePreferenceChange('reportFormat', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value="pdf">PDF Document</option>
                 <option value="docx">Word Document (.docx)</option>
