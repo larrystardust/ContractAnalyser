@@ -76,35 +76,6 @@ function getTranslatedMessage(key: string, lang: string, ...args: any[]): string
   return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
 }
 
-// ADDED: New helper function for translation
-async function translateText(text: string, targetLanguage: string): Promise<string> {
-  if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
-    return text;
-  }
-
-  try {
-    const translationCompletion = await openai.chat.completions.create({
-      model: "gpt-4o", // Use a capable model for translation
-      messages: [
-        {
-          role: "system",
-          content: `Translate the following text into ${targetLanguage}. Provide only the translated text.`,
-        },
-        {
-          role: "user",
-          content: text,
-        },
-      ],
-      temperature: 0.1, // Keep temperature low for accurate translation
-      max_tokens: 1000, // Adjust as needed
-    });
-    return translationCompletion.choices[0].message?.content?.trim() || text;
-  } catch (error) {
-    console.error(`Error translating text to ${targetLanguage}:`, error);
-    return text; // Return original text on error
-  }
-}
-
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -279,7 +250,7 @@ Deno.serve(async (req) => {
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
     // MODIFIED: Moved systemPromptContent definition here
-    const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+    const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
@@ -378,31 +349,6 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       console.error('Error parsing OpenAI response JSON:', parseError);
       throw new Error('Failed to parse AI analysis response.');
     }
-
-    // ADDED: Post-processing translation step
-    console.log(`Translating AI output to ${outputLanguage}...`);
-    analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
-    if (analysisData.dataProtectionImpact) {
-      analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
-    }
-
-    for (const finding of analysisData.findings) {
-      finding.title = await translateText(finding.title, outputLanguage);
-      finding.description = await translateText(finding.description, outputLanguage);
-      finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
-      if (finding.clauseReference) {
-        finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
-      }
-    }
-
-    for (const key in analysisData.jurisdictionSummaries) {
-      const summary = analysisData.jurisdictionSummaries[key];
-      summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
-      summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
-    }
-    console.log('Translation complete.');
-    // END ADDED: Post-processing translation step
-
 
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : 'No executive summary provided.';
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
