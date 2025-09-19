@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X } from 'lucide-react';
 import Button from '../ui/Button';
-import { getAllJurisdictions } from '../../utils/jurisdictionUtils';
+import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // MODIFIED: Import getJurisdictionLabel
 import { Jurisdiction, AnalysisLanguage } from '../../types'; // MODIFIED: Import AnalysisLanguage
 import { useContracts } from '../../context/ContractContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -332,7 +332,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                   }`}
                 disabled={!canUpload}
               >
-                {t(jurisdiction)} {/* MODIFIED: Added t() */}
+                {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
               </button>
             ))}
           </div>
