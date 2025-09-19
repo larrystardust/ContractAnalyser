@@ -1239,5 +1239,10 @@
   "audit_event_type_ADMIN_SINGLE_USE_CREDIT_GRANTED": "Crédit à usage unique Admin accordé",
   "audit_event_type_ADMIN_SUBSCRIPTION_ASSIGNED": "Abonnement Admin attribué",
   "audit_event_type_ADMIN_SYSTEM_NOTIFICATION_SENT": "Notification système Admin envoyée",
-  "audit_event_type_INQUIRY_SUBMITTED": "Demande soumise"
+  "audit_event_type_INQUIRY_SUBMITTED": "Demande soumise",
+
+  "error_boundary_something_went_wrong": "Quelque chose s'est mal passé.",
+  "error_boundary_unexpected_error_occurred": "Nous sommes désolés, mais une erreur inattendue s'est produite. Veuillez essayer de rafraîchir la page.",
+  "error_details": "Détails de l'erreur",
+  "refresh_page": "Actualiser la page"
 }
