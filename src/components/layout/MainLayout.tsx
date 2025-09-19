@@ -17,7 +17,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal, isDashboardHel
   // This function is passed to DashboardHelpModal, which is part of this layout
   const handleReportIssue = () => {
     console.log('Report Issue button clicked!');
-    alert('Redirecting to support ticket creation (not implemented yet).');
   };
 
   return (
