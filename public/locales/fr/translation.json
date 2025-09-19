@@ -1195,5 +1195,7 @@
   "role_owner": "Propriétaire",
   "role_member": "Membre",
   "status_active": "Actif",
-  "status_invited": "Invité"
+  "status_invited": "Invité",
+  "jurisdiction_sharia": "Charia",
+  "jurisdiction_unknown": "Inconnu"
 }
