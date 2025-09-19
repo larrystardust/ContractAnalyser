@@ -926,7 +926,7 @@
   "send_reply": "إرسال الرد",
   "loading_system_reports": "جاري تحميل تقارير النظام...",
   "loading_inquiries": "جاري تحميل الاستفسارات...",
-  "contract_details": "تفاصيل العقد:",
+  "contract_details": "تفاصيل العقد: {{name}}",
   "edit_user": "تعديل المستخدم:",
   "must_be_logged_in_to_submit_ticket": "يجب تسجيل الدخول لإرسال تذكرة",
   "is_admin": "هل هو مسؤول",
