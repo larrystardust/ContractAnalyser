@@ -1191,5 +1191,9 @@
   "sample_contract_us_software_licensing_agreement": "Accord de licence de logiciel américain.pdf",
   "sample_contract_canada_australia_partnership_deed": "Acte de partenariat Canada-Australie.pdf",
 
-  "dashboard_help_title": "Aide du Tableau de Bord"
+  "dashboard_help_title": "Aide du Tableau de Bord",
+  "role_owner": "Propriétaire",
+  "role_member": "Membre",
+  "status_active": "Actif",
+  "status_invited": "Invité"
 }
