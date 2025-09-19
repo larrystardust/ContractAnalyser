@@ -150,7 +150,7 @@ const AdminUsersPage: React.FC = () => {
     },
     { key: 'mobile_phone_number', header: t('phone_label') }, // MODIFIED
     { key: 'country_code', header: t('country_code_label') }, // MODIFIED
-    { key: 'theme_preference', header: t('theme_label') }, // MODIFIED
+    { key: 'theme_preference', header: t('theme_label'), render: (item: AdminProfile) => t(item.theme_preference) }, // MODIFIED: Added t() for theme_preference
     { key: 'email_reports_enabled', header: t('email_reports_label'), render: (item: AdminProfile) => (item.email_reports_enabled ? t('yes') : t('no')) }, // MODIFIED
     {
       key: 'default_jurisdictions',
