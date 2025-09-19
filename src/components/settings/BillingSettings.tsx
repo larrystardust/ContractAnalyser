@@ -139,7 +139,7 @@ const BillingSettings: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   {/* MODIFIED: Access product name and pricing option correctly */}
-                  <h4 className="text-lg font-medium text-gray-900">{currentPlan.product.name}</h4>
+                  <h4 className="text-lg font-medium text-gray-900">{t(currentPlan.product.name)}</h4> {/* MODIFIED: Added t() */}
                   <p className="text-sm text-gray-600">
                     ${currentPlan.pricingOption.price.toFixed(2)} / {t(currentPlan.pricingOption.interval)} {/* MODIFIED */}
                   </p>
