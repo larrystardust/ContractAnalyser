@@ -1208,6 +1208,7 @@
   "status_unpaid": "غير مدفوع",
   "status_paused": "متوقف مؤقتًا",
   "role_undefined": "دور غير محدد",
+  "n_a": "غير متوفر",
 
   "confirm_mark_for_deletion": "هل أنت متأكد أنك تريد وضع علامة على العقد \"{{name}}\" للحذف التلقائي؟",
   "confirm_unmark_for_deletion": "هل أنت متأكد أنك تريد إزالة علامة العقد \"{{name}}\" للحذف التلقائي؟",
