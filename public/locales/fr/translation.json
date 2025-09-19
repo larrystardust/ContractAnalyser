@@ -139,6 +139,7 @@
   "contract_usage": "Utilisation des contrats",
   "completed_analyses": "Analyses terminées",
   "failed_analyses": "Analyses échouées",
+  "status_failed": "Échoué",
   "uploaded_last_7_days": "Téléchargé (7 derniers jours)",
   "support_inquiries": "Support et demandes",
   "total_inquiries": "Total des demandes",
