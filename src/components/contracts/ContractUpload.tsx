@@ -332,7 +332,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                   }`}
                 disabled={!canUpload}
               >
-                {jurisdiction}
+                {t(jurisdiction)} {/* MODIFIED: Added t() */}
               </button>
             ))}
           </div>
