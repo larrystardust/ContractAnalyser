@@ -1205,5 +1205,6 @@
   "contract_marked_for_deletion_successfully": "Contract marked for deletion successfully!",
   "contract_unmarked_for_deletion_successfully": "Contract unmarked for deletion successfully!",
   "user_deleted_successfully": "User deleted successfully!",
-  "contract_deleted_successfully": "Contract deleted successfully!"
+  "contract_deleted_successfully": "Contract deleted successfully!",
+  "user_profile_updated_successfully": "User profile updated successfully!"
 }
