@@ -316,7 +316,7 @@ DOCUMENT LANGUAGE INSTRUCTIONS:
 The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', please detect the language of the document.
 
 OUTPUT LANGUAGE INSTRUCTIONS:
-All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
+All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, articles, sections, appendices) MUST be generated in ${outputLanguage}. Translations must be performed accurately, entirely and completely in the output language.
 
 JURISDICTION FOCUS:
 The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, select the most pertinent one from the user's specified list. If a finding is relevant to a jurisdiction not in the user's list, but is still critical, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
