@@ -166,7 +166,7 @@ const AdminSupportTicketsPage: React.FC = () => {
           // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
           // when the body is a JavaScript object.
         },
-        body: { ticket_id: ticketId, status: newStatus },
+        body: { ticket_id: ticket_id, status: newStatus },
       });
 
       if (updateError) {
@@ -197,7 +197,7 @@ const AdminSupportTicketsPage: React.FC = () => {
           // The 'Content-Type': 'application/json' header is automatically added by supabase.functions.invoke
           // when the body is a JavaScript object.
         },
-        body: { ticket_id: ticketId, priority: newPriority },
+        body: { ticket_id: ticket_id, priority: newPriority },
       });
 
       if (updateError) {
@@ -273,7 +273,7 @@ const AdminSupportTicketsPage: React.FC = () => {
         throw error;
       }
 
-      setReplySuccess(prev => ({ ...prev, [ticket.id]: data.message || t('reply_sent_successfully') })); // MODIFIED
+      setReplySuccess(prev => ({ ...prev, [ticket.id]: t('reply_sent_and_saved_successfully') })); // MODIFIED: Use translation key
       setReplyMessage(prev => ({ ...prev, [ticket.id]: '' }));
       fetchRepliesForTicket(ticket.id);
     } catch (err: any) {
