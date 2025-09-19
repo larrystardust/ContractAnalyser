@@ -139,6 +139,7 @@
   "contract_usage": "Uso de Contratos",
   "completed_analyses": "Análisis Completados",
   "failed_analyses": "Análisis Fallidos",
+  "status_failed": "Fallido",
   "uploaded_last_7_days": "Cargados (Últimos 7 Días)",
   "support_inquiries": "Soporte y Consultas",
   "total_inquiries": "Consultas Totales",
