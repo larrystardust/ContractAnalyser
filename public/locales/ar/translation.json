@@ -1054,6 +1054,7 @@
   "notification_message": "رسالة الإشعار",
   "send_notification": "إرسال الإشعار",
   "sending": "جاري الإرسال",
+  "reply_sent_and_saved_successfully": "تم إرسال رد المسؤول وحفظه بنجاح!",
   "notification_title_analysis_complete": "اكتمل التحليل!",
   "notification_title_high_risk_findings": "تم اكتشاف نتائج عالية المخاطر!",
   "notification_title_analysis_failed": "فشل التحليل!",
