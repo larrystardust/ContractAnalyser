@@ -1201,7 +1201,7 @@
   "role_member": "عضو",
   "status_active": "نشط",
   "status_invited": "مدعو",
-  "jurisdiction_sharia": "الشريعة",
+  "jurisdiction_islamic_law": "الشريعة الإسلامية",
   "jurisdiction_unknown": "غير معروف",
   "unknown_product": "منتج غير معروف",
   "single_use_credits_display": "استخدام فردي (الاعتمادات: {{credits}})",
