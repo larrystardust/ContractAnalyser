@@ -39,6 +39,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         *,
         subscription_id,
         contract_content,
+        output_language,
         analysis_results (*, findings(*))
       `)
       .eq('user_id', session.user.id)
@@ -70,6 +71,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           updated_at: dbContract.updated_at,
           subscription_id: dbContract.subscription_id,
           contract_content: dbContract.contract_content,
+          output_language: dbContract.output_language, // ADDED
           analysisResult: analysisResultData ? {
             id: analysisResultData.id,
             contract_id: analysisResultData.contract_id,
@@ -92,7 +94,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
               updated_at: dbFinding.updated_at,
             })),
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
-            reportFilePath: analysisResultData.report_file_path || null,
+            reportFilePath: analysisResultData.report_file_path,
           } : undefined,
         };
       });
@@ -156,6 +158,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           status: 'pending',
           processing_progress: 0,
           contract_content: newContractData.contractText,
+          output_language: newContractData.outputLanguage, // ADDED
         })
         .select()
         .single();
@@ -172,7 +175,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         ...prevContracts,
       ]);
 
-      // MODIFIED: Pass source_language and output_language to the Edge Function
+      // MODIFIED: Pass source_language and output_language to addContract
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
