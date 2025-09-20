@@ -1225,5 +1225,39 @@
   "error_boundary_unexpected_error_occurred": "Lo sentimos, pero ocurrió un error inesperado. Por favor, intente actualizar la página.",
   "error_details": "Detalles del error",
   "refresh_page": "Actualizar página",
-  "phone_number_example": "ej: 1234567890"
+  "phone_number_example": "ej: 1234567890",
+  
+  // New keys for Edge Functions (Reports)
+  "report_title": "Informe de Análisis de Contrato",
+  "analysis_date": "Fecha de Análisis:",
+  "overall_compliance_score": "Puntuación General de Cumplimiento",
+  "score_description": "Esta puntuación refleja la adhesión general del contrato a los estándares legales y regulatorios, con deducciones por riesgos identificados e incumplimientos.",
+  "no_jurisdiction_summaries": "No hay resúmenes de jurisdicción específicos disponibles.",
+  "no_detailed_findings": "No hay hallazgos detallados disponibles.",
+  "jurisdiction_label": "Jurisdicción:",
+  "category_label": "Categoría:",
+  "clause_reference_label": "Referencia de Cláusula:",
+  "recommendations_label": "Recomendaciones:",
+  "footer_disclaimer": "Este informe es solo para fines informativos y no constituye asesoramiento legal.",
+  "risk_level_label": "Nivel de Riesgo:",
+  "risk_high": "Alto",
+  "risk_medium": "Medio",
+  "risk_low": "Bajo",
+  "risk_none": "Ninguno",
+  "email_hello": "Hola {recipientName},",
+  "email_analysis_complete": "¡Su análisis legal de contrato está completo!",
+  "email_view_full_report": "Puede ver el informe completo y los hallazgos detallados directamente a continuación, o hacer clic en el enlace para verlo en su navegador:",
+  "email_view_full_report_button": "Ver Informe Completo en el Navegador",
+  "email_thank_you": "Gracias por usar ContractAnalyser.",
+  "email_team": "El Equipo de ContractAnalyser",
+  "no_description_provided": "No se proporcionó descripción.",
+  "no_executive_summary_provided": "No se proporcionó resumen ejecutivo.",
+  "no_title_provided": "No se proporcionó título.",
+
+  // New keys for PublicReportViewerPage.tsx
+  "no_report_url_provided": "No se proporcionó URL del informe.",
+  "failed_to_fetch_report": "No se pudo obtener el informe (Estado: {{status}}, {{statusText}}).",
+  "link_expired_invalid": "Enlace caducado o inválido.",
+  "loading_report": "Cargando informe",
+  "error_loading_report": "Error al Cargar el Informe"
 }
