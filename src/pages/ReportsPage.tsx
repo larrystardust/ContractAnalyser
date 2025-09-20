@@ -123,7 +123,7 @@ const ReportsPage: React.FC = () => {
                 <CardBody className="text-center">
                   <p className="text-sm text-gray-600">
                     {(() => {
-                      const keyToTranslate = getRiskLevelLabel(riskLevel as RiskLevel); // MODIFIED: Removed 'as any'
+                      const keyToTranslate = getRiskLevelLabel(riskLevel as RiskLevel);
                       const translatedValue = t(keyToTranslate);
                       console.log(`ReportsPage Debug: Attempting to translate key "${keyToTranslate}". Result: "${translatedValue}"`);
                       return translatedValue;
