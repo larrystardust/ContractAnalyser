@@ -1248,5 +1248,39 @@
   "error_boundary_unexpected_error_occurred": "We're sorry, but an unexpected error occurred. Please try refreshing the page.",
   "error_details": "Error Details",
   "refresh_page": "Refresh Page",
-  "phone_number_example": "e.g., 1234567890"
+  "phone_number_example": "e.g., 1234567890",
+  
+  // New keys for Edge Functions (Reports)
+  "report_title": "Contract Analysis Report",
+  "analysis_date": "Analysis Date:",
+  "overall_compliance_score": "Overall Compliance Score",
+  "score_description": "This score reflects the overall adherence of the contract to legal and regulatory standards, with deductions for identified risks and non-compliance.",
+  "no_jurisdiction_summaries": "No specific jurisdiction summaries available.",
+  "no_detailed_findings": "No detailed findings available.",
+  "jurisdiction_label": "Jurisdiction:",
+  "category_label": "Category:",
+  "clause_reference_label": "Clause Reference:",
+  "recommendations_label": "Recommendations:",
+  "footer_disclaimer": "This report is for informational purposes only and does not constitute legal advice.",
+  "risk_level_label": "Risk Level:",
+  "risk_high": "High",
+  "risk_medium": "Medium",
+  "risk_low": "Low",
+  "risk_none": "None",
+  "email_hello": "Hello {recipientName},",
+  "email_analysis_complete": "Your legal contract analysis is complete!",
+  "email_view_full_report": "You can view the full report and detailed findings directly below, or click the link to view it in your browser:",
+  "email_view_full_report_button": "View Full Report in Browser",
+  "email_thank_you": "Thank you for using ContractAnalyser.",
+  "email_team": "The ContractAnalyser Team",
+  "no_description_provided": "No description provided.",
+  "no_executive_summary_provided": "No executive summary provided.",
+  "no_title_provided": "No title provided.",
+
+  // New keys for PublicReportViewerPage.tsx
+  "no_report_url_provided": "No report URL provided.",
+  "failed_to_fetch_report": "Failed to fetch report (Status: {{status}}, {{statusText}}).",
+  "link_expired_invalid": "Link expired or invalid.",
+  "loading_report": "Loading report",
+  "error_loading_report": "Error Loading Report"
 }
