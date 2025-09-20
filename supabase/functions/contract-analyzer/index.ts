@@ -249,6 +249,10 @@ Deno.serve(async (req) => {
 
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
+    // --- SMART GPT MODEL SELECTION ---
+    const analysisMode: 'legal' | 'translation' = (outputLanguage === sourceLanguage) ? 'legal' : 'translation';
+    const selectedModel = analysisMode === 'legal' ? 'gpt-4' : 'gpt-4o';
+
     // MODIFIED: Moved systemPromptContent definition here
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
@@ -303,27 +307,38 @@ Return your findings strictly as a valid JSON object with the following structur
   }
 }
 
-NOTES:  
+STRICT RULES (MUST FOLLOW):  
 - Ensure the JSON is valid and strictly adheres to the specified structure.  
 - Do not include any text outside the JSON object.  
 - Always populate each field (if information is missing, provide your best inference).  
 - Risk levels must be one of: high, medium, low, none.  
 - Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial. 
-- Apply the compliance score rules consistently to every analysis.
+- Apply the compliance score rules consistently to every analysis.  
 
----
-DOCUMENT LANGUAGE INSTRUCTIONS:
-The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', please detect the language of the document.
+DOCUMENT LANGUAGE INSTRUCTIONS:  
+The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', you must first detect the language of the document.  
 
-OUTPUT LANGUAGE INSTRUCTIONS:
-All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, clauses, provisions, restrictions) MUST be generated in ${outputLanguage}. Translations must be performed accurately, entirely and completely in the output language.
+OUTPUT LANGUAGE INSTRUCTIONS (STRICT RULE):  
+All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, clauses, provisions, restrictions) MUST be written fully and exclusively in ${outputLanguage}. The translation must be complete, accurate, and consistent. Mixing ${outputLanguage} with any other language is strictly forbidden. No partial translations are allowed.  
 
-JURISDICTION FOCUS:
-The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, select the most pertinent one from the user's specified list. If a finding is relevant to a jurisdiction not in the user's list, but is still critical, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
+JURISDICTION FOCUS (STRICT RULE):  
+The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}.  
+- You must first consider these jurisdictions before any other analysis.  
+- Prioritize findings and applicable laws relevant to these jurisdictions.  
+- If a finding is relevant to multiple jurisdictions, choose the most pertinent one from the user's list.  
+- Only include jurisdictions outside the list if absolutely critical, but maintain primary focus on the user’s selected jurisdictions.  
+
+FAILSAFE POST-CHECK (MANDATORY):  
+Before final output, review the entire JSON and confirm that:  
+1. Every field is fully populated.  
+2. Every text field is written entirely in ${outputLanguage}, with no mixing of other languages.  
+3. The JSON is structurally valid.  
+If any field fails these checks, re-translate or regenerate the full JSON correctly in ${outputLanguage} before returning it.
 `;
 
+    // --- CALL GPT MODEL ---
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: selectedModel,
       messages: [
         {
           role: "system",
