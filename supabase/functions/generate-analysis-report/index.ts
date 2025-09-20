@@ -1,12 +1,13 @@
+// supabase/functions/generate-analysis-report/index.ts
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
-// Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
-    const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult } = requestBody;
+    const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult, outputLanguage } = requestBody; // MODIFIED: Added outputLanguage
     console.log('generate-analysis-report: Extracted contractId:', contractId);
 
     if (!contractId) {
@@ -141,83 +142,82 @@ Deno.serve(async (req) => {
     // Generate HTML report content
     let htmlContent = `
       <!DOCTYPE html>
-      <html lang="en">
+      <html lang="${outputLanguage}">
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Contract Analysis Report - ${finalContractName}</title>
+          <title>${getTranslatedMessage('report_title', outputLanguage)} - ${finalContractName}</title>
           <style>${embeddedCss}</style>
       </head>
       <body>
           <div class="container">
-              <h1>Contract Analysis Report</h1>
-              <p><strong>Contract Name:</strong> ${finalContractName}</p>
-              <p><strong>Analysis Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <h1>${getTranslatedMessage('report_title', outputLanguage)}</h1>
+              <p><strong>${getTranslatedMessage('contract_name', outputLanguage)}</strong> ${finalContractName}</p>
+              <p><strong>${getTranslatedMessage('analysis_date', outputLanguage)}</strong> ${new Date().toLocaleDateString()}</p>
 
               <div class="section summary-box">
-                  <h2>Executive Summary</h2>
+                  <h2>${getTranslatedMessage('executive_summary', outputLanguage)}</h2>
                   <p>${finalAnalysisResult.executive_summary}</p>
               </div>
 
               <div class="section">
-                  <h2>Overall Compliance Score</h2>
+                  <h2>${getTranslatedMessage('overall_compliance_score', outputLanguage)}</h2>
                   <div class="score-box ${finalAnalysisResult.compliance_score >= 80 ? 'score-none' : finalAnalysisResult.compliance_score >= 60 ? 'score-low' : finalAnalysisResult.compliance_score >= 40 ? 'score-medium' : 'score-high'}">
                       ${finalAnalysisResult.compliance_score}%
                   </div>
-                  <p>This score reflects the overall adherence of the contract to legal and regulatory standards, with deductions for identified risks and non-compliance.</p>
+                  <p>${getTranslatedMessage('score_description', outputLanguage)}</p>
               </div>
 
               ${finalAnalysisResult.data_protection_impact ? `
               <div class="section">
-                  <h2>Data Protection Impact</h2>
+                  <h2>${getTranslatedMessage('data_protection_impact', outputLanguage)}</h2>
                   <p>${finalAnalysisResult.data_protection_impact}</p>
               </div>
               ` : ''}
 
               <div class="section">
-                  <h2>Jurisdiction Summaries</h2>
+                  <h2>${getTranslatedMessage('jurisdiction_summaries', outputLanguage)}</h2>
                   ${Object.keys(finalAnalysisResult.jurisdiction_summaries).length > 0 ?
                       Object.entries(finalAnalysisResult.jurisdiction_summaries).map(([key, summary]: [string, any]) => `
                           <div class="jurisdiction-summary">
                               <h4>${summary.jurisdiction}</h4>
                               ${summary.applicableLaws && summary.applicableLaws.length > 0 ? `
-                                  <strong>Applicable Laws:</strong>
+                                  <strong>${getTranslatedMessage('applicable_laws', outputLanguage)}</strong>
                                   <ul>
                                       ${summary.applicableLaws.map((law: string) => `<li>${law}</li>`).join('')}
                                   </ul>
                               ` : ''}
                               ${summary.keyFindings && summary.keyFindings.length > 0 ? `
-                                  <strong>Key Findings:</strong>
+                                  <strong>${getTranslatedMessage('key_findings', outputLanguage)}</strong>
                                   <ul>
                                       ${summary.keyFindings.map((finding: string) => `<li>${finding}</li>`).join('')}
                                   </ul>
                               ` : ''}
-                              <strong>Risk Level:</strong> <span class="risk-badge risk-${getSafeRiskLevel(summary.riskLevel)}">${getSafeRiskLevel(summary.riskLevel).charAt(0).toUpperCase() + getSafeRiskLevel(summary.riskLevel).slice(1)}</span>
+                              <strong>${getTranslatedMessage('risk_level_label', outputLanguage)}</strong> <span class="risk-badge risk-${getSafeRiskLevel(summary.riskLevel)}">${getTranslatedMessage(`risk_${getSafeRiskLevel(summary.riskLevel)}`, outputLanguage)}</span>
                           </div>
                       `).join('')
-                  : '<p>No specific jurisdiction summaries available.</p>'}
+                  : `<p>${getTranslatedMessage('no_jurisdiction_summaries', outputLanguage)}</p>`}
               </div>
 
               <div class="section">
-                  <h2>Detailed Findings</h2>
+                  <h2>${getTranslatedMessage('detailed_findings', outputLanguage)}</h2>
                   ${finalAnalysisResult.findings && finalAnalysisResult.findings.length > 0 ?
                       finalAnalysisResult.findings.map((finding: any) => {
-                          // MODIFIED: Prioritize risk_level (snake_case from DB) then riskLevel (camelCase from AI output)
                           const currentRiskLevel = finding.risk_level || finding.riskLevel;
                           return `
                           <div class="finding">
                               <div class="finding-header">
                                   <span class="finding-title">${finding.title}</span>
                                   ${currentRiskLevel && getSafeRiskLevel(currentRiskLevel) !== 'none' ? `
-                                      <span class="risk-badge risk-${getSafeRiskLevel(currentRiskLevel)}">${getSafeRiskLevel(currentRiskLevel).charAt(0).toUpperCase() + getSafeRiskLevel(currentRiskLevel).slice(1)}</span>
+                                      <span class="risk-badge risk-${getSafeRiskLevel(currentRiskLevel)}">${getTranslatedMessage(`risk_${getSafeRiskLevel(currentRiskLevel)}`, outputLanguage)}</span>
                                   ` : ''}
                               </div>
-                              <p><strong>Jurisdiction:</strong> ${finding.jurisdiction}</p>
-                              <p><strong>Category:</strong> ${finding.category}</p>
-                              ${finding.clause_reference ? `<p><strong>Clause Reference:</strong> ${finding.clause_reference}</p>` : ''}
+                              <p><strong>${getTranslatedMessage('jurisdiction_label', outputLanguage)}</strong> ${finding.jurisdiction}</p>
+                              <p><strong>${getTranslatedMessage('category_label', outputLanguage)}</strong> ${finding.category}</p>
+                              ${finding.clause_reference ? `<p><strong>${getTranslatedMessage('clause_reference_label', outputLanguage)}</strong> ${finding.clause_reference}</p>` : ''}
                               <p>${finding.description}</p>
                               ${finding.recommendations && finding.recommendations.length > 0 ? `
-                                  <strong>Recommendations:</strong>
+                                  <strong>${getTranslatedMessage('recommendations_label', outputLanguage)}</strong>
                                   <ul>
                                       ${finding.recommendations.map((rec: string) => `<li>${rec}</li>`).join('')}
                                   </ul>
@@ -225,12 +225,12 @@ Deno.serve(async (req) => {
                           </div>
                           `;
                       }).join('')
-                  : '<p>No detailed findings available.</p>'}
+                  : `<p>${getTranslatedMessage('no_detailed_findings', outputLanguage)}</p>`}
               </div>
 
               <div class="footer">
-                  <p>&copy; ${new Date().getFullYear()} ContractAnalyser. All rights reserved.</p>
-                  <p>This report is for informational purposes only and does not constitute legal advice.</p>
+                  <p>${getTranslatedMessage('footer_copyright', outputLanguage, { year: new Date().getFullYear() })}</p>
+                  <p>${getTranslatedMessage('footer_disclaimer', outputLanguage)}</p>
               </div>
           </div>
       </body>
@@ -239,14 +239,13 @@ Deno.serve(async (req) => {
 
     // Upload HTML to Supabase Storage
     const fileName = `report-${contractId}-${Date.now()}.html`;
-    // CORRECTED LINE: Store directly in the 'reports' bucket, not in a subfolder named 'reports'
     const filePath = fileName; 
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('reports') // Ensure you have a bucket named 'reports'
+      .from('reports')
       .upload(filePath, htmlContent, {
         contentType: 'text/html',
-        upsert: true, // Overwrite if file exists
+        upsert: true,
       });
 
     if (uploadError) {
@@ -257,7 +256,7 @@ Deno.serve(async (req) => {
     // Get signed URL for the uploaded report
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('reports')
-      .createSignedUrl(filePath, 3600); // URL valid for 1 hour
+      .createSignedUrl(filePath, 3600);
 
     if (signedUrlError) {
       console.error('Error creating signed URL:', signedUrlError);
