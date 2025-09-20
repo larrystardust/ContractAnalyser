@@ -1,4 +1,3 @@
-// supabase/functions/generate-analysis-report/index.ts
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
