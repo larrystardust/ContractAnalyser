@@ -1201,7 +1201,7 @@
   "role_member": "Member",
   "status_active": "Active",
   "status_invited": "Invited",
-  "jurisdiction_sharia": "Sharia",
+  "jurisdiction_islamic_law": "Islamic Law",
   "jurisdiction_unknown": "Unknown",
   "unknown_product": "Unknown Product",
   "single_use_credits_display": "Single Use (Credits: {{credits}})",
