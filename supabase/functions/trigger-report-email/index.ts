@@ -30,11 +30,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, contractId, reportSummary, reportLink, reportHtmlContent } = await req.json();
-
-    if (!userId || !contractId || !reportSummary || !reportLink || !reportHtmlContent) {
-      return corsResponse({ error: 'Missing required parameters for triggering email.' }, 400);
-    }
+    const { userId, contractId, reportSummary, reportLink, reportHtmlContent, userPreferredLanguage } = await req.json();
 
     // Authenticate the request to ensure it's coming from an authorized source
     const authHeader = req.headers.get('Authorization');
@@ -88,15 +84,31 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'Email sending skipped due to user preference' });
     }
 
+    // Prepare parameters for send-analysis-report-email and log them
+    const emailSubject = `Your Contract Analysis Report for ${contractId} is Ready!`;
+    const emailMessage = reportSummary; // This is the executive summary
+
+    console.log('trigger-report-email: Parameters for send-analysis-report-email:');
+    console.log(`  userId: ${userId}`);
+    console.log(`  recipientEmail: ${recipientEmail}`);
+    console.log(`  subject: ${emailSubject}`);
+    console.log(`  message: ${emailMessage ? 'Present' : 'MISSING'}`); // Check presence
+    console.log(`  recipientName: ${userName}`);
+    console.log(`  reportHtmlContent: ${reportHtmlContent ? 'Present' : 'MISSING'}`); // Check presence
+    console.log(`  reportLink: ${reportLink ? 'Present' : 'MISSING'}`); // Check presence
+    console.log(`  userPreferredLanguage: ${userPreferredLanguage ? 'Present' : 'MISSING'}`); // Check presence
+
     // Invoke the actual email sending function
     const { data: emailFnData, error: emailFnError } = await supabase.functions.invoke('send-analysis-report-email', {
       body: {
+        userId: userId,
         recipientEmail: recipientEmail,
-        subject: `Your Contract Analysis Report for ${contractId} is Ready!`,
-        message: reportSummary, // This will be the executive summary
+        subject: emailSubject,
+        message: emailMessage,
         recipientName: userName,
-        reportHtmlContent: reportHtmlContent, // Pass the full HTML content
-        reportLink: reportLink, // Pass the signed URL
+        reportHtmlContent: reportHtmlContent || 'Report content not available.', // Provide fallback
+        reportLink: reportLink || 'N/A', // Provide fallback
+        userPreferredLanguage: userPreferredLanguage,
       },
       headers: {
         'Authorization': `Bearer ${token}`, // Pass the current user's token
