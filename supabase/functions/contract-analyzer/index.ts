@@ -316,7 +316,7 @@ The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected
 
 OUTPUT LANGUAGE INSTRUCTIONS (STRICT RULE):  
 All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, clauses, provisions, restrictions) MUST be written fully and exclusively in ${outputLanguage}. The translation must be complete, accurate, and consistent. Mixing ${outputLanguage} with any other language is strictly forbidden. No partial translations are allowed. 
-Ensure Arabic translations are done correctly and solely in Arabic without mixing it with any other languages.  
+It is critical that you ensure Arabic translations are done correctly, accurately and solely in Arabic language without mixing it with any other languages.  
 
 JURISDICTION FOCUS (STRICT RULE):  
 The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}.  
