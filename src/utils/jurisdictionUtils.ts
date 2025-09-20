@@ -61,7 +61,7 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
     case 'Australia':
       return 'bg-yellow-600 text-white';
     case 'Islamic Law': // ADDED
-      return 'bg-green-800 text-white'; // ADDED: A new color for Sharia
+      return 'bg-green-800 text-white'; // ADDED: A new color for Islamic Law
     case 'Others':
       return 'bg-gray-500 text-white';
     default:
