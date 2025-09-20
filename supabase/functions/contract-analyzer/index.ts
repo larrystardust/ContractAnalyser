@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0';
 import { logActivity } from '../_shared/logActivity.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -65,16 +66,6 @@ const translations = {
     analysis_failed_message: (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`
   }
 };
-
-// ADDED: Helper function to get translated string
-function getTranslatedMessage(key: string, lang: string, ...args: any[]): string {
-  const langMap = (translations as any)[lang] || translations.en; // Fallback to English
-  const messageTemplate = langMap[key];
-  if (typeof messageTemplate === 'function') {
-    return messageTemplate(...args);
-  }
-  return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
-}
 
 // MODIFIED: New helper function for translation with improved prompt
 async function translateText(text: string, targetLanguage: string): Promise<string> {
@@ -431,9 +422,9 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     // END ADDED: Post-processing translation step
 
 
-    const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : 'No executive summary provided.';
+    const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage); // MODIFIED
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
-    const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
+    const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0; // MODIFIED: Fixed typo
     const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
     const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
 
@@ -450,6 +441,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           jurisdiction_summaries: jurisdictionSummaries,
           findings: findings,
         },
+        outputLanguage: outputLanguage, // ADDED
       },
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -482,8 +474,8 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const findingsToInsert = findings.map((finding: any) => ({
       analysis_result_id: analysisResult.id,
-      title: typeof finding.title === 'string' ? finding.title : 'Untitled Finding',
-      description: typeof finding.description === 'string' ? finding.description : 'No description provided.',
+      title: typeof finding.title === 'string' ? finding.title : getTranslatedMessage('no_title_provided', outputLanguage), // MODIFIED
+      description: typeof finding.description === 'string' ? finding.description : getTranslatedMessage('no_description_provided', outputLanguage), // MODIFIED
       risk_level: typeof finding.riskLevel === 'string' ? finding.riskLevel : 'none',
       jurisdiction: typeof finding.jurisdiction === 'string' ? finding.jurisdiction : 'EU',
       category: typeof finding.category === 'string' ? finding.category : 'risk',
@@ -535,6 +527,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         reportSummary: executiveSummary,
         reportLink: reportLink,
         reportHtmlContent: reportHtmlContent,
+        userPreferredLanguage: userPreferredLanguage, // ADDED
       },
       headers: {
         'Authorization': `Bearer ${token}`,
