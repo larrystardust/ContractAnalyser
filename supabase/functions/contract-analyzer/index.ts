@@ -316,7 +316,7 @@ The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected
 
 OUTPUT LANGUAGE INSTRUCTIONS (STRICT RULE):  
 All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, clauses, provisions, restrictions) MUST be written fully and exclusively in ${outputLanguage}. The translation must be complete, accurate, and consistent. Mixing ${outputLanguage} with any other language is strictly forbidden. No partial translations are allowed. 
-It is critical that you ensure Arabic translations are done correctly, accurately and solely in Arabic language without mixing it with any other languages.  
+It is critical that you ensure Arabic translations are done correctly, accurately and solely in Arabic language without mixing it with any other language texts.  
 
 JURISDICTION FOCUS (STRICT RULE):  
 The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}.  
@@ -331,7 +331,7 @@ Before final output, review the entire JSON and confirm that:
 2. Every text field is written entirely in ${outputLanguage}, with no mixing of other languages.  
 3. The JSON is structurally valid.  
 If any field fails these checks, re-translate or regenerate the full JSON correctly in ${outputLanguage} before returning it.
-Crosscheck that Arabic translations are done accurately without the appearance of any other languages.
+Crosscheck that Arabic translations are done accurately without the appearance of any other language texts.
 `;
 
     const completion = await openai.chat.completions.create({
