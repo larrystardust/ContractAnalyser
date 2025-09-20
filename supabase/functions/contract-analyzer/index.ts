@@ -76,7 +76,7 @@ function getTranslatedMessage(key: string, lang: string, ...args: any[]): string
   return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
 }
 
-// ADDED: New helper function for translation
+// MODIFIED: New helper function for translation with improved prompt
 async function translateText(text: string, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
     return text;
@@ -88,7 +88,8 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
       messages: [
         {
           role: "system",
-          content: `Translate the following text into ${targetLanguage}. Provide only the translated text.`,
+          // CRITICAL MODIFICATION: Instruct the LLM to only translate if necessary
+          content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage}, return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.`,
         },
         {
           role: "user",
@@ -100,7 +101,13 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
     });
     const translatedContent = translationCompletion.choices[0].message?.content?.trim();
     console.log(`translateText: Original: "${text}" -> Translated: "${translatedContent}"`);
-    return translatedContent || text; // Return original text if translation is empty
+
+    // If the translation is empty, return the original text as a fallback
+    if (!translatedContent) {
+      console.warn(`translateText: Empty translation received for "${text}". Returning original.`);
+      return text;
+    }
+    return translatedContent;
   } catch (error) {
     console.error(`translateText: Error translating text to ${targetLanguage}:`, error);
     return text; // Return original text on error
