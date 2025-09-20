@@ -1248,5 +1248,39 @@
   "error_boundary_unexpected_error_occurred": "نحن آسفون، ولكن حدث خطأ غير متوقع. يرجى محاولة تحديث الصفحة.",
   "error_details": "تفاصيل الخطأ",
   "refresh_page": "تحديث الصفحة",
-  "phone_number_example": "مثال: 1234567890"
+  "phone_number_example": "مثال: 1234567890",
+ 
+  // New keys for Edge Functions (Reports)
+  "report_title": "تقرير تحليل العقد",
+  "analysis_date": "تاريخ التحليل:",
+  "overall_compliance_score": "درجة الامتثال الكلية",
+  "score_description": "تعكس هذه النتيجة الالتزام العام للعقد بالمعايير القانونية والتنظيمية، مع خصومات للمخاطر المحددة وعدم الامتثال.",
+  "no_jurisdiction_summaries": "لا توجد ملخصات اختصاص قضائي محددة متاحة.",
+  "no_detailed_findings": "لا توجد نتائج تفصيلية متاحة.",
+  "jurisdiction_label": "الاختصاص القضائي:",
+  "category_label": "الفئة:",
+  "clause_reference_label": "مرجع البند:",
+  "recommendations_label": "التوصيات:",
+  "footer_disclaimer": "هذا التقرير لأغراض إعلامية فقط ولا يشكل استشارة قانونية.",
+  "risk_level_label": "مستوى المخاطر:",
+  "risk_high": "عالي",
+  "risk_medium": "متوسط",
+  "risk_low": "منخفض",
+  "risk_none": "لا يوجد",
+  "email_hello": "مرحباً {recipientName},",
+  "email_analysis_complete": "تحليل عقدك القانوني اكتمل!",
+  "email_view_full_report": "يمكنك عرض التقرير الكامل والنتائج التفصيلية مباشرة أدناه، أو النقر على الرابط لعرضه في متصفحك:",
+  "email_view_full_report_button": "عرض التقرير الكامل في المتصفح",
+  "email_thank_you": "شكراً لاستخدامك ContractAnalyser.",
+  "email_team": "فريق ContractAnalyser",
+  "no_description_provided": "لا يوجد وصف مقدم.",
+  "no_executive_summary_provided": "لا يوجد ملخص تنفيذي مقدم.",
+  "no_title_provided": "لا يوجد عنوان مقدم.",
+
+  // New keys for PublicReportViewerPage.tsx
+  "no_report_url_provided": "لم يتم توفير رابط التقرير.",
+  "failed_to_fetch_report": "فشل في جلب التقرير (الحالة: {{status}}, {{statusText}}).",
+  "link_expired_invalid": "الرابط منتهي الصلاحية أو غير صالح.",
+  "loading_report": "جاري تحميل التقرير",
+  "error_loading_report": "خطأ في تحميل التقرير"
 }
