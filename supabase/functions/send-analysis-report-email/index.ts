@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1';
+import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -33,10 +34,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink } = await req.json();
+    const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage } = await req.json(); // MODIFIED: Added userPreferredLanguage
 
-    if (!recipientEmail || !subject || !message || !reportHtmlContent || !reportLink) {
-      return corsResponse({ error: 'Missing required email parameters: recipientEmail, subject, message, reportHtmlContent, reportLink' }, 400);
+    if (!userId || !recipientEmail || !subject || !message || !reportHtmlContent || !reportLink || !userPreferredLanguage) { // MODIFIED: Added userPreferredLanguage to check
+      return corsResponse({ error: 'Missing required email parameters: userId, recipientEmail, subject, message, reportHtmlContent, reportLink, userPreferredLanguage' }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -46,15 +47,15 @@ Deno.serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
-    if (userError || !user) {
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+    if (userError || !user || user.id !== userId) {
+      return corsResponse({ error: 'Unauthorized: Invalid or missing user token or mismatch.' }, 401);
     }
 
     console.log(`Attempting to send analysis report email to ${recipientEmail}.`);
 
     // Construct the URL for the new public report viewer page
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${encodeURIComponent(reportLink)}`; // MODIFIED: Link to new public page
+    const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${encodeURIComponent(reportLink)}`;
 
     // --- START: Email Service Integration ---
     try {
@@ -63,17 +64,17 @@ Deno.serve(async (req) => {
         to: [recipientEmail],
         subject: subject,
         html: `
-          <p>Hello ${recipientName || 'User'},</p>
-          <p>Your legal contract analysis is complete!</p>
-          <p><strong>Executive Summary:</strong></p>
+          <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
+          <p>${getTranslatedMessage('email_analysis_complete', userPreferredLanguage)}</p>
+          <p><strong>${getTranslatedMessage('executive_summary', userPreferredLanguage)}</strong></p>
           <p>${message}</p>
-          <p>You can view the full report and detailed findings directly below, or click the link to view it in your browser:</p>
-          <p><a href="${publicReportViewerUrl}">View Full Report in Browser</a></p> <!-- MODIFIED: Use the new public viewer URL -->
+          <p>${getTranslatedMessage('email_view_full_report', userPreferredLanguage)}</p>
+          <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
           <hr/>
           ${reportHtmlContent}
           <hr/>
-          <p>Thank you for using ContractAnalyser.</p>
-          <p>The ContractAnalyser Team</p>
+          <p>${getTranslatedMessage('email_thank_you', userPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_team', userPreferredLanguage)}</p>
         `,
       });
 
