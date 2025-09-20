@@ -10,6 +10,7 @@ export interface Contract {
   analysisResult?: AnalysisResult;
   created_at: string; // Changed from uploadDate
   updated_at: string; // Added
+  output_language?: AnalysisLanguage; // ADDED: New column for output language
 }
 
 export type Jurisdiction = 'UK' | 'EU' | 'Ireland' | 'US' | 'Canada' | 'Australia' | 'Islamic Law' | 'Others'; // MODIFIED: Added 'Islamic Law'
