@@ -76,6 +76,37 @@ function getTranslatedMessage(key: string, lang: string, ...args: any[]): string
   return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
 }
 
+// ADDED: New helper function for translation
+async function translateText(text: string, targetLanguage: string): Promise<string> {
+  if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
+    return text;
+  }
+
+  try {
+    const translationCompletion = await openai.chat.completions.create({
+      model: "gpt-4o", // Use a capable model for translation
+      messages: [
+        {
+          role: "system",
+          content: `Translate the following text into ${targetLanguage}. Provide only the translated text.`,
+        },
+        {
+          role: "user",
+          content: text,
+        },
+      ],
+      temperature: 0.1, // Keep temperature low for accurate translation
+      max_tokens: 1000, // Adjust as needed
+    });
+    const translatedContent = translationCompletion.choices[0].message?.content?.trim();
+    console.log(`translateText: Original: "${text}" -> Translated: "${translatedContent}"`);
+    return translatedContent || text; // Return original text if translation is empty
+  } catch (error) {
+    console.error(`translateText: Error translating text to ${targetLanguage}:`, error);
+    return text; // Return original text on error
+  }
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -104,6 +135,8 @@ Deno.serve(async (req) => {
     contractText = contract_text;
     sourceLanguage = source_language || 'auto';
     outputLanguage = output_language || 'en';
+
+    console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}`);
 
     if (!contractId || !contractText) {
       return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
@@ -136,7 +169,7 @@ Deno.serve(async (req) => {
     }, 5, 500);
 
     if (profileError) {
-      console.warn(`Could not fetch profile for user ${userId}:`, profileError.message);
+      console.warn(`contract-analyzer: Could not fetch profile for user ${userId}:`, profileError.message);
       userNotificationSettings = {
         'analysis-complete': { email: true, inApp: true },
         'high-risk-findings': { email: true, inApp: true },
@@ -166,7 +199,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (membershipError) {
-      console.error(`Error fetching membership for user ${userId}:`, membershipError);
+      console.error(`contract-analyzer: Error fetching membership for user ${userId}:`, membershipError);
     } else if (membershipData) {
       userSubscriptionId = membershipData.subscription_id;
     } else {
@@ -174,7 +207,7 @@ Deno.serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Error parsing request body or authenticating user:', error);
+    console.error('contract-analyzer: Error parsing request body or authenticating user:', error);
     return corsResponse({ error: 'Invalid request or authentication failed' }, 400);
   }
 
@@ -191,7 +224,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (customerError || !customerData?.customer_id) {
-      console.error(`User ${userId} has no Stripe customer ID or error fetching:`, customerError);
+      console.error(`contract-analyzer: User ${userId} has no Stripe customer ID or error fetching:`, customerError);
       return corsResponse({ error: 'No associated payment account found. Please ensure you have purchased a plan.' }, 403);
     }
 
@@ -207,7 +240,7 @@ Deno.serve(async (req) => {
       .limit(1);
 
     if (ordersError) {
-      console.error('Error fetching unconsumed orders:', ordersError);
+      console.error('contract-analyzer: Error fetching unconsumed orders:', ordersError);
       return corsResponse({ error: 'Failed to check available credits.' }, 500);
     }
 
@@ -250,7 +283,7 @@ Deno.serve(async (req) => {
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
     // MODIFIED: Moved systemPromptContent definition here
-    const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+    const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
@@ -303,35 +336,23 @@ Return your findings strictly as a valid JSON object with the following structur
   }
 }
 
-STRICT RULES (MUST FOLLOW):  
+NOTES:  
 - Ensure the JSON is valid and strictly adheres to the specified structure.  
 - Do not include any text outside the JSON object.  
 - Always populate each field (if information is missing, provide your best inference).  
 - Risk levels must be one of: high, medium, low, none.  
 - Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial. 
-- Apply the compliance score rules consistently to every analysis.  
+- Apply the compliance score rules consistently to every analysis.
 
-DOCUMENT LANGUAGE INSTRUCTIONS:  
-The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', you must first detect the language of the document.  
+---
+DOCUMENT LANGUAGE INSTRUCTIONS:
+The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', please detect the language of the document.
 
-OUTPUT LANGUAGE INSTRUCTIONS (STRICT RULE):  
-All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference, clauses, provisions, restrictions) MUST be written fully and exclusively in ${outputLanguage}. The translation must be complete, accurate, and consistent. Mixing ${outputLanguage} with any other language is strictly forbidden. No partial translations are allowed. 
-It is critical that you ensure Arabic translations texts are done correctly, accurately and solely in Arabic language without mixing it with any other languages.  
+OUTPUT LANGUAGE INSTRUCTIONS:
+All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 
-JURISDICTION FOCUS (STRICT RULE):  
-The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}.  
-- You must first consider these jurisdictions before any other analysis.  
-- Prioritize findings and applicable laws relevant to these jurisdictions.  
-- If a finding is relevant to multiple jurisdictions, choose the most pertinent one from the user's list.  
-- Only include jurisdictions outside the list if absolutely critical, but maintain primary focus on the user’s selected jurisdictions.  
-
-FAILSAFE POST-CHECK (MANDATORY):  
-Before final output, review the entire JSON and confirm that:  
-1. Every field is fully populated.  
-2. Every text field is written entirely in ${outputLanguage}, with no mixing of other languages.  
-3. The JSON is structurally valid.  
-If any field fails these checks, re-translate or regenerate the full JSON correctly in ${outputLanguage} before returning it.
-Crosscheck that Arabic translations are done accurately without the appearance of any other language texts.
+JURISDICTION FOCUS:
+The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, select the most pertinent one from the user's specified list. If a finding is relevant to a jurisdiction not in the user's list, but is still critical, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
 `;
 
     const completion = await openai.chat.completions.create({
@@ -357,10 +378,51 @@ Crosscheck that Arabic translations are done accurately without the appearance o
     let analysisData: any;
     try {
       analysisData = JSON.parse(aiResponseContent);
+      console.log('contract-analyzer: Raw AI analysis data (before post-processing translation):', JSON.stringify(analysisData, null, 2));
     } catch (parseError) {
-      console.error('Error parsing OpenAI response JSON:', parseError);
+      console.error('contract-analyzer: Error parsing OpenAI response JSON:', parseError);
       throw new Error('Failed to parse AI analysis response.');
     }
+
+    // ADDED: Post-processing translation step
+    console.log(`contract-analyzer: Translating AI output to ${outputLanguage}...`);
+    
+    // Translate Executive Summary
+    console.log(`contract-analyzer: Translating executiveSummary...`);
+    analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
+    
+    // Translate Data Protection Impact
+    if (analysisData.dataProtectionImpact) {
+      console.log(`contract-analyzer: Translating dataProtectionImpact...`);
+      analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
+    }
+
+    // Translate Findings
+    for (const finding of analysisData.findings) {
+      console.log(`contract-analyzer: Translating finding title: "${finding.title}"`);
+      finding.title = await translateText(finding.title, outputLanguage);
+      console.log(`contract-analyzer: Translating finding description: "${finding.description}"`);
+      finding.description = await translateText(finding.description, outputLanguage);
+      console.log(`contract-analyzer: Translating finding recommendations...`);
+      finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
+      if (finding.clauseReference) {
+        console.log(`contract-analyzer: Translating finding clauseReference: "${finding.clauseReference}"`);
+        finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
+      }
+    }
+
+    // Translate Jurisdiction Summaries
+    for (const key in analysisData.jurisdictionSummaries) {
+      const summary = analysisData.jurisdictionSummaries[key];
+      console.log(`contract-analyzer: Translating jurisdiction summary for ${key} applicableLaws...`);
+      summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
+      console.log(`contract-analyzer: Translating jurisdiction summary for ${key} keyFindings...`);
+      summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
+    }
+    console.log('contract-analyzer: Post-processing translation complete.');
+    console.log('contract-analyzer: Final AI analysis data (after post-processing translation):', JSON.stringify(analysisData, null, 2));
+    // END ADDED: Post-processing translation step
+
 
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : 'No executive summary provided.';
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
@@ -388,7 +450,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
     });
 
     if (reportError) {
-      console.error('Error invoking generate-analysis-report Edge Function:', reportError);
+      console.error('contract-analyzer: Error invoking generate-analysis-report Edge Function:', reportError);
     }
     const reportFilePath = reportData?.filePath || null;
     const reportHtmlContent = reportData?.htmlContent || null;
@@ -428,7 +490,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
         .insert(findingsToInsert);
 
       if (findingsError) {
-        console.error('Error inserting findings:', findingsError);
+        console.error('contract-analyzer: Error inserting findings:', findingsError);
       }
     }
 
@@ -438,7 +500,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
       .eq('id', contractId);
 
     if (updateContractError) {
-      console.error(`Error updating contract status to completed for ID ${contractId}:`, updateContractError);
+      console.error(`contract-analyzer: Error updating contract status to completed for ID ${contractId}:`, updateContractError);
       await supabase
         .from('contracts')
         .update({ status: 'failed', processing_progress: 0 })
@@ -453,7 +515,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
         .eq('id', consumedOrderId);
 
       if (consumeError) {
-        console.error(`Error marking order ${consumedOrderId} as consumed:`, consumeError);
+        console.error(`contract-analyzer: Error marking order ${consumedOrderId} as consumed:`, consumeError);
       } else {
         // Successfully marked order as consumed.
       }
@@ -473,7 +535,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
     });
 
     if (emailTriggerError) {
-      console.error('Error invoking trigger-report-email Edge Function:', emailTriggerError);
+      console.error('contract-analyzer: Error invoking trigger-report-email Edge Function:', emailTriggerError);
     } else {
       // trigger-report-email Edge Function invoked successfully.
     }
@@ -491,7 +553,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
         type: 'success',
       });
       if (notificationError) {
-        console.error('Error inserting "Analysis Complete" notification:', notificationError);
+        console.error('contract-analyzer: Error inserting "Analysis Complete" notification:', notificationError);
       }
     }
 
@@ -505,7 +567,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
         type: 'error',
       });
       if (notificationError) {
-        console.error('Error inserting "High Risk Findings" notification:', notificationError);
+        console.error('contract-analyzer: Error inserting "High Risk Findings" notification:', notificationError);
       }
     }
     // --- END: Notification Generation ---
@@ -521,7 +583,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
     return corsResponse({ message: 'Analysis completed successfully' });
 
   } catch (error: any) {
-    console.error(`Error during analysis for contract ID ${contractId}:`, error.message);
+    console.error(`contract-analyzer: Error during analysis for contract ID ${contractId}:`, error.message);
     await supabase
       .from('contracts')
       .update({ status: 'failed', processing_progress: 0 })
@@ -546,7 +608,7 @@ Crosscheck that Arabic translations are done accurately without the appearance o
         message: notificationMessage,
         type: 'error',
       });
-      if (notificationError) console.error('Error inserting "Analysis Failed" notification:', notificationError);
+      if (notificationError) console.error('contract-analyzer: Error inserting "Analysis Failed" notification:', notificationError);
     }
 
     return corsResponse({ error: error.message }, 500);
