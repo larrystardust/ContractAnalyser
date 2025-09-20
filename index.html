@@ -24,12 +24,19 @@
         }
       })();
 
-      // ADDED: Set language direction (RTL/LTR) based on stored language
+      // MODIFIED: Set language direction (RTL/LTR) and lang attribute based on stored language
       (function() {
         const storedLang = localStorage.getItem('i18nextLng');
-        if (storedLang && (storedLang === 'ar')) { // Add other RTL languages here if needed
-          document.documentElement.setAttribute('dir', 'rtl');
+        if (storedLang) {
+          document.documentElement.setAttribute('lang', storedLang); // Set lang attribute
+          if (storedLang === 'ar') { // Add other RTL languages here if needed
+            document.documentElement.setAttribute('dir', 'rtl');
+          } else {
+            document.documentElement.setAttribute('dir', 'ltr');
+          }
         } else {
+          // Default to 'en' if no language is stored
+          document.documentElement.setAttribute('lang', 'en');
           document.documentElement.setAttribute('dir', 'ltr');
         }
       })();
