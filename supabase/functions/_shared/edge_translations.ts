@@ -15,7 +15,7 @@ export const edgeTranslations = {
     category_label: "Category:",
     clause_reference_label: "Clause Reference:",
     recommendations_label: "Recommendations:",
-    footer_copyright: "© {{year}} ContractAnalyser. All rights reserved.",
+    footer_copyright: "© {year} ContractAnalyser. All rights reserved.",
     footer_disclaimer: "This report is for informational purposes only and does not constitute legal advice.",
     applicable_laws: "Applicable Laws:",
     key_findings: "Key Findings:",
@@ -32,6 +32,8 @@ export const edgeTranslations = {
     email_team: "The ContractAnalyser Team",
     no_description_provided: "No description provided.",
     no_executive_summary_provided: "No executive summary provided.",
+    no_title_provided: "No title provided.",
+    email_report_not_available: "The full report content is not available in this email. Please contact support if you require it.", // ADDED
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -49,7 +51,7 @@ export const edgeTranslations = {
     category_label: "Categoría:",
     clause_reference_label: "Referencia de Cláusula:",
     recommendations_label: "Recomendaciones:",
-    footer_copyright: "© {{year}} ContractAnalyser. Todos los derechos reservados.",
+    footer_copyright: "© {year} ContractAnalyser. Todos los derechos reservados.",
     footer_disclaimer: "Este informe es solo para fines informativos y no constituye asesoramiento legal.",
     applicable_laws: "Leyes Aplicables:",
     key_findings: "Hallazgos Clave:",
@@ -66,6 +68,8 @@ export const edgeTranslations = {
     email_team: "El Equipo de ContractAnalyser",
     no_description_provided: "No se proporcionó descripción.",
     no_executive_summary_provided: "No se proporcionó resumen ejecutivo.",
+    no_title_provided: "No se proporcionó título.",
+    email_report_not_available: "El contenido completo del informe no está disponible en este correo electrónico. Póngase en contacto con el soporte si lo necesita.", // ADDED
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -83,7 +87,7 @@ export const edgeTranslations = {
     category_label: "Catégorie:",
     clause_reference_label: "Référence de Clause:",
     recommendations_label: "Recommandations:",
-    footer_copyright: "© {{year}} ContractAnalyser. Tous droits réservés.",
+    footer_copyright: "© {year} ContractAnalyser. Tous droits réservés.",
     footer_disclaimer: "Ce rapport est à titre informatif uniquement et ne constitue pas un avis juridique.",
     applicable_laws: "Lois Applicables:",
     key_findings: "Constatations Clés:",
@@ -100,6 +104,8 @@ export const edgeTranslations = {
     email_team: "L'Équipe ContractAnalyser",
     no_description_provided: "Aucune description fournie.",
     no_executive_summary_provided: "Aucun résumé exécutif fourni.",
+    no_title_provided: "Aucun titre fourni.",
+    email_report_not_available: "Le contenu complet du rapport n'est pas disponible dans cet e-mail. Veuillez contacter le support si vous en avez besoin.", // ADDED
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -117,7 +123,7 @@ export const edgeTranslations = {
     category_label: "الفئة:",
     clause_reference_label: "مرجع البند:",
     recommendations_label: "التوصيات:",
-    footer_copyright: "© {{year}} ContractAnalyser. جميع الحقوق محفوظة.",
+    footer_copyright: "© {year} ContractAnalyser. جميع الحقوق محفوظة.",
     footer_disclaimer: "هذا التقرير لأغراض إعلامية فقط ولا يشكل استشارة قانونية.",
     applicable_laws: "القوانين المعمول بها:",
     key_findings: "النتائج الرئيسية:",
@@ -134,6 +140,8 @@ export const edgeTranslations = {
     email_team: "فريق ContractAnalyser",
     no_description_provided: "لا يوجد وصف مقدم.",
     no_executive_summary_provided: "لا يوجد ملخص تنفيذي مقدم.",
+    no_title_provided: "لا يوجد عنوان مقدم.",
+    email_report_not_available: "محتوى التقرير الكامل غير متاح في هذا البريد الإلكتروني. يرجى الاتصال بالدعم إذا كنت بحاجة إليه.", // ADDED
   }
 };
 
