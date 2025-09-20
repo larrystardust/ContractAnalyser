@@ -249,10 +249,6 @@ Deno.serve(async (req) => {
 
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
-    // --- SMART GPT MODEL SELECTION ---
-    const analysisMode: 'legal' | 'translation' = (outputLanguage === sourceLanguage) ? 'legal' : 'translation';
-    const selectedModel = analysisMode === 'legal' ? 'gpt-4' : 'gpt-4o';
-
     // MODIFIED: Moved systemPromptContent definition here
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Sharia, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
@@ -336,9 +332,8 @@ Before final output, review the entire JSON and confirm that:
 If any field fails these checks, re-translate or regenerate the full JSON correctly in ${outputLanguage} before returning it.
 `;
 
-    // --- CALL GPT MODEL ---
     const completion = await openai.chat.completions.create({
-      model: selectedModel,
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
