@@ -1250,7 +1250,6 @@
   "refresh_page": "تحديث الصفحة",
   "phone_number_example": "مثال: 1234567890",
  
-  // New keys for Edge Functions (Reports)
   "report_title": "تقرير تحليل العقد",
   "analysis_date": "تاريخ التحليل:",
   "overall_compliance_score": "درجة الامتثال الكلية",
@@ -1277,7 +1276,6 @@
   "no_executive_summary_provided": "لا يوجد ملخص تنفيذي مقدم.",
   "no_title_provided": "لا يوجد عنوان مقدم.",
 
-  // New keys for PublicReportViewerPage.tsx
   "no_report_url_provided": "لم يتم توفير رابط التقرير.",
   "failed_to_fetch_report": "فشل في جلب التقرير (الحالة: {{status}}, {{statusText}}).",
   "link_expired_invalid": "الرابط منتهي الصلاحية أو غير صالح.",
