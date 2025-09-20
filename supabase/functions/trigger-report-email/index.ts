@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, contractId, reportSummary, reportLink, reportHtmlContent, userPreferredLanguage } = await req.json();
+    const { userId, contractId, reportSummary, reportLink, reportHtmlContent } = await req.json(); // MODIFIED: Removed userPreferredLanguage from destructuring
 
     // Authenticate the request to ensure it's coming from an authorized source
     const authHeader = req.headers.get('Authorization');
@@ -84,6 +84,21 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'Email sending skipped due to user preference' });
     }
 
+    // ADDED: Fetch the output_language from the contracts table
+    const { data: contractLanguageData, error: contractLanguageError } = await supabase
+      .from('contracts')
+      .select('output_language')
+      .eq('id', contractId)
+      .single();
+
+    let userPreferredLanguage = 'en'; // Default fallback
+    if (contractLanguageError) {
+      console.error(`Error fetching output_language for contract ${contractId}:`, contractLanguageError);
+    } else if (contractLanguageData?.output_language) {
+      userPreferredLanguage = contractLanguageData.output_language;
+    }
+    // END ADDED
+
     // Prepare parameters for send-analysis-report-email and log them
     const emailSubject = `Your Contract Analysis Report for ${contractId} is Ready!`;
     const emailMessage = reportSummary; // This is the executive summary
@@ -108,7 +123,7 @@ Deno.serve(async (req) => {
         recipientName: userName,
         reportHtmlContent: reportHtmlContent || 'Report content not available.', // Provide fallback
         reportLink: reportLink || 'N/A', // Provide fallback
-        userPreferredLanguage: userPreferredLanguage,
+        userPreferredLanguage: userPreferredLanguage, // ADDED
       },
       headers: {
         'Authorization': `Bearer ${token}`, // Pass the current user's token
