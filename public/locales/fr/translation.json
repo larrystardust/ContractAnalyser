@@ -1249,5 +1249,39 @@
   "error_boundary_unexpected_error_occurred": "Nous sommes désolés, mais une erreur inattendue s'est produite. Veuillez essayer de rafraîchir la page.",
   "error_details": "Détails de l'erreur",
   "refresh_page": "Actualiser la page",
-  "phone_number_example": "ex: 1234567890"
+  "phone_number_example": "ex: 1234567890",
+  
+  // New keys for Edge Functions (Reports)
+  "report_title": "Rapport d'Analyse de Contrat",
+  "analysis_date": "Date d'Analyse:",
+  "overall_compliance_score": "Score Global de Conformité",
+  "score_description": "Ce score reflète l'adhésion globale du contrat aux normes légales et réglementaires, avec des déductions pour les risques identifiés et les non-conformités.",
+  "no_jurisdiction_summaries": "Aucun résumé de juridiction spécifique disponible.",
+  "no_detailed_findings": "Aucune constatation détaillée disponible.",
+  "jurisdiction_label": "Juridiction:",
+  "category_label": "Catégorie:",
+  "clause_reference_label": "Référence de Clause:",
+  "recommendations_label": "Recommandations:",
+  "footer_disclaimer": "Ce rapport est à titre informatif uniquement et ne constitue pas un avis juridique.",
+  "risk_level_label": "Niveau de Risque:",
+  "risk_high": "Élevé",
+  "risk_medium": "Moyen",
+  "risk_low": "Faible",
+  "risk_none": "Aucun",
+  "email_hello": "Bonjour {recipientName},",
+  "email_analysis_complete": "Votre analyse juridique de contrat est terminée !",
+  "email_view_full_report": "Vous pouvez consulter le rapport complet et les constatations détaillées directement ci-dessous, ou cliquer sur le lien pour le visualiser dans votre navigateur :",
+  "email_view_full_report_button": "Voir le Rapport Complet dans le Navigateur",
+  "email_thank_you": "Merci d'utiliser ContractAnalyser.",
+  "email_team": "L'Équipe ContractAnalyser",
+  "no_description_provided": "Aucune description fournie.",
+  "no_executive_summary_provided": "Aucun résumé exécutif fourni.",
+  "no_title_provided": "Aucun titre fourni.",
+
+  // New keys for PublicReportViewerPage.tsx
+  "no_report_url_provided": "Aucune URL de rapport fournie.",
+  "failed_to_fetch_report": "Échec de la récupération du rapport (Statut : {{status}}, {{statusText}}).",
+  "link_expired_invalid": "Lien expiré ou invalide.",
+  "loading_report": "Chargement du rapport",
+  "error_loading_report": "Erreur de Chargement du Rapport"
 }
