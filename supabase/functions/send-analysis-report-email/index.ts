@@ -36,8 +36,9 @@ Deno.serve(async (req) => {
   try {
     const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage } = await req.json(); // MODIFIED: Added userPreferredLanguage
 
-    if (!userId || !recipientEmail || !subject || !message || !reportHtmlContent || !reportLink || !userPreferredLanguage) { // MODIFIED: Added userPreferredLanguage to check
-      return corsResponse({ error: 'Missing required email parameters: userId, recipientEmail, subject, message, reportHtmlContent, reportLink, userPreferredLanguage' }, 400);
+    // The strict check is removed here as fallbacks are provided upstream in trigger-report-email
+    if (!userId || !recipientEmail || !subject || !message || !userPreferredLanguage) {
+      return corsResponse({ error: 'Missing essential email parameters: userId, recipientEmail, subject, message, userPreferredLanguage' }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -68,11 +69,15 @@ Deno.serve(async (req) => {
           <p>${getTranslatedMessage('email_analysis_complete', userPreferredLanguage)}</p>
           <p><strong>${getTranslatedMessage('executive_summary', userPreferredLanguage)}</strong></p>
           <p>${message}</p>
-          <p>${getTranslatedMessage('email_view_full_report', userPreferredLanguage)}</p>
-          <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
-          <hr/>
-          ${reportHtmlContent}
-          <hr/>
+          ${reportLink && reportLink !== 'N/A' ? `
+            <p>${getTranslatedMessage('email_view_full_report', userPreferredLanguage)}</p>
+            <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
+            <hr/>
+            ${reportHtmlContent}
+            <hr/>
+          ` : `
+            <p>${getTranslatedMessage('email_report_not_available', userPreferredLanguage)}</p>
+          `}
           <p>${getTranslatedMessage('email_thank_you', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_team', userPreferredLanguage)}</p>
         `,
