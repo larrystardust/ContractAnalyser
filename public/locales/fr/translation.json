@@ -1202,7 +1202,7 @@
   "role_member": "Membre",
   "status_active": "Actif",
   "status_invited": "Invité",
-  "jurisdiction_sharia": "Charia",
+  "jurisdiction_islamic_law": "Droit islamique",
   "jurisdiction_unknown": "Inconnu",
   "unknown_product": "Produit inconnu",
   "single_use_credits_display": "Usage Unique (Crédits : {{credits}})",
