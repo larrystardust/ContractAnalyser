@@ -1250,7 +1250,6 @@
   "refresh_page": "Refresh Page",
   "phone_number_example": "e.g., 1234567890",
   
-  // New keys for Edge Functions (Reports)
   "report_title": "Contract Analysis Report",
   "analysis_date": "Analysis Date:",
   "overall_compliance_score": "Overall Compliance Score",
@@ -1277,7 +1276,6 @@
   "no_executive_summary_provided": "No executive summary provided.",
   "no_title_provided": "No title provided.",
 
-  // New keys for PublicReportViewerPage.tsx
   "no_report_url_provided": "No report URL provided.",
   "failed_to_fetch_report": "Failed to fetch report (Status: {{status}}, {{statusText}}).",
   "link_expired_invalid": "Link expired or invalid.",
