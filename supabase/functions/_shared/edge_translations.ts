@@ -33,7 +33,25 @@ export const edgeTranslations = {
     no_description_provided: "No description provided.",
     no_executive_summary_provided: "No executive summary provided.",
     no_title_provided: "No title provided.",
-    email_report_not_available: "The full report content is not available in this email. Please contact support if you require it.", // ADDED
+    email_report_not_available: "The full report content is not available in this email. Please contact support if you require it.",
+    // ADDED JURISDICTION KEYS
+    "jurisdiction_uk": "UK",
+    "jurisdiction_eu": "EU",
+    "jurisdiction_ireland": "Ireland",
+    "jurisdiction_us": "US",
+    "jurisdiction_canada": "Canada",
+    "jurisdiction_australia": "Australia",
+    "jurisdiction_islamic_law": "Islamic Law",
+    "jurisdiction_others": "Others",
+    // ADDED CATEGORY KEYS
+    "category_compliance": "Compliance",
+    "category_risk": "Risk",
+    "category_data_protection": "Data Protection",
+    "category_enforceability": "Enforceability",
+    "category_drafting": "Drafting",
+    "category_commercial": "Commercial",
+    // ADDED EMAIL SUBJECT KEY
+    "email_subject_report_ready": "Your Contract Analysis Report for {contractName} is Ready!",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -69,7 +87,25 @@ export const edgeTranslations = {
     no_description_provided: "No se proporcionó descripción.",
     no_executive_summary_provided: "No se proporcionó resumen ejecutivo.",
     no_title_provided: "No se proporcionó título.",
-    email_report_not_available: "El contenido completo del informe no está disponible en este correo electrónico. Póngase en contacto con el soporte si lo necesita.", // ADDED
+    email_report_not_available: "El contenido completo del informe no está disponible en este correo electrónico. Póngase en contacto con el soporte si lo necesita.",
+    // ADDED JURISDICTION KEYS
+    "jurisdiction_uk": "Reino Unido",
+    "jurisdiction_eu": "UE",
+    "jurisdiction_ireland": "Irlanda",
+    "jurisdiction_us": "EE. UU.",
+    "jurisdiction_canada": "Canadá",
+    "jurisdiction_australia": "Australia",
+    "jurisdiction_islamic_law": "Ley Islámica",
+    "jurisdiction_others": "Otros",
+    // ADDED CATEGORY KEYS
+    "category_compliance": "Cumplimiento",
+    "category_risk": "Riesgo",
+    "category_data_protection": "Protección de Datos",
+    "category_enforceability": "Aplicabilidad",
+    "category_drafting": "Redacción",
+    "category_commercial": "Comercial",
+    // ADDED EMAIL SUBJECT KEY
+    "email_subject_report_ready": "¡Su Informe de Análisis de Contrato para {contractName} está Listo!",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -105,7 +141,25 @@ export const edgeTranslations = {
     no_description_provided: "Aucune description fournie.",
     no_executive_summary_provided: "Aucun résumé exécutif fourni.",
     no_title_provided: "Aucun titre fourni.",
-    email_report_not_available: "Le contenu complet du rapport n'est pas disponible dans cet e-mail. Veuillez contacter le support si vous en avez besoin.", // ADDED
+    email_report_not_available: "Le contenu complet du rapport n'est pas disponible dans cet e-mail. Veuillez contacter le support si vous en avez besoin.",
+    // ADDED JURISDICTION KEYS
+    "jurisdiction_uk": "Royaume-Uni",
+    "jurisdiction_eu": "UE",
+    "jurisdiction_ireland": "Irlande",
+    "jurisdiction_us": "États-Unis",
+    "jurisdiction_canada": "Canada",
+    "jurisdiction_australia": "Australie",
+    "jurisdiction_islamic_law": "Droit Islamique",
+    "jurisdiction_others": "Autres",
+    // ADDED CATEGORY KEYS
+    "category_compliance": "Conformité",
+    "category_risk": "Risque",
+    "category_data_protection": "Protection des Données",
+    "category_enforceability": "Applicabilité",
+    "category_drafting": "Rédaction",
+    "category_commercial": "Commercial",
+    // ADDED EMAIL SUBJECT KEY
+    "email_subject_report_ready": "Votre Rapport d'Analyse de Contrat pour {contractName} est Prêt !",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -141,7 +195,25 @@ export const edgeTranslations = {
     no_description_provided: "لا يوجد وصف مقدم.",
     no_executive_summary_provided: "لا يوجد ملخص تنفيذي مقدم.",
     no_title_provided: "لا يوجد عنوان مقدم.",
-    email_report_not_available: "محتوى التقرير الكامل غير متاح في هذا البريد الإلكتروني. يرجى الاتصال بالدعم إذا كنت بحاجة إليه.", // ADDED
+    email_report_not_available: "محتوى التقرير الكامل غير متاح في هذا البريد الإلكتروني. يرجى الاتصال بالدعم إذا كنت بحاجة إليه.",
+    // ADDED JURISDICTION KEYS
+    "jurisdiction_uk": "المملكة المتحدة",
+    "jurisdiction_eu": "الاتحاد الأوروبي",
+    "jurisdiction_ireland": "أيرلندا",
+    "jurisdiction_us": "الولايات المتحدة",
+    "jurisdiction_canada": "كندا",
+    "jurisdiction_australia": "أستراليا",
+    "jurisdiction_islamic_law": "الشريعة الإسلامية",
+    "jurisdiction_others": "أخرى",
+    // ADDED CATEGORY KEYS
+    "category_compliance": "الامتثال",
+    "category_risk": "المخاطر",
+    "category_data_protection": "حماية البيانات",
+    "category_enforceability": "قابلية التنفيذ",
+    "category_drafting": "الصياغة",
+    "category_commercial": "تجاري",
+    // ADDED EMAIL SUBJECT KEY
+    "email_subject_report_ready": "تقرير تحليل العقد الخاص بك لـ {contractName} جاهز!",
   }
 };
 
