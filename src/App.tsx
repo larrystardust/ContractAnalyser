@@ -36,19 +36,24 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
-import { useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Changed from useSession to useSessionContext
+import { useSessionContext } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword';
-import ErrorBoundary from './components/ErrorBoundary'; // ADDED: Import ErrorBoundary
+import ErrorBoundary from './components/ErrorBoundary';
+import MaintenancePage from './pages/MaintenancePage'; // ADDED: Import MaintenancePage
+import { useAppSettings } from './hooks/useAppSettings'; // ADDED: Import useAppSettings
+import { useIsAdmin } from './hooks/useIsAdmin'; // ADDED: Import useIsAdmin
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: Destructure isLoading
+  const { session, isLoading: isSessionLoading } = useSessionContext();
+  const { settings: appSettings, loading: loadingAppSettings } = useAppSettings(); // ADDED: Fetch app settings
+  const { isAdmin, loadingAdminStatus } = useIsAdmin(); // ADDED: Fetch admin status
 
   useTheme();
 
@@ -71,14 +76,21 @@ function App() {
       '/terms',
       '/privacy-policy',
       '/help',
+      '/maintenance', // ADDED: Maintenance page is public
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
-    // MODIFIED: Add isSessionLoading check
+
+    // ADDED: Maintenance Mode Redirection Logic
+    if (!loadingAppSettings && appSettings?.is_maintenance_mode && !isAdmin && !publicPaths.includes(currentPathBase)) {
+      navigate('/maintenance', { replace: true });
+      return; // Stop further redirection checks
+    }
+
     if (!isSessionLoading && !session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, session, navigate, isSessionLoading]); // MODIFIED: Add isSessionLoading to dependency array
+  }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]); // MODIFIED: Add appSettings, loadingAppSettings, isAdmin, loadingAdminStatus to dependency array
 
   const handleOpenHelpModal = () => {
     if (session) {
@@ -91,9 +103,11 @@ function App() {
   return (
     <ContractProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-700">
-        {/* ADDED: ErrorBoundary wrapper */}
         <ErrorBoundary>
           <Routes>
+            {/* ADDED: Maintenance Page Route */}
+            <Route path="/maintenance" element={<MaintenancePage />} />
+
             {/* Routes without Header (truly no header) */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
@@ -144,7 +158,7 @@ function App() {
               </Route>
             </Route>
           </Routes>
-        </ErrorBoundary> {/* ADDED: Closing ErrorBoundary tag */}
+        </ErrorBoundary>
       </div>
     </ContractProvider>
   );
