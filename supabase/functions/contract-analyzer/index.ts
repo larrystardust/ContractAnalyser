@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
   let contractText: string;
   let sourceLanguage: string;
   let outputLanguage: string;
+  let originalContractName: string; // ADDED: Declare originalContractName
   let userId: string;
   let userEmail: string;
   let userName: string | null = null;
@@ -116,13 +117,16 @@ Deno.serve(async (req) => {
   let userPreferredLanguage: string = 'en'; // ADDED: Default user language
 
   try {
-    const { contract_id, contract_text, source_language, output_language } = await req.json();
+    // Original line: const { contract_id, contract_text, source_language, output_language } = await req.json();
+    // MODIFIED: Added original_contract_name to destructuring
+    const { contract_id, contract_text, source_language, output_language, original_contract_name } = await req.json();
     contractId = contract_id;
     contractText = contract_text;
     sourceLanguage = source_language || 'auto';
     outputLanguage = output_language || 'en';
+    originalContractName = original_contract_name; // ADDED: Assign original contract name from request body
 
-    console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}`);
+    console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}. Original name: ${originalContractName}`); // ADDED: Log original name
 
     if (!contractId || !contractText) {
       return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
@@ -238,6 +242,8 @@ Deno.serve(async (req) => {
   }
   // --- END: Authorization Logic ---
 
+  let translatedContractName: string = originalContractName; // ADDED: Declare and initialize translatedContractName
+
   try {
     await logActivity(
       supabase,
@@ -267,12 +273,16 @@ Deno.serve(async (req) => {
     const userSelectedJurisdictions = contractDetails.jurisdictions.join(', '); // Format for prompt
     const fetchedContractName = contractDetails.name; // ADDED
 
+    // ADDED: Translate the original contract name
+    translatedContractName = await translateText(originalContractName, outputLanguage);
+    console.log(`contract-analyzer: Translated contract name: "${originalContractName}" to "${translatedContractName}"`); // ADDED: Log translation result
+
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
     // MODIFIED: Moved systemPromptContent definition here
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
-CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATUM):  
+CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
 2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
 3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
@@ -422,7 +432,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
+        contractName: translatedContractName, // MODIFIED: Use translatedContractName for the report
         analysisResult: {
           executive_summary: executiveSummary,
           data_protection_impact: dataProtectionImpact,
@@ -430,7 +440,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           jurisdiction_summaries: jurisdictionSummaries,
           findings: findings,
         },
-        outputLanguage: outputLanguage, // ADDED
+        outputLanguage: outputLanguage,
       },
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -481,10 +491,10 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         console.error('contract-analyzer: Error inserting findings:', findingsError);
       }
     }
-
+    
     const { error: updateContractError } = await supabase
       .from('contracts')
-      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage }) // MODIFIED: Save output_language
+      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName }) // MODIFIED: Save translated_name
       .eq('id', contractId);
 
     if (updateContractError) {
@@ -517,7 +527,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         reportLink: reportLink,
         reportHtmlContent: reportHtmlContent,
         userPreferredLanguage: userPreferredLanguage,
-        contractName: fetchedContractName, // ADDED: Pass contractName
+        contractName: translatedContractName, // MODIFIED: Pass translatedContractName
       },
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -570,7 +580,9 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       { contract_id: contractId, compliance_score: complianceScore }
     );
 
-    return corsResponse({ message: 'Analysis completed successfully' });
+    // Original line: return corsResponse({ message: 'Analysis completed successfully' });
+    // ADDED: Return translated_contract_name in the response
+    return corsResponse({ message: 'Analysis completed successfully', translated_contract_name: translatedContractName });
 
   } catch (error: any) {
     console.error(`contract-analyzer: Error during analysis for contract ID ${contractId}:`, error.message);
