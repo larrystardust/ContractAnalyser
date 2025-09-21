@@ -928,6 +928,7 @@
   "logout_button": "Cerrar Sesión",
   "enter_6_digit_code": "Por favor, ingrese su código 2FA.",
   "failed_to_load_mfa_factors": "Error al cargar los factores MFA.",
+  "too_many_enrolled_mfa_factors": "Se ha alcanzado el número máximo de factores verificados, anule la inscripción para continuar",
   "mfa_factor_not_found": "Factor MFA no encontrado. Por favor, intente iniciar sesión nuevamente.",
   "invalid_2fa_code": "Código 2FA inválido. Por favor, intente nuevamente.",
   "failed_to_send_otp": "Error al enviar OTP",
