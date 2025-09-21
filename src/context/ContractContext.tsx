@@ -40,6 +40,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         subscription_id,
         contract_content,
         output_language,
+        translated_name,
         analysis_results (*, findings(*))
       `)
       .eq('user_id', session.user.id)
@@ -51,7 +52,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
         const sortedAnalysisResults = dbContract.analysis_results
-          ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created.getTime() - new Date(a.created_at).getTime()))
           : [];
         
         const analysisResultData = sortedAnalysisResults.length > 0
@@ -62,8 +63,9 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           id: dbContract.id,
           user_id: dbContract.user_id,
           name: dbContract.name,
+          translated_name: dbContract.translated_name, // ADDED
           file_path: dbContract.file_path,
-          size: dbContract.size,
+          size: `${(dbContract.size / (1024 * 1024)).toFixed(2)} MB`,
           jurisdictions: dbContract.jurisdictions,
           status: dbContract.status,
           processing_progress: dbContract.processing_progress,
@@ -163,7 +165,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         .select()
         .single();
 
-      if (insertError) {
+      if (insertError) { // MOVED: This block was moved to its correct position
         throw insertError;
       }
 
@@ -175,13 +177,14 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         ...prevContracts,
       ]);
 
-      // MODIFIED: Pass source_language and output_language to addContract
+      // MODIFIED: Pass original filename for translation
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
           contract_text: newContractData.contractText,
-          source_language: newContractData.sourceLanguage, // ADDED
-          output_language: newContractData.outputLanguage, // ADDED
+          source_language: newContractData.sourceLanguage,
+          output_language: newContractData.outputLanguage,
+          original_contract_name: file.name, // ADDED: Pass original contract name
         },
       });
 
@@ -190,6 +193,10 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         await supabase.from('contracts').update({ status: 'failed' }).eq('id', data.id);
       } else {
         console.log('Edge Function invoked successfully:', edgeFunctionData);
+        // ADDED: Update the contract with the translated name received from the Edge Function
+        if (edgeFunctionData?.translated_contract_name) {
+          await supabase.from('contracts').update({ translated_name: edgeFunctionData.translated_contract_name }).eq('id', data.id);
+        }
       }
       return data.id;
     } catch (error: any) {
