@@ -96,6 +96,7 @@ Deno.serve(async (req) => {
 
     const customerId = customerData.customer_id;
 
+    console.log(`create-customer-portal: Constructing return_url: ${req.headers.get('Origin')}/settings/billing`); // ADDED LOG
     // Create a Stripe Customer Portal session
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
