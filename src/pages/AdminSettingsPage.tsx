@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react';
 import Button from '../components/ui/Button';
-import Card, { CardBody } from '../ui/Card';
+import Card, { CardBody } from '../components/ui/Card';
 import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
 import { getAllJurisdictions, getJurisdictionLabel } from '../utils/jurisdictionUtils';
 import { Jurisdiction } from '../types';
