@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
   const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
@@ -141,15 +141,15 @@ const Dashboard: React.FC = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('error_loading_dashboard')}</h2> {/* MODIFIED */}
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('error_loading_dashboard')}</h2>
           <p className="text-gray-600 mb-4">
-            {t('problem_fetching_data')} {/* MODIFIED */}
+            {t('problem_fetching_data')}
           </p>
-          {errorContracts && <p className="text-sm text-red-500">{t('contracts_error')} {errorContracts.message}</p>} {/* MODIFIED */}
-          {errorSubscription && <p className="text-sm text-red-500">{t('subscription_error')} {errorSubscription.message}</p>} {/* MODIFIED */}
-          {errorOrders && <p className="text-sm text-red-500">{t('orders_error')} {errorOrders.message}</p>} {/* MODIFIED */}
+          {errorContracts && <p className="text-sm text-red-500">{t('contracts_error')} {errorContracts.message}</p>}
+          {errorSubscription && <p className="text-sm text-red-500">{t('subscription_error')} {errorSubscription.message}</p>}
+          {errorOrders && <p className="text-sm text-red-500">{t('orders_error')} {errorOrders.message}</p>}
           <p className="text-sm text-gray-500 mt-4">
-            {t('check_supabase_rls')} {/* MODIFIED */}
+            {t('check_supabase_rls')}
           </p>
         </div>
       </div>
@@ -172,7 +172,8 @@ const Dashboard: React.FC = () => {
           <div className="lg:col-span-2">
             {selectedContract && selectedContract.analysisResult ? (
               <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {t(selectedContract.name)}</h1> {/* MODIFIED: Added t() */}
+                {/* MODIFIED: Use translated_name if available, otherwise original name */}
+                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {selectedContract.translated_name || selectedContract.name}</h1>
                 
                 {/* Analysis Results */}
                 <AnalysisResults
@@ -181,7 +182,7 @@ const Dashboard: React.FC = () => {
                   onReanalyzeInitiated={handleReanalyzeInitiated}
                   onReanalyzeCompleted={handleReanalyzeCompleted}
                   onReanalyzeFailed={handleReanalyzeFailed}
-                  contractName={selectedContract.name} 
+                  contractName={selectedContract.translated_name || selectedContract.name} // MODIFIED: Pass translated name
                 />
                 
                 {/* Jurisdiction Summaries */}
@@ -203,13 +204,13 @@ const Dashboard: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {selectedContract && selectedContract.status !== 'completed'
-                    ? t('analysis_in_progress', { name: selectedContract.name, progress: selectedContract.processing_progress || 0 }) // MODIFIED
-                    : t('no_completed_contract_selected')} {/* MODIFIED */}
+                    ? t('analysis_in_progress', { name: selectedContract.translated_name || selectedContract.name, progress: selectedContract.processing_progress || 0 }) // MODIFIED
+                    : t('no_completed_contract_selected')}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {selectedContract && selectedContract.status !== 'completed'
-                    ? t('please_wait_analysis_in_progress') // MODIFIED
-                    : t('select_contract_or_upload')} {/* MODIFIED */}
+                    ? t('please_wait_analysis_in_progress')
+                    : t('select_contract_or_upload')}
                 </p>
               </div>
             )}
@@ -221,15 +222,14 @@ const Dashboard: React.FC = () => {
           <Modal
             isOpen={showReanalysisModal}
             onClose={() => setShowReanalysisModal(false)}
-            title={t('contract_analysis_in_progress')} 
-            className="max-w-sm"
+            title={t('contract_analysis_in_progress')}
           >
             <div className="text-center py-4">
               <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-700 text-lg">
-                {reanalyzingContractName ? t('contract_being_analyzed', { contractName: reanalyzingContractName }) : t('the_contract_is_being_analyzed')} {/* MODIFIED */}
+                {reanalyzingContractName ? t('contract_being_analyzed', { contractName: reanalyzingContractName }) : t('the_contract_is_being_analyzed')}
               </p>
-              <p className="text-sm text-gray-500 mt-2">{t('may_take_minutes')}</p> {/* MODIFIED */}
+              <p className="text-sm text-gray-500 mt-2">{t('may_take_minutes')}</p>
             </div>
           </Modal>
         )}
