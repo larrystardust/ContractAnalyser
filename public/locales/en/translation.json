@@ -576,6 +576,7 @@
   "mobile_session_details": "A session from a mobile device.",
   "last_active_2_hours_ago": "Last active: 2 hours ago",
   "revoke": "Revoke",
+  "revoked_button_text": "Revoked",
   "sign_out_other_sessions": "Sign Out All Other Sessions",
   "successfully_signed_out_of_all_other_sessions": "Successfully signed out of all other sessions!",
   "failed_to_sign_out_other_sessions": "Failed to sign out other sessions.",
