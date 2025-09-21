@@ -96,12 +96,12 @@ Deno.serve(async (req) => {
 
     const customerId = customerData.customer_id;
 
-    console.log(`create-customer-portal: Constructing return_url: https://www.contractanalyser.com/settings/billing`, // TEMPORARY HARDCODED URL`); // ADDED LOG
-    // Create a Stripe Customer Portal session
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `https://www.contractanalyser.com/settings/billing`, // TEMPORARY HARDCODED URL, // Redirect back to billing settings
-    });
+    console.log(`create-customer-portal: Constructing return_url: ${req.headers.get('Origin')}/settings/billing`); // ADDED LOG
+// Create a Stripe Customer Portal session
+const portalSession = await stripe.billingPortal.sessions.create({
+  customer: customerId,
+  return_url: `${req.headers.get('Origin')}/settings/billing`, // Redirect back to billing settings
+});
 
     return corsResponse({ url: portalSession.url });
 
