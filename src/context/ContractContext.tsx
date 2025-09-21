@@ -2,9 +2,10 @@ import React, { createContext, useState, useContext, useEffect, useRef, ReactNod
 import { supabase } from '../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types';
+import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types'; // MODIFIED: Import AnalysisLanguage
 
 interface ContractContextType {
+  // MODIFIED: Update addContract signature to include sourceLanguage and outputLanguage
   addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
@@ -39,7 +40,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         subscription_id,
         contract_content,
         output_language,
-        translated_name, // ADDED: Select the new column
         analysis_results (*, findings(*))
       `)
       .eq('user_id', session.user.id)
@@ -62,7 +62,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           id: dbContract.id,
           user_id: dbContract.user_id,
           name: dbContract.name,
-          translated_name: dbContract.translated_name, // ADDED
           file_path: dbContract.file_path,
           size: dbContract.size,
           jurisdictions: dbContract.jurisdictions,
@@ -72,7 +71,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           updated_at: dbContract.updated_at,
           subscription_id: dbContract.subscription_id,
           contract_content: dbContract.contract_content,
-          output_language: dbContract.output_language,
+          output_language: dbContract.output_language, // ADDED
           analysisResult: analysisResultData ? {
             id: analysisResultData.id,
             contract_id: analysisResultData.contract_id,
@@ -124,6 +123,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
   }, [fetchContracts]);
 
+  // MODIFIED: Update addContract function to accept sourceLanguage and outputLanguage
   const addContract = useCallback(async (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => {
     if (!session?.user?.id) {
       throw new Error('User not authenticated.');
@@ -158,7 +158,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
           status: 'pending',
           processing_progress: 0,
           contract_content: newContractData.contractText,
-          output_language: newContractData.outputLanguage,
+          output_language: newContractData.outputLanguage, // ADDED
         })
         .select()
         .single();
@@ -167,14 +167,21 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         throw insertError;
       }
 
-      // MODIFIED: Pass original filename for translation
+      setContracts(prevContracts => [
+        {
+          ...data,
+          analysisResult: undefined,
+        } as Contract,
+        ...prevContracts,
+      ]);
+
+      // MODIFIED: Pass source_language and output_language to addContract
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
           contract_text: newContractData.contractText,
-          source_language: newContractData.sourceLanguage,
-          output_language: newContractData.outputLanguage,
-          original_contract_name: file.name, // ADDED: Pass original contract name
+          source_language: newContractData.sourceLanguage, // ADDED
+          output_language: newContractData.outputLanguage, // ADDED
         },
       });
 
@@ -183,10 +190,6 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         await supabase.from('contracts').update({ status: 'failed' }).eq('id', data.id);
       } else {
         console.log('Edge Function invoked successfully:', edgeFunctionData);
-        // ADDED: Update the contract with the translated name received from the Edge Function
-        if (edgeFunctionData?.translated_contract_name) {
-          await supabase.from('contracts').update({ translated_name: edgeFunctionData.translated_contract_name }).eq('id', data.id);
-        }
       }
       return data.id;
     } catch (error: any) {
