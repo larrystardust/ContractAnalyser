@@ -45,6 +45,9 @@ const SecuritySettings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null); // Moved factorId state here
 
+  // ADDED: State for the mobile session button
+  const [isMobileSessionButtonRevoked, setIsMobileSessionButtonRevoked] = useState(false);
+
   useEffect(() => {
     const fetch2FAStatus = async () => {
       if (!session?.user) return;
@@ -310,11 +313,24 @@ const SecuritySettings: React.FC = () => {
         throw signOutError;
       }
       addToast(t('successfully_signed_out_of_all_other_sessions'), 'success');
+      // When all other sessions are signed out, the mobile session button should reflect this
+      setIsMobileSessionButtonRevoked(true); // Set to revoked after successful sign out
     } catch (err: any) {
       console.error('Error signing out other sessions:', err);
       addToast(err.message || t('failed_to_sign_out_other_sessions'), 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ADDED: Handler for the specific mobile session revoke button
+  const handleMobileSessionRevoke = async () => {
+    if (isMobileSessionButtonRevoked) {
+      // If already "Revoked", clicking again makes it "Revoke" (visually only)
+      setIsMobileSessionButtonRevoked(false);
+    } else {
+      // If "Revoke", clicking signs out others and makes it "Revoked"
+      await handleSignOutOtherSessions();
     }
   };
 
@@ -580,12 +596,13 @@ const SecuritySettings: React.FC = () => {
                 <p className="text-xs text-gray-500">{t('last_active_2_hours_ago')}</p>
               </div>
               <Button
-                variant="outline"
+                variant={isMobileSessionButtonRevoked ? 'secondary' : 'outline'} // Change variant based on state
                 size="sm"
-                onClick={handleSignOutOtherSessions} // ADDED onClick handler
-                disabled={isLoading} // ADDED disabled state
+                onClick={handleMobileSessionRevoke} // Use the new handler
+                disabled={isLoading}
+                className={isMobileSessionButtonRevoked ? 'bg-red-100 text-red-700 border-red-400 hover:bg-red-200' : ''} // Apply red background when revoked
               >
-                {t('revoke')}
+                {isMobileSessionButtonRevoked ? t('revoked_button_text') : t('revoke')} {/* Change text based on state */}
               </Button>
             </div>
 
