@@ -48,7 +48,8 @@ const SampleDashboardContent: React.FC = () => {
             </Button>
           </Link>
         </div>
-        <ContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
+        {/* FIX: Changed ContractList to SampleContractList */}
+        <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
       </div>
       
       <div className="lg:col-span-2">
