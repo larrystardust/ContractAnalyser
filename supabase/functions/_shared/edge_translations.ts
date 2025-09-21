@@ -55,9 +55,65 @@ export const edgeTranslations = {
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
     "analysis_complete_message": (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
     "high_risk_findings_message": (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
-    "analysis_failed_message": (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
+    "analysis_failed_message": (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`,
+
+    // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
+    "email_subject_invitation": (inviterName: string) => `You're invited to ContractAnalyser by ${inviterName}!`,
+    "email_invitation_body_p1": (inviterName: string) => `${inviterName} has invited you to join and start using their ContractAnalyser subscription!`,
+    "email_invitation_body_p2": "Click the link below to accept the invitation and get started:",
+    "email_invitation_body_p3": "If you don't have an account yet, you will be prompted to sign up first.",
+    "email_invitation_body_p4": "Thank you for using ContractAnalyser.",
+    "email_invitation_body_p5": "The ContractAnalyser Team",
+
+    "email_otp_subject": "Your ContractAnalyser OTP",
+    "email_otp_body_p1": "Your One-Time Password (OTP) for ContractAnalyser is: <strong>{otpCode}</strong>",
+    "email_otp_body_p2": "This code is valid for 5 minutes.",
+    "email_otp_body_p3": "If you did not request this, please ignore this email.",
+    "email_otp_body_p4": "The ContractAnalyser Team",
+
+    "email_admin_reply_subject": (subject: string) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": (recipientName: string) => `Hello ${recipientName},`,
+    "email_admin_reply_body_p2": "Thank you for contacting us. Here is a reply from our support team:",
+    "email_admin_reply_body_p3": "{message}",
+    "email_admin_reply_body_p4": (adminName: string) => `Best regards, ${adminName}`,
+
+    "email_admin_created_user_subject": "Welcome to ContractAnalyser! Your Account Details",
+    "email_admin_created_user_body_p1": (recipientName: string) => `Hello ${recipientName},`,
+    "email_admin_created_user_body_p2": "An administrator has created an account for you on ContractAnalyser.",
+    "email_admin_created_user_body_p3": "You can log in using the following details:",
+    "email_admin_created_user_body_p4": "<strong>Email:</strong> {recipientEmail}",
+    "email_admin_created_user_body_p5": "<strong>Password:</strong> {initialPassword}",
+    "email_admin_created_user_body_p6": "For security reasons, we strongly recommend that you change this password immediately after your first login. To login and change your password, please visit the login page and go to \"Settings\" and then \"Security\" and enter a new password. If you have any questions, please contact support on our \"Help\" page.",
+
+    "message_otp_sent_successfully": "OTP sent successfully!",
+    "message_invalid_otp_or_used": "Invalid OTP or OTP already used.",
+    "message_otp_expired": "OTP has expired.",
+    "message_email_verified_successfully": "Email verified successfully!",
+
+    "message_self_invitation_not_allowed": "You cannot invite yourself to your own subscription. Your account is already associated as the owner.",
+    "message_only_owner_can_invite": "Only active subscription owners can invite users.",
+    "message_subscription_limit_reached": (maxUsers: number) => `Subscription limit reached. Max users: ${maxUsers}`,
+    "message_user_already_active_member": "This user is already an active member of your subscription.",
+    "message_invitation_sent_successfully": "Invitation sent successfully!",
+    "message_invitation_sent_email_error": (errorMessage: string) => `Invitation sent, but there was an error sending the email: ${errorMessage}`,
+
+    "message_invitation_accepted_successfully": "Invitation accepted successfully!",
+    "message_invalid_or_expired_invitation": "Invalid or expired invitation token.",
+    "message_invitation_not_for_this_account": "This invitation is not for your account.",
+    "message_invitation_already_accepted": "This invitation has already been accepted or is no longer valid.",
+
+    "message_inquiry_submitted_successfully": "Inquiry submitted successfully!",
+    "message_recaptcha_failed": "reCAPTCHA verification failed. Please try again.",
+    "message_missing_required_fields": "Missing required form fields or reCAPTCHA token.",
+
+    // General error/success messages for common responses
+    "message_method_not_allowed": "Method not allowed",
+    "message_unauthorized": "Unauthorized: Invalid or missing user token",
+    "message_forbidden": "Forbidden: User is not an administrator",
+    "message_server_error": (errorMessage: string) => `Server error: ${errorMessage}`,
   },
   es: {
+    // TODO: Add Spanish translations for all new keys
     report_title: "Informe de Análisis de Contrato",
     contract_name: "Nombre del Contrato:",
     analysis_date: "Fecha de Análisis:",
@@ -113,9 +169,64 @@ export const edgeTranslations = {
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
     "analysis_complete_message": (contractName: string) => `Su contrato "${contractName}" ha sido analizado con éxito.`,
     "high_risk_findings_message": (contractName: string, count: number) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`,
-    "analysis_failed_message": (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`
+    "analysis_failed_message": (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`,
+
+    // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
+    "email_subject_invitation": (inviterName: string) => `¡Has sido invitado a ContractAnalyser por ${inviterName}!`,
+    "email_invitation_body_p1": (inviterName: string) => `¡${inviterName} te ha invitado a unirte y empezar a usar su suscripción a ContractAnalyser!`,
+    "email_invitation_body_p2": "Haz clic en el siguiente enlace para aceptar la invitación y empezar:",
+    "email_invitation_body_p3": "Si aún no tienes una cuenta, se te pedirá que te registres primero.",
+    "email_invitation_body_p4": "Gracias por usar ContractAnalyser.",
+    "email_invitation_body_p5": "El Equipo de ContractAnalyser",
+
+    "email_otp_subject": "Su OTP de ContractAnalyser",
+    "email_otp_body_p1": "Su Contraseña de Un Solo Uso (OTP) para ContractAnalyser es: <strong>{otpCode}</strong>",
+    "email_otp_body_p2": "Este código es válido por 5 minutos.",
+    "email_otp_body_p3": "Si no solicitaste esto, por favor ignora este correo electrónico.",
+    "email_otp_body_p4": "El Equipo de ContractAnalyser",
+
+    "email_admin_reply_subject": (subject: string) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": (recipientName: string) => `Hola ${recipientName},`,
+    "email_admin_reply_body_p2": "Gracias por contactarnos. Aquí tienes una respuesta de nuestro equipo de soporte:",
+    "email_admin_reply_body_p3": "{message}",
+    "email_admin_reply_body_p4": (adminName: string) => `Saludos cordiales, ${adminName}`,
+
+    "email_admin_created_user_subject": "¡Bienvenido a ContractAnalyser! Detalles de su cuenta",
+    "email_admin_created_user_body_p1": (recipientName: string) => `Hola ${recipientName},`,
+    "email_admin_created_user_body_p2": "Un administrador ha creado una cuenta para ti en ContractAnalyser.",
+    "email_admin_created_user_body_p3": "Puedes iniciar sesión con los siguientes datos:",
+    "email_admin_created_user_body_p4": "<strong>Correo electrónico:</strong> {recipientEmail}",
+    "email_admin_created_user_body_p5": "<strong>Contraseña:</strong> {initialPassword}",
+    "email_admin_created_user_body_p6": "Por razones de seguridad, te recomendamos encarecidamente que cambies esta contraseña inmediatamente después de tu primer inicio de sesión. Para iniciar sesión y cambiar tu contraseña, visita la página de inicio de sesión y ve a \"Configuración\" y luego a \"Seguridad\" e introduce una nueva contraseña. Si tienes alguna pregunta, ponte en contacto con el servicio de asistencia en nuestra página de \"Ayuda\".",
+
+    "message_otp_sent_successfully": "¡OTP enviado con éxito!",
+    "message_invalid_otp_or_used": "OTP inválido o ya utilizado.",
+    "message_otp_expired": "El OTP ha expirado.",
+    "message_email_verified_successfully": "¡Correo electrónico verificado con éxito!",
+
+    "message_self_invitation_not_allowed": "No puedes invitarte a ti mismo a tu propia suscripción. Tu cuenta ya está asociada como propietario.",
+    "message_only_owner_can_invite": "Solo los propietarios de suscripciones activas pueden invitar a usuarios.",
+    "message_subscription_limit_reached": (maxUsers: number) => `Límite de suscripción alcanzado. Usuarios máximos: ${maxUsers}`,
+    "message_user_already_active_member": "Este usuario ya es un miembro activo de su suscripción.",
+    "message_invitation_sent_successfully": "¡Invitación enviada con éxito!",
+    "message_invitation_sent_email_error": (errorMessage: string) => `Invitación enviada, pero hubo un error al enviar el correo electrónico: ${errorMessage}`,
+
+    "message_invitation_accepted_successfully": "¡Invitación aceptada con éxito!",
+    "message_invalid_or_expired_invitation": "Token de invitación inválido o caducado.",
+    "message_invitation_not_for_this_account": "Esta invitación no es para tu cuenta.",
+    "message_invitation_already_accepted": "Esta invitación ya ha sido aceptada o ya no es válida.",
+
+    "message_inquiry_submitted_successfully": "¡Consulta enviada con éxito!",
+    "message_recaptcha_failed": "Verificación de reCAPTCHA fallida. Por favor, inténtalo de nuevo.",
+    "message_missing_required_fields": "Faltan campos de formulario obligatorios o token de reCAPTCHA.",
+
+    "message_method_not_allowed": "Método no permitido",
+    "message_unauthorized": "No autorizado: Token de usuario inválido o faltante",
+    "message_forbidden": "Prohibido: El usuario no es un administrador",
+    "message_server_error": (errorMessage: string) => `Error del servidor: ${errorMessage}`,
   },
   fr: {
+    // TODO: Add French translations for all new keys
     report_title: "Rapport d'Analyse de Contrat",
     contract_name: "Nom du Contrat:",
     analysis_date: "Date d'Analyse:",
@@ -171,9 +282,64 @@ export const edgeTranslations = {
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
     "analysis_complete_message": (contractName: string) => `Votre contrat "${contractName}" a été analysé avec succès.`,
     "high_risk_findings_message": (contractName: string, count: number) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
-    "analysis_failed_message": (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`
+    "analysis_failed_message": (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
+
+    // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
+    "email_subject_invitation": (inviterName: string) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`,
+    "email_invitation_body_p1": (inviterName: string) => `${inviterName} vous a invité à rejoindre et à commencer à utiliser leur abonnement ContractAnalyser !`,
+    "email_invitation_body_p2": "Cliquez sur le lien ci-dessous pour accepter l'invitation et commencer :",
+    "email_invitation_body_p3": "Si vous n'avez pas encore de compte, il vous sera demandé de vous inscrire d'abord.",
+    "email_invitation_body_p4": "Merci d'utiliser ContractAnalyser.",
+    "email_invitation_body_p5": "L'équipe ContractAnalyser",
+
+    "email_otp_subject": "Votre OTP ContractAnalyser",
+    "email_otp_body_p1": "Votre mot de passe à usage unique (OTP) pour ContractAnalyser est : <strong>{otpCode}</strong>",
+    "email_otp_body_p2": "Ce code est valable 5 minutes.",
+    "email_otp_body_p3": "Si vous n'avez pas demandé cela, veuillez ignorer cet e-mail.",
+    "email_otp_body_p4": "L'équipe ContractAnalyser",
+
+    "email_admin_reply_subject": (subject: string) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": (recipientName: string) => `Bonjour ${recipientName},`,
+    "email_admin_reply_body_p2": "Merci de nous avoir contactés. Voici une réponse de notre équipe de support :",
+    "email_admin_reply_body_p3": "{message}",
+    "email_admin_reply_body_p4": (adminName: string) => `Cordialement, ${adminName}`,
+
+    "email_admin_created_user_subject": "Bienvenue sur ContractAnalyser ! Vos détails de compte",
+    "email_admin_created_user_body_p1": (recipientName: string) => `Bonjour ${recipientName},`,
+    "email_admin_created_user_body_p2": "Un administrateur a créé un compte pour vous sur ContractAnalyser.",
+    "email_admin_created_user_body_p3": "Vous pouvez vous connecter en utilisant les détails suivants :",
+    "email_admin_created_user_body_p4": "<strong>E-mail :</strong> {recipientEmail}",
+    "email_admin_created_user_body_p5": "<strong>Mot de passe :</strong> {initialPassword}",
+    "email_admin_created_user_body_p6": "Pour des raisons de sécurité, nous vous recommandons fortement de changer ce mot de passe immédiatement après votre première connexion. Pour vous connecter et changer votre mot de passe, veuillez visiter la page de connexion et aller dans \"Paramètres\" puis \"Sécurité\" et entrer un nouveau mot de passe. Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".",
+
+    "message_otp_sent_successfully": "OTP envoyé avec succès !",
+    "message_invalid_otp_or_used": "OTP invalide ou déjà utilisé.",
+    "message_otp_expired": "L'OTP a expiré.",
+    "message_email_verified_successfully": "E-mail vérifié avec succès !",
+
+    "message_self_invitation_not_allowed": "Vous ne pouvez pas vous inviter à votre propre abonnement. Votre compte est déjà associé en tant que propriétaire.",
+    "message_only_owner_can_invite": "Seuls les propriétaires d'abonnements actifs peuvent inviter des utilisateurs.",
+    "message_subscription_limit_reached": (maxUsers: number) => `Limite d'abonnement atteinte. Utilisateurs max : ${maxUsers}`,
+    "message_user_already_active_member": "Cet utilisateur est déjà un membre actif de votre abonnement.",
+    "message_invitation_sent_successfully": "Invitation envoyée avec succès !",
+    "message_invitation_sent_email_error": (errorMessage: string) => `Invitation envoyée, mais une erreur est survenue lors de l'envoi de l'e-mail : ${errorMessage}`,
+
+    "message_invitation_accepted_successfully": "Invitation acceptée avec succès !",
+    "message_invalid_or_expired_invitation": "Jeton d'invitation invalide ou expiré.",
+    "message_invitation_not_for_this_account": "Cette invitation n'est pas pour votre compte.",
+    "message_invitation_already_accepted": "Cette invitation a déjà été acceptée ou n'est plus valide.",
+
+    "message_inquiry_submitted_successfully": "Demande soumise avec succès !",
+    "message_recaptcha_failed": "Échec de la vérification reCAPTCHA. Veuillez réessayer.",
+    "message_missing_required_fields": "Champs de formulaire obligatoires ou jeton reCAPTCHA manquants.",
+
+    "message_method_not_allowed": "Méthode non autorisée",
+    "message_unauthorized": "Non autorisé : Jeton utilisateur invalide ou manquant",
+    "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
+    "message_server_error": (errorMessage: string) => `Erreur du serveur : ${errorMessage}`,
   },
   ar: {
+    // TODO: Add Arabic translations for all new keys
     report_title: "تقرير تحليل العقد",
     contract_name: "اسم العقد:",
     analysis_date: "تاريخ التحليل:",
@@ -229,7 +395,61 @@ export const edgeTranslations = {
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
     "analysis_complete_message": (contractName: string) => `تم تحليل عقدك "${contractName}" بنجاح.`,
     "high_risk_findings_message": (contractName: string, count: number) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
-    "analysis_failed_message": (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`
+    "analysis_failed_message": (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`,
+
+    // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
+    "email_subject_invitation": (inviterName: string) => `أنت مدعو إلى ContractAnalyser بواسطة ${inviterName}!`,
+    "email_invitation_body_p1": (inviterName: string) => `لقد دعاك ${inviterName} للانضمام والبدء في استخدام اشتراكهم في ContractAnalyser!`,
+    "email_invitation_body_p2": "انقر على الرابط أدناه لقبول الدعوة والبدء:",
+    "email_invitation_body_p3": "إذا لم يكن لديك حساب بعد، سيُطلب منك التسجيل أولاً.",
+    "email_invitation_body_p4": "شكراً لاستخدامك ContractAnalyser.",
+    "email_invitation_body_p5": "فريق ContractAnalyser",
+
+    "email_otp_subject": "رمز OTP الخاص بك من ContractAnalyser",
+    "email_otp_body_p1": "كلمة المرور لمرة واحدة (OTP) الخاصة بك لـ ContractAnalyser هي: <strong>{otpCode}</strong>",
+    "email_otp_body_p2": "هذا الرمز صالح لمدة 5 دقائق.",
+    "email_otp_body_p3": "إذا لم تطلب هذا، يرجى تجاهل هذا البريد الإلكتروني.",
+    "email_otp_body_p4": "فريق ContractAnalyser",
+
+    "email_admin_reply_subject": (subject: string) => `رد: ${subject}`,
+    "email_admin_reply_body_p1": (recipientName: string) => `مرحباً ${recipientName},`,
+    "email_admin_reply_body_p2": "شكراً لتواصلك معنا. إليك رد من فريق الدعم لدينا:",
+    "email_admin_reply_body_p3": "{message}",
+    "email_admin_reply_body_p4": (adminName: string) => `مع خالص التقدير، ${adminName}`,
+
+    "email_admin_created_user_subject": "مرحباً بك في ContractAnalyser! تفاصيل حسابك",
+    "email_admin_created_user_body_p1": (recipientName: string) => `مرحباً ${recipientName},`,
+    "email_admin_created_user_body_p2": "قام مسؤول بإنشاء حساب لك على ContractAnalyser.",
+    "email_admin_created_user_body_p3": "يمكنك تسجيل الدخول باستخدام التفاصيل التالية:",
+    "email_admin_created_user_body_p4": "<strong>البريد الإلكتروني:</strong> {recipientEmail}",
+    "email_admin_created_user_body_p5": "<strong>كلمة المرور:</strong> {initialPassword}",
+    "email_admin_created_user_body_p6": "لأسباب أمنية، نوصي بشدة بتغيير كلمة المرور هذه فور تسجيل الدخول الأول. لتسجيل الدخول وتغيير كلمة المرور، يرجى زيارة صفحة تسجيل الدخول ثم الانتقال إلى \"الإعدادات\" ثم \"الأمان\" وإدخال كلمة مرور جديدة. إذا كان لديك أي أسئلة، يرجى الاتصال بالدعم على صفحة \"المساعدة\" الخاصة بنا.",
+
+    "message_otp_sent_successfully": "تم إرسال رمز OTP بنجاح!",
+    "message_invalid_otp_or_used": "رمز OTP غير صالح أو تم استخدامه بالفعل.",
+    "message_otp_expired": "انتهت صلاحية رمز OTP.",
+    "message_email_verified_successfully": "تم التحقق من البريد الإلكتروني بنجاح!",
+
+    "message_self_invitation_not_allowed": "لا يمكنك دعوة نفسك إلى اشتراكك الخاص. حسابك مرتبط بالفعل كمالك.",
+    "message_only_owner_can_invite": "يمكن لمالكي الاشتراك النشطين فقط دعوة المستخدمين.",
+    "message_subscription_limit_reached": (maxUsers: number) => `تم الوصول إلى حد الاشتراك. الحد الأقصى للمستخدمين: ${maxUsers}`,
+    "message_user_already_active_member": "هذا المستخدم عضو نشط بالفعل في اشتراكك.",
+    "message_invitation_sent_successfully": "تم إرسال الدعوة بنجاح!",
+    "message_invitation_sent_email_error": (errorMessage: string) => `تم إرسال الدعوة، ولكن حدث خطأ أثناء إرسال البريد الإلكتروني: ${errorMessage}`,
+
+    "message_invitation_accepted_successfully": "تم قبول الدعوة بنجاح!",
+    "message_invalid_or_expired_invitation": "رمز الدعوة غير صالح أو منتهي الصلاحية.",
+    "message_invitation_not_for_this_this_account": "هذه الدعوة ليست لحسابك.",
+    "message_invitation_already_accepted": "تم قبول هذه الدعوة بالفعل أو لم تعد صالحة.",
+
+    "message_inquiry_submitted_successfully": "تم إرسال الاستفسار بنجاح!",
+    "message_recaptcha_failed": "فشل التحقق من reCAPTCHA. يرجى المحاولة مرة أخرى.",
+    "message_missing_required_fields": "حقول النموذج المطلوبة أو رمز reCAPTCHA مفقود.",
+
+    "message_method_not_allowed": "الطريقة غير مسموح بها",
+    "message_unauthorized": "غير مصرح به: رمز المستخدم غير صالح أو مفقود",
+    "message_forbidden": "ممنوع: المستخدم ليس مسؤولاً",
+    "message_server_error": (errorMessage: string) => `خطأ في الخادم: ${errorMessage}`,
   }
 };
 
@@ -239,7 +459,7 @@ export function getTranslatedMessage(key: string, lang: string, interpolation: R
 
   // MODIFIED: Check if 'message' is a function before calling .replace()
   if (typeof message === 'function') {
-    message = message(interpolation.contractName, interpolation.count, interpolation.year); // Execute the function with interpolation values
+    message = message(interpolation.contractName, interpolation.count, interpolation.year, interpolation.otpCode, interpolation.maxUsers, interpolation.recipientName, interpolation.recipientEmail, interpolation.initialPassword, interpolation.adminName, interpolation.subject, interpolation.message, interpolation.errorMessage); // Execute the function with interpolation values
   }
 
   // Apply interpolation for string messages (if any)
