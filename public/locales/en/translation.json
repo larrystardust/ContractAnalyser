@@ -1284,5 +1284,17 @@
   "failed_to_fetch_report": "Failed to fetch report (Status: {{status}}, {{statusText}}).",
   "link_expired_invalid": "Link expired or invalid.",
   "loading_report": "Loading report",
-  "error_loading_report": "Error Loading Report"
+  "error_loading_report": "Error Loading Report",
+
+  "maintenance_page_title": "Site Under Maintenance",
+  "maintenance_hero_title": "We're Under Maintenance",
+  "maintenance_hero_description": "ContractAnalyser is currently performing essential maintenance to improve your experience. The site will be back up soon. Please check back later!",
+  "maintenance_check_back_later": "We'll be back online shortly. Thank you for your patience.",
+  "maintenance_admin_access": "Admin Access",
+  "maintenance_admin_dashboard_button": "Admin Dashboard",
+  "maintenance_back_to_login_button": "Back to Login",
+  "application_settings_maintenance_mode": "Maintenance Mode",
+  "application_settings_maintenance_mode_hint": "Enable this to put the entire application into maintenance mode. Only administrators will be able to access the site.",
+  "maintenance_mode_enabled": "Maintenance mode is ENABLED",
+  "maintenance_mode_disabled": "Maintenance mode is DISABLED"
 }
