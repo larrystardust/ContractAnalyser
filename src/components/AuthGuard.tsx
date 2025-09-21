@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
 
+// Removed isPasswordResetFlow from props as it's not being passed and is redundant
 interface AuthGuardProps {
-  isPasswordResetFlow: boolean;
   children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
+const AuthGuard: React.FC<AuthGuardProps> = () => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
-  
+  const navigate = useNavigate(); // useNavigate must be called unconditionally
+
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
   const [isRecoverySession, setIsRecoverySession] = useState(false);
@@ -35,24 +36,20 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
 
   // Global state to track password reset flow across all browser tabs
   useEffect(() => {
-    // Set a global flag to indicate password reset flow is active
-    if (isPasswordResetFlow) {
-      localStorage.setItem('passwordResetFlowActive', 'true');
-      localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
-    }
-
-    // Check if password reset flow is active from other tabs
+    // The isPasswordResetFlow prop was not being passed, so this logic was not fully active based on prop.
+    // Relying on localStorage flags set by ResetPassword page or URL hash.
     const checkGlobalResetFlow = () => {
       const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
       const startTime = localStorage.getItem('passwordResetFlowStartTime');
       
       if (resetFlowActive === 'true' && startTime) {
         const elapsedTime = Date.now() - parseInt(startTime);
-        if (elapsedTime < 15 * 60 * 1000) {
+        if (elapsedTime < 15 * 60 * 1000) { // 15 minutes validity
           setIsRecoverySession(true);
         } else {
           localStorage.removeItem('passwordResetFlowActive');
           localStorage.removeItem('passwordResetFlowStartTime');
+          setIsRecoverySession(false); // Expired
         }
       }
     };
@@ -74,9 +71,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [isPasswordResetFlow]);
+  }, []); // No dependency on isPasswordResetFlow prop, as it's not passed.
 
-  // Check URL for recovery session
+  // Check URL for recovery session (e.g., from password reset email link)
   useEffect(() => {
     const checkRecoverySession = () => {
       const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -92,8 +89,57 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     checkRecoverySession();
   }, [location.hash]);
 
+  // Normal authentication flow check (moved to be unconditional)
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (loadingSession) return; // Wait for session to load
+
+      setLoadingAuthChecks(true);
+
+      if (!session?.user) {
+        setTargetAal(null);
+        setLoadingAuthChecks(false);
+        return;
+      }
+
+      try {
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        if (factorsError) {
+          // If error fetching factors, assume aal2 for now to avoid blocking
+          // This might need more robust error handling depending on expected behavior
+          setTargetAal('aal2');
+          setLoadingAuthChecks(false);
+          return;
+        }
+
+        const hasMfaEnrolled = factors.totp.length > 0;
+
+        if (hasMfaEnrolled) {
+          const mfaPassedFlag = localStorage.getItem('mfa_passed');
+          if (mfaPassedFlag === 'true') {
+            setTargetAal('aal2');
+          } else {
+            setTargetAal('aal1');
+          }
+        } else {
+          setTargetAal('aal2');
+        }
+      } catch (err) {
+        console.error("AuthGuard: Error during MFA check:", err);
+        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
+      } finally {
+        setLoadingAuthChecks(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, [session, loadingSession, supabase]);
+
+
+  // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
+
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
-  if (isPasswordResetFlow || isRecoverySession) {
+  if (isRecoverySession) {
     // Set global flag to block modals and overlays
     localStorage.setItem('blockModalsDuringReset', 'true');
     
@@ -118,49 +164,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
-  // Normal authentication flow
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (loadingSession) return;
-
-      setLoadingAuthChecks(true);
-
-      if (!session?.user) {
-        setTargetAal(null);
-        setLoadingAuthChecks(false);
-        return;
-      }
-
-      try {
-        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) {
-          setTargetAal('aal2');
-          setLoadingAuthChecks(false);
-          return;
-        }
-
-        const hasMfaEnrolled = factors.totp.length > 0;
-
-        if (hasMfaEnrolled) {
-          const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true') {
-            setTargetAal('aal2');
-          } else {
-            setTargetAal('aal1');
-          }
-        } else {
-          setTargetAal('aal2');
-        }
-      } catch (err) {
-        setTargetAal('aal2');
-      } finally {
-        setLoadingAuthChecks(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, [session, loadingSession, supabase]);
-
+  // Show loading indicator for authentication checks (MFA, admin status etc.)
   if (loadingAuthChecks) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -169,18 +173,22 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ isPasswordResetFlow }) => {
     );
   }
 
+  // If not authenticated, redirect to login
   if (!session || !session.user) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
+  // If MFA is required (aal1), redirect to MFA challenge
   if (targetAal === 'aal1') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
+  // If authenticated and MFA passed (aal2), render protected content
   if (targetAal === 'aal2') {
     return <Outlet />;
   }
 
+  // Fallback: Should ideally not be reached, but redirects to login if an unexpected state occurs
   return <Navigate to="/login" replace />;
 };
 
