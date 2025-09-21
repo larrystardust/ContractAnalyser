@@ -1285,5 +1285,17 @@
   "failed_to_fetch_report": "Échec de la récupération du rapport (Statut : {{status}}, {{statusText}}).",
   "link_expired_invalid": "Lien expiré ou invalide.",
   "loading_report": "Chargement du rapport",
-  "error_loading_report": "Erreur de Chargement du Rapport"
+  "error_loading_report": "Erreur de Chargement du Rapport",
+
+  "maintenance_page_title": "Site en Maintenance",
+  "maintenance_hero_title": "Nous sommes en Maintenance",
+  "maintenance_hero_description": "ContractAnalyser effectue actuellement une maintenance essentielle pour améliorer votre expérience. Le site sera bientôt de nouveau opérationnel. Veuillez revenir plus tard !",
+  "maintenance_check_back_later": "Nous serons de retour en ligne sous peu. Merci de votre patience.",
+  "maintenance_admin_access": "Accès Administrateur",
+  "maintenance_admin_dashboard_button": "Tableau de Bord Admin",
+  "maintenance_back_to_login_button": "Retour à la Connexion",
+  "application_settings_maintenance_mode": "Mode Maintenance",
+  "application_settings_maintenance_mode_hint": "Activez ceci pour mettre toute l'application en mode maintenance. Seuls les administrateurs pourront accéder au site.",
+  "maintenance_mode_enabled": "Le mode maintenance est ACTIVÉ",
+  "maintenance_mode_disabled": "Le mode maintenance est DÉSACTIVÉ"
 }
