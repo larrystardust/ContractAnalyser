@@ -1,7 +1,8 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1'; // Corrected Resend version to 6.0.1
-import { logActivity } from '../_shared/logActivity.ts'; // ADDED
+import { logActivity } from '../_shared/logActivity.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -30,26 +31,26 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: 'Method not allowed' }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
   }
 
   try {
     const { recipientEmail, subject, message, recipientName, adminName, replyType, entityId } = await req.json();
 
     if (!recipientEmail || !subject || !message || !replyType || !entityId) {
-      return corsResponse({ error: 'Missing required parameters: recipientEmail, subject, message, replyType, entityId' }, 400);
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400); // MODIFIED
     }
 
     // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return corsResponse({ error: 'Authorization header missing' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401); // MODIFIED
     }
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401); // MODIFIED
     }
 
     // Verify if the user is an admin (assuming 'is_admin' column in 'profiles' table)
@@ -60,8 +61,26 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (adminProfileError || !adminProfile?.is_admin) {
-      return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
+      return corsResponse({ error: getTranslatedMessage('message_forbidden', 'en') }, 403); // MODIFIED
     }
+
+    // ADDED: Fetch recipient's preferred language
+    let recipientPreferredLanguage = 'en'; // Default to English
+    const { data: recipientProfile, error: recipientProfileError } = await supabase
+      .from('profiles')
+      .select('theme_preference') // Assuming theme_preference can indicate language
+      .eq('id', user.id) // Assuming recipient's user ID is available or can be fetched
+      .maybeSingle();
+
+    if (recipientProfileError) {
+      console.warn('Error fetching recipient profile for language:', recipientProfileError);
+    } else if (recipientProfile?.theme_preference) {
+      // Map theme_preference to language if applicable, or use a dedicated language field
+      if (['es', 'fr', 'ar'].includes(recipientProfile.theme_preference)) {
+        recipientPreferredLanguage = recipientProfile.theme_preference;
+      }
+    }
+    // END ADDED
 
     console.log(`Attempting to send admin reply email to ${recipientEmail} from ${adminName || user.email}.`);
 
@@ -70,17 +89,16 @@ Deno.serve(async (req) => {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
         to: [recipientEmail],
-        subject: `Re: ${subject}`,
+        subject: getTranslatedMessage('email_admin_reply_subject', recipientPreferredLanguage, { subject: subject }), // MODIFIED
         html: `
-          <p>Hello ${recipientName || 'there'},</p>
-          <p>Thank you for contacting us. Here is a reply from our support team:</p>
+          <p>${getTranslatedMessage('email_admin_reply_body_p1', recipientPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
+          <p>${getTranslatedMessage('email_admin_reply_body_p2', recipientPreferredLanguage)}</p>
           <hr/>
-          <p>${message}</p>
+          <p>${getTranslatedMessage('email_admin_reply_body_p3', recipientPreferredLanguage, { message: message })}</p>
           <hr/>
-          <p>Best regards,</p>
-          <p>${adminName || 'The Support Team'}</p>
-          <p>ContractAnalyser</p>
-        `,
+          <p>${getTranslatedMessage('email_admin_reply_body_p4', recipientPreferredLanguage, { adminName: adminName || 'The Support Team' })}</p>
+          <p>${getTranslatedMessage('email_invitation_body_p5', recipientPreferredLanguage)}</p>
+        `, // MODIFIED
       });
 
       if (error) {
@@ -134,13 +152,13 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error inserting reply into database:', insertError);
-      return corsResponse({ error: 'Failed to save reply in database.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', recipientPreferredLanguage, { errorMessage: 'Failed to save reply in database.' }) }, 500); // MODIFIED
     }
 
-    return corsResponse({ message: 'Admin reply sent and saved successfully!' });
+    return corsResponse({ message: getTranslatedMessage('message_invitation_sent_successfully', recipientPreferredLanguage) }); // MODIFIED
 
   } catch (error: any) {
     console.error('Error in send-admin-reply-email Edge Function:', error);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
   }
 });
