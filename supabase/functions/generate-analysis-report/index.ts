@@ -7,6 +7,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
+// Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
                   ${Object.keys(finalAnalysisResult.jurisdiction_summaries).length > 0 ?
                       Object.entries(finalAnalysisResult.jurisdiction_summaries).map(([key, summary]: [string, any]) => `
                           <div class="jurisdiction-summary">
-                              <h4>${summary.jurisdiction}</h4>
+                              <h4>${getTranslatedMessage('jurisdiction_' + summary.jurisdiction.toLowerCase().replace(/\s/g, '_'), outputLanguage)}</h4>
                               ${summary.applicableLaws && summary.applicableLaws.length > 0 ? `
                                   <strong>${getTranslatedMessage('applicable_laws', outputLanguage)}</strong>
                                   <ul>
@@ -211,8 +212,8 @@ Deno.serve(async (req) => {
                                       <span class="risk-badge risk-${getSafeRiskLevel(currentRiskLevel)}">${getTranslatedMessage(`risk_${getSafeRiskLevel(currentRiskLevel)}`, outputLanguage)}</span>
                                   ` : ''}
                               </div>
-                              <p><strong>${getTranslatedMessage('jurisdiction_label', outputLanguage)}</strong> ${finding.jurisdiction}</p>
-                              <p><strong>${getTranslatedMessage('category_label', outputLanguage)}</strong> ${finding.category}</p>
+                              <p><strong>${getTranslatedMessage('jurisdiction_label', outputLanguage)}</strong> ${getTranslatedMessage('jurisdiction_' + finding.jurisdiction.toLowerCase().replace(/\s/g, '_'), outputLanguage)}</p>
+                              <p><strong>${getTranslatedMessage('category_label', outputLanguage)}</strong> ${getTranslatedMessage('category_' + finding.category.toLowerCase().replace(/-/g, '_'), outputLanguage)}</p>
                               ${finding.clause_reference ? `<p><strong>${getTranslatedMessage('clause_reference_label', outputLanguage)}</strong> ${finding.clause_reference}</p>` : ''}
                               <p>${finding.description}</p>
                               ${finding.recommendations && finding.recommendations.length > 0 ? `
