@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { default_theme, default_jurisdictions, global_email_reports_enabled } = await req.json();
+    const { default_theme, default_jurisdictions, global_email_reports_enabled, is_maintenance_mode } = await req.json(); // MODIFIED: Added is_maintenance_mode
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
         default_theme: default_theme,
         default_jurisdictions: default_jurisdictions,
         global_email_reports_enabled: global_email_reports_enabled,
+        is_maintenance_mode: is_maintenance_mode, // ADDED: Update new field
       })
       .eq('id', '00000000-0000-0000-0000-000000000000') // Ensure we update the single row
       .select()
