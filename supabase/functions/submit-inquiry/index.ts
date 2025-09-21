@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { logActivity } from '../_shared/logActivity.ts'; // ADDED
+import { logActivity } from '../_shared/logActivity.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -27,21 +28,23 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: 'Method not allowed' }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
   }
 
   try {
     const { first_name, last_name, email, subject, message, recaptcha_token } = await req.json();
+    // For unauthenticated flows, we default to English as we don't have user's preference
+    const userPreferredLanguage = 'en'; // ADDED
 
     if (!first_name || !last_name || !email || !subject || !message || !recaptcha_token) {
-      return corsResponse({ error: 'Missing required form fields or reCAPTCHA token.' }, 400);
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400); // MODIFIED
     }
 
     // Verify reCAPTCHA token with Google's API
     const recaptchaSecretKey = Deno.env.get('RECAPTCHA_SECRET_KEY');
     if (!recaptchaSecretKey) {
       console.error('RECAPTCHA_SECRET_KEY is not set in environment variables.');
-      return corsResponse({ error: 'Server configuration error: reCAPTCHA secret key missing.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'reCAPTCHA secret key missing.' }) }, 500); // MODIFIED
     }
 
     const recaptchaVerificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptcha_token}`;
@@ -50,7 +53,7 @@ Deno.serve(async (req) => {
 
     if (!recaptchaData.success) {
       console.warn('reCAPTCHA verification failed:', recaptchaData['error-codes']);
-      return corsResponse({ error: 'reCAPTCHA verification failed. Please try again.' }, 403);
+      return corsResponse({ error: getTranslatedMessage('message_recaptcha_failed', userPreferredLanguage) }, 403); // MODIFIED
     }
 
     // reCAPTCHA passed, now insert inquiry into database
@@ -69,7 +72,7 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error inserting inquiry:', insertError);
-      return corsResponse({ error: insertError.message || 'Failed to submit inquiry to database.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: insertError.message || 'Failed to submit inquiry to database.' }) }, 500); // MODIFIED
     }
 
     // ADDED: Log activity
@@ -81,10 +84,10 @@ Deno.serve(async (req) => {
       { inquiry_id: data.id, email: email, subject: subject }
     );
 
-    return corsResponse({ message: 'Inquiry submitted successfully!', inquiry: data });
+    return corsResponse({ message: getTranslatedMessage('message_inquiry_submitted_successfully', userPreferredLanguage), inquiry: data }); // MODIFIED
 
   } catch (error: any) {
     console.error('Error in submit-inquiry Edge Function:', error);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
   }
 });
