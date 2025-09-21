@@ -6,7 +6,7 @@ import Card, { CardBody } from '../components/ui/Card';
 import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
 import { getAllJurisdictions, getJurisdictionLabel } from '../utils/jurisdictionUtils';
 import { Jurisdiction } from '../types';
-import Modal from '../ui/Modal';
+import Modal from '../components/ui/Modal';
 import adminService from '../services/adminService';
 import { useTranslation } from 'react-i18next';
 
