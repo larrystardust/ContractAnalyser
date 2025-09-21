@@ -36,7 +36,7 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
-import { useSession } from '@supabase/auth-helpers-react';
+import { useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Changed from useSession to useSessionContext
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
@@ -48,7 +48,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
-  const session = useSession();
+  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: Destructure isLoading
 
   useTheme();
 
@@ -74,10 +74,11 @@ function App() {
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
-    if (!session && !publicPaths.includes(currentPathBase)) {
+    // MODIFIED: Add isSessionLoading check
+    if (!isSessionLoading && !session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, session, navigate]);
+  }, [location, session, navigate, isSessionLoading]); // MODIFIED: Add isSessionLoading to dependency array
 
   const handleOpenHelpModal = () => {
     if (session) {
