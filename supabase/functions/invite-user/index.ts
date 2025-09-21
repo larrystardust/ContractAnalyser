@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { logActivity } from '../_shared/logActivity.ts'; // ADDED
+import { logActivity } from '../_shared/logActivity.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 
@@ -24,7 +25,7 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: 'Method not allowed' }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
   }
 
   try {
@@ -36,14 +37,14 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('invite-user: Authorization header missing.');
-      return corsResponse({ error: 'Authorization header missing' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401); // MODIFIED
     }
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
       console.error('invite-user: Unauthorized - Invalid or missing user token:', userError?.message);
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401); // MODIFIED
     }
 
     const invitingUserId = user.id;
@@ -51,10 +52,27 @@ Deno.serve(async (req) => {
     console.log('invite-user: Inviting user ID:', invitingUserId);
     console.log('invite-user: Inviting user email:', invitingUserEmail);
 
+    // ADDED: Fetch inviter's preferred language
+    let inviterPreferredLanguage = 'en'; // Default to English
+    const { data: inviterProfileData, error: inviterProfileError } = await supabase
+      .from('profiles')
+      .select('theme_preference') // Assuming theme_preference can indicate language
+      .eq('id', invitingUserId)
+      .maybeSingle();
+
+    if (inviterProfileError) {
+      console.warn('Error fetching inviter profile for language:', inviterProfileError);
+    } else if (inviterProfileData?.theme_preference) {
+      if (['es', 'fr', 'ar'].includes(inviterProfileData.theme_preference)) {
+        inviterPreferredLanguage = inviterProfileData.theme_preference;
+      }
+    }
+    // END ADDED
+
     // RE-INTRODUCED: Self-invitation check to prevent overwriting owner's record
     if (invitingUserEmail && invited_email.toLowerCase() === invitingUserEmail.toLowerCase()) {
       console.warn('invite-user: Attempted self-invitation. This is not allowed as it would overwrite the owner\'s membership record.');
-      return corsResponse({ error: 'You cannot invite yourself to your own subscription. Your account is already associated as the owner.' }, 400);
+      return corsResponse({ error: getTranslatedMessage('message_self_invitation_not_allowed', inviterPreferredLanguage) }, 400); // MODIFIED
     }
 
     // 1. Get the inviting user's active subscription and their role
@@ -67,7 +85,7 @@ Deno.serve(async (req) => {
 
     if (inviterError || !inviterMembership || inviterMembership.role !== 'owner') {
       console.error('invite-user: Inviter not authorized or not owner:', inviterError?.message || 'Not owner');
-      return corsResponse({ error: 'Only active subscription owners can invite users.' }, 403);
+      return corsResponse({ error: getTranslatedMessage('message_only_owner_can_invite', inviterPreferredLanguage) }, 403); // MODIFIED
     }
 
     const subscriptionId = inviterMembership.subscription_id;
@@ -82,7 +100,7 @@ Deno.serve(async (req) => {
 
     if (subDetailsError || !subscriptionDetails) {
       console.error('invite-user: Could not retrieve subscription details:', subDetailsError?.message);
-      return corsResponse({ error: 'Could not retrieve subscription details.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Could not retrieve subscription details.' }) }, 500); // MODIFIED
     }
 
     const maxUsers = subscriptionDetails.max_users;
@@ -104,17 +122,15 @@ Deno.serve(async (req) => {
     if (existingAuthUsers && existingAuthUsers.length > 0 && existingAuthUsers[0].email?.toLowerCase() === invited_email.toLowerCase()) {
       invitedUserId = existingAuthUsers[0].id;
     }
-    console.log('invite-user: Existing invited user ID (from auth.users):', invitedUserId);
-    // NEW LOG: Confirm the final invitedUserId value
     console.log('invite-user: DEBUG - Final invitedUserId determined:', invitedUserId);
 
 
     if (listUsersError) {
       console.error('invite-user: Error fetching invited user by email from auth.users:', listUsersError);
-      return corsResponse({ error: 'Error checking invited user existence.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Error checking invited user existence.' }) }, 500); // MODIFIED
     }
 
-    let finalMessage = 'Invitation sent successfully!';
+    let finalMessage = getTranslatedMessage('message_invitation_sent_successfully', inviterPreferredLanguage); // MODIFIED
     let membershipRecordId: string;
 
     // Check if the invited email corresponds to an existing user
@@ -129,14 +145,14 @@ Deno.serve(async (req) => {
 
       if (existingMembershipError) {
         console.error('invite-user: Error checking existing membership for invited user:', existingMembershipError);
-        return corsResponse({ error: 'Failed to check invited user\'s membership status.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Failed to check invited user\'s membership status.' }) }, 500); // MODIFIED
       }
 
       if (existingMembership && existingMembership.status === 'active') {
         // User is already an active member of this specific subscription.
         // Return success without re-inviting or sending redundant email.
         console.log('invite-user: Invited user is already an active member of this subscription. No action needed.');
-        return corsResponse({ message: 'This user is already an active member of your subscription.' });
+        return corsResponse({ message: getTranslatedMessage('message_user_already_active_member', inviterPreferredLanguage) }); // MODIFIED
       }
 
       // User exists but is not an active member of this specific subscription (or has a different status).
@@ -150,13 +166,13 @@ Deno.serve(async (req) => {
 
       if (countError) {
         console.error('invite-user: Could not count current members for limit check:', countError);
-        return corsResponse({ error: 'Could not count current members.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Could not count current members.' }) }, 500); // MODIFIED
       }
       console.log('invite-user: Current members count:', currentMembersCount);
 
       if (maxUsers !== 999999 && currentMembersCount && currentMembersCount >= maxUsers) {
         console.warn('invite-user: Subscription limit reached. Max users:', maxUsers);
-        return corsResponse({ error: `Subscription limit reached. Max users: ${maxUsers}` }, 403);
+        return corsResponse({ error: getTranslatedMessage('message_subscription_limit_reached', inviterPreferredLanguage, { maxUsers: maxUsers }) }, 403); // MODIFIED
       }
 
       // Upsert the membership record for the existing user
@@ -175,7 +191,7 @@ Deno.serve(async (req) => {
 
       if (upsertMembershipError) {
         console.error('invite-user: Error upserting membership for existing user:', upsertMembershipError);
-        return corsResponse({ error: 'Failed to create invitation for existing user.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Failed to create invitation for existing user.' }) }, 500); // MODIFIED
       }
       console.log('invite-user: Upserted membership for existing user:', upsertedMembership.id);
       membershipRecordId = upsertedMembership.id;
@@ -190,13 +206,13 @@ Deno.serve(async (req) => {
 
       if (countError) {
         console.error('invite-user: Could not count current members for limit check (unregistered user path):', countError);
-        return corsResponse({ error: 'Could not count current members.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Could not count current members.' }) }, 500); // MODIFIED
       }
       console.log('invite-user: Current members count (unregistered user path):', currentMembersCount);
 
       if (maxUsers !== 999999 && currentMembersCount && currentMembersCount >= maxUsers) {
         console.warn('invite-user: Subscription limit reached for unregistered user. Max users:', maxUsers);
-        return corsResponse({ error: `Subscription limit reached. Max users: ${maxUsers}` }, 403);
+        return corsResponse({ error: getTranslatedMessage('message_subscription_limit_reached', inviterPreferredLanguage, { maxUsers: maxUsers }) }, 403); // MODIFIED
       }
 
       // Insert a new membership record with user_id as null and store invited_email_address
@@ -216,7 +232,7 @@ Deno.serve(async (req) => {
 
       if (insertMembershipError) {
         console.error('invite-user: Error inserting new membership for unregistered user:', insertMembershipError);
-        return corsResponse({ error: 'Failed to create invitation for unregistered user.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('message_server_error', inviterPreferredLanguage, { errorMessage: 'Failed to create invitation for unregistered user.' }) }, 500); // MODIFIED
       }
       console.log('invite-user: Successfully inserted new membership for unregistered user:', newMembership.id);
       membershipRecordId = newMembership.id;
@@ -233,16 +249,17 @@ Deno.serve(async (req) => {
         recipientEmail: invited_email,
         invitationLink: acceptInvitationUrl,
         inviterName: user.email,
+        userPreferredLanguage: inviterPreferredLanguage, // ADDED: Pass inviter's language
       },
     });
 
     // Check for email sending errors and modify finalMessage if needed
     if (emailFnInvokeError) {
       console.error('invite-user: Error invoking send-invitation-email Edge Function:', emailFnInvokeError);
-      finalMessage = `Invitation sent, but there was an error sending the email: ${emailFnInvokeError.message}`;
+      finalMessage = getTranslatedMessage('message_invitation_sent_email_error', inviterPreferredLanguage, { errorMessage: emailFnInvokeError.message }); // MODIFIED
     } else if (emailFnResponse && !emailFnResponse.success) {
       console.warn('invite-user: send-invitation-email Edge Function reported failure:', emailFnResponse.message);
-      finalMessage = `Invitation sent, but the email could not be delivered: ${emailFnResponse.message}`;
+      finalMessage = getTranslatedMessage('message_invitation_sent_email_error', inviterPreferredLanguage, { errorMessage: emailFnResponse.message }); // MODIFIED
     } else {
       console.log('invite-user: send-invitation-email Edge Function invoked successfully.');
     }
@@ -260,6 +277,6 @@ Deno.serve(async (req) => {
 
   } catch (error: any) {
     console.error(`invite-user: Unhandled error in Edge Function: ${error.message}`, error);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
   }
 });
