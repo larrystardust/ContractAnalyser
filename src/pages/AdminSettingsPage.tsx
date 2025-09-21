@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Settings, Palette, Globe, Mail, Bell } from 'lucide-react';
-import Card, { CardBody } from '../components/ui/Card';
-import Button from '../components/ui/Button';
+import Button from '../ui/Button';
+import Card, { CardBody } from '../ui/Card';
 import { useAppSettings, AppSettings } from '../hooks/useAppSettings';
 import { getAllJurisdictions, getJurisdictionLabel } from '../utils/jurisdictionUtils';
-import { Jurisdiction } from '../../types';
-import Modal from '../components/ui/Modal';
+import { Jurisdiction } from '../types';
+import Modal from '../ui/Modal';
 import adminService from '../services/adminService';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +33,7 @@ const AdminSettingsPage: React.FC = () => {
         default_theme: settings.default_theme,
         default_jurisdictions: settings.default_jurisdictions,
         global_email_reports_enabled: settings.global_email_reports_enabled,
+        is_maintenance_mode: settings.is_maintenance_mode, // ADDED: Initialize new field
       });
     }
   }, [settings]);
@@ -92,6 +93,27 @@ const AdminSettingsPage: React.FC = () => {
       setSendingNotification(false);
     }
   };
+
+  const ToggleSwitch: React.FC<{
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    disabled?: boolean;
+  }> = ({ checked, onChange, disabled = false }) => (
+    <button
+      type="button"
+      onClick={() => !disabled && onChange(!checked)}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+        checked ? 'bg-blue-600' : 'bg-gray-200'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      disabled={disabled}
+    >
+      <span
+        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+          checked ? 'translate-x-5' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
 
   if (loading) {
     return (
@@ -173,7 +195,7 @@ const AdminSettingsPage: React.FC = () => {
                       }`}
                     disabled={isSaving}
                   >
-                    {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
+                    {t(getJurisdictionLabel(jurisdiction))}
                   </button>
                 ))}
               </div>
@@ -198,6 +220,24 @@ const AdminSettingsPage: React.FC = () => {
                 <span className="ml-2 text-sm text-gray-700">{t('enable_all_email_reports_across_application')}</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">{t('global_email_reports_hint')}</p>
+            </div>
+
+            {/* ADDED: Maintenance Mode Toggle */}
+            <div>
+              <label htmlFor="is_maintenance_mode" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <Settings className="h-4 w-4 inline-block mr-1 text-blue-900" /> {t('application_settings_maintenance_mode')}
+              </label>
+              <div className="flex items-center">
+                <ToggleSwitch
+                  checked={formData.is_maintenance_mode || false}
+                  onChange={(checked) => handleInputChange({ target: { name: 'is_maintenance_mode', type: 'checkbox', checked } as HTMLInputElement })}
+                  disabled={isSaving}
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  {formData.is_maintenance_mode ? t('maintenance_mode_enabled') : t('maintenance_mode_disabled')}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{t('application_settings_maintenance_mode_hint')}</p>
             </div>
 
             <div className="flex justify-end pt-4">
