@@ -48,13 +48,12 @@ const SampleDashboardContent: React.FC = () => {
             </Button>
           </Link>
         </div>
-        <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
+        <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
       </div>
       
       <div className="lg:col-span-2">
         {selectedContract && selectedContract.analysisResult ? (
           <div className="space-y-6">
-            {/* MODIFIED: Use t() for sample contract names as they are translation keys */}
             <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1>
             
             <SampleAnalysisResults analysisResult={selectedContract.analysisResult} contractName={selectedContract.name} />
