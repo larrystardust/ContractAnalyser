@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, contractId, reportSummary, reportLink, reportHtmlContent } = await req.json(); // MODIFIED: Removed userPreferredLanguage from destructuring
+    const { userId, contractId, reportSummary, reportLink, reportHtmlContent, userPreferredLanguage, contractName } = await req.json(); // MODIFIED: Added contractName
 
     // Authenticate the request to ensure it's coming from an authorized source
     const authHeader = req.headers.get('Authorization');
@@ -84,23 +85,8 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'Email sending skipped due to user preference' });
     }
 
-    // ADDED: Fetch the output_language from the contracts table
-    const { data: contractLanguageData, error: contractLanguageError } = await supabase
-      .from('contracts')
-      .select('output_language')
-      .eq('id', contractId)
-      .single();
-
-    let userPreferredLanguage = 'en'; // Default fallback
-    if (contractLanguageError) {
-      console.error(`Error fetching output_language for contract ${contractId}:`, contractLanguageError);
-    } else if (contractLanguageData?.output_language) {
-      userPreferredLanguage = contractLanguageData.output_language;
-    }
-    // END ADDED
-
     // Prepare parameters for send-analysis-report-email and log them
-    const emailSubject = `Your Contract Analysis Report for ${contractId} is Ready!`;
+    const emailSubject = getTranslatedMessage('email_subject_report_ready', userPreferredLanguage, { contractName: contractName || contractId }); // MODIFIED
     const emailMessage = reportSummary; // This is the executive summary
 
     console.log('trigger-report-email: Parameters for send-analysis-report-email:');
@@ -123,7 +109,7 @@ Deno.serve(async (req) => {
         recipientName: userName,
         reportHtmlContent: reportHtmlContent || 'Report content not available.', // Provide fallback
         reportLink: reportLink || 'N/A', // Provide fallback
-        userPreferredLanguage: userPreferredLanguage, // ADDED
+        userPreferredLanguage: userPreferredLanguage,
       },
       headers: {
         'Authorization': `Bearer ${token}`, // Pass the current user's token
