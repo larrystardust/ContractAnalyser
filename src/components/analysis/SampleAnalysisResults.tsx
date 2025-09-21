@@ -10,10 +10,10 @@ import { useTranslation } from 'react-i18next';
 interface SampleAnalysisResultsProps {
   analysisResult: AnalysisResult;
   isSample?: boolean;
-  contractName: string; // MODIFIED: Added new prop
+  contractName: string;
 }
 
-const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisResult, isSample = true, contractName }) => { // MODIFIED: Added contractName
+const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisResult, isSample = true, contractName }) => {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
           <h2 className="text-xl font-semibold text-gray-900">{t('executive_summary')}</h2>
         </div>
         <p className="text-gray-700">
-          {t(analysisResult.executiveSummary, { contractName: t(contractName), complianceScore: analysisResult.complianceScore })} {/* MODIFIED: Added interpolation */}
+          {t(analysisResult.executiveSummary, { contractName: t(contractName), complianceScore: analysisResult.complianceScore })}
         </p>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -124,7 +124,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
@@ -149,8 +149,8 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
           </Card>
         ) : (
           filteredFindings.map((finding) => (
-            <Card 
-              key={finding.id} 
+            <Card
+              key={finding.id}
               className={`border-l-4 ${getRiskBorderColor(finding.riskLevel)} transition-all duration-200`}
             >
               <CardBody>
@@ -169,7 +169,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                     
                     <div className="flex flex-wrap gap-2 mt-2">
                       <RiskBadge risk={finding.riskLevel} />
-                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} /> {/* MODIFIED: Changed to true */}
+                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} />
                       <CategoryBadge category={finding.category} />
                     </div>
                     
@@ -180,7 +180,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> 
+                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li>
                           ))}
                         </ul>
                       </div>
