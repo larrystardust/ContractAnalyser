@@ -86,14 +86,14 @@ const NotificationsPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <h3 className={`text-lg font-semibold ${notification.is_read ? 'text-gray-600' : 'text-gray-900'}`}>
-                      {t(notification.title)} {/* MODIFIED: Added t() */}
+                      {t(notification.title)}
                     </h3>
                     <span className="text-xs text-gray-500">
                       {formatDate(notification.created_at)}
                     </span>
                   </div>
                   <p className={`text-sm mt-1 ${notification.is_read ? 'text-gray-500' : 'text-gray-700'}`}>
-                    {notification.message}
+                    {t(notification.message)} {/* MODIFIED: Added t() */}
                   </p>
                   <div className="mt-3 flex space-x-2">
                     {!notification.is_read && (
