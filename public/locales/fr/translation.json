@@ -952,6 +952,7 @@
   "logout_button": "Déconnexion",
   "enter_6_digit_code": "Veuillez saisir votre code 2FA.",
   "failed_to_load_mfa_factors": "Échec du chargement des facteurs MFA.",
+  "too_many_enrolled_mfa_factors": "Nombre maximal de facteurs vérifiés atteint, désinscrivez-vous pour continuer",
   "mfa_factor_not_found": "Facteur MFA non trouvé. Veuillez réessayer de vous connecter.",
   "invalid_2fa_code": "Code 2FA invalide. Veuillez réessayer.",
   "failed_to_send_otp": "Échec de l'envoi de l'OTP",
