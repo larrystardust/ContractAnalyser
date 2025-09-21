@@ -43,29 +43,17 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// ADDED: Simple translation object for notification messages
-const translations = {
-  en: {
-    analysis_complete_message: (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
-    high_risk_findings_message: (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
-    analysis_failed_message: (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
-  },
-  es: {
-    analysis_complete_message: (contractName: string) => `Su contrato "${contractName}" ha sido analizado con éxito.`,
-    high_risk_findings_message: (contractName: string, count: number) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`,
-    analysis_failed_message: (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`
-  },
-  fr: {
-    analysis_complete_message: (contractName: string) => `Votre contrat "${contractName}" a été analysé avec succès.`,
-    high_risk_findings_message: (contractName: string, count: number) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
-    analysis_failed_message: (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`
-  },
-  ar: {
-    analysis_complete_message: (contractName: string) => `تم تحليل عقدك "${contractName}" بنجاح.`,
-    high_risk_findings_message: (contractName: string, count: number) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
-    analysis_failed_message: (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`
-  }
-};
+// REMOVED: Local translations object, now in _shared/edge_translations.ts
+// const translations = {
+//   en: {
+//     analysis_complete_message: (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
+//     high_risk_findings_message: (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
+//     analysis_failed_message: (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
+//   },
+//   es: { /* ... */ },
+//   fr: { /* ... */ },
+//   ar: { /* ... */ }
+// };
 
 // MODIFIED: New helper function for translation with improved prompt
 async function translateText(text: string, targetLanguage: string): Promise<string> {
@@ -284,7 +272,7 @@ Deno.serve(async (req) => {
     // MODIFIED: Moved systemPromptContent definition here
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
-CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
+CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATUM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
 2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
 3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
@@ -434,7 +422,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
+        contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
         analysisResult: {
           executive_summary: executiveSummary,
           data_protection_impact: dataProtectionImpact,
@@ -547,7 +535,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const contractName = contractData.data?.name || 'Unknown Contract';
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, contractName);
+      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: contractName }); // MODIFIED: Pass contractName in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_complete',
@@ -561,7 +549,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, contractName, highRiskFindings.length);
+      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: contractName, count: highRiskFindings.length }); // MODIFIED: Pass contractName and count in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_high_risk_findings',
@@ -603,7 +591,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const contractName = contractData.data?.name || 'Unknown Contract';
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, contractName);
+      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: contractName }); // MODIFIED: Pass contractName in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_failed',
