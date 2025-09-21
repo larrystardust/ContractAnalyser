@@ -940,6 +940,8 @@
   "loading_subscription_details": "Chargement des détails de l'abonnement...",
   "loading_preferences": "Chargement des préférences",
   "failed_to_email_report": "Échec de l'envoi du rapport par e-mail",
+  "email_reports_disabled_alert": "Votre paramètre de rapports par e-mail est actuellement désactivé. Veuillez l'activer dans les Préférences de vos \"Paramètres\" pour recevoir les rapports par e-mail.",
+  "report_email_sent_successfully": "E-mail du rapport envoyé avec succès !",
   "emailing": "Envoi d'e-mail...",
   "confirm_delete_contract_and_results": "Êtes-vous sûr de vouloir supprimer ce contrat et ses résultats d'analyse ? Cette action ne peut pas être annulée.",
 
