@@ -343,7 +343,7 @@ NOTES:
 
 ---
 DOCUMENT LANGUAGE INSTRUCTIONS:
-The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language is 'auto', please detect the language of the document.
+The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language === 'auto', please detect the language of the document.
 
 OUTPUT LANGUAGE INSTRUCTIONS:
 All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
@@ -429,6 +429,24 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
+    // Original line: const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
+    // Original line:   body: {
+    // Original line:     contractId: contractId,
+    // Original line:     contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
+    // Original line:     analysisResult: {
+    // Original line:       executive_summary: executiveSummary,
+    // Original line:       data_protection_impact: dataProtectionImpact,
+    // Original line:       compliance_score: complianceScore,
+    // Original line:       jurisdiction_summaries: jurisdictionSummaries,
+    // Original line:       findings: findings,
+    // Original line:     },
+    // Original line:     outputLanguage: outputLanguage, // ADDED
+    // Original line:   },
+    // Original line:   headers: {
+    // Original line:     'Authorization': `Bearer ${token}`,
+    // Original line:   },
+    // Original line: });
+    // ADDED: New invocation using translatedContractName
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
@@ -519,6 +537,21 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       }
     }
 
+    // Original line: const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
+    // Original line:   body: {
+    // Original line:     userId: userId,
+    // Original line:     contractId: contractId,
+    // Original line:     reportSummary: executiveSummary,
+    // Original line:     reportLink: reportLink,
+    // Original line:     reportHtmlContent: reportHtmlContent,
+    // Original line:     userPreferredLanguage: userPreferredLanguage,
+    // Original line:     contractName: fetchedContractName, // ADDED: Pass contractName
+    // Original line:   },
+    // Original line:   headers: {
+    // Original line:     'Authorization': `Bearer ${token}`,
+    // Original line:   },
+    // Original line: });
+    // ADDED: New invocation using translatedContractName
     const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
       body: {
         userId: userId,
@@ -541,11 +574,13 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     }
 
     // --- START: Notification Generation ---
-    const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
-    const contractName = contractData.data?.name || 'Unknown Contract';
+    // Original line: const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
+    // Original line: const contractName = contractData.data?.name || 'Unknown Contract';
+    // ADDED: Use translatedContractName directly for notifications
+    const notificationContractName = translatedContractName; // MODIFIED: Use translatedContractName for notifications
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: contractName }); // MODIFIED: Pass contractName in interpolation
+      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: notificationContractName }); // MODIFIED: Pass notificationContractName in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_complete',
@@ -559,7 +594,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: contractName, count: highRiskFindings.length }); // MODIFIED: Pass contractName and count in interpolation
+      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: notificationContractName, count: highRiskFindings.length }); // MODIFIED: Pass notificationContractName and count in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_high_risk_findings',
@@ -599,11 +634,13 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       { contract_id: contractId, error: error.message }
     );
 
-    const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
-    const contractName = contractData.data?.name || 'Unknown Contract';
+    // Original line: const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
+    // Original line: const contractName = contractData.data?.name || 'Unknown Contract';
+    // ADDED: Use translatedContractName directly for notifications
+    const notificationContractName = translatedContractName; // MODIFIED: Use translatedContractName for notifications
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: contractName }); // MODIFIED: Pass contractName in interpolation
+      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: notificationContractName }); // MODIFIED: Pass notificationContractName in interpolation
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_failed',
