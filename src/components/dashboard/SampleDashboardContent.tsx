@@ -7,12 +7,12 @@ import { sampleContracts } from '../../data/sampleData';
 import { Contract } from '../../types';
 import Button from '../ui/Button';
 import { Sparkles } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 const SampleDashboardContent: React.FC = () => {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   useEffect(() => {
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
@@ -40,27 +40,27 @@ const SampleDashboardContent: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-1 space-y-6">
         <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
-          <p className="font-bold">{t('sample_data_view_dashboard')}</p> {/* MODIFIED */}
-          <p className="text-sm">{t('upgrade_to_analyze_own_contracts')}</p> {/* MODIFIED */}
+          <p className="font-bold">{t('sample_data_view_dashboard')}</p>
+          <p className="text-sm">{t('upgrade_to_analyze_own_contracts')}</p>
           <Link to="/pricing" className="mt-2 inline-block">
             <Button variant="primary" size="sm" icon={<Sparkles className="w-4 h-4" />}>
-              {t('upgrade_now')} {/* MODIFIED */}
+              {t('upgrade_now')}
             </Button>
           </Link>
         </div>
-        {/* FIX: Changed ContractList to SampleContractList */}
         <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} isSample={true} />
       </div>
       
       <div className="lg:col-span-2">
         {selectedContract && selectedContract.analysisResult ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1> {/* MODIFIED: Added t() */}
+            {/* MODIFIED: Use t() for sample contract names as they are translation keys */}
+            <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1>
             
             <SampleAnalysisResults analysisResult={selectedContract.analysisResult} contractName={selectedContract.name} />
             
             <div className="mt-8">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
                   <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
@@ -76,14 +76,14 @@ const SampleDashboardContent: React.FC = () => {
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('no_completed_sample_contract_selected')} {/* MODIFIED */}
+              {t('no_completed_sample_contract_selected')}
             </h2>
             <p className="text-gray-600 mb-6">
-              {t('select_sample_contract_to_view')} {/* MODIFIED */}
+              {t('select_sample_contract_to_view')}
             </p>
             <Link to="/pricing">
               <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                {t('upgrade_to_analyze_own_contracts_button')} {/* MODIFIED */}
+                {t('upgrade_to_analyze_own_contracts_button')}
               </Button>
             </Link>
           </div>
