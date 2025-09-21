@@ -558,6 +558,7 @@
   "mobile_session_details": "Una sesión desde un dispositivo móvil.",
   "last_active_2_hours_ago": "Última actividad: Hace 2 horas",
   "revoke": "Revocar",
+  "revoked_button_text": "Revocado",
   "sign_out_other_sessions": "Cerrar Todas las Otras Sesiones",
   "successfully_signed_out_of_all_other_sessions": "¡Sesiones cerradas con éxito!",
   "failed_to_sign_out_other_sessions": "Error al cerrar otras sesiones.",
