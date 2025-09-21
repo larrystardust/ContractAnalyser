@@ -1284,5 +1284,17 @@
   "failed_to_fetch_report": "فشل في جلب التقرير (الحالة: {{status}}, {{statusText}}).",
   "link_expired_invalid": "الرابط منتهي الصلاحية أو غير صالح.",
   "loading_report": "جاري تحميل التقرير",
-  "error_loading_report": "خطأ في تحميل التقرير"
+  "error_loading_report": "خطأ في تحميل التقرير",
+
+  "maintenance_page_title": "الموقع تحت الصيانة",
+  "maintenance_hero_title": "نحن تحت الصيانة",
+  "maintenance_hero_description": "يقوم ContractAnalyser حاليًا بإجراء صيانة أساسية لتحسين تجربتك. سيعود الموقع للعمل قريبًا. يرجى التحقق مرة أخرى لاحقًا!",
+  "maintenance_check_back_later": "سنعود للعمل قريبًا. شكرًا لصبرك.",
+  "maintenance_admin_access": "وصول المسؤول",
+  "maintenance_admin_dashboard_button": "لوحة تحكم المسؤول",
+  "maintenance_back_to_login_button": "العودة إلى تسجيل الدخول",
+  "application_settings_maintenance_mode": "وضع الصيانة",
+  "application_settings_maintenance_mode_hint": "قم بتمكين هذا لوضع التطبيق بأكمله في وضع الصيانة. سيتمكن المسؤولون فقط من الوصول إلى الموقع.",
+  "maintenance_mode_enabled": "وضع الصيانة مُفعل",
+  "maintenance_mode_disabled": "وضع الصيانة مُعطل"
 }
