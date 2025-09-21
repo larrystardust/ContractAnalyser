@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ContractList from '../contracts/ContractList';
+import SampleContractList from '../contracts/SampleContractList';
 import SampleAnalysisResults from '../analysis/SampleAnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import { sampleContracts } from '../../data/sampleData';
@@ -54,9 +54,9 @@ const SampleDashboardContent: React.FC = () => {
       <div className="lg:col-span-2">
         {selectedContract && selectedContract.analysisResult ? (
           <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {selectedContract.name}</h1> {/* MODIFIED */}
+            <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1> {/* MODIFIED: Added t() */}
             
-            <SampleAnalysisResults analysisResult={selectedContract.analysisResult} isSample={true} />
+            <SampleAnalysisResults analysisResult={selectedContract.analysisResult} contractName={selectedContract.name} />
             
             <div className="mt-8">
               <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2> {/* MODIFIED */}
