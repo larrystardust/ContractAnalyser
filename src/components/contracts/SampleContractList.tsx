@@ -30,7 +30,7 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
     }
   };
 
-  const getStatusLabel = (status: string): string => { // MODIFIED: Return translation key
+  const getStatusLabel = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'status_pending';
@@ -39,7 +39,7 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
       case 'completed':
         return 'status_completed';
       default:
-        return status; // Fallback, though ideally all statuses have keys
+        return status;
     }
   };
 
@@ -65,8 +65,8 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {contractsToRender.map((contract) => (
-            <Card 
-              key={contract.id} 
+            <Card
+              key={contract.id}
               hoverable={true}
               onClick={() => {
                 if (onSelectContract) {
@@ -85,16 +85,17 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">{t(contract.name)}</h3> {/* MODIFIED: Added t() */}
+                    {/* MODIFIED: Use t() for sample contract names as they are translation keys */}
+                    <h3 className="text-sm font-medium text-gray-900">{t(contract.name)}</h3>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDate(contract.created_at)} • {contract.size}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {contract.jurisdictions.map((jurisdiction) => (
-                        <JurisdictionBadge 
-                          key={jurisdiction} 
-                          jurisdiction={jurisdiction} 
-                          showLabel={true} // MODIFIED: Changed to true
+                        <JurisdictionBadge
+                          key={jurisdiction}
+                          jurisdiction={jurisdiction}
+                          showLabel={true}
                         />
                       ))}
                     </div>
@@ -105,13 +106,13 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                     <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
                       {getStatusIcon(contract.status)}
                       <span className="ml-1 text-xs font-medium text-gray-700">
-                        {t(getStatusLabel(contract.status))} {/* MODIFIED: Apply t() */}
+                        {t(getStatusLabel(contract.status))}
                       </span>
                     </div>
                     {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
                       <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full" 
+                        <div
+                          className="bg-blue-600 h-1.5 rounded-full"
                           style={{ width: `${contract.processing_progress}%` }}
                         ></div>
                       </div>
