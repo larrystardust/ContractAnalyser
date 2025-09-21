@@ -8,6 +8,7 @@ export interface AppSettings {
   default_theme: 'light' | 'dark' | 'system';
   default_jurisdictions: Jurisdiction[];
   global_email_reports_enabled: boolean;
+  is_maintenance_mode: boolean; // ADDED: New field
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +50,7 @@ export function useAppSettings() {
           default_theme: 'system',
           default_jurisdictions: [],
           global_email_reports_enabled: true,
+          is_maintenance_mode: false, // ADDED: Default value for new field
           created_at: new Date().toISOString(), // Placeholder
           updated_at: new Date().toISOString(), // Placeholder
         });
