@@ -578,6 +578,7 @@
   "mobile_session_details": "Une session depuis un appareil mobile.",
   "last_active_2_hours_ago": "Dernière activité : Il y a 2 heures",
   "revoke": "Révoquer",
+  "revoked_button_text": "Révoqué",
   "sign_out_other_sessions": "Déconnecter toutes les autres sessions",
   "successfully_signed_out_of_all_other_sessions": "Déconnexion de toutes les autres sessions réussie !",
   "failed_to_sign_out_other_sessions": "Échec de la déconnexion des autres sessions.",
