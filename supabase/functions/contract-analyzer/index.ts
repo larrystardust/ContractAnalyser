@@ -267,7 +267,7 @@ Deno.serve(async (req) => {
     // Fetch the contract details, including contract_content and jurisdictions
     const { data: contractDetails, error: fetchContractError } = await supabase
       .from('contracts')
-      .select('contract_content, user_id, jurisdictions') // ADDED 'jurisdictions'
+      .select('contract_content, user_id, jurisdictions, name') // ADDED 'name'
       .eq('id', contractId)
       .single();
 
@@ -277,6 +277,7 @@ Deno.serve(async (req) => {
     }
 
     const userSelectedJurisdictions = contractDetails.jurisdictions.join(', '); // Format for prompt
+    const fetchedContractName = contractDetails.name; // ADDED
 
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
@@ -433,7 +434,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
+        contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
         analysisResult: {
           executive_summary: executiveSummary,
           data_protection_impact: dataProtectionImpact,
@@ -527,7 +528,8 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         reportSummary: executiveSummary,
         reportLink: reportLink,
         reportHtmlContent: reportHtmlContent,
-        userPreferredLanguage: userPreferredLanguage, // ADDED
+        userPreferredLanguage: userPreferredLanguage,
+        contractName: fetchedContractName, // ADDED: Pass contractName
       },
       headers: {
         'Authorization': `Bearer ${token}`,
