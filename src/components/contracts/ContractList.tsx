@@ -7,7 +7,7 @@ import { useContracts } from '../../context/ContractContext';
 import { useNavigate } from 'react-router-dom';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../ui/Button';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 interface ContractListProps {
   contractsToDisplay?: Contract[];
@@ -19,7 +19,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
   const { contracts, deleteContract } = useContracts();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const contractsToRender = contractsToDisplay || contracts;
 
@@ -141,7 +141,8 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">{contract.name}</h3>
+                    {/* MODIFIED: Display translated_name if available, otherwise original name */}
+                    <h3 className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</h3>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDate(contract.created_at)} • {contract.size}
                     </p>
@@ -150,7 +151,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         <JurisdictionBadge 
                           key={jurisdiction} 
                           jurisdiction={jurisdiction} 
-                          showLabel={true} // MODIFIED: Changed to true
+                          showLabel={true}
                         />
                       ))}
                     </div>
@@ -162,7 +163,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                     <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
                       {getStatusIcon(contract.status)}
                       <span className="ml-1 text-xs font-medium text-gray-700">
-                        {t(getStatusLabel(contract.status))} {/* MODIFIED: Apply t() */}
+                        {t(getStatusLabel(contract.status))}
                       </span>
                     </div>
                     {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
