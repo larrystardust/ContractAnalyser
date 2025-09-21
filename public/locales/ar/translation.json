@@ -577,6 +577,7 @@
   "mobile_session_details": "جلسة من جهاز محمول.",
   "last_active_2_hours_ago": "النشاط الأخير: منذ ساعتين",
   "revoke": "سحب",
+  "revoked_button_text": "تم الإلغاء",
   "sign_out_other_sessions": "تسجيل الخروج من جميع الجلسات الأخرى",
   "successfully_signed_out_of_all_other_sessions": "تم تسجيل الخروج من جميع الجلسات الأخرى بنجاح!",
   "failed_to_sign_out_other_sessions": "فشل في تسجيل الخروج من الجلسات الأخرى.",
