@@ -95,8 +95,7 @@ Deno.serve(async (req) => {
     }
 
     const customerId = customerData.customer_id;
-
-    console.log(`create-customer-portal: Constructing return_url: https://www.contractanalyser.com/settings/billing`, // TEMPORARY HARDCODED URL
+    
 // Create a Stripe Customer Portal session
 const portalSession = await stripe.billingPortal.sessions.create({
   customer: customerId,
