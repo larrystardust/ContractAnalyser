@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -29,14 +30,16 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: 'Method not allowed' }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
   }
 
   try {
     const { email } = await req.json();
+    // For unauthenticated flows, we default to English as we don't have user's preference
+    const userPreferredLanguage = 'en'; // ADDED
 
     if (!email) {
-      return corsResponse({ error: 'Email is required.' }, 400);
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400); // MODIFIED
     }
 
     // Generate a 6-digit OTP
@@ -54,33 +57,33 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error storing OTP:', insertError);
-      return corsResponse({ error: 'Failed to generate OTP.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to generate OTP.' }) }, 500); // MODIFIED
     }
 
     // Send OTP via email using Resend
     const { data, error: resendError } = await resend.emails.send({
       from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // IMPORTANT: Replace with your verified sender email in Resend
       to: [email],
-      subject: 'Your ContractAnalyser OTP',
+      subject: getTranslatedMessage('email_otp_subject', userPreferredLanguage), // MODIFIED
       html: `
-        <p>Hello,</p>
-        <p>Your One-Time Password (OTP) for ContractAnalyser is: <strong>${otpCode}</strong></p>
-        <p>This code is valid for 5 minutes.</p>
-        <p>If you did not request this, please ignore this email.</p>
-        <p>The ContractAnalyser Team</p>
-      `,
+        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: email })}</p>
+        <p>${getTranslatedMessage('email_otp_body_p1', userPreferredLanguage, { otpCode: otpCode })}</p>
+        <p>${getTranslatedMessage('email_otp_body_p2', userPreferredLanguage)}</p>
+        <p>${getTranslatedMessage('email_otp_body_p3', userPreferredLanguage)}</p>
+        <p>${getTranslatedMessage('email_otp_body_p4', userPreferredLanguage)}</p>
+      `, // MODIFIED
     });
 
     if (resendError) {
       console.error('Error sending email via Resend:', resendError);
-      return corsResponse({ error: 'Failed to send OTP email.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to send OTP email.' }) }, 500); // MODIFIED
     }
 
     console.log(`OTP sent to ${email}:`, data);
-    return corsResponse({ message: 'OTP sent successfully!' });
+    return corsResponse({ message: getTranslatedMessage('message_otp_sent_successfully', userPreferredLanguage) }); // MODIFIED
 
   } catch (error: any) {
     console.error('Error in send-email-otp Edge Function:', error);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
   }
 });
