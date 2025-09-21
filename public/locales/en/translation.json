@@ -951,6 +951,7 @@
   "logout_button": "Logout",
   "enter_6_digit_code": "Please enter your 2FA code.",
   "failed_to_load_mfa_factors": "Failed to load MFA factors.",
+  "too_many_enrolled_mfa_factors": "Maximum number of verified factors reached, unenroll to continue",
   "mfa_factor_not_found": "MFA factor not found. Please try logging in again.",
   "invalid_2fa_code": "Invalid 2FA code. Please try again.",
   "failed_to_send_otp": "Failed to send OTP",
