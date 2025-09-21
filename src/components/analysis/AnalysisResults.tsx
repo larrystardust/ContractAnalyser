@@ -16,11 +16,11 @@ interface AnalysisResultsProps {
   analysisResult?: AnalysisResult;
   isSample?: boolean;
   onReanalyzeInitiated?: (contractName: string) => void;
-  contractName: string; // MODIFIED: Added new prop
+  contractName: string;
   // REMOVED: onReanalyzeCompleted and onReanalyzeFailed as modal dismissal is handled by parent
 }
 
-const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, contractName }) => { // MODIFIED: Added contractName
+const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, contractName }) => {
   const { t } = useTranslation();
 
   // ADDED: Defensive check for analysisResult
@@ -131,12 +131,12 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         body: {
           userId: session.user.id,
           contractId: analysisResult.contract_id,
-          reportSummary: analysisResult.executiveSummary, // MODIFIED: Use direct value
+          reportSummary: analysisResult.executiveSummary,
           reportLink: reportLink,
           reportHtmlContent: reportHtmlContent,
         },
         headers: {
-          'Authorization': `Bearer ${session.access_token}`, // MODIFIED: Use session.access_token
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
@@ -175,7 +175,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           )}
         </div>
         <p className="text-gray-700">
-          {t(analysisResult.executiveSummary, { contractName: t(contractName), complianceScore: analysisResult.complianceScore })} {/* MODIFIED: Added interpolation */}
+          {t(analysisResult.executiveSummary, { contractName: contractName, complianceScore: analysisResult.complianceScore })}
         </p>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -256,7 +256,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
@@ -281,8 +281,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           </Card>
         ) : (
           filteredFindings.map((finding) => (
-            <Card 
-              key={finding.id} 
+            <Card
+              key={finding.id}
               className={`border-l-4 ${getRiskBorderColor(finding.riskLevel)} transition-all duration-200`}
             >
               <CardBody>
@@ -301,7 +301,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                     
                     <div className="flex flex-wrap gap-2 mt-2">
                       <RiskBadge risk={finding.riskLevel} />
-                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} /> {/* MODIFIED: Changed to true */}
+                      <JurisdictionBadge jurisdiction={finding.jurisdiction} showLabel={true} />
                       <CategoryBadge category={finding.category} />
                     </div>
                     
@@ -312,7 +312,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                         <h4 className="text-sm font-medium text-gray-900 mb-2">{t('recommendations')}</h4>
                         <ul className="list-disc pl-5 space-y-1">
                           {finding.recommendations.map((rec, index) => (
-                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li> 
+                            <li key={index} className="text-sm text-gray-700">{t(rec)}</li>
                           ))}
                         </ul>
                       </div>
