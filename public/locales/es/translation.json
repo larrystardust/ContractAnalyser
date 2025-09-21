@@ -916,6 +916,8 @@
   "loading_subscription_details": "Cargando detalles de la suscripción...",
   "loading_preferences": "Cargando preferencias",
   "failed_to_email_report": "Error al enviar el informe por correo electrónico",
+  "email_reports_disabled_alert": "Su configuración de informes por correo electrónico está actualmente deshabilitada. Por favor, actívela en las Preferencias de su \"Configuración\" para recibir informes por correo electrónico.",
+  "report_email_sent_successfully": "¡Correo electrónico del informe enviado con éxito!",
   "emailing": "Enviando correo...",
   "confirm_delete_contract_and_results": "¿Está seguro de que desea eliminar este contrato y sus resultados de análisis? Esta acción no se puede deshacer.",
 
