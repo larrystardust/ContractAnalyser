@@ -151,7 +151,12 @@ const SecuritySettings: React.FC = () => {
         setSecret(enrollData.totp.secret);
       } catch (err: any) {
         console.error('Error enrolling 2FA:', err);
-        addToast(err.message || t('failed_to_start_2fa_enrollment'), 'error');
+        // MODIFIED: Check for specific error message
+        if (err.message === "Maximum number of verified factors reached, unenroll to continue") {
+          addToast(t('too_many_enrolled_mfa_factors_error'), 'error');
+        } else {
+          addToast(err.message || t('failed_to_start_2fa_enrollment'), 'error');
+        }
         setShowEnrollmentFlow(false);
         setEnrollmentStep('initial');
       } finally {
