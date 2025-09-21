@@ -23,6 +23,11 @@ const BillingSettings: React.FC = () => {
   const session = useSession();
   const { t } = useTranslation(); // ADDED
 
+  // ADDED: Console logs for debugging session and loading states
+  console.log('BillingSettings: session', session);
+  console.log('BillingSettings: loading (from useSubscription)', loading);
+  console.log('BillingSettings: loadingContracts (from useContracts)', loadingContracts);
+
   // MODIFIED: Update getCurrentPlan to correctly find the product and its pricing option
   const getCurrentPlan = (): CurrentPlanInfo | null => {
     if (!subscription?.price_id) return null;
@@ -107,7 +112,8 @@ const BillingSettings: React.FC = () => {
   }, 0);
   const reportsGeneratedCount = contractsAnalyzedCount; 
 
-  if (loading) {
+  // MODIFIED: Updated loading condition to wait for session and user
+  if (loading || !session || !session.user) {
     return (
       <div className="space-y-6">
         <Card>
