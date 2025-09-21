@@ -2,6 +2,7 @@ export interface Contract {
   id: string; // Changed to string for UUID
   user_id: string; // Added for Supabase foreign key
   name: string;
+  translated_name?: string; // ADDED: New field for translated contract name
   file_path: string; // Added for Supabase Storage path
   size: string;
   jurisdictions: Jurisdiction[];
