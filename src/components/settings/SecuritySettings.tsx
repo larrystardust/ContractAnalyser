@@ -153,7 +153,7 @@ const SecuritySettings: React.FC = () => {
         console.error('Error enrolling 2FA:', err);
         // MODIFIED: Check for specific error message
         if (err.message === "Maximum number of verified factors reached, unenroll to continue") {
-          addToast(t('too_many_enrolled_mfa_factors'), 'error');
+          addToast(t('too_many_enrolled_mfa_factors_error'), 'error');
         } else {
           addToast(err.message || t('failed_to_start_2fa_enrollment'), 'error');
         }
@@ -579,7 +579,12 @@ const SecuritySettings: React.FC = () => {
                 <p className="text-xs text-gray-500">{t('mobile_session_details')}</p>
                 <p className="text-xs text-gray-500">{t('last_active_2_hours_ago')}</p>
               </div>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOutOtherSessions} // ADDED onClick handler
+                disabled={isLoading} // ADDED disabled state
+              >
                 {t('revoke')}
               </Button>
             </div>
