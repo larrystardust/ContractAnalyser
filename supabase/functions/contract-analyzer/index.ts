@@ -434,7 +434,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
+        contractName: (await supabase.from('contracts').select('name').eq('id', contractId).single()).data?.name || 'Unknown Contract',
         analysisResult: {
           executive_summary: executiveSummary,
           data_protection_impact: dataProtectionImpact,
