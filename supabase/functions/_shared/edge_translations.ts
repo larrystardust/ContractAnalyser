@@ -34,7 +34,7 @@ export const edgeTranslations = {
     no_executive_summary_provided: "No executive summary provided.",
     no_title_provided: "No title provided.",
     email_report_not_available: "The full report content is not available in this email. Please contact support if you require it.",
-    // ADDED JURISDICTION KEYS
+    // JURISDICTION KEYS
     "jurisdiction_uk": "UK",
     "jurisdiction_eu": "EU",
     "jurisdiction_ireland": "Ireland",
@@ -43,15 +43,19 @@ export const edgeTranslations = {
     "jurisdiction_australia": "Australia",
     "jurisdiction_islamic_law": "Islamic Law",
     "jurisdiction_others": "Others",
-    // ADDED CATEGORY KEYS
+    // CATEGORY KEYS
     "category_compliance": "Compliance",
     "category_risk": "Risk",
     "category_data_protection": "Data Protection",
     "category_enforceability": "Enforceability",
     "category_drafting": "Drafting",
     "category_commercial": "Commercial",
-    // ADDED EMAIL SUBJECT KEY
-    "email_subject_report_ready": "Your Contract Analysis Report for {contractName} is Ready!",
+    // EMAIL SUBJECT KEY
+    "email_subject_report_ready": (contractName: string) => `Your Contract Analysis Report for ${contractName} is Ready!`,
+    // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
+    "analysis_complete_message": (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
+    "high_risk_findings_message": (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
+    "analysis_failed_message": (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -88,7 +92,7 @@ export const edgeTranslations = {
     no_executive_summary_provided: "No se proporcionó resumen ejecutivo.",
     no_title_provided: "No se proporcionó título.",
     email_report_not_available: "El contenido completo del informe no está disponible en este correo electrónico. Póngase en contacto con el soporte si lo necesita.",
-    // ADDED JURISDICTION KEYS
+    // JURISDICTION KEYS
     "jurisdiction_uk": "Reino Unido",
     "jurisdiction_eu": "UE",
     "jurisdiction_ireland": "Irlanda",
@@ -97,15 +101,19 @@ export const edgeTranslations = {
     "jurisdiction_australia": "Australia",
     "jurisdiction_islamic_law": "Ley Islámica",
     "jurisdiction_others": "Otros",
-    // ADDED CATEGORY KEYS
+    // CATEGORY KEYS
     "category_compliance": "Cumplimiento",
     "category_risk": "Riesgo",
     "category_data_protection": "Protección de Datos",
     "category_enforceability": "Aplicabilidad",
     "category_drafting": "Redacción",
     "category_commercial": "Comercial",
-    // ADDED EMAIL SUBJECT KEY
-    "email_subject_report_ready": "¡Su Informe de Análisis de Contrato para {contractName} está Listo!",
+    // EMAIL SUBJECT KEY
+    "email_subject_report_ready": (contractName: string) => `¡Su Informe de Análisis de Contrato para ${contractName} está Listo!`,
+    // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
+    "analysis_complete_message": (contractName: string) => `Su contrato "${contractName}" ha sido analizado con éxito.`,
+    "high_risk_findings_message": (contractName: string, count: number) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`,
+    "analysis_failed_message": (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -142,7 +150,7 @@ export const edgeTranslations = {
     no_executive_summary_provided: "Aucun résumé exécutif fourni.",
     no_title_provided: "Aucun titre fourni.",
     email_report_not_available: "Le contenu complet du rapport n'est pas disponible dans cet e-mail. Veuillez contacter le support si vous en avez besoin.",
-    // ADDED JURISDICTION KEYS
+    // JURISDICTION KEYS
     "jurisdiction_uk": "Royaume-Uni",
     "jurisdiction_eu": "UE",
     "jurisdiction_ireland": "Irlande",
@@ -151,15 +159,19 @@ export const edgeTranslations = {
     "jurisdiction_australia": "Australie",
     "jurisdiction_islamic_law": "Droit Islamique",
     "jurisdiction_others": "Autres",
-    // ADDED CATEGORY KEYS
+    // CATEGORY KEYS
     "category_compliance": "Conformité",
     "category_risk": "Risque",
     "category_data_protection": "Protection des Données",
     "category_enforceability": "Applicabilité",
     "category_drafting": "Rédaction",
     "category_commercial": "Commercial",
-    // ADDED EMAIL SUBJECT KEY
-    "email_subject_report_ready": "Votre Rapport d'Analyse de Contrat pour {contractName} est Prêt !",
+    // EMAIL SUBJECT KEY
+    "email_subject_report_ready": (contractName: string) => `Votre Rapport d'Analyse de Contrat pour ${contractName} est Prêt !`,
+    // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
+    "analysis_complete_message": (contractName: string) => `Votre contrat "${contractName}" a été analysé avec succès.`,
+    "high_risk_findings_message": (contractName: string, count: number) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
+    "analysis_failed_message": (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -196,7 +208,7 @@ export const edgeTranslations = {
     no_executive_summary_provided: "لا يوجد ملخص تنفيذي مقدم.",
     no_title_provided: "لا يوجد عنوان مقدم.",
     email_report_not_available: "محتوى التقرير الكامل غير متاح في هذا البريد الإلكتروني. يرجى الاتصال بالدعم إذا كنت بحاجة إليه.",
-    // ADDED JURISDICTION KEYS
+    // JURISDICTION KEYS
     "jurisdiction_uk": "المملكة المتحدة",
     "jurisdiction_eu": "الاتحاد الأوروبي",
     "jurisdiction_ireland": "أيرلندا",
@@ -205,15 +217,19 @@ export const edgeTranslations = {
     "jurisdiction_australia": "أستراليا",
     "jurisdiction_islamic_law": "الشريعة الإسلامية",
     "jurisdiction_others": "أخرى",
-    // ADDED CATEGORY KEYS
+    // CATEGORY KEYS
     "category_compliance": "الامتثال",
     "category_risk": "المخاطر",
     "category_data_protection": "حماية البيانات",
     "category_enforceability": "قابلية التنفيذ",
     "category_drafting": "الصياغة",
     "category_commercial": "تجاري",
-    // ADDED EMAIL SUBJECT KEY
-    "email_subject_report_ready": "تقرير تحليل العقد الخاص بك لـ {contractName} جاهز!",
+    // EMAIL SUBJECT KEY
+    "email_subject_report_ready": (contractName: string) => `تقرير تحليل العقد الخاص بك لـ ${contractName} جاهز!`,
+    // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
+    "analysis_complete_message": (contractName: string) => `تم تحليل عقدك "${contractName}" بنجاح.`,
+    "high_risk_findings_message": (contractName: string, count: number) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
+    "analysis_failed_message": (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`
   }
 };
 
@@ -221,8 +237,16 @@ export function getTranslatedMessage(key: string, lang: string, interpolation: R
   const langMap = (edgeTranslations as any)[lang] || edgeTranslations.en;
   let message = langMap[key] || edgeTranslations.en[key] || key; // Fallback to English, then to key itself
 
+  // MODIFIED: Check if 'message' is a function before calling .replace()
+  if (typeof message === 'function') {
+    message = message(interpolation.contractName, interpolation.count, interpolation.year); // Execute the function with interpolation values
+  }
+
+  // Apply interpolation for string messages (if any)
   for (const [k, v] of Object.entries(interpolation)) {
-    message = message.replace(`{${k}}`, v);
+    if (typeof message === 'string') { // Ensure it's a string before replacing
+      message = message.replace(`{${k}}`, v);
+    }
   }
   return message;
 }
