@@ -88,6 +88,8 @@
   "default_jurisdictions_hint": "Select the jurisdictions that will be pre-selected when uploading new contracts.",
   "dashboard_appearance": "Dashboard Appearance",
   "theme": "Theme",
+  "theme_preference_hint": "Choose your preferred visual theme for the application.",
+  "select_theme": "Select Theme",
   "light": "Light",
   "dark": "Dark",
   "system": "System",
