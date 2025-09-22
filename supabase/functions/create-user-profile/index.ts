@@ -30,8 +30,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, fullName, businessName, mobilePhoneNumber, countryCode } = await req.json();
-    console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode });
+    const { userId, fullName, businessName, mobilePhoneNumber, countryCode, languagePreference } = await req.json(); // MODIFIED: Add languagePreference
+    console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode, languagePreference }); // MODIFIED: Log languagePreference
 
     if (!userId) {
       console.error('create-user-profile: Missing userId in payload.');
@@ -75,7 +75,8 @@ Deno.serve(async (req) => {
           business_name: businessName || null,
           mobile_phone_number: mobilePhoneNumber || null,
           country_code: countryCode || null,
-          notification_settings: mergedNotificationSettings, // Set merged settings
+          notification_settings: mergedNotificationSettings,
+          language_preference: languagePreference || 'en', // ADDED: Save language preference, default to 'en'
         },
         { onConflict: 'id' } // Conflict on 'id' to update if exists
       )
