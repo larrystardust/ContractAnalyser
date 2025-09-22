@@ -62,6 +62,7 @@ const ApplicationPreferences: React.FC = () => {
     const fetchNotificationPreferences = async () => {
       if (!session?.user?.id) {
         setIsLoading(false);
+        console.log("AP: No user ID, skipping fetch.");
         return;
       }
       setIsLoading(true);
@@ -77,6 +78,8 @@ const ApplicationPreferences: React.FC = () => {
           throw fetchError;
         }
 
+        console.log("AP: Fetched profile data:", data);
+
         if (data?.notification_settings) {
           const fetchedSettings = data.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
           setPreferences(prev => {
@@ -91,7 +94,12 @@ const ApplicationPreferences: React.FC = () => {
         }
 
         if (data?.language_preference && i18n.language !== data.language_preference) {
+          console.log(`AP: Changing i18n language from ${i18n.language} to ${data.language_preference}`);
           i18n.changeLanguage(data.language_preference);
+        } else if (!data?.language_preference) {
+        console.log("AP: No language preference found in DB, defaulting to current i18n language:", i18n.language);
+        } else {
+        console.log(`AP: i18n language already matches DB preference (${data.language_preference}). No change needed.`);
         }
 
       } catch (err: any) {
@@ -147,6 +155,7 @@ const ApplicationPreferences: React.FC = () => {
     setError(null);
     setMessage(null);
     try {
+      console.log("AP: Saving language preference:", i18n.language);
       const { error: updateError } = await supabase
         .from('profiles')
         .upsert(
