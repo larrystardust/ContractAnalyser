@@ -88,6 +88,8 @@
   "default_jurisdictions_hint": "حدد الاختصاصات القضائية التي سيتم تحديدها مسبقًا عند تحميل عقود جديدة.",
   "dashboard_appearance": "مظهر لوحة التحكم",
   "theme": "المظهر",
+  "theme_preference_hint": "اختر المظهر البصري المفضل لديك للتطبيق.",
+  "select_theme": "اختر المظهر",
   "light": "فاتح",
   "dark": "داكن",
   "system": "النظام",
