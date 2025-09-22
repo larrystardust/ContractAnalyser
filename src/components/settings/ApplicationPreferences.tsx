@@ -7,7 +7,7 @@ import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
-import { useTranslation } from 'react-i18next'; // MODIFIED: Destructure i18n
+import { useTranslation } from 'react-i18next';
 
 // Define the structure for the default settings (including display info)
 const notificationTypes = {
@@ -40,7 +40,7 @@ const notificationTypes = {
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const { t, i18n } = useTranslation();
 
   const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
     const initialPrefs: Record<string, { email: boolean; inApp: boolean }> = {};
@@ -57,6 +57,55 @@ const ApplicationPreferences: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Restore this useEffect hook
+  useEffect(() => {
+    const fetchNotificationPreferences = async () => {
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('profiles')
+          .select('notification_settings, language_preference') // ADDED: Select language_preference
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+          throw fetchError;
+        }
+
+        if (data?.notification_settings) {
+          const fetchedSettings = data.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
+          // Merge fetched settings with defaults to ensure all types are present
+          setPreferences(prev => {
+            const merged = { ...prev }; // Start with current defaults
+            for (const key in notificationTypes) {
+              if (fetchedSettings[key]) {
+                merged[key] = fetchedSettings[key];
+              }
+            }
+            return merged;
+          });
+        }
+
+        // ADDED: Set language preference from fetched data
+        if (data?.language_preference && i18n.language !== data.language_preference) {
+          i18n.changeLanguage(data.language_preference);
+        }
+
+      } catch (err: any) {
+        console.error('Error fetching notification preferences:', err);
+        setError(err.message || t('failed_to_load_notification_preferences'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchNotificationPreferences();
+  }, [session?.user?.id, supabase, t, i18n]); // ADDED: i18n to dependencies
 
   // Keep the minimal render for now
   return (
