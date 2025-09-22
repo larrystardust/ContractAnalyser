@@ -97,6 +97,9 @@ export type Database = {
           subscription_id: string | null
           updated_at: string
           user_id: string
+          output_language: string
+          translated_name: string | null
+          contract_content: string | null
         }
         Insert: {
           created_at?: string
@@ -111,6 +114,9 @@ export type Database = {
           subscription_id?: string | null
           updated_at?: string
           user_id: string
+          output_language?: string
+          translated_name?: string | null
+          contract_content?: string | null
         }
         Update: {
           created_at?: string
@@ -125,6 +131,9 @@ export type Database = {
           subscription_id?: string | null
           updated_at?: string
           user_id?: string
+          output_language?: string
+          translated_name?: string | null
+          contract_content?: string | null
         }
         Relationships: [
           {
@@ -351,6 +360,8 @@ export type Database = {
           mobile_phone_number: string | null
           notification_settings: Json | null
           theme_preference: string
+          language_preference: string | null
+          auto_start_analysis_enabled: boolean
         }
         Insert: {
           business_name?: string | null
@@ -365,6 +376,8 @@ export type Database = {
           mobile_phone_number?: string | null
           notification_settings?: Json | null
           theme_preference?: string
+          language_preference?: string | null
+          auto_start_analysis_enabled?: boolean
         }
         Update: {
           business_name?: string | null
@@ -379,6 +392,8 @@ export type Database = {
           mobile_phone_number?: string | null
           notification_settings?: Json | null
           theme_preference?: string
+          language_preference?: string | null
+          auto_start_analysis_enabled?: boolean
         }
         Relationships: [
           {
@@ -708,6 +723,125 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          created_at: string
+          default_jurisdictions: string[]
+          default_theme: string
+          global_email_reports_enabled: boolean
+          id: string
+          is_maintenance_mode: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_jurisdictions?: string[]
+          default_theme?: string
+          global_email_reports_enabled?: boolean
+          id?: string
+          is_maintenance_mode?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_jurisdictions?: string[]
+          default_theme?: string
+          global_email_reports_enabled?: boolean
+          id?: string
+          is_maintenance_mode?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          created_at: string
+          description: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_otps: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          otp_code: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          is_used?: boolean
+          otp_code: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          otp_code?: string
+        }
+        Relationships: []
+      }
+      stripe_product_metadata: {
+        Row: {
+          created_at: string
+          max_files: number | null
+          max_users: number | null
+          price_id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          max_files?: number | null
+          max_users?: number | null
+          price_id: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          max_files?: number | null
+          max_users?: number | null
+          price_id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       stripe_user_orders: {
@@ -857,7 +991,7 @@ export type TablesInsert<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DefaultSchema["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
@@ -882,7 +1016,7 @@ export type TablesUpdate<
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DefaultSchema["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
