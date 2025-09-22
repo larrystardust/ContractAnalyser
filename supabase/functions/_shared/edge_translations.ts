@@ -112,9 +112,16 @@ export const edgeTranslations = {
     "message_forbidden": "Forbidden: User is not an administrator",
     "message_server_error": (errorMessage: string) => `Server error: ${errorMessage}`,
     "email_accept_invitation_button": "Accept Invitation", // ADDED
+
+    // ADDED: Product name keys
+    "product_name_single_use": "Single Use",
+    "product_name_professional_use": "Professional Use",
+    "product_name_enterprise_use": "Enterprise Use",
+    "product_name_admin_free_professional": "Professional Use (Admin Free)",
+    "product_name_admin_free_enterprise": "Enterprise Use (Admin Free)",
+    "previous_plan": "Previous Plan", // ADDED: Key for previous plan
   },
   es: {
-    // TODO: Add Spanish translations for all new keys
     report_title: "Informe de Análisis de Contrato",
     contract_name: "Nombre del Contrato:",
     analysis_date: "Fecha de Análisis:",
@@ -226,9 +233,16 @@ export const edgeTranslations = {
     "message_forbidden": "Prohibido: El usuario no es un administrador",
     "message_server_error": (errorMessage: string) => `Error del servidor: ${errorMessage}`,
     "email_accept_invitation_button": "Aceptar Invitación", // ADDED
+
+    // ADDED: Product name keys
+    "product_name_single_use": "Uso Único",
+    "product_name_professional_use": "Uso Profesional",
+    "product_name_enterprise_use": "Uso Empresarial",
+    "product_name_admin_free_professional": "Uso Profesional (Asignado por Admin)",
+    "product_name_admin_free_enterprise": "Uso Empresarial (Asignado por Admin)",
+    "previous_plan": "Plan Anterior", // ADDED: Key for previous plan
   },
   fr: {
-    // TODO: Add French translations for all new keys
     report_title: "Rapport d'Analyse de Contrat",
     contract_name: "Nom du Contrat:",
     analysis_date: "Date d'Analyse:",
@@ -258,7 +272,7 @@ export const edgeTranslations = {
     email_view_full_report: "Vous pouvez consulter le rapport complet et les constatations détaillées directement ci-dessous, ou cliquer sur le lien pour le visualiser dans votre navigateur :",
     email_view_full_report_button: "Voir le Rapport Complet dans le Navigateur",
     email_thank_you: "Merci d'utiliser ContractAnalyser.",
-    email_team: "L'Équipe ContractAnalyser",
+    email_team: "L'équipe ContractAnalyser",
     no_description_provided: "Aucune description fournie.",
     no_executive_summary_provided: "Aucun résumé exécutif fourni.",
     no_title_provided: "Aucun titre fourni.",
@@ -340,9 +354,16 @@ export const edgeTranslations = {
     "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
     "message_server_error": (errorMessage: string) => `Erreur du serveur : ${errorMessage}`,
     "email_accept_invitation_button": "Accepter l'invitation", // ADDED
+
+    // ADDED: Product name keys
+    "product_name_single_use": "Usage Unique",
+    "product_name_professional_use": "Usage Professionnel",
+    "product_name_enterprise_use": "Usage Entreprise",
+    "product_name_admin_free_professional": "Usage Professionnel (Assigné par Admin)",
+    "product_name_admin_free_enterprise": "Usage Entreprise (Assigné par Admin)",
+    "previous_plan": "Plan Précédent", // ADDED: Key for previous plan
   },
   ar: {
-    // TODO: Add Arabic translations for all new keys
     report_title: "تقرير تحليل العقد",
     contract_name: "اسم العقد:",
     analysis_date: "تاريخ التحليل:",
@@ -454,21 +475,81 @@ export const edgeTranslations = {
     "message_forbidden": "ممنوع: المستخدم ليس مسؤولاً",
     "message_server_error": (errorMessage: string) => `خطأ في الخادم: ${errorMessage}`,
     "email_accept_invitation_button": "قبول الدعوة", // ADDED
+
+    // ADDED: Product name keys
+    "product_name_single_use": "استخدام فردي",
+    "product_name_professional_use": "استخدام احترافي",
+    "product_name_enterprise_use": "استخدام الشركات",
+    "product_name_admin_free_professional": "استخدام احترافي (بواسطة المسؤول)",
+    "product_name_admin_free_enterprise": "استخدام الشركات (بواسطة المسؤول)",
+    "previous_plan": "الخطة السابقة", // ADDED: Key for previous plan
+  }
+};
+
+// ADDED: New object for notification message templates
+export const notificationMessages = {
+  en: {
+    payment_successful_message: (interpolation: { productName: string }) => `Your one-time payment for ${interpolation.productName} has been processed successfully.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${interpolation.oldPlan} to ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Your ${interpolation.productName} subscription is now active.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Your ${interpolation.productName} subscription status is now ${interpolation.status}. Please check your billing details.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Your ${interpolation.productName} subscription has been cancelled and will end on ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `An administrator has granted you a single-use credit for ${interpolation.productName}.`,
+  },
+  es: {
+    payment_successful_message: (interpolation: { productName: string }) => `Su pago único para ${interpolation.productName} ha sido procesado con éxito.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Su plan de suscripción ha cambiado de ${interpolation.oldPlan} a ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Su suscripción a ${interpolation.productName} ya está activa.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `El estado de su suscripción a ${interpolation.productName} es ahora ${interpolation.status}. Por favor, revise sus detalles de facturación.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Su suscripción a ${interpolation.productName} ha sido cancelada y finalizará el ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${interpolation.productName}.`,
+  },
+  fr: {
+    payment_successful_message: (interpolation: { productName: string }) => `Votre paiement unique pour ${interpolation.productName} a été traité avec succès.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${interpolation.oldPlan} à ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Votre abonnement ${interpolation.productName} est maintenant actif.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Le statut de votre abonnement ${interpolation.productName} est maintenant ${interpolation.status}. Veuillez vérifier vos détails de facturation.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Votre abonnement ${interpolation.productName} a été annulé et se terminera le ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${interpolation.productName}.`,
+  },
+  ar: {
+    payment_successful_message: (interpolation: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${interpolation.productName} بنجاح.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${interpolation.oldPlan} إلى ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `اشتراكك في ${interpolation.productName} نشط الآن.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `حالة اشتراكك في ${interpolation.productName} هي الآن ${interpolation.status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${interpolation.productName} وسينتهي في ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${interpolation.productName}.`,
   }
 };
 
 export function getTranslatedMessage(key: string, lang: string, interpolation: Record<string, any> = {}): string {
   const langMap = (edgeTranslations as any)[lang] || edgeTranslations.en;
-  let message = langMap[key] || edgeTranslations.en[key] || key; // Fallback to English, then to key itself
+  const notificationLangMap = (notificationMessages as any)[lang] || notificationMessages.en;
 
-  // MODIFIED: Check if 'message' is a function before calling .replace()
-  if (typeof message === 'function') {
-    message = message(interpolation.contractName, interpolation.count, interpolation.year, interpolation.otpCode, interpolation.maxUsers, interpolation.recipientName, interpolation.recipientEmail, interpolation.initialPassword, interpolation.adminName, interpolation.subject, interpolation.message, interpolation.errorMessage); // Execute the function with interpolation values
+  let messageTemplate: any;
+
+  // First, try to find the key in edgeTranslations (for simple strings)
+  if (langMap[key]) {
+    messageTemplate = langMap[key];
+  }
+  // If not found, try to find it in notificationMessages (for complex message functions)
+  else if (notificationLangMap[key]) {
+    messageTemplate = notificationLangMap[key];
+  }
+  // Fallback to the key itself if not found anywhere
+  else {
+    messageTemplate = key;
   }
 
-  // Apply interpolation for string messages (if any)
+  // If the message template is a function, call it with the interpolation object
+  if (typeof messageTemplate === 'function') {
+    return messageTemplate(interpolation);
+  }
+
+  // If it's a string, apply simple string interpolation
+  let message = messageTemplate;
   for (const [k, v] of Object.entries(interpolation)) {
-    if (typeof message === 'string') { // Ensure it's a string before replacing
+    if (typeof message === 'string') {
       message = message.replace(`{${k}}`, v);
     }
   }
