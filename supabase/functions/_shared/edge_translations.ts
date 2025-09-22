@@ -128,6 +128,24 @@ export const edgeTranslations = {
     subscription_alert_message: (interpolation: { productName: string; status: string }) => `Your ${interpolation.productName} subscription status is now ${interpolation.status}. Please check your billing details.`,
     subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Your ${interpolation.productName} subscription has been cancelled and will end on ${interpolation.endDate}.`,
     credit_granted_message: (interpolation: { productName: string }) => `An administrator has granted you a single-use credit for ${interpolation.productName}.`,
+    // NEW: Admin-manage-subscription messages
+    notification_title_subscription_removed: "Subscription Removed",
+    notification_message_subscription_removed: "Your subscription access has been removed by an administrator.",
+    notification_title_plan_assigned: "Plan Assigned!",
+    notification_message_admin_assigned_plan: (interpolation: { productName: string }) => `An administrator has assigned you to the ${interpolation.productName} plan.`,
+    notification_title_subscription_assigned: "Subscription Assigned!",
+    notification_message_admin_assigned_stripe_plan: (interpolation: { productName: string; role: string }) => `An administrator has assigned you to ${interpolation.productName} with the role of ${interpolation.role}.`,
+
+    // Admin-manage-subscription specific error messages
+    error_missing_userid: "Missing userId",
+    error_role_required: "Role is required when assigning a subscription.",
+    error_failed_to_fetch_customer_info: "Failed to fetch customer information.",
+    error_could_not_retrieve_user_email: "Could not retrieve user email to create Stripe customer.",
+    error_failed_to_create_stripe_customer_record: "Failed to create Stripe customer record.",
+    error_failed_to_remove_user_from_subscription: "Failed to remove user from subscription.",
+    error_failed_to_assign_admin_managed_subscription: "Failed to assign admin-managed subscription.",
+    error_product_details_not_found: "Product details not found for the selected plan.",
+    error_failed_to_check_existing_subscriptions: "Failed to check existing subscriptions.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -257,6 +275,24 @@ export const edgeTranslations = {
     subscription_alert_message: (interpolation: { productName: string; status: string }) => `El estado de su suscripción a ${interpolation.productName} es ahora ${interpolation.status}. Por favor, revise sus detalles de facturación.`,
     subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Su suscripción a ${interpolation.productName} ha sido cancelada y finalizará el ${interpolation.endDate}.`,
     credit_granted_message: (interpolation: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${interpolation.productName}.`,
+    // NEW: Admin-manage-subscription messages
+    notification_title_subscription_removed: "Suscripción Eliminada",
+    notification_message_subscription_removed: "Su acceso a la suscripción ha sido eliminado por un administrador.",
+    notification_title_plan_assigned: "¡Plan Asignado!",
+    notification_message_admin_assigned_plan: (interpolation: { productName: string }) => `Un administrador le ha asignado al plan ${interpolation.productName}.`,
+    notification_title_subscription_assigned: "¡Suscripción Asignada!",
+    notification_message_admin_assigned_stripe_plan: (interpolation: { productName: string; role: string }) => `Un administrador le ha asignado a ${interpolation.productName} con el rol de ${interpolation.role}.`,
+
+    // Admin-manage-subscription specific error messages
+    error_missing_userid: "Falta el ID de usuario",
+    error_role_required: "Se requiere un rol al asignar una suscripción.",
+    error_failed_to_fetch_customer_info: "No se pudo obtener la información del cliente.",
+    error_could_not_retrieve_user_email: "No se pudo recuperar el correo electrónico del usuario para crear el cliente de Stripe.",
+    error_failed_to_create_stripe_customer_record: "No se pudo crear el registro de cliente de Stripe.",
+    error_failed_to_remove_user_from_subscription: "No se pudo eliminar al usuario de la suscripción.",
+    error_failed_to_assign_admin_managed_subscription: "No se pudo asignar la suscripción administrada por el administrador.",
+    error_product_details_not_found: "No se encontraron los detalles del producto para el plan seleccionado.",
+    error_failed_to_check_existing_subscriptions: "No se pudieron verificar las suscripciones existentes.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -386,6 +422,24 @@ export const edgeTranslations = {
     subscription_alert_message: (interpolation: { productName: string; status: string }) => `Le statut de votre abonnement ${interpolation.productName} est maintenant ${interpolation.status}. Veuillez vérifier vos détails de facturation.`,
     subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Votre abonnement ${interpolation.productName} a été annulé et se terminera le ${interpolation.endDate}.`,
     credit_granted_message: (interpolation: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${interpolation.productName}.`,
+    // NEW: Admin-manage-subscription messages
+    notification_title_subscription_removed: "Abonnement Supprimé",
+    notification_message_subscription_removed: "Votre accès à l'abonnement a été supprimé par un administrateur.",
+    notification_title_plan_assigned: "Plan Attribué !",
+    notification_message_admin_assigned_plan: (interpolation: { productName: string }) => `Un administrateur vous a attribué le plan ${interpolation.productName}.`,
+    notification_title_subscription_assigned: "Abonnement Attribué !",
+    notification_message_admin_assigned_stripe_plan: (interpolation: { productName: string; role: string }) => `Un administrateur vous a attribué à ${interpolation.productName} avec le rôle de ${interpolation.role}.`,
+
+    // Admin-manage-subscription specific error messages
+    error_missing_userid: "ID utilisateur manquant",
+    error_role_required: "Le rôle est requis lors de l'attribution d'un abonnement.",
+    error_failed_to_fetch_customer_info: "Échec de la récupération des informations client.",
+    error_could_not_retrieve_user_email: "Impossible de récupérer l'e-mail de l'utilisateur pour créer le client Stripe.",
+    error_failed_to_create_stripe_customer_record: "Échec de la création de l'enregistrement client Stripe.",
+    error_failed_to_remove_user_from_subscription: "Échec de la suppression de l'utilisateur de l'abonnement.",
+    error_failed_to_assign_admin_managed_subscription: "Échec de l'attribution de l'abonnement géré par l'administrateur.",
+    error_product_details_not_found: "Détails du produit introuvables pour le plan sélectionné.",
+    error_failed_to_check_existing_subscriptions: "Échec de la vérification des abonnements existants.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -515,6 +569,24 @@ export const edgeTranslations = {
     subscription_alert_message: (interpolation: { productName: string; status: string }) => `حالة اشتراكك في ${interpolation.productName} هي الآن ${interpolation.status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
     subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${interpolation.productName} وسينتهي في ${interpolation.endDate}.`,
     credit_granted_message: (interpolation: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${interpolation.productName}.`,
+    // NEW: Admin-manage-subscription messages
+    notification_title_subscription_removed: "تمت إزالة الاشتراك",
+    notification_message_subscription_removed: "تمت إزالة وصولك إلى الاشتراك بواسطة مسؤول.",
+    notification_title_plan_assigned: "تم تعيين الخطة!",
+    notification_message_admin_assigned_plan: (interpolation: { productName: string }) => `لقد قام مسؤول بتعيينك لخطة ${interpolation.productName}.`,
+    notification_title_subscription_assigned: "تم تعيين الاشتراك!",
+    notification_message_admin_assigned_stripe_plan: (interpolation: { productName: string; role: string }) => `لقد قام مسؤول بتعيينك لـ ${interpolation.productName} بدور ${interpolation.role}.`,
+
+    // Admin-manage-subscription specific error messages
+    error_missing_userid: "معرف المستخدم مفقود",
+    error_role_required: "الدور مطلوب عند تعيين اشتراك.",
+    error_failed_to_fetch_customer_info: "فشل في جلب معلومات العميل.",
+    error_could_not_retrieve_user_email: "تعذر استرداد بريد المستخدم الإلكتروني لإنشاء عميل Stripe.",
+    error_failed_to_create_stripe_customer_record: "فشل في إنشاء سجل عميل Stripe.",
+    error_failed_to_remove_user_from_subscription: "فشل في إزالة المستخدم من الاشتراك.",
+    error_failed_to_assign_admin_managed_subscription: "فشل في تعيين الاشتراك المدار بواسطة المسؤول.",
+    error_product_details_not_found: "تفاصيل المنتج غير موجودة للخطة المحددة.",
+    error_failed_to_check_existing_subscriptions: "فشل في التحقق من الاشتراكات الحالية.",
   }
 };
 
