@@ -274,7 +274,7 @@ const ApplicationPreferences: React.FC = () => {
           <div className="flex items-center justify-between py-3">
             <div>
               <h4 className="text-sm font-medium text-gray-900">{t('email_reports')}</h4>
-              <p className="text-xs text-gray-500 mt-1">{t('send_completed_analysis_reports_to_your_email')}</p>
+              <p className="text-xs text-gray-500 mt-1">{t('email_reports_hint')}</p>
             </div>
             <ToggleSwitch
               checked={emailReportsEnabled}
@@ -286,7 +286,7 @@ const ApplicationPreferences: React.FC = () => {
           <div className="flex items-center justify-between py-3 border-t border-gray-200">
             <div>
               <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4>
-              <p className="text-xs text-gray-500 mt-1">{t('automatically_begin_analysis_when_contracts_are_uploaded')}</p>
+              <p className="text-xs text-gray-500 mt-1">{t('auto_start_analysis_hint')}</p>
             </div>
             {/* This is a placeholder. If this needs to be persisted, a new column in 'profiles' or 'app_settings' is required. */}
             <ToggleSwitch
