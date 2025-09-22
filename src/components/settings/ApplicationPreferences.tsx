@@ -8,6 +8,7 @@ import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
+// REMOVED: import { useUserProfile } from '../../hooks/useUserProfile'; // ADDED: Import useUserProfile
 
 // REMOVED: notificationTypes constant (it belongs in NotificationSettings.tsx)
 
@@ -15,13 +16,17 @@ const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { t, i18n } = useTranslation();
+  // REMOVED: const { emailReportsEnabled: initialEmailReportsEnabled, autoStartAnalysisEnabled: initialAutoStartAnalysisEnabled, loading: loadingUserProfile } = useUserProfile();
 
   // REMOVED: preferences state and updatePreference function
   // const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => { /* ... */ });
 
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [emailReportsEnabled, setEmailReportsEnabled] = useState(false); // ADDED: State for Email Reports
+  // MODIFIED: Initialize emailReportsEnabled to false
+  const [emailReportsEnabled, setEmailReportsEnabled] = useState(false);
+  // MODIFIED: Initialize autoStartAnalysisEnabled to true
+  const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(true);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,7 +34,7 @@ const ApplicationPreferences: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchNotificationPreferences = async () => {
+    const fetchPreferences = async () => { // Renamed from fetchNotificationPreferences
       if (!session?.user?.id) {
         setIsLoading(false);
         console.log("AP: No user ID, skipping fetch.");
@@ -40,7 +45,7 @@ const ApplicationPreferences: React.FC = () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('notification_settings, language_preference, theme_preference, email_reports_enabled') // MODIFIED: Select email_reports_enabled
+          .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled') // MODIFIED: Select email_reports_enabled and auto_start_analysis_enabled
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -73,6 +78,8 @@ const ApplicationPreferences: React.FC = () => {
 
         // ADDED: Initialize emailReportsEnabled from DB
         setEmailReportsEnabled(data?.email_reports_enabled || false);
+        // ADDED: Initialize autoStartAnalysisEnabled from DB
+        setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
 
 
       } catch (err: any) {
@@ -82,7 +89,7 @@ const ApplicationPreferences: React.FC = () => {
         setIsLoading(false);
       }
     };
-    fetchNotificationPreferences();
+    fetchPreferences();
   }, [session?.user?.id, supabase, t]);
 
   // REMOVED: updatePreference function (it's for NotificationSettings)
@@ -132,6 +139,7 @@ const ApplicationPreferences: React.FC = () => {
             language_preference: selectedLanguage,
             theme_preference: selectedTheme,
             email_reports_enabled: emailReportsEnabled, // ADDED: Save emailReportsEnabled
+            auto_start_analysis_enabled: autoStartAnalysisEnabled, // ADDED: Save autoStartAnalysisEnabled
           },
           { onConflict: 'id' }
         );
@@ -150,7 +158,8 @@ const ApplicationPreferences: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  // MODIFIED: Check loadingUserProfile in isLoading condition
+  if (isLoading) { // Removed loadingUserProfile from here as it's no longer directly used for loading state
     return (
       <Card>
         <CardBody className="text-center py-8">
@@ -282,7 +291,7 @@ const ApplicationPreferences: React.FC = () => {
               disabled={isSaving}
             />
           </div>
-          {/* Auto-start Analysis (Placeholder - not in DB schema) */}
+          {/* Auto-start Analysis */}
           <div className="flex items-center justify-between py-3 border-t border-gray-200">
             <div>
               <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4>
@@ -290,9 +299,9 @@ const ApplicationPreferences: React.FC = () => {
             </div>
             {/* This is a placeholder. If this needs to be persisted, a new column in 'profiles' or 'app_settings' is required. */}
             <ToggleSwitch
-              checked={false} // Always false as it's not persisted
-              onChange={() => { /* No-op as it's not persisted */ }}
-              disabled={true} // Always disabled as it's not persisted
+              checked={autoStartAnalysisEnabled} // MODIFIED: Use autoStartAnalysisEnabled state
+              onChange={setAutoStartAnalysisEnabled} // MODIFIED: Update autoStartAnalysisEnabled state
+              disabled={isSaving} // MODIFIED: Enable the toggle
             />
           </div>
         </CardBody>
