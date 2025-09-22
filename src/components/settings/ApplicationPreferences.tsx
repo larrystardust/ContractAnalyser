@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react'; // MODIFIED: Added Mail and Smartphone
+import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -9,7 +9,6 @@ import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
 
-// Define the structure for the default settings (including display info)
 const notificationTypes = {
   'analysis-complete': {
     titleKey: 'analysis_complete',
@@ -53,6 +52,8 @@ const ApplicationPreferences: React.FC = () => {
     return initialPrefs;
   });
 
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language); // ADDED: Local state for language
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,13 +94,17 @@ const ApplicationPreferences: React.FC = () => {
           });
         }
 
-        if (data?.language_preference && i18n.language !== data.language_preference) {
-          console.log(`AP: Changing i18n language from ${i18n.language} to ${data.language_preference}`);
-          i18n.changeLanguage(data.language_preference);
-        } else if (!data?.language_preference) {
-        console.log("AP: No language preference found in DB, defaulting to current i18n language:", i18n.language);
+        // MODIFIED: Initialize selectedLanguage from DB or current i18n.language
+        const dbLanguage = data?.language_preference || i18n.language;
+        setSelectedLanguage(dbLanguage);
+        console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`);
+
+        // MODIFIED: Only change i18n.language if it's different from DB value
+        if (i18n.language !== dbLanguage) {
+          console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
+          i18n.changeLanguage(dbLanguage);
         } else {
-        console.log(`AP: i18n language already matches DB preference (${data.language_preference}). No change needed.`);
+          console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
         }
 
       } catch (err: any) {
@@ -110,7 +115,7 @@ const ApplicationPreferences: React.FC = () => {
       }
     };
     fetchNotificationPreferences();
-  }, [session?.user?.id, supabase, t, i18n]);
+  }, [session?.user?.id, supabase, t]); // MODIFIED: Removed i18n from dependency array
 
   // Function to update preferences state
   const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
@@ -147,38 +152,41 @@ const ApplicationPreferences: React.FC = () => {
 
   // Handle saving preferences
   const handleSavePreferences = async () => {
-  if (!session?.user?.id) {
-    setError(t('must_be_logged_in_to_save_preferences'));
-    return;
-  }
-  setIsSaving(true);
-  setError(null);
-  setMessage(null);
-  try {
-    console.log("AP: Attempting to save language preference to DB:", i18n.language);
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .upsert(
-        {
-          id: session.user.id,
-          notification_settings: preferences,
-          language_preference: i18n.language,
-          updated_at: new Date().toISOString(), // ADDED: Explicitly update timestamp
-        },
-        { onConflict: 'id' }
-      );
-
-    if (updateError) {
-      console.error("AP: Error saving language preference:", updateError);
-      throw updateError;
+    if (!session?.user?.id) {
+      setError(t('must_be_logged_in_to_save_preferences'));
+      return;
     }
-    setMessage(t('notification_preferences_saved_successfully'));
-    console.log("AP: Language preference saved successfully.");
-  } catch (err: any) {
-    console.error('Error saving notification preferences:', err);
-    setError(err.message || t('failed_to_save_notification_preferences'));
-  } finally {
-    setIsSaving(false);
+    setIsSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      // MODIFIED: Change i18n language first, then save to DB
+      console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
+      i18n.changeLanguage(selectedLanguage);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: session.user.id,
+            notification_settings: preferences,
+            language_preference: selectedLanguage, // Save the selectedLanguage
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
+
+      if (updateError) {
+        console.error("AP: Error saving language preference:", updateError);
+        throw updateError;
+      }
+      setMessage(t('notification_preferences_saved_successfully'));
+      console.log("AP: Language preference saved successfully.");
+    } catch (err: any) {
+      console.error('Error saving notification preferences:', err);
+      setError(err.message || t('failed_to_save_notification_preferences'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -278,8 +286,8 @@ const ApplicationPreferences: React.FC = () => {
             <select
               id="language"
               name="language"
-              value={i18n.language} // Use i18n.language for the current selected language
-              onChange={(e) => i18n.changeLanguage(e.target.value)} // Update i18n language on change
+              value={selectedLanguage} // MODIFIED: Use local state
+              onChange={(e) => setSelectedLanguage(e.target.value)} // MODIFIED: Update local state
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isSaving}
             >
