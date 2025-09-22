@@ -170,6 +170,7 @@ const ApplicationPreferences: React.FC = () => {
             id: session.user.id,
             notification_settings: preferences,
             language_preference: selectedLanguage, // Save the selectedLanguage
+            theme_preference: selectedTheme, // ADDED: Save the selected theme
           },
           { onConflict: 'id' }
         );
