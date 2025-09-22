@@ -74,54 +74,21 @@ const AuthCallbackPage: React.FC = () => {
         console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
 
         try {
-          // ADDED: Log user_metadata
-          console.log('AuthCallbackPage: user_metadata:', currentSession.user.user_metadata);
+          // REMOVED: Call to create-user-profile Edge Function from here.
+          // This is now handled exclusively by SignupPage.tsx
 
-          // 1. Create/Update User Profile
-          const storedFullName = currentSession.user.user_metadata.full_name || null;
-          const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
-          const storedCountryCode = currentSession.user.user_metadata.country_code || null;
-          const storedBusinessName = currentSession.user.user_metadata.business_name || null;
-          
-          // MODIFIED: Prioritize language from URL, then user_metadata
-          const languageFromUrl = searchParams.get('lang');
-          const storedLanguagePreference = languageFromUrl || currentSession.user.user_metadata.language_preference || null;
-
-          console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
-            storedFullName,
-            storedBusinessName,
-            storedMobilePhoneNumber,
-            storedCountryCode,
-            storedLanguagePreference, // ADDED: Log language preference
-          });
-
-          const { error: profileEdgeFunctionError } = await supabase.functions.invoke('create-user-profile', {
-            body: {
-              userId: currentSession.user.id,
-              fullName: storedFullName,
-              businessName: storedBusinessName,
-              mobilePhoneNumber: storedMobilePhoneNumber,
-              countryCode: storedCountryCode,
-              languagePreference: storedLanguagePreference, // ADDED: Pass language preference
-            },
-          });
-
-          if (profileEdgeFunctionError) {
-            console.error('AuthCallbackPage: Error calling create-user-profile Edge Function:', profileEdgeFunctionError);
-          } else {
-            console.log('AuthCallbackPage: Profile created/updated successfully via Edge Function.');
-            try {
-              await supabase
-                .from('profiles')
-                .update({ login_at: new Date().toISOString() })
-                .eq('id', currentSession.user.id);
-              console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
-            } catch (updateLoginError) {
-              console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
-            }
+          // Update login_at for the user
+          try {
+            await supabase
+              .from('profiles')
+              .update({ login_at: new Date().toISOString() })
+              .eq('id', currentSession.user.id);
+            console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
+          } catch (updateLoginError) {
+            console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
           }
 
-          // 2. Handle Invitation Acceptance (if token exists)
+          // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
             const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
