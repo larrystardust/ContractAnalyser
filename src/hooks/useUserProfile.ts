@@ -7,6 +7,8 @@ export function useUserProfile() {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const [defaultJurisdictions, setDefaultJurisdictions] = useState<Jurisdiction[]>([]);
+  const [emailReportsEnabled, setEmailReportsEnabled] = useState(false); // ADDED
+  const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(false); // ADDED
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -14,6 +16,8 @@ export function useUserProfile() {
     const fetchProfile = async () => {
       if (!session?.user?.id) {
         setDefaultJurisdictions([]);
+        setEmailReportsEnabled(false); // ADDED
+        setAutoStartAnalysisEnabled(false); // ADDED
         setLoading(false);
         return;
       }
@@ -23,7 +27,7 @@ export function useUserProfile() {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('default_jurisdictions')
+          .select('default_jurisdictions, email_reports_enabled, auto_start_analysis_enabled') // MODIFIED: Select new columns
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -32,6 +36,8 @@ export function useUserProfile() {
         }
 
         setDefaultJurisdictions((data?.default_jurisdictions as Jurisdiction[]) || []);
+        setEmailReportsEnabled(data?.email_reports_enabled || false); // ADDED
+        setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false); // ADDED
       } catch (err: any) {
         console.error('Error fetching user profile for jurisdictions:', err);
         setError(err);
@@ -43,5 +49,5 @@ export function useUserProfile() {
     fetchProfile();
   }, [session?.user?.id, supabase]);
 
-  return { defaultJurisdictions, loading, error };
+  return { defaultJurisdictions, emailReportsEnabled, autoStartAnalysisEnabled, loading, error }; // MODIFIED: Return new states
 }
