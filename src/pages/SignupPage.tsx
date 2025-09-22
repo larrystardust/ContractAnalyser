@@ -39,7 +39,7 @@ const countryCodes = [
   { code: '+82', name: 'South Korea' },
   { code: '+84', name: 'Vietnam' },
   { code: '+90', name: 'Turkey' },
-  { code: '+52', name: 'Mexico' },
+  { code: '+52', name: 'Mexico' },  
   { code: '+46', name: 'Sweden' },
   { code: '+47', name: 'Norway' },
   { code: '+45', name: 'Denmark' },
@@ -54,7 +54,7 @@ const countryCodes = [
   { code: '+420', name: 'Czech Republic' },
   { code: '+36', name: 'Hungary' },
   { code: '+40', name: 'Romania' },
-  { code: '+380', name: 'Ukraine' },
+  { code: '+380', name: 'Ukraine' },  
   { code: '+994', name: 'Azerbaijan' },
   { code: '+995', name: 'Georgia' },
   { code: '+998', name: 'Uzbekistan' },
@@ -167,6 +167,9 @@ const SignupPage: React.FC = () => {
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
+    // MODIFIED: Add current i18n language to emailRedirectToUrl
+    emailRedirectToUrl += `&lang=${i18n.language}`;
+
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
       data: {
@@ -174,6 +177,7 @@ const SignupPage: React.FC = () => {
         business_name: businessName,
         mobile_phone_number: mobilePhoneNumber,
         country_code: selectedCountryCode,
+        language_preference: i18n.language, // Still pass in user_metadata as a primary attempt
       },
     });
 
