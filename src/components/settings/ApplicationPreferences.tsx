@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
@@ -266,48 +266,34 @@ const ApplicationPreferences: React.FC = () => {
         <CardHeader>
           <div className="flex items-center">
             <FileText className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('report_preferences')}</h3> {/* MODIFIED */}
+            <h3 className="text-lg font-medium text-gray-900">{t('report_preferences')}</h3>
           </div>
         </CardHeader>
         <CardBody>
-          <div className="space-y-4">
-            {/* Commented out: Default Report Format */}
-            {/*
+          {/* Email Reports Toggle */}
+          <div className="flex items-center justify-between py-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Default Report Format</label>
-              <select
-                value={preferences.reportFormat}
-                onChange={(e) => handlePreferenceChange('reportFormat', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="pdf">PDF Document</option>
-                <option value="docx">Word Document (.docx)</option>
-                <option value="html">HTML Report</option>
-              </select>
+              <h4 className="text-sm font-medium text-gray-900">{t('email_reports')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('send_completed_analysis_reports_to_your_email')}</p>
             </div>
-            */}
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4> {/* MODIFIED */}
-                <p className="text-sm text-gray-500">{t('auto_start_analysis_hint')}</p> {/* MODIFIED */}
-              </div>
-              <ToggleSwitch
-                checked={preferences.autoAnalysis}
-                onChange={(checked) => handlePreferenceChange('autoAnalysis', checked)}
-              />
+            <ToggleSwitch
+              checked={emailReportsEnabled}
+              onChange={setEmailReportsEnabled}
+              disabled={isSaving}
+            />
+          </div>
+          {/* Auto-start Analysis (Placeholder - not in DB schema) */}
+          <div className="flex items-center justify-between py-3 border-t border-gray-200">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('automatically_begin_analysis_when_contracts_are_uploaded')}</p>
             </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">{t('email_reports')}</h4> {/* MODIFIED */}
-                <p className="text-sm text-gray-500">{t('email_reports_hint')}</p> {/* MODIFIED */}
-              </div>
-              <ToggleSwitch
-                checked={preferences.emailReports}
-                onChange={(checked) => handlePreferenceChange('emailReports', checked)}
-              />
-            </div>
+            {/* This is a placeholder. If this needs to be persisted, a new column in 'profiles' or 'app_settings' is required. */}
+            <ToggleSwitch
+              checked={false} // Always false as it's not persisted
+              onChange={() => { /* No-op as it's not persisted */ }}
+              disabled={true} // Always disabled as it's not persisted
+            />
           </div>
         </CardBody>
       </Card>
