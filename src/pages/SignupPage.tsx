@@ -208,6 +208,7 @@ const SignupPage: React.FC = () => {
               businessName: businessName,
               mobilePhoneNumber: mobilePhoneNumber,
               countryCode: selectedCountryCode,
+              languagePreference: i18n.language, // ADDED: Pass language preference directly here
             },
           });
           console.log('Profile creation initiated from SignupPage.');
