@@ -74,12 +74,18 @@ const AuthCallbackPage: React.FC = () => {
         console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
 
         try {
+          // ADDED: Log user_metadata
+          console.log('AuthCallbackPage: user_metadata:', currentSession.user.user_metadata);
+
           // 1. Create/Update User Profile
           const storedFullName = currentSession.user.user_metadata.full_name || null;
           const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
           const storedCountryCode = currentSession.user.user_metadata.country_code || null;
           const storedBusinessName = currentSession.user.user_metadata.business_name || null;
-          const storedLanguagePreference = currentSession.user.user_metadata.language_preference || null; // ADDED: Extract language preference
+          
+          // MODIFIED: Prioritize language from URL, then user_metadata
+          const languageFromUrl = searchParams.get('lang');
+          const storedLanguagePreference = languageFromUrl || currentSession.user.user_metadata.language_preference || null;
 
           console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
             storedFullName,
