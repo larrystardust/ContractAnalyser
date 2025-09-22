@@ -3,7 +3,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import Stripe from 'npm:stripe@17.7.0';
 import { logActivity } from '../_shared/logActivity.ts';
 import { insertNotification } from '../_shared/notification_utils.ts';
-import { stripeProducts } from '../_shared/stripe_products_data.ts'; // ADDED: Import stripeProducts
+import { stripeProducts } from '../_shared/stripe_products_data.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: 'Method not allowed' }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405);
   }
 
   try {
@@ -45,21 +46,18 @@ Deno.serve(async (req) => {
     console.log('admin-manage-subscription: Received request with userId:', userId, 'priceId:', priceId, 'role:', role);
 
     if (!userId) {
-      console.error('admin-manage-subscription: Missing userId in request.');
-      return corsResponse({ error: 'Missing userId' }, 400);
+      return corsResponse({ error: getTranslatedMessage('error_missing_userid', 'en') }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('admin-manage-subscription: Authorization header missing.');
-      return corsResponse({ error: 'Authorization header missing' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401);
     }
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
-      console.error('admin-manage-subscription: Unauthorized: Invalid or missing user token:', userError?.message);
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized', 'en') }, 401);
     }
 
     const { data: adminProfile, error: adminProfileError } = await supabase
@@ -69,13 +67,26 @@ Deno.serve(async (req) => {
       .single();
 
     if (adminProfileError || !adminProfile?.is_admin) {
-      console.error('admin-manage-subscription: Forbidden: User is not an administrator.', adminProfileError);
-      return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
+      return corsResponse({ error: getTranslatedMessage('message_forbidden', 'en') }, 403);
     }
 
-    // Fetch target user's email for logging
+    // Fetch target user's email and language for logging and notifications
     const { data: targetUserAuth, error: targetUserAuthError } = await supabase.auth.admin.getUserById(userId);
     const targetUserEmail = targetUserAuth?.user?.email || 'Unknown';
+
+    let targetUserPreferredLanguage = 'en';
+    const { data: targetUserProfile, error: targetUserProfileError } = await supabase
+      .from('profiles')
+      .select('language_preference')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (targetUserProfileError) {
+      console.warn('admin-manage-subscription: Error fetching target user profile for language:', targetUserProfileError);
+    } else if (targetUserProfile?.language_preference) {
+      targetUserPreferredLanguage = targetUserProfile.language_preference;
+    }
+
     console.log('admin-manage-subscription: Admin user:', user.email, 'managing user:', targetUserEmail);
 
     // 1. Get or Create Stripe Customer for the target user
@@ -88,7 +99,7 @@ Deno.serve(async (req) => {
 
     if (customerFetchError) {
       console.error('admin-manage-subscription: Error fetching existing customer:', customerFetchError);
-      return corsResponse({ error: 'Failed to fetch customer information.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('error_failed_to_fetch_customer_info', targetUserPreferredLanguage) }, 500);
     }
 
     if (existingCustomer) {
@@ -99,7 +110,7 @@ Deno.serve(async (req) => {
       const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(userId);
       if (authUserError || !authUser?.user?.email) {
         console.error('admin-manage-subscription: Could not retrieve user email to create Stripe customer.', authUserError);
-        return corsResponse({ error: 'Could not retrieve user email to create Stripe customer.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('error_could_not_retrieve_user_email', targetUserPreferredLanguage) }, 500);
       }
       const newStripeCustomer = await stripe.customers.create({
         email: authUser.user.email,
@@ -113,7 +124,7 @@ Deno.serve(async (req) => {
       });
       if (insertCustomerError) {
         console.error('admin-manage-subscription: Error inserting new Stripe customer:', insertCustomerError);
-        return corsResponse({ error: 'Failed to create Stripe customer record.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('error_failed_to_create_stripe_customer_record', targetUserPreferredLanguage) }, 500);
       }
       console.log('admin-manage-subscription: Created new customerId:', customerId);
     }
@@ -154,7 +165,7 @@ Deno.serve(async (req) => {
 
       if (deleteMembershipError) {
         console.error('admin-manage-subscription: Error deleting membership:', deleteMembershipError);
-        return corsResponse({ error: 'Failed to remove user from subscription.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('error_failed_to_remove_user_from_subscription', targetUserPreferredLanguage) }, 500);
       }
 
       // Also delete any existing subscription entry for this customer in stripe_subscriptions
@@ -185,25 +196,25 @@ Deno.serve(async (req) => {
 
       await insertNotification(
         userId,
-        'Subscription Removed',
-        `Your subscription access has been removed by an administrator.`,
+        getTranslatedMessage('notification_title_subscription_removed', targetUserPreferredLanguage),
+        getTranslatedMessage('notification_message_subscription_removed', targetUserPreferredLanguage),
         'warning'
       );
 
-      return corsResponse({ message: 'User removed from subscription successfully.' });
+      return corsResponse({ message: getTranslatedMessage('notification_message_subscription_removed', targetUserPreferredLanguage) });
 
     } else if (selectedProduct?.mode === 'admin_assigned') {
       console.log('admin-manage-subscription: Assigning admin-only free plan.');
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
-        return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
+        return corsResponse({ error: getTranslatedMessage('error_role_required', targetUserPreferredLanguage) }, 400);
       }
 
       // Declare and initialize adminAssignedSubscriptionId
       const adminAssignedSubscriptionId = `admin_assigned_${userId}_${Date.now()}`; // Unique ID for admin-assigned subscription
 
       // Get max_users and max_files from the selectedProduct
-      const maxUsers = selectedProduct.max_users ?? null; // MODIFIED: Use selectedProduct.max_users
+      const maxUsers = selectedProduct.max_users ?? null;
       const maxFiles = selectedProduct.maxFiles ?? null;
 
       // First, cancel any existing Stripe subscriptions for this customer
@@ -260,7 +271,7 @@ Deno.serve(async (req) => {
 
       if (upsertSubError) {
         console.error('admin-manage-subscription: Error upserting admin-assigned subscription:', upsertSubError);
-        return corsResponse({ error: 'Failed to assign admin-managed subscription.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('error_failed_to_assign_admin_managed_subscription', targetUserPreferredLanguage) }, 500);
       }
 
       // Upsert membership for the owner
@@ -291,25 +302,26 @@ Deno.serve(async (req) => {
         { target_user_id: userId, target_user_email: targetUserEmail, price_id: priceId, subscription_id: adminAssignedSubscriptionId, role: role }
       );
 
+      const translatedProductName = getTranslatedMessage(selectedProduct.name, targetUserPreferredLanguage);
       await insertNotification(
         userId,
-        'Plan Assigned!',
-        `An administrator has assigned you to the ${selectedProduct.name} plan.`,
+        getTranslatedMessage('notification_title_plan_assigned', targetUserPreferredLanguage),
+        getTranslatedMessage('notification_message_admin_assigned_plan', targetUserPreferredLanguage, { productName: translatedProductName }),
         'success'
       );
 
-      return corsResponse({ message: 'User assigned to free plan successfully.', subscription_id: adminAssignedSubscriptionId });
+      return corsResponse({ message: getTranslatedMessage('notification_message_admin_assigned_plan', targetUserPreferredLanguage, { productName: translatedProductName }) });
 
     } else { // This is for actual Stripe subscriptions (mode === 'subscription' or 'payment')
       console.log('admin-manage-subscription: Assigning Stripe subscription.');
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
-        return corsResponse({ error: 'Role is required when assigning a subscription.' }, 400);
+        return corsResponse({ error: getTranslatedMessage('error_role_required', targetUserPreferredLanguage) }, 400);
       }
 
       if (!selectedProduct) {
         console.error('admin-manage-subscription: Product not found for priceId:', priceId);
-        return corsResponse({ error: 'Product details not found for the selected plan.' }, 404);
+        return corsResponse({ error: getTranslatedMessage('error_product_details_not_found', targetUserPreferredLanguage) }, 404);
       }
 
       // Check if the user already has an active subscription (Stripe-managed or admin-assigned)
@@ -322,7 +334,7 @@ Deno.serve(async (req) => {
 
       if (existingSubError) {
         console.error('admin-manage-subscription: Error checking existing active subscription:', existingSubError);
-        return corsResponse({ error: 'Failed to check existing subscriptions.' }, 500);
+        return corsResponse({ error: getTranslatedMessage('error_failed_to_check_existing_subscriptions', targetUserPreferredLanguage) }, 500);
       }
 
       if (existingActiveSubscription) {
@@ -379,20 +391,19 @@ Deno.serve(async (req) => {
         { target_user_id: userId, target_user_email: targetUserEmail, subscription_id: newStripeSubscriptionId, role: role, price_id: priceId }
       );
 
-      const productName = selectedProduct.name || 'a subscription plan';
-
+      const translatedProductName = getTranslatedMessage(selectedProduct.name, targetUserPreferredLanguage);
       await insertNotification(
         userId,
-        'Subscription Assigned!',
-        `An administrator has assigned you to ${productName} with the role of ${role}.`,
+        getTranslatedMessage('notification_title_subscription_assigned', targetUserPreferredLanguage),
+        getTranslatedMessage('notification_message_admin_assigned_stripe_plan', targetUserPreferredLanguage, { productName: translatedProductName, role: role }),
         'success'
       );
 
-      return corsResponse({ message: 'User assigned to subscription successfully.', subscription_id: newStripeSubscriptionId });
+      return corsResponse({ message: getTranslatedMessage('notification_message_admin_assigned_stripe_plan', targetUserPreferredLanguage, { productName: translatedProductName, role: role }) });
     }
 
   } catch (error: any) {
     console.error('admin-manage-subscription: Unhandled error in Edge Function:', error);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500);
   }
 });
