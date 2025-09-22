@@ -111,6 +111,7 @@ export const edgeTranslations = {
     "message_unauthorized": "Unauthorized: Invalid or missing user token",
     "message_forbidden": "Forbidden: User is not an administrator",
     "message_server_error": (errorMessage: string) => `Server error: ${errorMessage}`,
+    "email_accept_invitation_button": "Accept Invitation", // ADDED
   },
   es: {
     // TODO: Add Spanish translations for all new keys
@@ -224,6 +225,7 @@ export const edgeTranslations = {
     "message_unauthorized": "No autorizado: Token de usuario inválido o faltante",
     "message_forbidden": "Prohibido: El usuario no es un administrador",
     "message_server_error": (errorMessage: string) => `Error del servidor: ${errorMessage}`,
+    "email_accept_invitation_button": "Aceptar Invitación", // ADDED
   },
   fr: {
     // TODO: Add French translations for all new keys
@@ -337,6 +339,7 @@ export const edgeTranslations = {
     "message_unauthorized": "Non autorisé : Jeton utilisateur invalide ou manquant",
     "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
     "message_server_error": (errorMessage: string) => `Erreur du serveur : ${errorMessage}`,
+    "email_accept_invitation_button": "Accepter l'invitation", // ADDED
   },
   ar: {
     // TODO: Add Arabic translations for all new keys
@@ -439,7 +442,7 @@ export const edgeTranslations = {
 
     "message_invitation_accepted_successfully": "تم قبول الدعوة بنجاح!",
     "message_invalid_or_expired_invitation": "رمز الدعوة غير صالح أو منتهي الصلاحية.",
-    "message_invitation_not_for_this_this_account": "هذه الدعوة ليست لحسابك.",
+    "message_invitation_not_for_this_account": "هذه الدعوة ليست لحسابك.",
     "message_invitation_already_accepted": "تم قبول هذه الدعوة بالفعل أو لم تعد صالحة.",
 
     "message_inquiry_submitted_successfully": "تم إرسال الاستفسار بنجاح!",
@@ -450,6 +453,7 @@ export const edgeTranslations = {
     "message_unauthorized": "غير مصرح به: رمز المستخدم غير صالح أو مفقود",
     "message_forbidden": "ممنوع: المستخدم ليس مسؤولاً",
     "message_server_error": (errorMessage: string) => `خطأ في الخادم: ${errorMessage}`,
+    "email_accept_invitation_button": "قبول الدعوة", // ADDED
   }
 };
 
