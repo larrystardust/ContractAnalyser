@@ -1,38 +1,64 @@
-import React from 'react'; // Only need React for this minimal test
-import { useTranslation } from 'react-i18next'; // Keep useTranslation for the text
+import React, { useState, useEffect } from 'react';
+import { Settings, Globe, Palette, FileText } from 'lucide-react';
+import Button from '../ui/Button';
+import Card, { CardBody, CardHeader } from '../ui/Card';
+import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
+import { JurisdictionBadge } from '../ui/Badge';
+import { Jurisdiction } from '../../types';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { Database } from '../../types/supabase';
+import { useTranslation } from 'react-i18next'; // MODIFIED: Destructure i18n
 
-// Remove all other imports for this test
-// import { Settings, Globe, Palette, FileText } from 'lucide-react';
-// import Button from '../ui/Button';
-// import Card, { CardBody, CardHeader } from '../ui/Card';
-// import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
-// import { JurisdictionBadge } from '../ui/Badge';
-// import { Jurisdiction } from '../../types';
-// import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-// import { Database } from '../../types/supabase';
-
+// Define the structure for the default settings (including display info)
+const notificationTypes = {
+  'analysis-complete': {
+    titleKey: 'analysis_complete',
+    descriptionKey: 'get_notified_when_contract_analysis_is_finished',
+    defaultEmail: true,
+    defaultInApp: true
+  },
+  'high-risk-findings': {
+    titleKey: 'high_risk_findings',
+    descriptionKey: 'immediate_alerts_for_high-risk_compliance_issues',
+    defaultEmail: true,
+    defaultInApp: true
+  },
+  'weekly-reports': {
+    titleKey: 'weekly_reports',
+    descriptionKey: 'summary_of_all_contract_analyses_from_the_past_week',
+    defaultEmail: false,
+    defaultInApp: false
+  },
+  'system-updates': {
+    titleKey: 'system_updates',
+    descriptionKey: 'information_about_new_features_and_system_maintenance',
+    defaultEmail: false,
+    defaultInApp: true
+  },
+};
 
 const ApplicationPreferences: React.FC = () => {
-  // Keep useTranslation hook, as it's used in the test render
-  const { t } = useTranslation();
+  const supabase = useSupabaseClient<Database>();
+  const session = useSession();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
-  // Temporarily remove all state, effects, and complex logic
-  // const supabase = useSupabaseClient<Database>();
-  // const session = useSession();
-  // const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
+    const initialPrefs: Record<string, { email: boolean; inApp: boolean }> = {};
+    for (const key in notificationTypes) {
+      initialPrefs[key] = {
+        email: notificationTypes[key as keyof typeof notificationTypes].defaultEmail,
+        inApp: notificationTypes[key as keyof typeof notificationTypes].defaultInApp,
+      };
+    }
+    return initialPrefs;
+  });
 
-  // const [preferences, setPreferences] = useState(...);
-  // const [isLoading, setIsLoading] = useState(true);
-  // const [isSaving, setIsSaving] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-  // const [message, setMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  // useEffect(() => { ... }, [...]);
-
-  // const handlePreferenceChange = (...);
-  // const ToggleSwitch = (...);
-  // const handleSave = (...);
-
+  // Keep the minimal render for now
   return (
     <div style={{ border: '2px solid red', padding: '20px', margin: '20px', backgroundColor: 'lightyellow', color: 'black' }}>
       <h1>{t('preferences_test_title')}</h1>
