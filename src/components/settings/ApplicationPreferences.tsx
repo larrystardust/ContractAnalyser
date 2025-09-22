@@ -104,7 +104,72 @@ const ApplicationPreferences: React.FC = () => {
     fetchNotificationPreferences();
   }, [session?.user?.id, supabase, t, i18n]);
 
-  // Restore the original return block here
+  // Function to update preferences state
+  const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
+    setPreferences(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [type]: value,
+      },
+    }));
+  };
+
+  // ToggleSwitch component
+  const ToggleSwitch: React.FC<{
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    disabled?: boolean;
+  }> = ({ checked, onChange, disabled = false }) => (
+    <button
+      type="button"
+      onClick={() => !disabled && onChange(!checked)}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+        checked ? 'bg-blue-600' : 'bg-gray-200'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      disabled={disabled}
+    >
+      <span
+        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+          checked ? 'translate-x-5' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
+
+  // Handle saving preferences
+  const handleSavePreferences = async () => {
+    if (!session?.user?.id) {
+      setError(t('must_be_logged_in_to_save_preferences'));
+      return;
+    }
+    setIsSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: session.user.id,
+            notification_settings: preferences, // Directly save the preferences object
+            language_preference: i18n.language, // Save the current i18n language
+          },
+          { onConflict: 'id' }
+        );
+
+      if (updateError) {
+        throw updateError;
+      }
+      setMessage(t('notification_preferences_saved_successfully'));
+    } catch (err: any) {
+      console.error('Error saving notification preferences:', err);
+      setError(err.message || t('failed_to_save_notification_preferences'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -187,6 +252,35 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
+      {/* Language Preference */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center">
+            <Globe className="h-5 w-5 text-blue-900 mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">{t('language_preference')}</h3>
+          </div>
+        </CardHeader>
+        <CardBody>
+          <div>
+            <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">{t('select_language')}</label>
+            <select
+              id="language"
+              name="language"
+              value={i18n.language} // Use i18n.language for the current selected language
+              onChange={(e) => i18n.changeLanguage(e.target.value)} // Update i18n language on change
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              disabled={isSaving}
+            >
+              <option value="en">{t('english')}</option>
+              <option value="es">{t('spanish')}</option>
+              <option value="fr">{t('french')}</option>
+              <option value="ar">{t('arabic')}</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">{t('language_preference_hint')}</p>
+          </div>
+        </CardBody>
+      </Card>
+
       {/* Report Preferences */}
       <Card>
         <CardHeader>
@@ -219,18 +313,16 @@ const ApplicationPreferences: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-1">{t(typeInfo.descriptionKey)}</p>
                 </div>
                 <div className="flex justify-center">
-                  {/* <ToggleSwitch // Commented out for now
+                  <ToggleSwitch
                     checked={pref.email}
                     onChange={(checked) => updatePreference(id, 'email', checked)}
-                  /> */}
-                  <input type="checkbox" checked={pref.email} disabled={true} /> {/* Temporary placeholder */}
+                  />
                 </div>
                 <div className="flex justify-center">
-                  {/* <ToggleSwitch // Commented out for now
+                  <ToggleSwitch
                     checked={pref.inApp}
                     onChange={(checked) => updatePreference(id, 'inApp', checked)}
-                  /> */}
-                  <input type="checkbox" checked={pref.inApp} disabled={true} /> {/* Temporary placeholder */}
+                  />
                 </div>
               </div>
             );
@@ -242,7 +334,7 @@ const ApplicationPreferences: React.FC = () => {
       <div className="mt-6 flex justify-end">
         <Button
           variant="primary"
-          // onClick={handleSavePreferences} // Commented out for now
+          onClick={handleSavePreferences}
           disabled={isSaving}
           icon={<Settings className="w-4 h-4" />}
         >
