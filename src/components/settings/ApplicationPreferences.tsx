@@ -53,6 +53,7 @@ const ApplicationPreferences: React.FC = () => {
   });
 
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language); // ADDED: Local state for language
+  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system'); // ADDED: State for theme preference
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -71,7 +72,7 @@ const ApplicationPreferences: React.FC = () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('notification_settings, language_preference')
+          .select('notification_settings, language_preference, theme_preference') // MODIFIED: Select theme_preference
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -106,6 +107,12 @@ const ApplicationPreferences: React.FC = () => {
         } else {
           console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
         }
+
+        // ADDED: Initialize selectedTheme from DB
+        const dbTheme = (data?.theme_preference as 'light' | 'dark' | 'system') || 'system';
+        setSelectedTheme(dbTheme);
+        console.log(`AP: Initializing selectedTheme to: ${dbTheme}`);
+
 
       } catch (err: any) {
         console.error('Error fetching notification preferences:', err);
@@ -160,6 +167,7 @@ const ApplicationPreferences: React.FC = () => {
     setError(null);
     setMessage(null);
     try {
+      // MODIFIED: Change i18n language first, then save to DB
       console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
       i18n.changeLanguage(selectedLanguage);
 
@@ -257,8 +265,8 @@ const ApplicationPreferences: React.FC = () => {
             <select
               id="theme"
               name="theme"
-              // value={preferences.theme} // Commented out for now
-              // onChange={(e) => handlePreferenceChange('theme', e.target.value)} // Commented out for now
+              value={selectedTheme} // UNCOMMENTED AND MODIFIED
+              onChange={(e) => setSelectedTheme(e.target.value as 'light' | 'dark' | 'system')} // UNCOMMENTED AND MODIFIED
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isSaving}
             >
