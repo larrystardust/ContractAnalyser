@@ -3,6 +3,7 @@ import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { stripeProducts } from '../_shared/stripe_products_data.ts';
 import { insertNotification } from '../_shared/notification_utils.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // MODIFIED: Import getTranslatedMessage
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -15,47 +16,8 @@ const stripe = new Stripe(stripeSecret, {
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-// ADDED: Simple translation object for notification messages
-const translations = {
-  en: {
-    payment_successful_message: (productName: string) => `Your one-time payment for ${productName} has been processed successfully.`,
-    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`,
-    subscription_active_message: (productName: string) => `Your ${productName} subscription is now active.`,
-    subscription_alert_message: (productName: string, status: string) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`,
-    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`
-  },
-  es: {
-    payment_successful_message: (productName: string) => `Su pago único para ${productName} ha sido procesado con éxito.`,
-    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Su plan de suscripción ha cambiado de ${oldPlan} a ${newPlan}.`,
-    subscription_active_message: (productName: string) => `Su suscripción a ${productName} ya está activa.`,
-    subscription_alert_message: (productName: string, status: string) => `El estado de su suscripción a ${productName} es ahora ${status}. Por favor, revise sus detalles de facturación.`,
-    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Su suscripción a ${productName} ha sido cancelada y finalizará el ${endDate}.`
-  },
-  fr: {
-    payment_successful_message: (productName: string) => `Votre paiement unique pour ${productName} a été traité avec succès.`,
-    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `Votre plan d'abonnement est passé de ${oldPlan} à ${newPlan}.`,
-    subscription_active_message: (productName: string) => `Votre abonnement ${productName} est maintenant actif.`,
-    subscription_alert_message: (productName: string, status: string) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`,
-    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`
-  },
-  ar: {
-    payment_successful_message: (productName: string) => `تمت معالجة دفعتك لمرة واحدة لـ ${productName} بنجاح.`,
-    subscription_plan_changed_message: (oldPlan: string, newPlan: string) => `لقد تغيرت خطة اشتراكك من ${oldPlan} إلى ${newPlan}.`,
-    subscription_active_message: (productName: string) => `اشتراكك في ${productName} نشط الآن.`,
-    subscription_alert_message: (productName: string, status: string) => `حالة اشتراكك في ${productName} هي الآن ${status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
-    subscription_canceled_at_period_end_message: (productName: string, endDate: string) => `تم إلغاء اشتراكك في ${productName} وسينتهي في ${endDate}.`
-  }
-};
-
-// ADDED: Helper function to get translated string
-function getTranslatedMessage(key: string, lang: string, ...args: any[]): string {
-  const langMap = (translations as any)[lang] || translations.en; // Fallback to English
-  const messageTemplate = langMap[key];
-  if (typeof messageTemplate === 'function') {
-    return messageTemplate(...args);
-  }
-  return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
-}
+// REMOVED: Local translations object
+// REMOVED: Local getTranslatedMessage function
 
 Deno.serve(async (req) => {
   try {
@@ -122,10 +84,10 @@ async function handleEvent(event: Stripe.Event) {
     console.error('Stripe Webhook: Error fetching user_id from stripe_customers:', customerUserError);
   } else if (customerUser) {
     userId = customerUser.user_id;
-    const { data: profileData, error: profileError } = await supabase.from('profiles').select('language_preference').eq('id', userId).maybeSingle(); // MODIFIED: Select language_preference
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('language_preference').eq('id', userId).maybeSingle();
     if (profileError) {
       console.error('Stripe Webhook: Error fetching user profile for language:', profileError);
-    } else if (profileData?.language_preference) { // MODIFIED: Use language_preference
+    } else if (profileData?.language_preference) {
       userPreferredLanguage = profileData.language_preference;
     }
   }
@@ -189,7 +151,7 @@ async function handleEvent(event: Stripe.Event) {
           const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // Use key
           // MODIFIED: Translate productNameKey before passing it to the message template
           const translatedProductName = getTranslatedMessage(productNameKey, userPreferredLanguage);
-          const notificationMessage = getTranslatedMessage('payment_successful_message', userPreferredLanguage, translatedProductName);
+          const notificationMessage = getTranslatedMessage('payment_successful_message', userPreferredLanguage, { productName: translatedProductName });
           await insertNotification(
             userId,
             'notification_title_payment_successful',
@@ -205,13 +167,13 @@ async function handleEvent(event: Stripe.Event) {
     }
   } else if (event.type.startsWith('customer.subscription.')) {
     console.info(`Processing subscription event ${event.type} for customer: ${customerId}`);
-    await syncCustomerFromStripe(customerId, userId, userPreferredLanguage); // MODIFIED: Pass userId and userPreferredLanguage
+    await syncCustomerFromStripe(customerId, userId, userPreferredLanguage);
   } else {
     console.log(`Unhandled event type: ${event.type}`);
   }
 }
 
-async function syncCustomerFromStripe(customerId: string, userId: string | null, userPreferredLanguage: string) { // MODIFIED: Add userId and userPreferredLanguage
+async function syncCustomerFromStripe(customerId: string, userId: string | null, userPreferredLanguage: string) {
   try {
     // 1. Fetch the current state of the subscription from our DB *before* any updates
     const { data: oldSubscriptionDb, error: oldSubError } = await supabase
@@ -425,7 +387,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
         if (newStatus === 'active' || newStatus === 'trialing') {
             if (oldPriceId !== newPriceId) {
                 // This is a plan change (upgrade/downgrade)
-                const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, translatedOldProductName, translatedProductName);
+                const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, { oldPlan: translatedOldProductName, newPlan: translatedProductName });
                 await insertNotification(
                     userId,
                     'notification_title_subscription_plan_changed',
@@ -434,7 +396,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
                 );
             } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
                 // Status changed to active (e.g., from canceled, past_due, not_started)
-                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, translatedProductName);
+                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, { productName: translatedProductName });
                 await insertNotification(
                     userId,
                     'notification_title_subscription_active',
@@ -446,9 +408,9 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
             let notificationMessage: string;
             if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
                 const endDate = new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString();
-                notificationMessage = getTranslatedMessage('subscription_canceled_at_period_end_message', userPreferredLanguage, translatedProductName, endDate);
+                notificationMessage = getTranslatedMessage('subscription_canceled_at_period_end_message', userPreferredLanguage, { productName: translatedProductName, endDate: endDate });
             } else {
-                notificationMessage = getTranslatedMessage('subscription_alert_message', userPreferredLanguage, translatedProductName, newStatus);
+                notificationMessage = getTranslatedMessage('subscription_alert_message', userPreferredLanguage, { productName: translatedProductName, status: newStatus });
             }
             await insertNotification(
                 userId,
