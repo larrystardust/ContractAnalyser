@@ -88,6 +88,8 @@
   "default_jurisdictions_hint": "Seleccione las jurisdicciones que estarán preseleccionadas al cargar nuevos contratos.",
   "dashboard_appearance": "Apariencia del Panel",
   "theme": "Tema",
+  "theme_preference_hint": "Elija su tema visual preferido para la aplicación.",
+  "select_theme": "Seleccionar tema",
   "light": "Claro",
   "dark": "Oscuro",
   "system": "Sistema",
