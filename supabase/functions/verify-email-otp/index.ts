@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -27,16 +27,37 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405);
   }
 
   try {
     const { email, otp_code } = await req.json();
-    // For unauthenticated flows, we default to English as we don't have user's preference
-    const userPreferredLanguage = 'en'; // ADDED
+    let userPreferredLanguage = 'en'; // Default to English
+
+    // ADDED: Attempt to fetch user's language preference if profile exists
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: email, page: 1, perPage: 1 });
+    let userId = null;
+    if (!authUserError && authUser.users.length > 0) {
+      userId = authUser.users[0].id;
+    }
+
+    if (userId) {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('language_preference')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.warn('Error fetching profile for language preference in verify-email-otp:', profileError);
+      } else if (profileData?.language_preference) {
+        userPreferredLanguage = profileData.language_preference;
+      }
+    }
+    // END ADDED
 
     if (!email || !otp_code) {
-      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400);
     }
 
     // Find the OTP in the database
@@ -52,18 +73,18 @@ Deno.serve(async (req) => {
 
     if (fetchError) {
       console.error('Error fetching OTP record:', fetchError);
-      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Verification failed due to a server error.' }) }, 500); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Verification failed due to a server error.' }) }, 500);
     }
 
     if (!otpRecord) {
-      return corsResponse({ error: getTranslatedMessage('message_invalid_otp_or_used', userPreferredLanguage) }, 400); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_invalid_otp_or_used', userPreferredLanguage) }, 400);
     }
 
     // Check if OTP has expired
     if (new Date(otpRecord.expires_at) < new Date()) {
       // Mark as used even if expired to prevent re-use attempts
       await supabase.from('email_otps').update({ is_used: true }).eq('id', otpRecord.id);
-      return corsResponse({ error: getTranslatedMessage('message_otp_expired', userPreferredLanguage) }, 400); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_otp_expired', userPreferredLanguage) }, 400);
     }
 
     // Mark OTP as used
@@ -74,13 +95,13 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('Error marking OTP as used:', updateError);
-      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Verification failed due to a server error.' }) }, 500); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Verification failed due to a server error.' }) }, 500);
     }
 
-    return corsResponse({ message: getTranslatedMessage('message_email_verified_successfully', userPreferredLanguage) }); // MODIFIED
+    return corsResponse({ message: getTranslatedMessage('message_email_verified_successfully', userPreferredLanguage) });
 
   } catch (error: any) {
     console.error('Error in verify-email-otp Edge Function:', error);
-    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500);
   }
 });
