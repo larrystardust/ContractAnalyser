@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../ui/Card';
+import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
@@ -9,51 +9,19 @@ import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
 
-const notificationTypes = {
-  'analysis-complete': {
-    titleKey: 'analysis_complete',
-    descriptionKey: 'get_notified_when_contract_analysis_is_finished',
-    defaultEmail: true,
-    defaultInApp: true
-  },
-  'high-risk-findings': {
-    titleKey: 'high_risk_findings',
-    descriptionKey: 'immediate_alerts_for_high-risk_compliance_issues',
-    defaultEmail: true,
-    defaultInApp: true
-  },
-  'weekly-reports': {
-    titleKey: 'weekly_reports',
-    descriptionKey: 'summary_of_all_contract_analyses_from_the_past_week',
-    defaultEmail: false,
-    defaultInApp: false
-  },
-  'system-updates': {
-    titleKey: 'system_updates',
-    descriptionKey: 'information_about_new_features_and_system_maintenance',
-    defaultEmail: false,
-    defaultInApp: true
-  },
-};
+// REMOVED: notificationTypes constant (it belongs in NotificationSettings.tsx)
 
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { t, i18n } = useTranslation();
 
-  const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
-    const initialPrefs: Record<string, { email: boolean; inApp: boolean }> = {};
-    for (const key in notificationTypes) {
-      initialPrefs[key] = {
-        email: notificationTypes[key as keyof typeof notificationTypes].defaultEmail,
-        inApp: notificationTypes[key as keyof typeof notificationTypes].defaultInApp,
-      };
-    }
-    return initialPrefs;
-  });
+  // REMOVED: preferences state and updatePreference function
+  // const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => { /* ... */ });
 
-  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language); // ADDED: Local state for language
-  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system'); // ADDED: State for theme preference
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+  const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [emailReportsEnabled, setEmailReportsEnabled] = useState(false); // ADDED: State for Email Reports
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,7 +40,7 @@ const ApplicationPreferences: React.FC = () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('profiles')
-          .select('notification_settings, language_preference, theme_preference') // MODIFIED: Select theme_preference
+          .select('notification_settings, language_preference, theme_preference, email_reports_enabled') // MODIFIED: Select email_reports_enabled
           .eq('id', session.user.id)
           .maybeSingle();
 
@@ -82,18 +50,8 @@ const ApplicationPreferences: React.FC = () => {
 
         console.log("AP: Fetched profile data:", data);
 
-        if (data?.notification_settings) {
-          const fetchedSettings = data.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
-          setPreferences(prev => {
-            const merged = { ...prev };
-            for (const key in notificationTypes) {
-              if (fetchedSettings[key]) {
-                merged[key] = fetchedSettings[key];
-              }
-            }
-            return merged;
-          });
-        }
+        // REMOVED: Logic for setting 'preferences' state (it's for NotificationSettings)
+        // if (data?.notification_settings) { /* ... */ }
 
         // MODIFIED: Initialize selectedLanguage from DB or current i18n.language
         const dbLanguage = data?.language_preference || i18n.language;
@@ -113,6 +71,9 @@ const ApplicationPreferences: React.FC = () => {
         setSelectedTheme(dbTheme);
         console.log(`AP: Initializing selectedTheme to: ${dbTheme}`);
 
+        // ADDED: Initialize emailReportsEnabled from DB
+        setEmailReportsEnabled(data?.email_reports_enabled || false);
+
 
       } catch (err: any) {
         console.error('Error fetching notification preferences:', err);
@@ -122,20 +83,12 @@ const ApplicationPreferences: React.FC = () => {
       }
     };
     fetchNotificationPreferences();
-  }, [session?.user?.id, supabase, t]); // MODIFIED: Removed i18n from dependency array
+  }, [session?.user?.id, supabase, t]);
 
-  // Function to update preferences state
-  const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
-    setPreferences(prev => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        [type]: value,
-      },
-    }));
-  };
+  // REMOVED: updatePreference function (it's for NotificationSettings)
+  // const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => { /* ... */ };
 
-  // ToggleSwitch component
+  // ToggleSwitch component (kept as it's generic and useful)
   const ToggleSwitch: React.FC<{
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -167,7 +120,6 @@ const ApplicationPreferences: React.FC = () => {
     setError(null);
     setMessage(null);
     try {
-      // MODIFIED: Change i18n language first, then save to DB
       console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
       i18n.changeLanguage(selectedLanguage);
 
@@ -176,9 +128,10 @@ const ApplicationPreferences: React.FC = () => {
         .upsert(
           {
             id: session.user.id,
-            notification_settings: preferences,
-            language_preference: selectedLanguage, // Save the selectedLanguage
-            theme_preference: selectedTheme, // ADDED: Save the selected theme
+            // REMOVED: notification_settings: preferences, (it's for NotificationSettings)
+            language_preference: selectedLanguage,
+            theme_preference: selectedTheme,
+            email_reports_enabled: emailReportsEnabled, // ADDED: Save emailReportsEnabled
           },
           { onConflict: 'id' }
         );
@@ -221,7 +174,7 @@ const ApplicationPreferences: React.FC = () => {
         </div>
       )}
 
-      {/* Default Jurisdictions */}
+      {/* Default Jurisdictions (kept as is) */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -237,7 +190,7 @@ const ApplicationPreferences: React.FC = () => {
                 type="button"
                 // onClick={() => handleJurisdictionToggle(jurisdiction)} // Commented out for now
                 className={`py-1 px-3 rounded-full text-xs font-medium transition-colors
-                  ${(preferences.default_jurisdictions || []).includes(jurisdiction)
+                  ${(false) // Placeholder for actual check if this was a user preference
                     ? 'bg-blue-100 text-blue-800 border border-blue-300'
                     : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                   }`}
@@ -251,7 +204,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Theme Preferences */}
+      {/* Theme Preferences (kept as is) */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -265,8 +218,8 @@ const ApplicationPreferences: React.FC = () => {
             <select
               id="theme"
               name="theme"
-              value={selectedTheme} // UNCOMMENTED AND MODIFIED
-              onChange={(e) => setSelectedTheme(e.target.value as 'light' | 'dark' | 'system')} // UNCOMMENTED AND MODIFIED
+              value={selectedTheme}
+              onChange={(e) => setSelectedTheme(e.target.value as 'light' | 'dark' | 'system')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isSaving}
             >
@@ -279,7 +232,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Language Preference */}
+      {/* Language Preference (kept as is) */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -293,8 +246,8 @@ const ApplicationPreferences: React.FC = () => {
             <select
               id="language"
               name="language"
-              value={selectedLanguage} // MODIFIED: Use local state
-              onChange={(e) => setSelectedLanguage(e.target.value)} // MODIFIED: Update local state
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               disabled={isSaving}
             >
@@ -308,7 +261,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Report Preferences */}
+      {/* RESTORED: Report Preferences Section */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -317,43 +270,31 @@ const ApplicationPreferences: React.FC = () => {
           </div>
         </CardHeader>
         <CardBody>
-          <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-200">
-            <div className="text-sm font-medium text-gray-700">{t('notification_type')}</div>
-            <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
-              <Mail className="h-4 w-4 mr-1" />
-              {t('email')}
+          {/* Email Reports Toggle */}
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">{t('email_reports')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('send_completed_analysis_reports_to_your_email')}</p>
             </div>
-            <div className="text-sm font-medium text-gray-700 flex items-center justify-center">
-              <Smartphone className="h-4 w-4 mr-1" />
-              {t('in_app')}
-            </div>
+            <ToggleSwitch
+              checked={emailReportsEnabled}
+              onChange={setEmailReportsEnabled}
+              disabled={isSaving}
+            />
           </div>
-
-          {Object.entries(preferences).map(([id, pref]) => {
-            const typeInfo = notificationTypes[id as keyof typeof notificationTypes];
-            if (!typeInfo) return null;
-
-            return (
-              <div key={id} className="grid grid-cols-3 gap-4 items-center py-3">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900">{t(typeInfo.titleKey)}</h4>
-                  <p className="text-xs text-gray-500 mt-1">{t(typeInfo.descriptionKey)}</p>
-                </div>
-                <div className="flex justify-center">
-                  <ToggleSwitch
-                    checked={pref.email}
-                    onChange={(checked) => updatePreference(id, 'email', checked)}
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <ToggleSwitch
-                    checked={pref.inApp}
-                    onChange={(checked) => updatePreference(id, 'inApp', checked)}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          {/* Auto-start Analysis (Placeholder - not in DB schema) */}
+          <div className="flex items-center justify-between py-3 border-t border-gray-200">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('automatically_begin_analysis_when_contracts_are_uploaded')}</p>
+            </div>
+            {/* This is a placeholder. If this needs to be persisted, a new column in 'profiles' or 'app_settings' is required. */}
+            <ToggleSwitch
+              checked={false} // Always false as it's not persisted
+              onChange={() => { /* No-op as it's not persisted */ }}
+              disabled={true} // Always disabled as it's not persisted
+            />
+          </div>
         </CardBody>
       </Card>
 
