@@ -147,35 +147,38 @@ const ApplicationPreferences: React.FC = () => {
 
   // Handle saving preferences
   const handleSavePreferences = async () => {
-    if (!session?.user?.id) {
-      setError(t('must_be_logged_in_to_save_preferences'));
-      return;
-    }
-    setIsSaving(true);
-    setError(null);
-    setMessage(null);
-    try {
-      console.log("AP: Saving language preference:", i18n.language);
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: session.user.id,
-            notification_settings: preferences, // Directly save the preferences object
-            language_preference: i18n.language, // Save the current i18n language
-          },
-          { onConflict: 'id' }
-        );
+  if (!session?.user?.id) {
+    setError(t('must_be_logged_in_to_save_preferences'));
+    return;
+  }
+  setIsSaving(true);
+  setError(null);
+  setMessage(null);
+  try {
+    console.log("AP: Attempting to save language preference to DB:", i18n.language);
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: session.user.id,
+          notification_settings: preferences,
+          language_preference: i18n.language,
+          updated_at: new Date().toISOString(), // ADDED: Explicitly update timestamp
+        },
+        { onConflict: 'id' }
+      );
 
-      if (updateError) {
-        throw updateError;
-      }
-      setMessage(t('notification_preferences_saved_successfully'));
-    } catch (err: any) {
-      console.error('Error saving notification preferences:', err);
-      setError(err.message || t('failed_to_save_notification_preferences'));
-    } finally {
-      setIsSaving(false);
+    if (updateError) {
+      console.error("AP: Error saving language preference:", updateError);
+      throw updateError;
+    }
+    setMessage(t('notification_preferences_saved_successfully'));
+    console.log("AP: Language preference saved successfully.");
+  } catch (err: any) {
+    console.error('Error saving notification preferences:', err);
+    setError(err.message || t('failed_to_save_notification_preferences'));
+  } finally {
+    setIsSaving(false);
     }
   };
 
