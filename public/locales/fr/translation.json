@@ -88,6 +88,8 @@
   "default_jurisdictions_hint": "Sélectionnez les juridictions qui seront présélectionnées lors du téléchargement de nouveaux contrats.",
   "dashboard_appearance": "Apparence du tableau de bord",
   "theme": "Thème",
+  "theme_preference_hint": "Choisissez votre thème visuel préféré pour l'application.",
+  "select_theme": "Sélectionner le thème",
   "light": "Clair",
   "dark": "Sombre",
   "system": "Système",
