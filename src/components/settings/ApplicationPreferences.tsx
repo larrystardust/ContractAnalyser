@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
-import Card, { CardBody, CardHeader } from '../components/ui/Card';
+import Card, { CardBody, CardHeader } from '../ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { JurisdictionBadge } from '../ui/Badge';
 import { Jurisdiction } from '../../types';
