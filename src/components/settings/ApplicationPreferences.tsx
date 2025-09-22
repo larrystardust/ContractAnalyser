@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const { t } = useTranslation(); // MODIFIED: Destructure i18n
 
   const [preferences, setPreferences] = useState({
     defaultJurisdictions: [] as Jurisdiction[],
