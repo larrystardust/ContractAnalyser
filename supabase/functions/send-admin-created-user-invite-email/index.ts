@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { Resend } from 'npm:resend@6.0.1';
-import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 // Initialize Supabase client with service role key for any potential DB interactions
 // (though not strictly needed for this function's current purpose of sending email)
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405); // MODIFIED
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405);
   }
 
   try {
@@ -42,22 +42,28 @@ Deno.serve(async (req) => {
 
     if (!recipientEmail || !initialPassword) {
       console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword');
-      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400); // MODIFIED
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
 
     // ADDED: Fetch recipient's preferred language
     let recipientPreferredLanguage = 'en'; // Default to English
-    const { data: recipientProfile, error: recipientProfileError } = await supabase
-      .from('profiles')
-      .select('theme_preference') // Assuming theme_preference can indicate language
-      .eq('id', user.id) // Assuming recipient's user ID is available or can be fetched
-      .maybeSingle();
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: recipientEmail, page: 1, perPage: 1 });
+    let userId = null;
+    if (!authUserError && authUser.users.length > 0) {
+      userId = authUser.users[0].id;
+    }
 
-    if (recipientProfileError) {
-      console.warn('Error fetching recipient profile for language:', recipientProfileError);
-    } else if (recipientProfile?.theme_preference) {
-      if (['es', 'fr', 'ar'].includes(recipientProfile.theme_preference)) {
-        recipientPreferredLanguage = recipientProfile.theme_preference;
+    if (userId) {
+      const { data: recipientProfile, error: recipientProfileError } = await supabase
+        .from('profiles')
+        .select('language_preference')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (recipientProfileError) {
+        console.warn('Error fetching recipient profile for language:', recipientProfileError);
+      } else if (recipientProfile?.language_preference) {
+        recipientPreferredLanguage = recipientProfile.language_preference;
       }
     }
     // END ADDED
@@ -72,7 +78,7 @@ Deno.serve(async (req) => {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
         to: [recipientEmail],
-        subject: getTranslatedMessage('email_admin_created_user_subject', recipientPreferredLanguage), // MODIFIED
+        subject: getTranslatedMessage('email_admin_created_user_subject', recipientPreferredLanguage),
         html: `
           <p>${getTranslatedMessage('email_admin_created_user_body_p1', recipientPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p2', recipientPreferredLanguage)}</p>
@@ -86,23 +92,23 @@ Deno.serve(async (req) => {
           <p>If you have any questions, please contact support on our "Help" page.</p>
           <p>${getTranslatedMessage('email_thank_you', recipientPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_team', recipientPreferredLanguage)}</p>
-        `, // MODIFIED
+        `,
       });
 
       if (error) {
         console.error('send-admin-created-user-invite-email: Error sending email via Resend:', error);
-        return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', recipientPreferredLanguage, { errorMessage: `Failed to send invitation email: ${error.message}` }) }); // MODIFIED
+        return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', recipientPreferredLanguage, { errorMessage: `Failed to send invitation email: ${error.message}` }) });
       }
       console.log('send-admin-created-user-invite-email: Email sent successfully via Resend:', data);
-      return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', recipientPreferredLanguage) }); // MODIFIED
+      return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', recipientPreferredLanguage) });
 
     } catch (emailSendError: any) {
       console.error('send-admin-created-user-invite-email: Caught unexpected error during email sending:', emailSendError);
-      return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', 'en', { errorMessage: emailSendError.message }) }); // MODIFIED
+      return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', 'en', { errorMessage: emailSendError.message }) });
     }
 
   } catch (error: any) {
     console.error('send-admin-created-user-invite-email: Unhandled error in Edge Function:', error);
-    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500); // MODIFIED
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500);
   }
 });
