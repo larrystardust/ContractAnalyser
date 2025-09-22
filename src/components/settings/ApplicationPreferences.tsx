@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Globe, Palette, FileText } from 'lucide-react';
+import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react'; // MODIFIED: Added Mail and Smartphone
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
