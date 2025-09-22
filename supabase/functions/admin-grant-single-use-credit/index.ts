@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
 import { stripeProducts } from '../_shared/stripe_products_data.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // MODIFIED: Import getTranslatedMessage
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -33,31 +34,8 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// ADDED: Simple translation object for notification messages
-const translations = {
-  en: {
-    credit_granted_message: (productName: string) => `An administrator has granted you a single-use credit for ${productName}.`
-  },
-  es: {
-    credit_granted_message: (productName: string) => `Un administrador le ha concedido un crédito de un solo uso para ${productName}.`
-  },
-  fr: {
-    credit_granted_message: (productName: string) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`
-  },
-  ar: {
-    credit_granted_message: (productName: string) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${productName}.`
-  }
-};
-
-// ADDED: Helper function to get translated string
-function getTranslatedMessage(key: string, lang: string, ...args: any[]): string {
-  const langMap = (translations as any)[lang] || translations.en; // Fallback to English
-  const messageTemplate = langMap[key];
-  if (typeof messageTemplate === 'function') {
-    return messageTemplate(...args);
-  }
-  return (translations.en as any)[key](...args); // Fallback to English template if key not found or not a function
-}
+// REMOVED: Local translations object
+// REMOVED: Local getTranslatedMessage function
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -169,17 +147,16 @@ Deno.serve(async (req) => {
 
     // ADDED: Fetch user's preferred language for notification
     let userPreferredLanguage = 'en'; // Default to English
-    const { data: profileData, error: profileError } = await supabase.from('profiles').select('theme_preference').eq('id', userId).maybeSingle();
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('language_preference').eq('id', userId).maybeSingle();
     if (profileError) {
       console.error('Error fetching user profile for language:', profileError);
-    } else if (profileData?.theme_preference) {
-      if (['es', 'fr', 'ar'].includes(profileData.theme_preference)) {
-        userPreferredLanguage = profileData.theme_preference;
-      }
+    } else if (profileData?.language_preference) {
+      userPreferredLanguage = profileData.language_preference;
     }
 
     const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // Use key
-    const notificationMessage = getTranslatedMessage('credit_granted_message', userPreferredLanguage, productNameKey);
+    const translatedProductName = getTranslatedMessage(productNameKey, userPreferredLanguage); // MODIFIED: Translate product name
+    const notificationMessage = getTranslatedMessage('credit_granted_message', userPreferredLanguage, { productName: translatedProductName }); // MODIFIED: Pass interpolation object
     await insertNotification(
       userId,
       'notification_title_credit_granted',
