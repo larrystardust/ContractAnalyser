@@ -39,7 +39,7 @@ const countryCodes = [
   { code: '+82', name: 'South Korea' },
   { code: '+84', name: 'Vietnam' },
   { code: '+90', name: 'Turkey' },
-  { code: '+52', name: 'Mexico' },  
+  { code: '+52', name: 'Mexico' },
   { code: '+46', name: 'Sweden' },
   { code: '+47', name: 'Norway' },
   { code: '+45', name: 'Denmark' },
@@ -54,7 +54,7 @@ const countryCodes = [
   { code: '+420', name: 'Czech Republic' },
   { code: '+36', name: 'Hungary' },
   { code: '+40', name: 'Romania' },
-  { code: '+380', name: 'Ukraine' },  
+  { code: '+380', name: 'Ukraine' },
   { code: '+994', name: 'Azerbaijan' },
   { code: '+995', name: 'Georgia' },
   { code: '+998', name: 'Uzbekistan' },
@@ -116,7 +116,7 @@ const SignupPage: React.FC = () => {
   const { isLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Ensure i18n is available
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get('invitation_token');
@@ -147,7 +147,7 @@ const SignupPage: React.FC = () => {
     let redirectParamForEmailSentPage = '';
 
     const originalRedirectParam = searchParams.get('redirect');
-    
+
     let targetRedirectPath = '';
 
     if (invitationToken) {
@@ -187,6 +187,7 @@ const SignupPage: React.FC = () => {
           business_name: businessName,
           mobile_phone_number: mobilePhoneNumber,
           country_code: selectedCountryCode,
+          language_preference: i18n.language, // ADDED: Pass current i18n language
         },
       },
     });
@@ -213,7 +214,7 @@ const SignupPage: React.FC = () => {
       localStorage.setItem('signup_email', email);
       navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
-    
+
     setLoading(false);
   };
 
