@@ -122,16 +122,11 @@ async function handleEvent(event: Stripe.Event) {
     console.error('Stripe Webhook: Error fetching user_id from stripe_customers:', customerUserError);
   } else if (customerUser) {
     userId = customerUser.user_id;
-    const { data: profileData, error: profileError } = await supabase.from('profiles').select('theme_preference').eq('id', userId).maybeSingle();
+    const { data: profileData, error: profileError } = await supabase.from('profiles').select('language_preference').eq('id', userId).maybeSingle(); // MODIFIED: Select language_preference
     if (profileError) {
       console.error('Stripe Webhook: Error fetching user profile for language:', profileError);
-    } else if (profileData?.theme_preference) {
-      // Assuming theme_preference can be used as a proxy for language, or add a dedicated language field
-      // For now, let's map 'dark'/'light' to 'en' and assume other values might be 'es', 'fr', 'ar' if stored.
-      // A more robust solution would be a dedicated language preference in the profile.
-      if (['es', 'fr', 'ar'].includes(profileData.theme_preference)) { // Example mapping
-        userPreferredLanguage = profileData.theme_preference;
-      }
+    } else if (profileData?.language_preference) { // MODIFIED: Use language_preference
+      userPreferredLanguage = profileData.language_preference;
     }
   }
 
@@ -192,7 +187,9 @@ async function handleEvent(event: Stripe.Event) {
         if (userId) { // Only send notification if userId was successfully retrieved
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
           const productNameKey = singleUseProduct?.name || 'product_name_single_use'; // Use key
-          const notificationMessage = getTranslatedMessage('payment_successful_message', userPreferredLanguage, productNameKey);
+          // MODIFIED: Translate productNameKey before passing it to the message template
+          const translatedProductName = getTranslatedMessage(productNameKey, userPreferredLanguage);
+          const notificationMessage = getTranslatedMessage('payment_successful_message', userPreferredLanguage, translatedProductName);
           await insertNotification(
             userId,
             'notification_title_payment_successful',
@@ -340,7 +337,6 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
         price_id: priceId,
         current_period_start: stripeSubscription.current_period_start,
         current_period_end: stripeSubscription.current_period_end,
-        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
         ...(stripeSubscription.default_payment_method && typeof stripeSubscription.default_payment_method !== 'string'
           ? {
               payment_method_brand: stripeSubscription.default_payment_method.card?.brand ?? null,
@@ -411,19 +407,25 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
       p.pricing.one_time?.priceId === newPriceId
     );
     const productNameKey = currentProduct?.name || 'product_name_single_use'; // Use key
+    // MODIFIED: Translate productNameKey before passing it to the message template
+    const translatedProductName = getTranslatedMessage(productNameKey, userPreferredLanguage);
+
+    // MODIFIED: Translate oldProductNameKey before passing it to the message template
+    const oldProduct = stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === oldPriceId ||
+        p.pricing.yearly?.priceId === oldPriceId ||
+        p.pricing.one_time?.priceId === oldPriceId
+    );
+    const oldProductNameKey = oldProduct?.name || 'previous_plan'; // Use key
+    const translatedOldProductName = getTranslatedMessage(oldProductNameKey, userPreferredLanguage);
+
 
     // Only send notification if there was a meaningful change in status or price
     if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
         if (newStatus === 'active' || newStatus === 'trialing') {
             if (oldPriceId !== newPriceId) {
                 // This is a plan change (upgrade/downgrade)
-                const oldProduct = stripeProducts.find(p =>
-                    p.pricing.monthly?.priceId === oldPriceId ||
-                    p.pricing.yearly?.priceId === oldPriceId ||
-                    p.pricing.one_time?.priceId === oldPriceId
-                );
-                const oldProductNameKey = oldProduct?.name || 'previous_plan'; // Use key
-                const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, oldProductNameKey, productNameKey);
+                const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, translatedOldProductName, translatedProductName);
                 await insertNotification(
                     userId,
                     'notification_title_subscription_plan_changed',
@@ -432,7 +434,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
                 );
             } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
                 // Status changed to active (e.g., from canceled, past_due, not_started)
-                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, productNameKey);
+                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, translatedProductName);
                 await insertNotification(
                     userId,
                     'notification_title_subscription_active',
@@ -444,9 +446,9 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
             let notificationMessage: string;
             if (newStatus === 'canceled' && stripeSubscription.cancel_at_period_end) {
                 const endDate = new Date(stripeSubscription.current_period_end * 1000).toLocaleDateString();
-                notificationMessage = getTranslatedMessage('subscription_canceled_at_period_end_message', userPreferredLanguage, productNameKey, endDate);
+                notificationMessage = getTranslatedMessage('subscription_canceled_at_period_end_message', userPreferredLanguage, translatedProductName, endDate);
             } else {
-                notificationMessage = getTranslatedMessage('subscription_alert_message', userPreferredLanguage, productNameKey, newStatus);
+                notificationMessage = getTranslatedMessage('subscription_alert_message', userPreferredLanguage, translatedProductName, newStatus);
             }
             await insertNotification(
                 userId,
