@@ -79,12 +79,14 @@ const AuthCallbackPage: React.FC = () => {
           const storedMobilePhoneNumber = currentSession.user.user_metadata.mobile_phone_number || null;
           const storedCountryCode = currentSession.user.user_metadata.country_code || null;
           const storedBusinessName = currentSession.user.user_metadata.business_name || null;
+          const storedLanguagePreference = currentSession.user.user_metadata.language_preference || null; // ADDED: Extract language preference
 
           console.log('AuthCallbackPage: Retrieved from user_metadata for profile:', {
             storedFullName,
             storedBusinessName,
             storedMobilePhoneNumber,
             storedCountryCode,
+            storedLanguagePreference, // ADDED: Log language preference
           });
 
           const { error: profileEdgeFunctionError } = await supabase.functions.invoke('create-user-profile', {
@@ -94,6 +96,7 @@ const AuthCallbackPage: React.FC = () => {
               businessName: storedBusinessName,
               mobilePhoneNumber: storedMobilePhoneNumber,
               countryCode: storedCountryCode,
+              languagePreference: storedLanguagePreference, // ADDED: Pass language preference
             },
           });
 
