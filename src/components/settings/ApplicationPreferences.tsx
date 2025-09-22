@@ -267,32 +267,35 @@ const ApplicationPreferences: React.FC = () => {
       </Card>
 
       {/* ADDED: Language Preference */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center">
-            <Globe className="h-5 w-5 text-blue-900 mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">{t('language_preference')}</h3>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div>
-            <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">{t('select_language')}</label>
-            <select
-              id="language"
-              name="language"
-              value={preferences.language}
-              onChange={(e) => handlePreferenceChange('language', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="en">{t('english')}</option>
-              <option value="fr">{t('french')}</option>
-              <option value="es">{t('spanish')}</option>
-              <option value="ar">{t('arabic')}</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">{t('language_preference_hint')}</p>
-          </div>
-        </CardBody>
-      </Card>
+    {/* Temporarily comment out this entire Card to isolate the issue */}
+    {/*
+    <Card>
+      <CardHeader>
+        <div className="flex items-center">
+          <Globe className="h-5 w-5 text-blue-900 mr-2" />
+          <h3 className="text-lg font-medium text-gray-900">{t('language_preference')}</h3>
+        </div>
+      </CardHeader>
+      <CardBody>
+        <div>
+          <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">{t('select_language')}</label>
+          <select
+            id="language"
+            name="language"
+            value={preferences.language}
+            onChange={(e) => handlePreferenceChange('language', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="en">{t('english')}</option>
+            <option value="fr">{t('french')}</option>
+            <option value="es">{t('spanish')}</option>
+            <option value="ar">{t('arabic')}</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">{t('language_preference_hint')}</p>
+        </div>
+      </CardBody>
+    </Card>
+    */}
 
       {/* Report Preferences */}
       <Card>
