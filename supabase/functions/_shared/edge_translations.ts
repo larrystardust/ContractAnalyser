@@ -120,6 +120,14 @@ export const edgeTranslations = {
     "product_name_admin_free_professional": "Professional Use (Admin Free)",
     "product_name_admin_free_enterprise": "Enterprise Use (Admin Free)",
     "previous_plan": "Previous Plan", // ADDED: Key for previous plan
+
+    // ADDED: Notification message templates
+    payment_successful_message: (interpolation: { productName: string }) => `Your one-time payment for ${interpolation.productName} has been processed successfully.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${interpolation.oldPlan} to ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Your ${interpolation.productName} subscription is now active.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Your ${interpolation.productName} subscription status is now ${interpolation.status}. Please check your billing details.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Your ${interpolation.productName} subscription has been cancelled and will end on ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `An administrator has granted you a single-use credit for ${interpolation.productName}.`,
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -241,6 +249,14 @@ export const edgeTranslations = {
     "product_name_admin_free_professional": "Uso Profesional (Asignado por Admin)",
     "product_name_admin_free_enterprise": "Uso Empresarial (Asignado por Admin)",
     "previous_plan": "Plan Anterior", // ADDED: Key for previous plan
+
+    // ADDED: Notification message templates
+    payment_successful_message: (interpolation: { productName: string }) => `Su pago único para ${interpolation.productName} ha sido procesado con éxito.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Su plan de suscripción ha cambiado de ${interpolation.oldPlan} a ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Su suscripción a ${interpolation.productName} ya está activa.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `El estado de su suscripción a ${interpolation.productName} es ahora ${interpolation.status}. Por favor, revise sus detalles de facturación.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Su suscripción a ${interpolation.productName} ha sido cancelada y finalizará el ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${interpolation.productName}.`,
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -362,6 +378,14 @@ export const edgeTranslations = {
     "product_name_admin_free_professional": "Usage Professionnel (Assigné par Admin)",
     "product_name_admin_free_enterprise": "Usage Entreprise (Assigné par Admin)",
     "previous_plan": "Plan Précédent", // ADDED: Key for previous plan
+
+    // ADDED: Notification message templates
+    payment_successful_message: (interpolation: { productName: string }) => `Votre paiement unique pour ${interpolation.productName} a été traité avec succès.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${interpolation.oldPlan} à ${interpolation.newPlan}.`,
+    subscription_active_message: (interpolation: { productName: string }) => `Votre abonnement ${interpolation.productName} est maintenant actif.`,
+    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Le statut de votre abonnement ${interpolation.productName} est maintenant ${interpolation.status}. Veuillez vérifier vos détails de facturation.`,
+    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Votre abonnement ${interpolation.productName} a été annulé et se terminera le ${interpolation.endDate}.`,
+    credit_granted_message: (interpolation: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${interpolation.productName}.`,
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -483,36 +507,8 @@ export const edgeTranslations = {
     "product_name_admin_free_professional": "استخدام احترافي (بواسطة المسؤول)",
     "product_name_admin_free_enterprise": "استخدام الشركات (بواسطة المسؤول)",
     "previous_plan": "الخطة السابقة", // ADDED: Key for previous plan
-  }
-};
 
-// ADDED: New object for notification message templates
-export const notificationMessages = {
-  en: {
-    payment_successful_message: (interpolation: { productName: string }) => `Your one-time payment for ${interpolation.productName} has been processed successfully.`,
-    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${interpolation.oldPlan} to ${interpolation.newPlan}.`,
-    subscription_active_message: (interpolation: { productName: string }) => `Your ${interpolation.productName} subscription is now active.`,
-    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Your ${interpolation.productName} subscription status is now ${interpolation.status}. Please check your billing details.`,
-    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Your ${interpolation.productName} subscription has been cancelled and will end on ${interpolation.endDate}.`,
-    credit_granted_message: (interpolation: { productName: string }) => `An administrator has granted you a single-use credit for ${interpolation.productName}.`,
-  },
-  es: {
-    payment_successful_message: (interpolation: { productName: string }) => `Su pago único para ${interpolation.productName} ha sido procesado con éxito.`,
-    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Su plan de suscripción ha cambiado de ${interpolation.oldPlan} a ${interpolation.newPlan}.`,
-    subscription_active_message: (interpolation: { productName: string }) => `Su suscripción a ${interpolation.productName} ya está activa.`,
-    subscription_alert_message: (interpolation: { productName: string; status: string }) => `El estado de su suscripción a ${interpolation.productName} es ahora ${interpolation.status}. Por favor, revise sus detalles de facturación.`,
-    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Su suscripción a ${interpolation.productName} ha sido cancelada y finalizará el ${interpolation.endDate}.`,
-    credit_granted_message: (interpolation: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${interpolation.productName}.`,
-  },
-  fr: {
-    payment_successful_message: (interpolation: { productName: string }) => `Votre paiement unique pour ${interpolation.productName} a été traité avec succès.`,
-    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${interpolation.oldPlan} à ${interpolation.newPlan}.`,
-    subscription_active_message: (interpolation: { productName: string }) => `Votre abonnement ${interpolation.productName} est maintenant actif.`,
-    subscription_alert_message: (interpolation: { productName: string; status: string }) => `Le statut de votre abonnement ${interpolation.productName} est maintenant ${interpolation.status}. Veuillez vérifier vos détails de facturation.`,
-    subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `Votre abonnement ${interpolation.productName} a été annulé et se terminera le ${interpolation.endDate}.`,
-    credit_granted_message: (interpolation: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${interpolation.productName}.`,
-  },
-  ar: {
+    // ADDED: Notification message templates
     payment_successful_message: (interpolation: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${interpolation.productName} بنجاح.`,
     subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${interpolation.oldPlan} إلى ${interpolation.newPlan}.`,
     subscription_active_message: (interpolation: { productName: string }) => `اشتراكك في ${interpolation.productName} نشط الآن.`,
@@ -523,18 +519,13 @@ export const notificationMessages = {
 };
 
 export function getTranslatedMessage(key: string, lang: string, interpolation: Record<string, any> = {}): string {
-  const langMap = (edgeTranslations as any)[lang] || edgeTranslations.en;
-  const notificationLangMap = (notificationMessages as any)[lang] || notificationMessages.en;
+  const langMap = (edgeTranslations as any)[lang] || edgeTranslations.en; // Fallback to English
 
   let messageTemplate: any;
 
-  // First, try to find the key in edgeTranslations (for simple strings)
+  // Now, only check within the single langMap
   if (langMap[key]) {
     messageTemplate = langMap[key];
-  }
-  // If not found, try to find it in notificationMessages (for complex message functions)
-  else if (notificationLangMap[key]) {
-    messageTemplate = notificationLangMap[key];
   }
   // Fallback to the key itself if not found anywhere
   else {
