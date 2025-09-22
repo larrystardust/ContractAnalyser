@@ -160,7 +160,6 @@ const ApplicationPreferences: React.FC = () => {
     setError(null);
     setMessage(null);
     try {
-      // MODIFIED: Change i18n language first, then save to DB
       console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
       i18n.changeLanguage(selectedLanguage);
 
@@ -171,7 +170,6 @@ const ApplicationPreferences: React.FC = () => {
             id: session.user.id,
             notification_settings: preferences,
             language_preference: selectedLanguage, // Save the selectedLanguage
-            updated_at: new Date().toISOString(),
           },
           { onConflict: 'id' }
         );
