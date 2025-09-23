@@ -158,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 w-21" 
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-1 py-1 w-21" 
             >
               <option value="en">ENGLISH</option>
               <option value="fr">FRANCAIS</option>
