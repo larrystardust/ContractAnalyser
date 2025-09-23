@@ -1292,6 +1292,7 @@
   "link_expired_invalid": "Lien expiré ou invalide.",
   "loading_report": "Chargement du rapport...",
   "error_loading_report": "Erreur de Chargement du Rapport",
+  "error_pdf_processing_failed": "Échec du traitement du PDF. Le document pourrait être corrompu ou son format n'est pas entièrement pris en charge.",
 
   "maintenance_page_title": "Site en Maintenance",
   "maintenance_hero_title": "Nous sommes en Maintenance",
