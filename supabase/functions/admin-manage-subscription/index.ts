@@ -194,14 +194,17 @@ Deno.serve(async (req) => {
         { target_user_id: userId, target_user_email: targetUserEmail }
       );
 
+      // MODIFIED: Translate notification title and message before inserting
+      const notificationTitleRemoved = getTranslatedMessage('notification_title_subscription_removed', targetUserPreferredLanguage);
+      const notificationMessageRemoved = getTranslatedMessage('notification_message_subscription_removed', targetUserPreferredLanguage);
       await insertNotification(
         userId,
-        getTranslatedMessage('notification_title_subscription_removed', targetUserPreferredLanguage),
-        getTranslatedMessage('notification_message_subscription_removed', targetUserPreferredLanguage),
+        notificationTitleRemoved,
+        notificationMessageRemoved,
         'warning'
       );
 
-      return corsResponse({ message: getTranslatedMessage('notification_message_subscription_removed', targetUserPreferredLanguage) });
+      return corsResponse({ message: notificationMessageRemoved });
 
     } else if (selectedProduct?.mode === 'admin_assigned') {
       console.log('admin-manage-subscription: Assigning admin-only free plan.');
@@ -303,14 +306,17 @@ Deno.serve(async (req) => {
       );
 
       const translatedProductName = getTranslatedMessage(selectedProduct.name, targetUserPreferredLanguage);
+      // MODIFIED: Translate notification title and message before inserting
+      const notificationTitleAssigned = getTranslatedMessage('notification_title_plan_assigned', targetUserPreferredLanguage);
+      const notificationMessageAssigned = getTranslatedMessage('notification_message_admin_assigned_plan', targetUserPreferredLanguage, { productName: translatedProductName });
       await insertNotification(
         userId,
-        getTranslatedMessage('notification_title_plan_assigned', targetUserPreferredLanguage),
-        getTranslatedMessage('notification_message_admin_assigned_plan', targetUserPreferredLanguage, { productName: translatedProductName }),
+        notificationTitleAssigned,
+        notificationMessageAssigned,
         'success'
       );
 
-      return corsResponse({ message: getTranslatedMessage('notification_message_admin_assigned_plan', targetUserPreferredLanguage, { productName: translatedProductName }) });
+      return corsResponse({ message: notificationMessageAssigned });
 
     } else { // This is for actual Stripe subscriptions (mode === 'subscription' or 'payment')
       console.log('admin-manage-subscription: Assigning Stripe subscription.');
@@ -392,14 +398,17 @@ Deno.serve(async (req) => {
       );
 
       const translatedProductName = getTranslatedMessage(selectedProduct.name, targetUserPreferredLanguage);
+      // MODIFIED: Translate notification title and message before inserting
+      const notificationTitleStripeAssigned = getTranslatedMessage('notification_title_subscription_assigned', targetUserPreferredLanguage);
+      const notificationMessageStripeAssigned = getTranslatedMessage('notification_message_admin_assigned_stripe_plan', targetUserPreferredLanguage, { productName: translatedProductName, role: role });
       await insertNotification(
         userId,
-        getTranslatedMessage('notification_title_subscription_assigned', targetUserPreferredLanguage),
-        getTranslatedMessage('notification_message_admin_assigned_stripe_plan', targetUserPreferredLanguage, { productName: translatedProductName, role: role }),
+        notificationTitleStripeAssigned,
+        notificationMessageStripeAssigned,
         'success'
       );
 
-      return corsResponse({ message: getTranslatedMessage('notification_message_admin_assigned_stripe_plan', targetUserPreferredLanguage, { productName: translatedProductName, role: role }) });
+      return corsResponse({ message: notificationMessageStripeAssigned });
     }
 
   } catch (error: any) {
