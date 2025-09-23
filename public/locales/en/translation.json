@@ -1292,6 +1292,7 @@
   "link_expired_invalid": "Link expired or invalid.",
   "loading_report": "Loading report...",
   "error_loading_report": "Error Loading Report",
+  "error_pdf_processing_failed": "PDF processing failed. The document might be corrupted or its format is not fully supported.",
 
   "maintenance_page_title": "Site Under Maintenance",
   "maintenance_hero_title": "We're Under Maintenance",
