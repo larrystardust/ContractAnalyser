@@ -1282,7 +1282,7 @@
   "no_report_url_provided": "No se proporcionó URL del informe.",
   "failed_to_fetch_report": "No se pudo obtener el informe (Estado: {{status}}, {{statusText}}).",
   "link_expired_invalid": "Enlace caducado o inválido.",
-  "loading_report": "Cargando informe",
+  "loading_report": "Cargando informe...",
   "error_loading_report": "Error al Cargar el Informe",
 
   "maintenance_page_title": "Sitio en Mantenimiento",
