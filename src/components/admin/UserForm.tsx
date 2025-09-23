@@ -410,7 +410,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <React.Fragment key={product.id}>
                   {product.pricing.monthly && ( // Assuming admin_assigned plans only have a 'monthly' priceId for internal use
                     <option value={product.pricing.monthly.priceId}>
-                      {getSimplifiedProductName(product.name)} {/* Use simplified name */}
+                      {getSimplifiedProductName(t(product.name))} {/* MODIFIED: Translate product.name */}
                     </option>
                   )}
                 </React.Fragment>
