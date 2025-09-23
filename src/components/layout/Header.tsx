@@ -91,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-2 sm:px-4"> {/* MODIFIED: Reduced padding for small screens */}
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Scale className="h-8 w-8 text-BlueLogo mr-2" />
@@ -155,11 +155,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
           <div className="md:hidden flex items-center space-x-2">
             {/* Language Selector for mobile */}
-            {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 w-24"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 w-20" {/* MODIFIED: Changed w-24 to w-20 */}
             >
               <option value="en">ENGLISH</option>
               <option value="fr">FRANCAIS</option>
