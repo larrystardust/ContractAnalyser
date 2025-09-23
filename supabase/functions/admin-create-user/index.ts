@@ -30,9 +30,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, initial_password } = await req.json(); // REMOVED: email_confirm from destructuring
+    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, initial_password, adminLanguage } = await req.json(); // ADDED adminLanguage
 
-    console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email });
+    console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, adminLanguage });
 
     if (!email || !password) {
       console.error('admin-create-user: Missing email or password in request.');
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // HARDCODED: Always send confirmation email
+      email_confirm: true,
       user_metadata: {
         full_name: full_name || null,
         business_name: business_name || null,
@@ -112,6 +112,7 @@ Deno.serve(async (req) => {
         mobile_phone_number: mobile_phone_number || null,
         country_code: country_code || null,
         theme_preference: defaultTheme,
+        language_preference: adminLanguage, // ADDED: Set language preference from admin's UI language
       });
 
     if (insertProfileError) {
@@ -128,8 +129,9 @@ Deno.serve(async (req) => {
       const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
         body: {
           recipientEmail: newUser.user.email,
-          recipientName: full_name || newUser.user.email,
+          recipientName: full_name || newUser.user.email, // Ensure recipientName is a string
           initialPassword: initial_password,
+          userPreferredLanguage: adminLanguage, // ADDED: Pass admin's language for email translation
         },
       });
 
@@ -147,7 +149,7 @@ Deno.serve(async (req) => {
     // ADDED: Log activity
     await logActivity(
       supabase,
-      user.id, // Admin user performing the action
+      user.id,
       'ADMIN_USER_CREATED',
       `Admin ${user.email} created new user: ${email}`,
       { target_user_id: newUser.user.id, target_user_email: email }
