@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, initial_password, adminLanguage } = await req.json(); // ADDED adminLanguage
+    const { email, password, full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, initial_password, adminLanguage } = await req.json();
 
     console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, send_invitation_email, adminLanguage });
 
@@ -39,7 +39,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Email and password are required.' }, 400);
     }
 
-    // Authenticate the request to ensure it's coming from an authorized source (e.g., an admin user)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('admin-create-user: Authorization header missing.');
@@ -53,7 +52,6 @@ Deno.serve(async (req) => {
     }
     console.log('admin-create-user: Admin user authenticated:', user.id);
 
-    // Verify if the user is an admin (assuming 'is_admin' column in 'profiles' table)
     const { data: adminProfile, error: adminProfileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -66,7 +64,6 @@ Deno.serve(async (req) => {
     }
     console.log('admin-create-user: Admin privileges confirmed.');
 
-    // Fetch global app settings to get default theme
     const { data: appSettings, error: appSettingsError } = await supabase
       .from('app_settings')
       .select('default_theme')
@@ -79,8 +76,6 @@ Deno.serve(async (req) => {
     const defaultTheme = appSettings?.default_theme || 'system';
     console.log('admin-create-user: Default theme determined:', defaultTheme);
 
-    // Create the user in Supabase Auth
-    console.log('admin-create-user: Attempting to create user in Supabase Auth with email:', email);
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -101,8 +96,6 @@ Deno.serve(async (req) => {
     console.log('admin-create-user: newUser.user.id:', newUser.user.id);
     console.log('admin-create-user: newUser.user.email (after createUser):', newUser.user.email);
 
-    // Insert profile data for the new user
-    console.log('admin-create-user: Attempting to insert user profile...');
     const { error: insertProfileError } = await supabase
       .from('profiles')
       .insert({
@@ -112,26 +105,26 @@ Deno.serve(async (req) => {
         mobile_phone_number: mobile_phone_number || null,
         country_code: country_code || null,
         theme_preference: defaultTheme,
-        language_preference: adminLanguage, // ADDED: Set language preference from admin's UI language
+        language_preference: adminLanguage,
       });
 
     if (insertProfileError) {
       console.error('admin-create-user: Error inserting user profile:', insertProfileError);
-      await supabase.auth.admin.deleteUser(newUser.user.id); // Rollback user creation
+      await supabase.auth.admin.deleteUser(newUser.user.id);
       return corsResponse({ error: 'Failed to create user profile.' }, 500);
     }
     console.log('admin-create-user: User profile inserted successfully.');
 
-    // Conditional email sending based on send_invitation_email flag
     if (send_invitation_email) {
       console.log('admin-create-user: send_invitation_email is true. Invoking send-admin-created-user-invite-email...');
-      // Invoke the new Edge Function to send the custom invitation email
+      // Ensure recipientName is a primitive string here
+      const emailRecipientName = String(full_name || newUser.user.email || 'User'); // MODIFIED: Ensure it's a string with fallback
       const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
         body: {
           recipientEmail: newUser.user.email,
-          recipientName: full_name || newUser.user.email, // Ensure recipientName is a string
+          recipientName: emailRecipientName, // MODIFIED: Pass the ensured string
           initialPassword: initial_password,
-          userPreferredLanguage: adminLanguage, // ADDED: Pass admin's language for email translation
+          userPreferredLanguage: adminLanguage,
         },
       });
 
@@ -146,7 +139,6 @@ Deno.serve(async (req) => {
       console.log('admin-create-user: send_invitation_email is false. Skipping custom invitation email.');
     }
 
-    // ADDED: Log activity
     await logActivity(
       supabase,
       user.id,
