@@ -3,7 +3,7 @@ import { Database } from '../types/supabase';
 import { StripeProduct } from '../../supabase/functions/_shared/stripe_product_types';
 import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data';
 import { SubscriptionMembership } from '../hooks/useSubscription';
-import { Contract, AnalysisResult, Finding } from '../types';
+import { Contract, AnalysisResult, Finding, Jurisdiction } from '../types';
 
 type StripeSubscriptionRow = Database['public']['Tables']['stripe_subscriptions']['Row'];
 type StripeOrderRow = Database['public']['Tables']['stripe_orders']['Row'];
@@ -110,10 +110,14 @@ const adminService = {
     business_name?: string;
     mobile_phone_number?: string;
     country_code?: string;
-    is_admin?: boolean;
+    is_admin?: boolean; // ADDED
+    default_jurisdictions?: Jurisdiction[]; // ADDED
     email_confirm?: boolean;
-    subscription_id?: string | null;
-    role?: 'owner' | 'member';
+    price_id?: string | null; // MODIFIED: Changed to price_id
+    role?: 'owner' | 'member' | null; // MODIFIED: Changed to role
+    send_invitation_email?: boolean;
+    initial_password?: string;
+    adminLanguage?: string;
   }): Promise<{ userId: string }> {
     const session = await supabase.auth.getSession();
     if (!session.data.session) {
@@ -204,7 +208,7 @@ const adminService = {
     }
   },
 
-  async manageUserSubscription(userId: string, subscriptionId: string | null, role: 'owner' | 'member' | null): Promise<void> {
+  async manageUserSubscription(userId: string, priceId: string | null, role: 'owner' | 'member' | null): Promise<void> {
     const session = await supabase.auth.getSession();
     if (!session.data.session) {
       throw new Error('User not authenticated.');
@@ -216,7 +220,7 @@ const adminService = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.data.session.access_token}`,
       },
-      body: JSON.stringify({ userId, priceId: subscriptionId, role }),
+      body: JSON.stringify({ userId, priceId, role }),
     });
 
     if (!response.ok) {
