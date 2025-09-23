@@ -426,12 +426,14 @@
   "sample_finding_f10_recommendation_1": "Evaluar las cláusulas por posible desequilibrio, falta de transparencia o perjuicio para una parte",
   "sample_finding_f10_recommendation_2": "Asegurar que los términos sean razonablemente necesarios para proteger intereses legítimos",
   "sample_finding_f10_recommendation_3": "Buscar asesoría legal sobre cláusulas específicas bajo la ACL",
+  
   "sample_executive_summary_prefix_1": "Este contrato (ID: 1) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_executive_summary_prefix_2": "Este contrato (ID: 2) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_executive_summary_prefix_3": "Este contrato (ID: 3) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_executive_summary_prefix_4": "Este contrato (ID: 4) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_executive_summary_prefix_5": "Este contrato (ID: 5) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_executive_summary_prefix_6": "Este contrato (ID: 6) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
+  
   "sample_data_protection_impact_detailed": "El contrato implica actividades de procesamiento de datos que caen bajo regulaciones relevantes de protección de datos. Las cláusulas específicas necesitan revisión para garantizar el cumplimiento total con los mecanismos de transferencia de datos y los derechos del interesado.",
   "sample_data_protection_impact_minimal": "El impacto en la protección de datos es mínimo ya que el contrato no implica un procesamiento significativo de datos personales o transferencias transfronterizas en jurisdicciones reguladas.",
   
