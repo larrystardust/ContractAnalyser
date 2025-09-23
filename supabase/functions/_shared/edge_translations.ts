@@ -24,7 +24,7 @@ export const edgeTranslations = {
     risk_medium: "Medium",
     risk_low: "Low",
     risk_none: "None",
-    email_hello: ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`, // MODIFIED
+    email_hello: ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`,
     email_analysis_complete: "Your legal contract analysis is complete!",
     email_view_full_report: "You can view the full report and detailed findings directly below, or click the link to view it in your browser:",
     email_view_full_report_button: "View Full Report in Browser",
@@ -53,11 +53,11 @@ export const edgeTranslations = {
     "category_dispute_resolution": "Dispute Resolution",
     "category_intellectual_property": "Intellectual Property",
     // EMAIL SUBJECT KEY
-    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `Your Contract Analysis Report for ${contractName} is Ready!`, // MODIFIED
+    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `Your Contract Analysis Report for ${contractName} is Ready!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
-    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Your contract "${contractName}" has been successfully analyzed.`, // MODIFIED
-    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`, // MODIFIED
-    "analysis_failed_message": ({ contractName }: { contractName: string }) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`, // MODIFIED
+    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Your contract "${contractName}" has been successfully analyzed.`,
+    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
+    "analysis_failed_message": ({ contractName }: { contractName: string }) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `You're invited to ContractAnalyser by ${inviterName}!`,
@@ -69,26 +69,26 @@ export const edgeTranslations = {
     "email_invitation_body_p5": "The ContractAnalyser Team",
 
     "email_otp_subject": "Your ContractAnalyser OTP",
-    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Your One-Time Password (OTP) for ContractAnalyser is: <strong>${otpCode}</strong>`, // MODIFIED
+    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Your One-Time Password (OTP) for ContractAnalyser is: <strong>${otpCode}</strong>`,
     "email_otp_body_p2": "This code is valid for 5 minutes.",
     "email_otp_body_p3": "If you did not request this, please ignore this email.",
     "email_otp_body_p4": "The ContractAnalyser Team",
 
-    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`, // MODIFIED
-    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`, // MODIFIED
+    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`,
     "email_admin_reply_body_p2": "Thank you for contacting us. Here is a reply from our support team:",
     "email_admin_reply_body_p3": "{message}",
-    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Best regards, ${adminName}`, // MODIFIED
+    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Best regards, ${adminName}`,
 
     "email_admin_created_user_subject": "Welcome to ContractAnalyser! Your Account Details",
-    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`, // MODIFIED
+    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Hello ${recipientName},`,
     "email_admin_created_user_body_p2": "An administrator has created an account for you on ContractAnalyser.",
     "email_admin_created_user_body_p3": "You can log in using the following details:",
     "email_admin_created_user_body_p4": "<strong>Email:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Password:</strong> {initialPassword}",
     "email_admin_created_user_body_p6": "For security reasons, we strongly recommend that you change this password immediately after your first login.",
-    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.`, // MODIFIED
-    "email_admin_created_user_body_help_instructions": "If you have any questions, please contact support on our \"Help\" page.", // MODIFIED
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.`,
+    "email_admin_created_user_body_help_instructions": "If you have any questions, please contact support on our \"Help\" page.",
 
     "message_otp_sent_successfully": "OTP sent successfully!",
     "message_invalid_otp_or_used": "Invalid OTP or OTP already used.",
@@ -97,10 +97,10 @@ export const edgeTranslations = {
 
     "message_self_invitation_not_allowed": "You cannot invite yourself to your own subscription. Your account is already associated as the owner.",
     "message_only_owner_can_invite": "Only active subscription owners can invite users.",
-    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Subscription limit reached. Max users: ${maxUsers}`, // MODIFIED
+    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Subscription limit reached. Max users: ${maxUsers}`,
     "message_user_already_active_member": "This user is already an active member of your subscription.",
     "message_invitation_sent_successfully": "Invitation sent successfully!",
-    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitation sent, but there was an error sending the email: ${errorMessage}`, // MODIFIED
+    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitation sent, but there was an error sending the email: ${errorMessage}`,
 
     "message_invitation_accepted_successfully": "Invitation accepted successfully!",
     "message_invalid_or_expired_invitation": "Invalid or expired invitation token.",
@@ -114,7 +114,7 @@ export const edgeTranslations = {
     "message_method_not_allowed": "Method not allowed",
     "message_unauthorized": "Unauthorized: Invalid or missing user token",
     "message_forbidden": "Forbidden: User is not an administrator",
-    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Server error: ${errorMessage}`, // MODIFIED
+    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Server error: ${errorMessage}`,
     "email_accept_invitation_button": "Accept Invitation",
 
     // ADDED: Product name keys
@@ -126,19 +126,19 @@ export const edgeTranslations = {
     "previous_plan": "Previous Plan",
 
     // ADDED: Notification message templates
-    payment_successful_message: ({ productName }: { productName: string }) => `Your one-time payment for ${productName} has been processed successfully.`, // MODIFIED
-    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`, // MODIFIED
-    subscription_active_message: ({ productName }: { productName: string }) => `Your ${productName} subscription is now active.`, // MODIFIED
-    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`, // MODIFIED
-    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`, // MODIFIED
-    credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you a single-use credit for ${productName}.`, // MODIFIED
+    payment_successful_message: ({ productName }: { productName: string }) => `Your one-time payment for ${productName} has been processed successfully.`,
+    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`,
+    subscription_active_message: ({ productName }: { productName: string }) => `Your ${productName} subscription is now active.`,
+    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`,
+    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you a single-use credit for ${productName}.`,
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Subscription Removed",
     notification_message_subscription_removed: "Your subscription access has been removed by an administrator.",
     notification_title_plan_assigned: "Plan Assigned!",
-    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `An administrator has assigned you to the ${productName} plan.`, // MODIFIED
+    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `An administrator has assigned you to the ${productName} plan.`,
     notification_title_subscription_assigned: "Subscription Assigned!",
-    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `An administrator has assigned you to ${productName} with the role of ${role}.`, // MODIFIED
+    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `An administrator has assigned you to ${productName} with the role of ${role}.`,
 
     // Admin-manage-subscription specific error messages
     error_missing_userid: "Missing userId",
@@ -176,7 +176,7 @@ export const edgeTranslations = {
     risk_medium: "Medio",
     risk_low: "Bajo",
     risk_none: "Ninguno",
-    email_hello: ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`, // MODIFIED
+    email_hello: ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`,
     email_analysis_complete: "¡Su análisis legal de contrato está completo!",
     email_view_full_report: "Puede ver el informe completo y los hallazgos detallados directamente a continuación, o hacer clic en el enlace para verlo en su navegador:",
     email_view_full_report_button: "Ver Informe Completo en el Navegador",
@@ -205,11 +205,11 @@ export const edgeTranslations = {
     "category_dispute_resolution": "Resolución de Disputas",
     "category_intellectual_property": "Propiedad Intelectual",
     // EMAIL SUBJECT KEY
-    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `¡Su Informe de Análisis de Contrato para ${contractName} está Listo!`, // MODIFIED
+    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `¡Su Informe de Análisis de Contrato para ${contractName} está Listo!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
-    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Su contrato "${contractName}" ha sido analizado con éxito.`, // MODIFIED
-    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`, // MODIFIED
-    "analysis_failed_message": ({ contractName }: { contractName: string }) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`, // MODIFIED
+    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Su contrato "${contractName}" ha sido analizado con éxito.`,
+    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Su contrato "${contractName}" tiene ${count} hallazgos de alto riesgo. Revise inmediatamente.`,
+    "analysis_failed_message": ({ contractName }: { contractName: string }) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `¡Has sido invitado a ContractAnalyser por ${inviterName}!`,
@@ -221,26 +221,26 @@ export const edgeTranslations = {
     "email_invitation_body_p5": "El Equipo de ContractAnalyser",
 
     "email_otp_subject": "Su OTP de ContractAnalyser",
-    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Su Contraseña de Un Solo Uso (OTP) para ContractAnalyser es: <strong>${otpCode}</strong>`, // MODIFIED
+    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Su Contraseña de Un Solo Uso (OTP) para ContractAnalyser es: <strong>${otpCode}</strong>`,
     "email_otp_body_p2": "Este código es válido por 5 minutos.",
     "email_otp_body_p3": "Si no solicitaste esto, por favor ignora este correo electrónico.",
     "email_otp_body_p4": "El Equipo de ContractAnalyser",
 
-    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`, // MODIFIED
-    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`, // MODIFIED
+    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`,
     "email_admin_reply_body_p2": "Gracias por contactarnos. Aquí tienes una respuesta de nuestro equipo de soporte:",
     "email_admin_reply_body_p3": "{message}",
-    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Saludos cordiales, ${adminName}`, // MODIFIED
+    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Saludos cordiales, ${adminName}`,
 
     "email_admin_created_user_subject": "¡Bienvenido a ContractAnalyser! Detalles de su cuenta",
-    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`, // MODIFIED
+    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Hola ${recipientName},`,
     "email_admin_created_user_body_p2": "Un administrador ha creado una cuenta para ti en ContractAnalyser.",
     "email_admin_created_user_body_p3": "Puedes iniciar sesión con los siguientes datos:",
     "email_admin_created_user_body_p4": "<strong>Correo electrónico:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Contraseña:</strong> {initialPassword}",
     "email_admin_created_user_body_p6": "Por razones de seguridad, te recomendamos encarecidamente que cambies esta contraseña inmediatamente después de tu primer inicio de sesión.",
-    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `Para iniciar sesión y cambiar tu contraseña, visita <a href="${loginPageUrl}">la página de inicio de sesión</a> y ve a "Configuración" y luego a "Seguridad" e introduce una nueva contraseña.`, // MODIFIED
-    "email_admin_created_user_body_help_instructions": "Si tienes alguna pregunta, ponte en contacto con el servicio de asistencia en nuestra página de \"Ayuda\".", // MODIFIED
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `Para iniciar sesión y cambiar tu contraseña, visita <a href="${loginPageUrl}">la página de inicio de sesión</a> y ve a "Configuración" y luego a "Seguridad" e introduce una nueva contraseña.`,
+    "email_admin_created_user_body_help_instructions": "Si tienes alguna pregunta, ponte en contacto con el servicio de asistencia en nuestra página de \"Ayuda\".",
 
     "message_otp_sent_successfully": "¡OTP enviado con éxito!",
     "message_invalid_otp_or_used": "OTP inválido o ya utilizado.",
@@ -249,10 +249,10 @@ export const edgeTranslations = {
 
     "message_self_invitation_not_allowed": "No puedes invitarte a ti mismo a tu propia suscripción. Tu cuenta ya está asociada como propietario.",
     "message_only_owner_can_invite": "Solo los propietarios de suscripciones activas pueden invitar a usuarios.",
-    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Límite de suscripción alcanzado. Usuarios máximos: ${maxUsers}`, // MODIFIED
+    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Límite de suscripción alcanzado. Usuarios máximos: ${maxUsers}`,
     "message_user_already_active_member": "Este usuario ya es un miembro activo de su suscripción.",
     "message_invitation_sent_successfully": "¡Invitación enviada con éxito!",
-    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitación enviada, pero hubo un error al enviar el correo electrónico: ${errorMessage}`, // MODIFIED
+    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitación enviada, pero hubo un error al enviar el correo electrónico: ${errorMessage}`,
 
     "message_invitation_accepted_successfully": "¡Invitación aceptada con éxito!",
     "message_invalid_or_expired_invitation": "Token de invitación inválido o caducado.",
@@ -266,7 +266,7 @@ export const edgeTranslations = {
     "message_method_not_allowed": "Método no permitido",
     "message_unauthorized": "No autorizado: Token de usuario inválido o faltante",
     "message_forbidden": "Prohibido: El usuario no es un administrador",
-    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Error del servidor: ${errorMessage}`, // MODIFIED
+    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Error del servidor: ${errorMessage}`,
     "email_accept_invitation_button": "Aceptar Invitación",
 
     // ADDED: Product name keys
@@ -278,19 +278,19 @@ export const edgeTranslations = {
     "previous_plan": "Plan Anterior",
 
     // ADDED: Notification message templates
-    payment_successful_message: ({ productName }: { productName: string }) => `Su pago único para ${productName} ha sido procesado con éxito.`, // MODIFIED
-    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Su plan de suscripción ha cambiado de ${oldPlan} a ${newPlan}.`, // MODIFIED
-    subscription_active_message: ({ productName }: { productName: string }) => `Su suscripción a ${productName} ya está activa.`, // MODIFIED
-    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `El estado de su suscripción a ${productName} es ahora ${status}. Por favor, revise sus detalles de facturación.`, // MODIFIED
-    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Su suscripción a ${productName} ha sido cancelada y finalizará el ${endDate}.`, // MODIFIED
-    credit_granted_message: ({ productName }: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${productName}.`, // MODIFIED
+    payment_successful_message: ({ productName }: { productName: string }) => `Su pago único para ${productName} ha sido procesado con éxito.`,
+    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Su plan de suscripción ha cambiado de ${oldPlan} a ${newPlan}.`,
+    subscription_active_message: ({ productName }: { productName: string }) => `Su suscripción a ${productName} ya está activa.`,
+    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `El estado de su suscripción a ${productName} es ahora ${status}. Por favor, revise sus detalles de facturación.`,
+    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Su suscripción a ${productName} ha sido cancelada y finalizará el ${endDate}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${productName}.`,
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Suscripción Eliminada",
     notification_message_subscription_removed: "Su acceso a la suscripción ha sido eliminado por un administrador.",
     notification_title_plan_assigned: "¡Plan Asignado!",
-    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `Un administrador le ha asignado al plan ${productName}.`, // MODIFIED
+    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `Un administrador le ha asignado al plan ${productName}.`,
     notification_title_subscription_assigned: "¡Suscripción Asignada!",
-    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `Un administrador le ha asignado a ${productName} con el rol de ${role}.`, // MODIFIED
+    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `Un administrador le ha asignado a ${productName} con el rol de ${role}.`,
 
     // Admin-manage-subscription specific error messages
     error_missing_userid: "Falta el ID de usuario",
@@ -328,7 +328,7 @@ export const edgeTranslations = {
     risk_medium: "Moyen",
     risk_low: "Faible",
     risk_none: "Aucun",
-    email_hello: ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`, // MODIFIED
+    email_hello: ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
     email_analysis_complete: "Votre analyse juridique de contrat est terminée !",
     email_view_full_report: "Vous pouvez consulter le rapport complet et les constatations détaillées directement ci-dessous, ou cliquer sur le lien pour le visualiser dans votre navigateur :",
     email_view_full_report_button: "Voir le Rapport Complet dans le Navigateur",
@@ -357,11 +357,11 @@ export const edgeTranslations = {
     "category_dispute_resolution": "Résolution des Litiges",
     "category_intellectual_property": "Propriété Intellectuelle",
     // EMAIL SUBJECT KEY
-    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `Votre Rapport d'Analyse de Contrat pour ${contractName} est Prêt !`, // MODIFIED
+    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `Votre Rapport d'Analyse de Contrat pour ${contractName} est Prêt !`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
-    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Votre contrat "${contractName}" a été analysé avec succès.`, // MODIFIED
-    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`, // MODIFIED
-    "analysis_failed_message": ({ contractName }: { contractName: string }) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`, // MODIFIED
+    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Votre contrat "${contractName}" a été analysé avec succès.`,
+    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
+    "analysis_failed_message": ({ contractName }: { contractName: string }) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`,
@@ -373,26 +373,26 @@ export const edgeTranslations = {
     "email_invitation_body_p5": "L'équipe ContractAnalyser",
 
     "email_otp_subject": "Votre OTP ContractAnalyser",
-    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Votre mot de passe à usage unique (OTP) pour ContractAnalyser est : <strong>${otpCode}</strong>`, // MODIFIED
+    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `Votre mot de passe à usage unique (OTP) pour ContractAnalyser est : <strong>${otpCode}</strong>`,
     "email_otp_body_p2": "Ce code est valable 5 minutes.",
     "email_otp_body_p3": "Si vous n'avez pas demandé cela, veuillez ignorer cet e-mail.",
     "email_otp_body_p4": "L'équipe ContractAnalyser",
 
-    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`, // MODIFIED
-    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`, // MODIFIED
+    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
     "email_admin_reply_body_p2": "Merci de nous avoir contactés. Voici une réponse de notre équipe de support :",
     "email_admin_reply_body_p3": "{message}",
-    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Cordialement, ${adminName}`, // MODIFIED
+    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Cordialement, ${adminName}`,
 
     "email_admin_created_user_subject": "Bienvenue sur ContractAnalyser ! Vos détails de compte",
-    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`, // MODIFIED
+    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
     "email_admin_created_user_body_p2": "Un administrateur a créé un compte pour vous sur ContractAnalyser.",
     "email_admin_created_user_body_p3": "Vous pouvez vous connecter en utilisant les détails suivants :",
     "email_admin_created_user_body_p4": "<strong>E-mail :</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Mot de passe :</strong> {initialPassword}",
     "email_admin_created_user_body_p6": "Pour des raisons de sécurité, nous vous recommandons fortement de changer ce mot de passe immédiatement après votre première connexion.",
-    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `Pour vous connecter et changer votre mot de passe, veuillez visiter <a href="${loginPageUrl}">la page de connexion</a> et aller dans "Paramètres" puis "Sécurité" et entrer un nouveau mot de passe.`, // MODIFIED
-    "email_admin_created_user_body_help_instructions": "Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".", // MODIFIED
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `Pour vous connecter et changer votre mot de passe, veuillez visiter <a href="${loginPageUrl}">la page de connexion</a> et aller dans "Paramètres" puis "Sécurité" et entrer un nouveau mot de passe.`,
+    "email_admin_created_user_body_help_instructions": "Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".",
 
     "message_otp_sent_successfully": "OTP envoyé avec succès !",
     "message_invalid_otp_or_used": "OTP invalide ou déjà utilisé.",
@@ -401,10 +401,10 @@ export const edgeTranslations = {
 
     "message_self_invitation_not_allowed": "Vous ne pouvez pas vous inviter à votre propre abonnement. Votre compte est déjà associé en tant que propriétaire.",
     "message_only_owner_can_invite": "Seuls les propriétaires d'abonnements actifs peuvent inviter des utilisateurs.",
-    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Limite d'abonnement atteinte. Utilisateurs max : ${maxUsers}`, // MODIFIED
+    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Limite d'abonnement atteinte. Utilisateurs max : ${maxUsers}`,
     "message_user_already_active_member": "Cet utilisateur est déjà un membre actif de votre abonnement.",
     "message_invitation_sent_successfully": "Invitation envoyée avec succès !",
-    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitation envoyée, mais une erreur est survenue lors de l'envoi de l'e-mail : ${errorMessage}`, // MODIFIED
+    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitation envoyée, mais une erreur est survenue lors de l'envoi de l'e-mail : ${errorMessage}`,
 
     "message_invitation_accepted_successfully": "Invitation acceptée avec succès !",
     "message_invalid_or_expired_invitation": "Jeton d'invitation invalide ou expiré.",
@@ -418,7 +418,7 @@ export const edgeTranslations = {
     "message_method_not_allowed": "Méthode non autorisée",
     "message_unauthorized": "Non autorisé : Jeton utilisateur invalide ou manquant",
     "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
-    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Erreur du serveur : ${errorMessage}`, // MODIFIED
+    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Erreur du serveur : ${errorMessage}`,
     "email_accept_invitation_button": "Accepter l'invitation",
 
     // ADDED: Product name keys
@@ -430,19 +430,171 @@ export const edgeTranslations = {
     "previous_plan": "Plan Précédent",
 
     // ADDED: Notification message templates
-    payment_successful_message: ({ productName }: { productName: string }) => `Votre paiement unique pour ${productName} a été traité avec succès.`, // MODIFIED
-    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${oldPlan} à ${newPlan}.`, // MODIFIED
-    subscription_active_message: ({ productName }: { productName: string }) => `Votre abonnement ${productName} est maintenant actif.`, // MODIFIED
-    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`, // MODIFIED
-    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`, // MODIFIED
-    credit_granted_message: ({ productName }: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`, // MODIFIED
+    payment_successful_message: ({ productName }: { productName: string }) => `Votre paiement unique pour ${productName} a été traité avec succès.`,
+    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${oldPlan} à ${newPlan}.`,
+    subscription_active_message: ({ productName }: { productName: string }) => `Votre abonnement ${productName} est maintenant actif.`,
+    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`,
+    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`,
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Abonnement Supprimé",
     notification_message_subscription_removed: "Votre accès à l'abonnement a été supprimé par un administrateur.",
     notification_title_plan_assigned: "Plan Attribué !",
-    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `Un administrateur vous a attribué le plan ${productName}.`, // MODIFIED
+    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `Un administrateur vous a attribué le plan ${productName}.`,
     notification_title_subscription_assigned: "Abonnement Attribué !",
-    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `Un administrateur vous a attribué à ${productName} avec le rôle de ${role}.`, // MODIFIED
+    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `Un administrateur vous a attribué à ${productName} avec le rôle de ${role}.`,
+
+    // Admin-manage-subscription specific error messages
+    error_missing_userid: "ID utilisateur manquant",
+    error_role_required: "Le rôle est requis lors de l'attribution d'un abonnement.",
+    error_failed_to_fetch_customer_info: "Échec de la récupération des informations client.",
+    error_could_not_retrieve_user_email: "Impossible de récupérer l'e-mail de l'utilisateur pour créer le client Stripe.",
+    error_failed_to_create_stripe_customer_record: "Échec de la création de l'enregistrement client Stripe.",
+    error_failed_to_remove_user_from_subscription: "Échec de la suppression de l'utilisateur de l'abonnement.",
+    error_failed_to_assign_admin_managed_subscription: "Échec de l'attribution de l'abonnement géré par l'administrateur.",
+    error_product_details_not_found: "Détails du produit introuvables pour le plan sélectionné.",
+    error_failed_to_check_existing_subscriptions: "Échec de la vérification des abonnements existants.",
+  },
+  fr: {
+    report_title: "Rapport d'Analyse de Contrat",
+    contract_name: "Nom du Contrat:",
+    analysis_date: "Date d'Analyse:",
+    executive_summary: "Résumé Exécutif",
+    overall_compliance_score: "Score Global de Conformité",
+    score_description: "Ce score reflète l'adhésion globale du contrat aux normes légales et réglementaires, avec des déductions pour les risques identifiés et les non-conformités.",
+    data_protection_impact: "Impact sur la Protection des Données",
+    jurisdiction_summaries: "Résumés de Juridiction",
+    no_jurisdiction_summaries: "Aucun résumé de juridiction spécifique disponible.",
+    detailed_findings: "Constatations Détaillées",
+    no_detailed_findings: "Aucune constatation détaillée disponible.",
+    jurisdiction_label: "Juridiction:",
+    category_label: "Catégorie:",
+    clause_reference_label: "Référence de Clause:",
+    recommendations_label: "Recommandations:",
+    footer_copyright: "© {year} ContractAnalyser. Tous droits réservés.",
+    footer_disclaimer: "Ce rapport est à titre informatif uniquement et ne constitue pas un avis juridique.",
+    applicable_laws: "Lois Applicables:",
+    key_findings: "Constatations Clés:",
+    risk_level_label: "Niveau de Risque:",
+    risk_high: "Élevé",
+    risk_medium: "Moyen",
+    risk_low: "Faible",
+    risk_none: "Aucun",
+    email_hello: ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
+    email_analysis_complete: "Votre analyse juridique de contrat est terminée !",
+    email_view_full_report: "Vous pouvez consulter le rapport complet et les constatations détaillées directement ci-dessous, ou cliquer sur le lien pour le visualiser dans votre navigateur :",
+    email_view_full_report_button: "Voir le Rapport Complet dans le Navigateur",
+    email_thank_you: "Merci d'utiliser ContractAnalyser.",
+    email_team: "L'équipe ContractAnalyser",
+    no_description_provided: "Aucune description fournie.",
+    no_executive_summary_provided: "Aucun résumé exécutif fourni.",
+    no_title_provided: "Aucun titre fourni.",
+    email_report_not_available: "Le contenu complet du rapport n'est pas disponible dans cet e-mail. Veuillez contacter le support si vous en avez besoin.",
+    // JURISDICTION KEYS
+    "jurisdiction_uk": "Royaume-Uni",
+    "jurisdiction_eu": "UE",
+    "jurisdiction_ireland": "Irlande",
+    "jurisdiction_us": "États-Unis",
+    "jurisdiction_canada": "Canada",
+    "jurisdiction_australia": "Australie",
+    "jurisdiction_islamic_law": "Droit Islamique",
+    "jurisdiction_others": "Autres",
+    // CATEGORY KEYS
+    "category_compliance": "Conformité",
+    "category_risk": "Risque",
+    "category_data_protection": "Protection des Données",
+    "category_enforceability": "Applicabilité",
+    "category_drafting": "Rédaction",
+    "category_commercial": "Commercial",
+    "category_dispute_resolution": "Résolution des Litiges",
+    "category_intellectual_property": "Propriété Intellectuelle",
+    // EMAIL SUBJECT KEY
+    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `Votre Rapport d'Analyse de Contrat pour ${contractName} est Prêt !`,
+    // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
+    "analysis_complete_message": ({ contractName }: { contractName: string }) => `Votre contrat "${contractName}" a été analysé avec succès.`,
+    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
+    "analysis_failed_message": ({ contractName }: { contractName: string }) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
+
+    // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
+    "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`,
+    "email_invitation_body_p1": ({ inviterName }: { inviterName: string }) => `${inviterName} vous a invité à rejoindre et à commencer à utiliser leur abonnement ContractAnalyser !`,
+    "email_invitation_body_p2": "Cliquez sur le lien ci-dessous pour accepter l'invitation et commencer :",
+    "email_accept_invitation_button": "Accepter l'invitation",
+    "email_invitation_body_p3": "Si vous n'avez pas encore de compte, il vous sera demandé de vous inscrire d'abord.",
+    "email_invitation_body_p4": "Merci d'utiliser ContractAnalyser.",
+    "email_invitation_body_p5": "L'équipe ContractAnalyser",
+
+    "email_otp_subject": "Votre OTP ContractAnalyser",
+    "email_otp_body_p1": ({ otpCode }: { otpCode }) => `Votre mot de passe à usage unique (OTP) pour ContractAnalyser est : <strong>${otpCode}</strong>`,
+    "email_otp_body_p2": "Ce code est valable 5 minutes.",
+    "email_otp_body_p3": "Si vous n'avez pas demandé cela, veuillez ignorer cet e-mail.",
+    "email_otp_body_p4": "L'équipe ContractAnalyser",
+
+    "email_admin_reply_subject": ({ subject }: { subject: string }) => `Re: ${subject}`,
+    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
+    "email_admin_reply_body_p2": "Merci de nous avoir contactés. Voici une réponse de notre équipe de support :",
+    "email_admin_reply_body_p3": "{message}",
+    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `Cordialement, ${adminName}`,
+
+    "email_admin_created_user_subject": "Bienvenue sur ContractAnalyser ! Vos détails de compte",
+    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `Bonjour ${recipientName},`,
+    "email_admin_created_user_body_p2": "Un administrateur a créé un compte pour vous sur ContractAnalyser.",
+    "email_admin_created_user_body_p3": "Vous pouvez vous connecter en utilisant les détails suivants :",
+    "email_admin_created_user_body_p4": "<strong>E-mail :</strong> {recipientEmail}",
+    "email_admin_created_user_body_p5": "<strong>Mot de passe :</strong> {initialPassword}",
+    "email_admin_created_user_body_p6": "Pour des raisons de sécurité, nous vous recommandons fortement de changer ce mot de passe immédiatement après votre première connexion.",
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `Pour vous connecter et changer votre mot de passe, veuillez visiter <a href="${loginPageUrl}">la page de connexion</a> et aller dans "Paramètres" puis "Sécurité" et entrer un nouveau mot de passe.`,
+    "email_admin_created_user_body_help_instructions": "Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".",
+
+    "message_otp_sent_successfully": "OTP envoyé avec succès !",
+    "message_invalid_otp_or_used": "OTP invalide ou déjà utilisé.",
+    "message_otp_expired": "L'OTP a expiré.",
+    "message_email_verified_successfully": "E-mail vérifié avec succès !",
+
+    "message_self_invitation_not_allowed": "Vous ne pouvez pas vous inviter à votre propre abonnement. Votre compte est déjà associé en tant que propriétaire.",
+    "message_only_owner_can_invite": "Seuls les propriétaires d'abonnements actifs peuvent inviter des utilisateurs.",
+    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `Limite d'abonnement atteinte. Utilisateurs max : ${maxUsers}`,
+    "message_user_already_active_member": "Cet utilisateur est déjà un membre actif de votre abonnement.",
+    "message_invitation_sent_successfully": "Invitation envoyée avec succès !",
+    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `Invitation envoyée, mais une erreur est survenue lors de l'envoi de l'e-mail : ${errorMessage}`,
+
+    "message_invitation_accepted_successfully": "Invitation acceptée avec succès !",
+    "message_invalid_or_expired_invitation": "Jeton d'invitation invalide ou expiré.",
+    "message_invitation_not_for_this_account": "Cette invitation n'est pas pour votre compte.",
+    "message_invitation_already_accepted": "Cette invitation a déjà été acceptée ou n'est plus valide.",
+
+    "message_inquiry_submitted_successfully": "Demande soumise avec succès !",
+    "message_recaptcha_failed": "Échec de la vérification reCAPTCHA. Veuillez réessayer.",
+    "message_missing_required_fields": "Champs de formulaire obligatoires ou jeton reCAPTCHA manquants.",
+
+    "message_method_not_allowed": "Méthode non autorisée",
+    "message_unauthorized": "Non autorisé : Jeton utilisateur invalide ou manquant",
+    "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
+    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Erreur du serveur : ${errorMessage}`,
+    "email_accept_invitation_button": "Accepter l'invitation",
+
+    // ADDED: Product name keys
+    "product_name_single_use": "Usage Unique",
+    "product_name_professional_use": "Usage Professionnel",
+    "product_name_enterprise_use": "Usage Entreprise",
+    "product_name_admin_free_professional": "Usage Professionnel (Assigné par Admin)",
+    "product_name_admin_free_enterprise": "Usage Entreprise (Assigné par Admin)",
+    "previous_plan": "Plan Précédent",
+
+    // ADDED: Notification message templates
+    payment_successful_message: ({ productName }: { productName: string }) => `Votre paiement unique pour ${productName} a été traité avec succès.`,
+    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Votre plan d'abonnement est passé de ${oldPlan} à ${newPlan}.`,
+    subscription_active_message: ({ productName }: { productName: string }) => `Votre abonnement ${productName} est maintenant actif.`,
+    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`,
+    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`,
+    // NEW: Admin-manage-subscription messages
+    notification_title_subscription_removed: "Abonnement Supprimé",
+    notification_message_subscription_removed: "Votre accès à l'abonnement a été supprimé par un administrateur.",
+    notification_title_plan_assigned: "Plan Attribué !",
+    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `Un administrateur vous a attribué le plan ${productName}.`,
+    notification_title_subscription_assigned: "Abonnement Attribué !",
+    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `Un administrateur vous a attribué à ${productName} avec le rôle de ${role}.`,
 
     // Admin-manage-subscription specific error messages
     error_missing_userid: "ID utilisateur manquant",
@@ -480,7 +632,7 @@ export const edgeTranslations = {
     risk_medium: "متوسط",
     risk_low: "منخفض",
     risk_none: "لا يوجد",
-    email_hello: ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`, // MODIFIED
+    email_hello: ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`,
     email_analysis_complete: "تحليل عقدك القانوني اكتمل!",
     email_view_full_report: "يمكنك عرض التقرير الكامل والنتائج التفصيلية مباشرة أدناه، أو النقر على الرابط لعرضه في متصفحك:",
     email_view_full_report_button: "عرض التقرير الكامل في المتصفح",
@@ -509,11 +661,11 @@ export const edgeTranslations = {
     "category_dispute_resolution": "حل النزاعات",
     "category_intellectual_property": "الملكية الفكرية",
     // EMAIL SUBJECT KEY
-    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `تقرير تحليل العقد الخاص بك لـ ${contractName} جاهز!`, // MODIFIED
+    "email_subject_report_ready": ({ contractName }: { contractName: string }) => `تقرير تحليل العقد الخاص بك لـ ${contractName} جاهز!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
-    "analysis_complete_message": ({ contractName }: { contractName: string }) => `تم تحليل عقدك "${contractName}" بنجاح.`, // MODIFIED
-    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`, // MODIFIED
-    "analysis_failed_message": ({ contractName }: { contractName: string }) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`, // MODIFIED
+    "analysis_complete_message": ({ contractName }: { contractName: string }) => `تم تحليل عقدك "${contractName}" بنجاح.`,
+    "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
+    "analysis_failed_message": ({ contractName }: { contractName: string }) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `أنت مدعو إلى ContractAnalyser بواسطة ${inviterName}!`,
@@ -525,26 +677,26 @@ export const edgeTranslations = {
     "email_invitation_body_p5": "فريق ContractAnalyser",
 
     "email_otp_subject": "رمز OTP الخاص بك من ContractAnalyser",
-    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `كلمة المرور لمرة واحدة (OTP) الخاصة بك لـ ContractAnalyser هي: <strong>${otpCode}</strong>`, // MODIFIED
+    "email_otp_body_p1": ({ otpCode }: { otpCode: string }) => `كلمة المرور لمرة واحدة (OTP) الخاصة بك لـ ContractAnalyser هي: <strong>${otpCode}</strong>`,
     "email_otp_body_p2": "هذا الرمز صالح لمدة 5 دقائق.",
     "email_otp_body_p3": "إذا لم تطلب هذا، يرجى تجاهل هذا البريد الإلكتروني.",
     "email_otp_body_p4": "فريق ContractAnalyser",
 
-    "email_admin_reply_subject": ({ subject }: { subject: string }) => `رد: ${subject}`, // MODIFIED
-    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`, // MODIFIED
+    "email_admin_reply_subject": ({ subject }: { subject: string }) => `رد: ${subject}`,
+    "email_admin_reply_body_p1": ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`,
     "email_admin_reply_body_p2": "شكراً لتواصلك معنا. إليك رد من فريق الدعم لدينا:",
     "email_admin_reply_body_p3": "{message}",
-    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `مع خالص التقدير، ${adminName}`, // MODIFIED
+    "email_admin_reply_body_p4": ({ adminName }: { adminName: string }) => `مع خالص التقدير، ${adminName}`,
 
     "email_admin_created_user_subject": "مرحباً بك في ContractAnalyser! تفاصيل حسابك",
-    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`, // MODIFIED
+    "email_admin_created_user_body_p1": ({ recipientName }: { recipientName: string }) => `مرحباً ${recipientName},`,
     "email_admin_created_user_body_p2": "قام مسؤول بإنشاء حساب لك على ContractAnalyser.",
     "email_admin_created_user_body_p3": "يمكنك تسجيل الدخول باستخدام التفاصيل التالية:",
     "email_admin_created_user_body_p4": "<strong>البريد الإلكتروني:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>كلمة المرور:</strong> {initialPassword}",
     "email_admin_created_user_body_p6": "لأسباب أمنية، نوصي بشدة بتغيير كلمة المرور هذه فور تسجيل الدخول الأول.",
-    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `لتسجيل الدخول وتغيير كلمة المرور، يرجى زيارة <a href="${loginPageUrl}">صفحة تسجيل الدخول</a> ثم الانتقال إلى "الإعدادات" ثم "الأمان" وإدخال كلمة مرور جديدة.`, // MODIFIED
-    "email_admin_created_user_body_help_instructions": "إذا كان لديك أي أسئلة، يرجى الاتصال بالدعم على صفحة \"المساعدة\" الخاصة بنا.", // MODIFIED
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `لتسجيل الدخول وتغيير كلمة المرور، يرجى زيارة <a href="${loginPageUrl}">صفحة تسجيل الدخول</a> ثم الانتقال إلى "الإعدادات" ثم "الأمان" وإدخال كلمة مرور جديدة.`,
+    "email_admin_created_user_body_help_instructions": "إذا كان لديك أي أسئلة، يرجى الاتصال بالدعم على صفحة \"المساعدة\" الخاصة بنا.",
 
     "message_otp_sent_successfully": "تم إرسال رمز OTP بنجاح!",
     "message_invalid_otp_or_used": "رمز OTP غير صالح أو تم استخدامه بالفعل.",
@@ -553,10 +705,10 @@ export const edgeTranslations = {
 
     "message_self_invitation_not_allowed": "لا يمكنك دعوة نفسك إلى اشتراكك الخاص. حسابك مرتبط بالفعل كمالك.",
     "message_only_owner_can_invite": "يمكن لمالكي الاشتراك النشطين فقط دعوة المستخدمين.",
-    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `تم الوصول إلى حد الاشتراك. الحد الأقصى للمستخدمين: ${maxUsers}`, // MODIFIED
+    "message_subscription_limit_reached": ({ maxUsers }: { maxUsers: number }) => `تم الوصول إلى حد الاشتراك. الحد الأقصى للمستخدمين: ${maxUsers}`,
     "message_user_already_active_member": "هذا المستخدم عضو نشط بالفعل في اشتراكك.",
     "message_invitation_sent_successfully": "تم إرسال الدعوة بنجاح!",
-    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `تم إرسال الدعوة، ولكن حدث خطأ أثناء إرسال البريد الإلكتروني: ${errorMessage}`, // MODIFIED
+    "message_invitation_sent_email_error": ({ errorMessage }: { errorMessage: string }) => `تم إرسال الدعوة، ولكن حدث خطأ أثناء إرسال البريد الإلكتروني: ${errorMessage}`,
 
     "message_invitation_accepted_successfully": "تم قبول الدعوة بنجاح!",
     "message_invalid_or_expired_invitation": "رمز الدعوة غير صالح أو منتهي الصلاحية.",
@@ -570,7 +722,7 @@ export const edgeTranslations = {
     "message_method_not_allowed": "الطريقة غير مسموح بها",
     "message_unauthorized": "غير مصرح به: رمز المستخدم غير صالح أو مفقود",
     "message_forbidden": "ممنوع: المستخدم ليس مسؤولاً",
-    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `خطأ في الخادم: ${errorMessage}`, // MODIFIED
+    "message_server_error": ({ errorMessage }: { errorMessage: string }) => `خطأ في الخادم: ${errorMessage}`,
     "email_accept_invitation_button": "قبول الدعوة",
 
     // ADDED: Product name keys
@@ -582,19 +734,19 @@ export const edgeTranslations = {
     "previous_plan": "الخطة السابقة",
 
     // ADDED: Notification message templates
-    payment_successful_message: ({ productName }: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${productName} بنجاح.`, // MODIFIED
-    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${oldPlan} إلى ${newPlan}.`, // MODIFIED
-    subscription_active_message: ({ productName }: { productName: string }) => `اشتراكك في ${productName} نشط الآن.`, // MODIFIED
-    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `حالة اشتراكك في ${productName} هي الآن ${status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`, // MODIFIED
-    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${productName} وسينتهي في ${endDate}.`, // MODIFIED
-    credit_granted_message: ({ productName }: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${productName}.`, // MODIFIED
+    payment_successful_message: ({ productName }: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${productName} بنجاح.`,
+    subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${oldPlan} إلى ${newPlan}.`,
+    subscription_active_message: ({ productName }: { productName: string }) => `اشتراكك في ${productName} نشط الآن.`,
+    subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `حالة اشتراكك في ${productName} هي الآن ${status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
+    subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${productName} وسينتهي في ${endDate}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${productName}.`,
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "تمت إزالة الاشتراك",
     notification_message_subscription_removed: "تمت إزالة وصولك إلى الاشتراك بواسطة مسؤول.",
     notification_title_plan_assigned: "تم تعيين الخطة!",
-    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `لقد قام مسؤول بتعيينك لخطة ${productName}.`, // MODIFIED
+    notification_message_admin_assigned_plan: ({ productName }: { productName: string }) => `لقد قام مسؤول بتعيينك لخطة ${productName}.`,
     notification_title_subscription_assigned: "تم تعيين الاشتراك!",
-    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `لقد قام مسؤول بتعيينك لـ ${productName} بدور ${role}.`, // MODIFIED
+    notification_message_admin_assigned_stripe_plan: ({ productName, role }: { productName: string; role: string }) => `لقد قام مسؤول بتعيينك لـ ${productName} بدور ${role}.`,
 
     // Admin-manage-subscription specific error messages
     error_missing_userid: "معرف المستخدم مفقود",
