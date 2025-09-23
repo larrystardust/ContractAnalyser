@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'; // MODIFIED: Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
@@ -18,13 +18,13 @@ const ApplicationPreferences: React.FC = () => {
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [emailReportsEnabled, setEmailReportsEnabled] = useState(false);
   const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(true);
+  const [selectedDefaultJurisdictions, setSelectedDefaultJurisdictions] = useState<Jurisdiction[]>([]); // ADDED: New state for default jurisdictions
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  // MODIFIED: Refactor fetchPreferences into a useCallback hook
   const fetchPreferences = useCallback(async () => {
     if (!session?.user?.id) {
       setIsLoading(false);
@@ -36,7 +36,7 @@ const ApplicationPreferences: React.FC = () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled')
+        .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled, default_jurisdictions') // MODIFIED: Added default_jurisdictions
         .eq('id', session.user.id)
         .maybeSingle();
 
@@ -50,7 +50,6 @@ const ApplicationPreferences: React.FC = () => {
       setSelectedLanguage(dbLanguage);
       console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`);
 
-      // Only change i18n.language if it's different from DB value
       if (i18n.language !== dbLanguage) {
         console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
         i18n.changeLanguage(dbLanguage);
@@ -64,6 +63,7 @@ const ApplicationPreferences: React.FC = () => {
 
       setEmailReportsEnabled(data?.email_reports_enabled || false);
       setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
+      setSelectedDefaultJurisdictions((data?.default_jurisdictions as Jurisdiction[]) || []); // ADDED: Set default jurisdictions
 
     } catch (err: any) {
       console.error('Error fetching notification preferences:', err);
@@ -71,11 +71,22 @@ const ApplicationPreferences: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [session?.user?.id, supabase, t, i18n]); // Added i18n to dependencies
+  }, [session?.user?.id, supabase, t, i18n]);
 
   useEffect(() => {
     fetchPreferences();
-  }, [fetchPreferences]); // Now fetchPreferences is a dependency
+  }, [fetchPreferences]);
+
+  // ADDED: handleJurisdictionToggle function
+  const handleJurisdictionToggle = (jurisdiction: Jurisdiction) => {
+    setSelectedDefaultJurisdictions(prev => {
+      if (prev.includes(jurisdiction)) {
+        return prev.filter(j => j !== jurisdiction);
+      } else {
+        return [...prev, jurisdiction];
+      }
+    });
+  };
 
   const ToggleSwitch: React.FC<{
     checked: boolean;
@@ -119,6 +130,7 @@ const ApplicationPreferences: React.FC = () => {
             theme_preference: selectedTheme,
             email_reports_enabled: emailReportsEnabled,
             auto_start_analysis_enabled: autoStartAnalysisEnabled,
+            default_jurisdictions: selectedDefaultJurisdictions, // ADDED: Save default jurisdictions
           },
           { onConflict: 'id' }
         );
@@ -130,8 +142,7 @@ const ApplicationPreferences: React.FC = () => {
       setMessage(t('notification_preferences_saved_successfully'));
       console.log("AP: Language preference saved successfully.");
 
-      // MODIFIED: Call fetchPreferences to re-sync state with DB
-      await fetchPreferences();
+      await fetchPreferences(); // Call fetchPreferences to re-sync state with DB
 
     } catch (err: any) {
       console.error('Error saving notification preferences:', err);
@@ -165,7 +176,7 @@ const ApplicationPreferences: React.FC = () => {
         </div>
       )}
 
-      {/* Default Jurisdictions (kept as is) */}
+      {/* Default Jurisdictions */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -179,9 +190,9 @@ const ApplicationPreferences: React.FC = () => {
               <button
                 key={jurisdiction}
                 type="button"
-                // onClick={() => handleJurisdictionToggle(jurisdiction)} // Commented out for now
+                onClick={() => handleJurisdictionToggle(jurisdiction)} // MODIFIED: Uncommented and linked
                 className={`py-1 px-3 rounded-full text-xs font-medium transition-colors
-                  ${(false) // Placeholder for actual check if this was a user preference
+                  ${selectedDefaultJurisdictions.includes(jurisdiction) // MODIFIED: Check against selectedDefaultJurisdictions
                     ? 'bg-blue-100 text-blue-800 border border-blue-300'
                     : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                   }`}
@@ -195,7 +206,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Theme Preferences (kept as is) */}
+      {/* Theme Preferences */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -223,7 +234,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Language Preference (kept as is) */}
+      {/* Language Preference */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -252,7 +263,7 @@ const ApplicationPreferences: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* RESTORED: Report Preferences Section */}
+      {/* Report Preferences Section */}
       <Card>
         <CardHeader>
           <div className="flex items-center">
@@ -279,11 +290,10 @@ const ApplicationPreferences: React.FC = () => {
               <h4 className="text-sm font-medium text-gray-900">{t('auto_start_analysis')}</h4>
               <p className="text-xs text-gray-500 mt-1">{t('auto_start_analysis_hint')}</p>
             </div>
-            {/* This is a placeholder. If this needs to be persisted, a new column in 'profiles' or 'app_settings' is required. */}
             <ToggleSwitch
-              checked={autoStartAnalysisEnabled} // MODIFIED: Use autoStartAnalysisEnabled state
-              onChange={setAutoStartAnalysisEnabled} // MODIFIED: Update autoStartAnalysisEnabled state
-              disabled={isSaving} // MODIFIED: Enable the toggle
+              checked={autoStartAnalysisEnabled}
+              onChange={setAutoStartAnalysisEnabled}
+              disabled={isSaving}
             />
           </div>
         </CardBody>
