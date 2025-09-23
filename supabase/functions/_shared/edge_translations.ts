@@ -86,7 +86,9 @@ export const edgeTranslations = {
     "email_admin_created_user_body_p3": "You can log in using the following details:",
     "email_admin_created_user_body_p4": "<strong>Email:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Password:</strong> {initialPassword}",
-    "email_admin_created_user_body_p6": "For security reasons, we strongly recommend that you change this password immediately after your first login. To login and change your password, please visit the login page and go to \"Settings\" and then \"Security\" and enter a new password. If you have any questions, please contact support on our \"Help\" page.",
+    "email_admin_created_user_body_p6": "For security reasons, we strongly recommend that you change this password immediately after your first login.",
+    "email_admin_created_user_body_login_instructions": (interpolation: { loginPageUrl: string }) => `To login and change your password, please visit <a href="${interpolation.loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.`,
+    "email_admin_created_user_body_help_instructions": "If you have any questions, please contact support on our \"Help\" page.",
 
     "message_otp_sent_successfully": "OTP sent successfully!",
     "message_invalid_otp_or_used": "Invalid OTP or OTP already used.",
@@ -237,7 +239,9 @@ export const edgeTranslations = {
     "email_admin_created_user_body_p3": "Puedes iniciar sesión con los siguientes datos:",
     "email_admin_created_user_body_p4": "<strong>Correo electrónico:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Contraseña:</strong> {initialPassword}",
-    "email_admin_created_user_body_p6": "Por razones de seguridad, te recomendamos encarecidamente que cambies esta contraseña inmediatamente después de tu primer inicio de sesión. Para iniciar sesión y cambiar tu contraseña, visita la página de inicio de sesión y ve a \"Configuración\" y luego a \"Seguridad\" e introduce una nueva contraseña. Si tienes alguna pregunta, ponte en contacto con el servicio de asistencia en nuestra página de \"Ayuda\".",
+    "email_admin_created_user_body_p6": "Por razones de seguridad, te recomendamos encarecidamente que cambies esta contraseña inmediatamente después de tu primer inicio de sesión.",
+    "email_admin_created_user_body_login_instructions": (interpolation: { loginPageUrl: string }) => `Para iniciar sesión y cambiar tu contraseña, visita <a href="${interpolation.loginPageUrl}">la página de inicio de sesión</a> y ve a "Configuración" y luego a "Seguridad" e introduce una nueva contraseña.`,
+    "email_admin_created_user_body_help_instructions": "Si tienes alguna pregunta, ponte en contacto con el servicio de asistencia en nuestra página de \"Ayuda\".",
 
     "message_otp_sent_successfully": "¡OTP enviado con éxito!",
     "message_invalid_otp_or_used": "OTP inválido o ya utilizado.",
@@ -387,7 +391,9 @@ export const edgeTranslations = {
     "email_admin_created_user_body_p3": "Vous pouvez vous connecter en utilisant les détails suivants :",
     "email_admin_created_user_body_p4": "<strong>E-mail :</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Mot de passe :</strong> {initialPassword}",
-    "email_admin_created_user_body_p6": "Pour des raisons de sécurité, nous vous recommandons fortement de changer ce mot de passe immédiatement après votre première connexion. Pour vous connecter et changer votre mot de passe, veuillez visiter la page de connexion et aller dans \"Paramètres\" puis \"Sécurité\" et entrer un nouveau mot de passe. Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".",
+    "email_admin_created_user_body_p6": "Pour des raisons de sécurité, nous vous recommandons fortement de changer ce mot de passe immédiatement après votre première connexion.",
+    "email_admin_created_user_body_login_instructions": (interpolation: { loginPageUrl: string }) => `Pour vous connecter et changer votre mot de passe, veuillez visiter <a href="${interpolation.loginPageUrl}">la page de connexion</a> et aller dans "Paramètres" puis "Sécurité" et entrer un nouveau mot de passe.`,
+    "email_admin_created_user_body_help_instructions": "Si vous avez des questions, veuillez contacter le support sur notre page \"Aide\".",
 
     "message_otp_sent_successfully": "OTP envoyé avec succès !",
     "message_invalid_otp_or_used": "OTP invalide ou déjà utilisé.",
@@ -537,7 +543,9 @@ export const edgeTranslations = {
     "email_admin_created_user_body_p3": "يمكنك تسجيل الدخول باستخدام التفاصيل التالية:",
     "email_admin_created_user_body_p4": "<strong>البريد الإلكتروني:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>كلمة المرور:</strong> {initialPassword}",
-    "email_admin_created_user_body_p6": "لأسباب أمنية، نوصي بشدة بتغيير كلمة المرور هذه فور تسجيل الدخول الأول. لتسجيل الدخول وتغيير كلمة المرور، يرجى زيارة صفحة تسجيل الدخول ثم الانتقال إلى \"الإعدادات\" ثم \"الأمان\" وإدخال كلمة مرور جديدة. إذا كان لديك أي أسئلة، يرجى الاتصال بالدعم على صفحة \"المساعدة\" الخاصة بنا.",
+    "email_admin_created_user_body_p6": "لأسباب أمنية، نوصي بشدة بتغيير كلمة المرور هذه فور تسجيل الدخول الأول.",
+    "email_admin_created_user_body_login_instructions": (interpolation: { loginPageUrl: string }) => `لتسجيل الدخول وتغيير كلمة المرور، يرجى زيارة <a href="${interpolation.loginPageUrl}">صفحة تسجيل الدخول</a> ثم الانتقال إلى "الإعدادات" ثم "الأمان" وإدخال كلمة مرور جديدة.`,
+    "email_admin_created_user_body_help_instructions": "إذا كان لديك أي أسئلة، يرجى الاتصال بالدعم على صفحة \"المساعدة\" الخاصة بنا.",
 
     "message_otp_sent_successfully": "تم إرسال رمز OTP بنجاح!",
     "message_invalid_otp_or_used": "رمز OTP غير صالح أو تم استخدامه بالفعل.",
