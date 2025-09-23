@@ -60,10 +60,10 @@ export const edgeTranslations = {
     "analysis_failed_message": (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
-    "email_subject_invitation": (inviterName: string) => `You're invited to ContractAnalyser by ${inviterName}!`,
-    "email_invitation_body_p1": (inviterName: string) => `${inviterName} has invited you to join and start using their ContractAnalyser subscription!`,
+    "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `You're invited to ContractAnalyser by ${inviterName}!`, // MODIFIED
+    "email_invitation_body_p1": ({ inviterName }: { inviterName: string }) => `${inviterName} has invited you to join and start using their ContractAnalyser subscription!`, // MODIFIED
     "email_invitation_body_p2": "Click the link below to accept the invitation and get started:",
-    "email_accept_invitation_button": "Accept Invitation",
+    "email_accept_invitation_button": "Accept Invitation", // ADDED
     "email_invitation_body_p3": "If you don't have an account yet, you will be prompted to sign up first.",
     "email_invitation_body_p4": "Thank you for using ContractAnalyser.",
     "email_invitation_body_p5": "The ContractAnalyser Team",
@@ -211,10 +211,10 @@ export const edgeTranslations = {
     "analysis_failed_message": (contractName: string) => `El análisis del contrato "${contractName}" falló. Por favor, inténtelo de nuevo o póngase en contacto con soporte.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
-    "email_subject_invitation": (inviterName: string) => `¡Has sido invitado a ContractAnalyser por ${inviterName}!`,
-    "email_invitation_body_p1": (inviterName: string) => `¡${inviterName} te ha invitado a unirte y empezar a usar su suscripción a ContractAnalyser!`,
+    "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `¡Has sido invitado a ContractAnalyser por ${inviterName}!`, // MODIFIED
+    "email_invitation_body_p1": ({ inviterName }: { inviterName: string }) => `¡${inviterName} te ha invitado a unirte y empezar a usar su suscripción a ContractAnalyser!`, // MODIFIED
     "email_invitation_body_p2": "Haz clic en el siguiente enlace para aceptar la invitación y empezar:",
-    "email_accept_invitation_button": "Aceptar Invitación",
+    "email_accept_invitation_button": "Aceptar Invitación", // ADDED
     "email_invitation_body_p3": "Si aún no tienes una cuenta, se te pedirá que te registres primero.",
     "email_invitation_body_p4": "Gracias por usar ContractAnalyser.",
     "email_invitation_body_p5": "El Equipo de ContractAnalyser",
@@ -361,10 +361,10 @@ export const edgeTranslations = {
     "analysis_failed_message": (contractName: string) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
-    "email_subject_invitation": (inviterName: string) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`,
-    "email_invitation_body_p1": (inviterName: string) => `${inviterName} vous a invité à rejoindre et à commencer à utiliser leur abonnement ContractAnalyser !`,
+    "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`, // MODIFIED
+    "email_invitation_body_p1": ({ inviterName }: { inviterName: string }) => `${inviterName} vous a invité à rejoindre et à commencer à utiliser leur abonnement ContractAnalyser !`, // MODIFIED
     "email_invitation_body_p2": "Cliquez sur le lien ci-dessous pour accepter l'invitation et commencer :",
-    "email_accept_invitation_button": "Accepter l'invitation",
+    "email_accept_invitation_button": "Accepter l'invitation", // ADDED
     "email_invitation_body_p3": "Si vous n'avez pas encore de compte, il vous sera demandé de vous inscrire d'abord.",
     "email_invitation_body_p4": "Merci d'utiliser ContractAnalyser.",
     "email_invitation_body_p5": "L'équipe ContractAnalyser",
@@ -511,10 +511,10 @@ export const edgeTranslations = {
     "analysis_failed_message": (contractName: string) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
-    "email_subject_invitation": (inviterName: string) => `أنت مدعو إلى ContractAnalyser بواسطة ${inviterName}!`,
-    "email_invitation_body_p1": (inviterName: string) => `لقد دعاك ${inviterName} للانضمام والبدء في استخدام اشتراكهم في ContractAnalyser!`,
+    "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `أنت مدعو إلى ContractAnalyser بواسطة ${inviterName}!`, // MODIFIED
+    "email_invitation_body_p1": ({ inviterName }: { inviterName: string }) => `لقد دعاك ${inviterName} للانضمام والبدء في استخدام اشتراكهم في ContractAnalyser!`, // MODIFIED
     "email_invitation_body_p2": "انقر على الرابط أدناه لقبول الدعوة والبدء:",
-    "email_accept_invitation_button": "قبول الدعوة",
+    "email_accept_invitation_button": "قبول الدعوة", // ADDED
     "email_invitation_body_p3": "إذا لم يكن لديك حساب بعد، سيُطلب منك التسجيل أولاً.",
     "email_invitation_body_p4": "شكراً لاستخدامك ContractAnalyser.",
     "email_invitation_body_p5": "فريق ContractAnalyser",
@@ -576,7 +576,7 @@ export const edgeTranslations = {
 
     // ADDED: Notification message templates
     payment_successful_message: (interpolation: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${interpolation.productName} بنجاح.`,
-    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${interpolation.oldPlan} إلى ${interpolation.newPlan}.`,
+    subscription_plan_changed_message: (interpolation: { oldPlan: string; newPlan: string }) => `لقد تغيرت خطة اشتراكك من ${interpolation.oldPlan} إلى ${interpolation.productName}.`,
     subscription_active_message: (interpolation: { productName: string }) => `اشتراكك في ${interpolation.productName} نشط الآن.`,
     subscription_alert_message: (interpolation: { productName: string; status: string }) => `حالة اشتراكك في ${interpolation.productName} هي الآن ${interpolation.status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
     subscription_canceled_at_period_end_message: (interpolation: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${interpolation.productName} وسينتهي في ${interpolation.endDate}.`,
@@ -625,7 +625,7 @@ export function getTranslatedMessage(key: string, lang: string, interpolation: R
   let message = messageTemplate;
   for (const [k, v] of Object.entries(interpolation)) {
     if (typeof message === 'string') {
-      message = message.replace(`{${k}}`, v);
+      message = message.replace(`{${k}}`, v ?? '');
     }
   }
   return message;
