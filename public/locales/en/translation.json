@@ -1290,7 +1290,7 @@
   "no_report_url_provided": "No report URL provided.",
   "failed_to_fetch_report": "Failed to fetch report (Status: {{status}}, {{statusText}}).",
   "link_expired_invalid": "Link expired or invalid.",
-  "loading_report": "Loading report",
+  "loading_report": "Loading report...",
   "error_loading_report": "Error Loading Report",
 
   "maintenance_page_title": "Site Under Maintenance",
