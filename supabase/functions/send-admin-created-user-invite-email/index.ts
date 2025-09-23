@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     const { recipientEmail, recipientName, initialPassword, userPreferredLanguage } = await req.json();
 
     console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
-    console.log('send-admin-created-user-invite-email: Recipient Name received:', recipientName); // Log the received recipientName
+    console.log('send-admin-created-user-invite-email: Recipient Name received:', recipientName);
 
     if (!recipientEmail || !initialPassword || !userPreferredLanguage) {
       console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword, userPreferredLanguage');
@@ -51,13 +51,16 @@ Deno.serve(async (req) => {
     const appBaseUrl = Deno.env.get('APP_BASE_URL');
     const loginPageUrl = `${appBaseUrl}/login`; // Construct the login page URL
 
+    // Ensure recipientName is a string, with a fallback
+    const finalRecipientName = String(recipientName || recipientEmail || 'User'); // MODIFIED: Ensure it's a string with fallback
+
     try {
       const { data, error } = await resend.emails.send({
-        from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
+        from: 'ContractAnalyser <noreply@mail.contractanalyser.com>',
         to: [recipientEmail],
         subject: getTranslatedMessage('email_admin_created_user_subject', userPreferredLanguage),
         html: `
-          <p>${getTranslatedMessage('email_admin_created_user_body_p1', userPreferredLanguage, { recipientName: String(recipientName || recipientEmail) })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p1', userPreferredLanguage, { recipientName: finalRecipientName })}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p2', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p3', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p4', userPreferredLanguage, { recipientEmail: recipientEmail })}</p>
