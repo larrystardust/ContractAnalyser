@@ -1303,6 +1303,6 @@
   "maintenance_mode_enabled": "Maintenance mode is ENABLED",
   "maintenance_mode_disabled": "Maintenance mode is DISABLED",
 
-  "preferences_test_title": "Preferences Test",
-  "preferences_test_description": "This is a test to see if the component renders."
+  "category_dispute_resolution": "Dispute Resolution",
+  "category_intellectual_property": "Intellectual Property"
 }
