@@ -4,7 +4,6 @@ import { Resend } from 'npm:resend@6.0.1';
 import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 // Initialize Supabase client with service role key for any potential DB interactions
-// (though not strictly needed for this function's current purpose of sending email)
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -36,39 +35,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, initialPassword } = await req.json();
+    const { recipientEmail, recipientName, initialPassword, userPreferredLanguage } = await req.json(); // ADDED userPreferredLanguage
 
     console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
 
-    if (!recipientEmail || !initialPassword) {
-      console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword');
+    if (!recipientEmail || !initialPassword || !userPreferredLanguage) { // ADDED userPreferredLanguage to check
+      console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword, userPreferredLanguage');
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
 
-    // ADDED: Fetch recipient's preferred language
-    let recipientPreferredLanguage = 'en'; // Default to English
-    const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: recipientEmail, page: 1, perPage: 1 });
-    let userId = null;
-    if (!authUserError && authUser.users.length > 0) {
-      userId = authUser.users[0].id;
-    }
+    // REMOVED: Logic to fetch recipient's preferred language, as it's now passed from admin-create-user
 
-    if (userId) {
-      const { data: recipientProfile, error: recipientProfileError } = await supabase
-        .from('profiles')
-        .select('language_preference')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (recipientProfileError) {
-        console.warn('Error fetching recipient profile for language:', recipientProfileError);
-      } else if (recipientProfile?.language_preference) {
-        recipientPreferredLanguage = recipientProfile.language_preference;
-      }
-    }
-    // END ADDED
-
-    console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail}.`);
+    console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail} in language ${userPreferredLanguage}.`);
 
     // Get APP_BASE_URL from environment variables
     const appBaseUrl = Deno.env.get('APP_BASE_URL');
@@ -78,29 +56,29 @@ Deno.serve(async (req) => {
       const { data, error } = await resend.emails.send({
         from: 'ContractAnalyser <noreply@mail.contractanalyser.com>', // Replace with your verified sender email
         to: [recipientEmail],
-        subject: getTranslatedMessage('email_admin_created_user_subject', recipientPreferredLanguage),
+        subject: getTranslatedMessage('email_admin_created_user_subject', userPreferredLanguage),
         html: `
-          <p>${getTranslatedMessage('email_admin_created_user_body_p1', recipientPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
-          <p>${getTranslatedMessage('email_admin_created_user_body_p2', recipientPreferredLanguage)}</p>
-          <p>${getTranslatedMessage('email_admin_created_user_body_p3', recipientPreferredLanguage)}</p>
-          <p>${getTranslatedMessage('email_admin_created_user_body_p4', recipientPreferredLanguage, { recipientEmail: recipientEmail })}</p>
-          <p>${getTranslatedMessage('email_admin_created_user_body_p5', recipientPreferredLanguage, { initialPassword: initialPassword })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p1', userPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p2', userPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p3', userPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p4', userPreferredLanguage, { recipientEmail: recipientEmail })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p5', userPreferredLanguage, { initialPassword: initialPassword })}</p>
           <p style="color: red; font-weight: bold;">
-            ${getTranslatedMessage('email_admin_created_user_body_p6', recipientPreferredLanguage)}
+            ${getTranslatedMessage('email_admin_created_user_body_p6', userPreferredLanguage)}
           </p>
           <p>To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.</p>
           <p>If you have any questions, please contact support on our "Help" page.</p>
-          <p>${getTranslatedMessage('email_thank_you', recipientPreferredLanguage)}</p>
-          <p>${getTranslatedMessage('email_team', recipientPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_thank_you', userPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_team', userPreferredLanguage)}</p>
         `,
       });
 
       if (error) {
         console.error('send-admin-created-user-invite-email: Error sending email via Resend:', error);
-        return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', recipientPreferredLanguage, { errorMessage: `Failed to send invitation email: ${error.message}` }) });
+        return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: `Failed to send invitation email: ${error.message}` }) });
       }
       console.log('send-admin-created-user-invite-email: Email sent successfully via Resend:', data);
-      return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', recipientPreferredLanguage) });
+      return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', userPreferredLanguage) });
 
     } catch (emailSendError: any) {
       console.error('send-admin-created-user-invite-email: Caught unexpected error during email sending:', emailSendError);
