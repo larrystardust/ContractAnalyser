@@ -50,6 +50,8 @@ export const edgeTranslations = {
     "category_enforceability": "Enforceability",
     "category_drafting": "Drafting",
     "category_commercial": "Commercial",
+    "category_dispute_resolution": "Dispute Resolution", // ADDED
+    "category_intellectual_property": "Intellectual Property", // ADDED
     // EMAIL SUBJECT KEY
     "email_subject_report_ready": (contractName: string) => `Your Contract Analysis Report for ${contractName} is Ready!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
@@ -198,6 +200,8 @@ export const edgeTranslations = {
     "category_enforceability": "Aplicabilidad",
     "category_drafting": "Redacción",
     "category_commercial": "Comercial",
+    "category_dispute_resolution": "Resolución de Disputas", // ADDED
+    "category_intellectual_property": "Propiedad Intelectual", // ADDED
     // EMAIL SUBJECT KEY
     "email_subject_report_ready": (contractName: string) => `¡Su Informe de Análisis de Contrato para ${contractName} está Listo!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
@@ -345,6 +349,8 @@ export const edgeTranslations = {
     "category_enforceability": "Applicabilité",
     "category_drafting": "Rédaction",
     "category_commercial": "Commercial",
+    "category_dispute_resolution": "Résolution des Litiges", // ADDED
+    "category_intellectual_property": "Propriété Intellectuelle", // ADDED
     // EMAIL SUBJECT KEY
     "email_subject_report_ready": (contractName: string) => `Votre Rapport d'Analyse de Contrat pour ${contractName} est Prêt !`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
@@ -492,6 +498,8 @@ export const edgeTranslations = {
     "category_enforceability": "قابلية التنفيذ",
     "category_drafting": "الصياغة",
     "category_commercial": "تجاري",
+    "category_dispute_resolution": "حل النزاعات", // ADDED
+    "category_intellectual_property": "الملكية الفكرية", // ADDED
     // EMAIL SUBJECT KEY
     "email_subject_report_ready": (contractName: string) => `تقرير تحليل العقد الخاص بك لـ ${contractName} جاهز!`,
     // NOTIFICATION MESSAGE KEYS (MOVED FROM contract-analyzer/index.ts)
