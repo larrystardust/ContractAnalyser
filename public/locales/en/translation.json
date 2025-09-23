@@ -476,6 +476,8 @@
   "category_enforceability": "Enforceability",
   "category_drafting": "Drafting",
   "category_commercial": "Commercial",
+  "category_dispute_resolution": "Dispute Resolution", 
+  "category_intellectual_property": "Intellectual Property",
   
   "jurisdiction_uk": "United Kingdom",
   "jurisdiction_eu": "European Union",
