@@ -34,29 +34,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, invitationLink, inviterName: receivedInviterName, userPreferredLanguage } = await req.json();
+    const requestBody = await req.json();
+    console.log('send-invitation-email: Received requestBody:', requestBody); // Log the full request body
 
-    // CRITICAL FIX: Ensure inviterName is a string, handling potential nested object
-    let inviterName: string;
-    if (typeof receivedInviterName === 'object' && receivedInvriterName !== null && 'inviterName' in receivedInvriterName) {
-      // If it's an object and contains 'inviterName' property, use that
-      inviterName = String(receivedInvriterName.inviterName);
-    } else {
-      // Otherwise, assume it's already the string or handle as fallback
-      inviterName = String(receivedInvriterName);
-    }
+    const { recipientEmail, invitationLink, inviterName, userPreferredLanguage } = requestBody;
 
-    if (!recipientEmail || !invitationLink || !inviterName) {
+    // Robustly ensure inviterName is a string.
+    // If inviterName is an object like { inviterName: "Actual Name" }, this will extract it.
+    // If it's a simple string, it will remain a string.
+    // If it's null/undefined/missing, it will default to 'A user'.
+    const finalInviterName = String(
+      (typeof inviterName === 'object' && inviterName !== null && 'inviterName' in inviterName)
+        ? (inviterName as { inviterName: string }).inviterName
+        : inviterName ?? 'A user' // Fallback if inviterName is null/undefined or not an object
+    );
+
+    if (!recipientEmail || !invitationLink || !finalInviterName) {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
 
-    console.log(`Attempting to send invitation email to ${recipientEmail} from ${inviterName}`);
+    console.log(`Attempting to send invitation email to ${recipientEmail} from ${finalInviterName}`);
 
     // Translate subject and body
-    const subject = getTranslatedMessage('email_subject_invitation', userPreferredLanguage, { inviterName: inviterName });
+    const subject = getTranslatedMessage('email_subject_invitation', userPreferredLanguage, { inviterName: finalInviterName });
     const htmlBody = `
           <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
-          <p>${getTranslatedMessage('email_invitation_body_p1', userPreferredLanguage, { inviterName: inviterName })}</p>
+          <p>${getTranslatedMessage('email_invitation_body_p1', userPreferredLanguage, { inviterName: finalInviterName })}</p>
           <p>${getTranslatedMessage('email_invitation_body_p2', userPreferredLanguage)}</p>
           <p><a href="${invitationLink}">${getTranslatedMessage('email_accept_invitation_button', userPreferredLanguage)}</a></p>
           <p>${getTranslatedMessage('email_invitation_body_p3', userPreferredLanguage)}</p>
