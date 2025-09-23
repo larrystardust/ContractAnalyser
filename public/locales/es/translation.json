@@ -434,6 +434,7 @@
   "sample_executive_summary_prefix_6": "Este contrato (ID: 6) ha sido analizado. Contiene varios problemas de cumplimiento y riesgo en las jurisdicciones especificadas. La puntuación general de cumplimiento es {{complianceScore}}%. Se recomienda una revisión adicional de hallazgos específicos.",
   "sample_data_protection_impact_detailed": "El contrato implica actividades de procesamiento de datos que caen bajo regulaciones relevantes de protección de datos. Las cláusulas específicas necesitan revisión para garantizar el cumplimiento total con los mecanismos de transferencia de datos y los derechos del interesado.",
   "sample_data_protection_impact_minimal": "El impacto en la protección de datos es mínimo ya que el contrato no implica un procesamiento significativo de datos personales o transferencias transfronterizas en jurisdicciones reguladas.",
+  
   "sample_applicable_law_UK_1": "Ley del Reino Unido 1",
   "sample_applicable_law_UK_2": "Ley del Reino Unido 2",
   "sample_applicable_law_EU_1": "Ley de la UE 1",
