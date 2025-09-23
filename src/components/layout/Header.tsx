@@ -6,6 +6,7 @@ import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-rea
 import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
+import LanguageSelector from '../ui/LanguageSelector'; // ADDED: Import LanguageSelector
 
 interface HeaderProps {
   onOpenHelpModal: () => void;
@@ -217,6 +218,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg animate-slideDown">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
+              {/* ADDED: Language Selector for mobile */}
+              <div className="mb-4">
+                <LanguageSelector />
+              </div>
               {session?.user ? (
                 <>
                   <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('dashboard')}</Link> {/* MODIFIED */}
