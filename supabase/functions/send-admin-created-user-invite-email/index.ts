@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     const loginPageUrl = `${appBaseUrl}/login`; // Construct the login page URL
 
     // Ensure recipientName is a string, with a fallback
-    const finalRecipientName = String(recipientName || recipientEmail || 'User'); // MODIFIED: Ensure it's a string with fallback
+    const finalRecipientName = String(recipientName || recipientEmail || 'User');
 
     try {
       const { data, error } = await resend.emails.send({
