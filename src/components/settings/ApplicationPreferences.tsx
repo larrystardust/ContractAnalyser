@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // MODIFIED: Added useCallback
 import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
@@ -8,24 +8,15 @@ import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
-// REMOVED: import { useUserProfile } from '../../hooks/useUserProfile'; // ADDED: Import useUserProfile
-
-// REMOVED: notificationTypes constant (it belongs in NotificationSettings.tsx)
 
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { t, i18n } = useTranslation();
-  // REMOVED: const { emailReportsEnabled: initialEmailReportsEnabled, autoStartAnalysisEnabled: initialAutoStartAnalysisEnabled, loading: loadingUserProfile } = useUserProfile();
-
-  // REMOVED: preferences state and updatePreference function
-  // const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => { /* ... */ });
 
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
-  // MODIFIED: Initialize emailReportsEnabled to false
   const [emailReportsEnabled, setEmailReportsEnabled] = useState(false);
-  // MODIFIED: Initialize autoStartAnalysisEnabled to true
   const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(true);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -33,69 +24,59 @@ const ApplicationPreferences: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  // MODIFIED: Refactor fetchPreferences into a useCallback hook
+  const fetchPreferences = useCallback(async () => {
+    if (!session?.user?.id) {
+      setIsLoading(false);
+      console.log("AP: No user ID, skipping fetch.");
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      console.log("AP: Fetched profile data:", data);
+
+      const dbLanguage = data?.language_preference || i18n.language;
+      setSelectedLanguage(dbLanguage);
+      console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`);
+
+      // Only change i18n.language if it's different from DB value
+      if (i18n.language !== dbLanguage) {
+        console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
+        i18n.changeLanguage(dbLanguage);
+      } else {
+        console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
+      }
+
+      const dbTheme = (data?.theme_preference as 'light' | 'dark' | 'system') || 'system';
+      setSelectedTheme(dbTheme);
+      console.log(`AP: Initializing selectedTheme to: ${dbTheme}`);
+
+      setEmailReportsEnabled(data?.email_reports_enabled || false);
+      setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
+
+    } catch (err: any) {
+      console.error('Error fetching notification preferences:', err);
+      setError(err.message || t('failed_to_load_notification_preferences'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [session?.user?.id, supabase, t, i18n]); // Added i18n to dependencies
+
   useEffect(() => {
-    const fetchPreferences = async () => { // Renamed from fetchNotificationPreferences
-      if (!session?.user?.id) {
-        setIsLoading(false);
-        console.log("AP: No user ID, skipping fetch.");
-        return;
-      }
-      setIsLoading(true);
-      setError(null);
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('profiles')
-          .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled') // MODIFIED: Select email_reports_enabled and auto_start_analysis_enabled
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          throw fetchError;
-        }
-
-        console.log("AP: Fetched profile data:", data);
-
-        // REMOVED: Logic for setting 'preferences' state (it's for NotificationSettings)
-        // if (data?.notification_settings) { /* ... */ }
-
-        // MODIFIED: Initialize selectedLanguage from DB or current i18n.language
-        const dbLanguage = data?.language_preference || i18n.language;
-        setSelectedLanguage(dbLanguage);
-        console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`);
-
-        // MODIFIED: Only change i18n.language if it's different from DB value
-        if (i18n.language !== dbLanguage) {
-          console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
-          i18n.changeLanguage(dbLanguage);
-        } else {
-          console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
-        }
-
-        // ADDED: Initialize selectedTheme from DB
-        const dbTheme = (data?.theme_preference as 'light' | 'dark' | 'system') || 'system';
-        setSelectedTheme(dbTheme);
-        console.log(`AP: Initializing selectedTheme to: ${dbTheme}`);
-
-        // ADDED: Initialize emailReportsEnabled from DB
-        setEmailReportsEnabled(data?.email_reports_enabled || false);
-        // ADDED: Initialize autoStartAnalysisEnabled from DB
-        setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
-
-
-      } catch (err: any) {
-        console.error('Error fetching notification preferences:', err);
-        setError(err.message || t('failed_to_load_notification_preferences'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchPreferences();
-  }, [session?.user?.id, supabase, t]);
+  }, [fetchPreferences]); // Now fetchPreferences is a dependency
 
-  // REMOVED: updatePreference function (it's for NotificationSettings)
-  // const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => { /* ... */ };
-
-  // ToggleSwitch component (kept as it's generic and useful)
   const ToggleSwitch: React.FC<{
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -117,7 +98,6 @@ const ApplicationPreferences: React.FC = () => {
     </button>
   );
 
-  // Handle saving preferences
   const handleSavePreferences = async () => {
     if (!session?.user?.id) {
       setError(t('must_be_logged_in_to_save_preferences'));
@@ -135,11 +115,10 @@ const ApplicationPreferences: React.FC = () => {
         .upsert(
           {
             id: session.user.id,
-            // REMOVED: notification_settings: preferences, (it's for NotificationSettings)
             language_preference: selectedLanguage,
             theme_preference: selectedTheme,
-            email_reports_enabled: emailReportsEnabled, // ADDED: Save emailReportsEnabled
-            auto_start_analysis_enabled: autoStartAnalysisEnabled, // ADDED: Save autoStartAnalysisEnabled
+            email_reports_enabled: emailReportsEnabled,
+            auto_start_analysis_enabled: autoStartAnalysisEnabled,
           },
           { onConflict: 'id' }
         );
@@ -150,6 +129,10 @@ const ApplicationPreferences: React.FC = () => {
       }
       setMessage(t('notification_preferences_saved_successfully'));
       console.log("AP: Language preference saved successfully.");
+
+      // MODIFIED: Call fetchPreferences to re-sync state with DB
+      await fetchPreferences();
+
     } catch (err: any) {
       console.error('Error saving notification preferences:', err);
       setError(err.message || t('failed_to_save_notification_preferences'));
@@ -158,8 +141,7 @@ const ApplicationPreferences: React.FC = () => {
     }
   };
 
-  // MODIFIED: Check loadingUserProfile in isLoading condition
-  if (isLoading) { // Removed loadingUserProfile from here as it's no longer directly used for loading state
+  if (isLoading) {
     return (
       <Card>
         <CardBody className="text-center py-8">
