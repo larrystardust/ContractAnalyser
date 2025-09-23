@@ -38,7 +38,7 @@ export const getJurisdictionFlag = (jurisdiction: Jurisdiction): string => {
     case 'Australia':
       return '🇦🇺';
     case 'Islamic Law': // ADDED
-      return '🇸🇦'; // ADDED: Using Saudi Arabia flag as a representative
+      return '🌙'; // ADDED: Using Saudi Arabia flag as a representative
     case 'Others':
       return '🌙';
     default:
