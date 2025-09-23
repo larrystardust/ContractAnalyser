@@ -1290,7 +1290,7 @@
   "no_report_url_provided": "Aucune URL de rapport fournie.",
   "failed_to_fetch_report": "Échec de la récupération du rapport (Statut : {{status}}, {{statusText}}).",
   "link_expired_invalid": "Lien expiré ou invalide.",
-  "loading_report": "Chargement du rapport",
+  "loading_report": "Chargement du rapport...",
   "error_loading_report": "Erreur de Chargement du Rapport",
 
   "maintenance_page_title": "Site en Maintenance",
