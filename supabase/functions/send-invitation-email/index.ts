@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
           <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
           <p>${getTranslatedMessage('email_invitation_body_p1', userPreferredLanguage, { inviterName: inviterName })}</p>
           <p>${getTranslatedMessage('email_invitation_body_p2', userPreferredLanguage)}</p>
-          <p><a href="${invitationLink}">${getTranslatedMessage('email_accept_invitation_button', userPreferredLanguage)}</a></p> // MODIFIED: Changed link text key
+          <p><a href="${invitationLink}">${getTranslatedMessage('email_accept_invitation_button', userPreferredLanguage)}</a></p>
           <p>${getTranslatedMessage('email_invitation_body_p3', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_invitation_body_p4', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_invitation_body_p5', userPreferredLanguage)}</p>
