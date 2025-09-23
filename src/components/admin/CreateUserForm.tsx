@@ -5,7 +5,7 @@ import adminService, { AvailableSubscription } from '../../services/adminService
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 // A simplified list of country codes for demonstration.
 const countryCodes = [
@@ -102,7 +102,7 @@ interface CreateUserFormProps {
 }
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, allSubscriptions }) => {
-  const { t, i18n } = useTranslation(); // ADDED i18n
+  const { t, i18n } = useTranslation();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -111,9 +111,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     full_name: '',
     business_name: '',
     mobile_phone_number: '',
-    country_code: countryCodes[0].code, // FIXED: Initialize with a valid country code
-    is_admin: false,
-    default_jurisdictions: [] as Jurisdiction[],
+    country_code: countryCodes[0].code,
+    is_admin: false, // ADDED: Initialize is_admin
+    default_jurisdictions: [] as Jurisdiction[], // ADDED: Initialize default_jurisdictions
     send_invitation_email: true,
   });
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
@@ -186,14 +186,14 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         business_name: formData.business_name,
         mobile_phone_number: formData.mobile_phone_number,
         country_code: formData.country_code,
-        is_admin: formData.is_admin,
+        is_admin: formData.is_admin, // ADDED: Pass is_admin
+        default_jurisdictions: formData.default_jurisdictions, // ADDED: Pass default_jurisdictions
         email_confirm: true,
-        default_jurisdictions: formData.default_jurisdictions,
-        price_id: selectedPriceId,
-        role: selectedRole,
+        price_id: selectedPriceId, // ADDED: Pass selectedPriceId
+        role: selectedRole, // ADDED: Pass selectedRole
         send_invitation_email: formData.send_invitation_email,
         initial_password: formData.password,
-        adminLanguage: i18n.language, // ADDED: Pass admin's current UI language
+        adminLanguage: i18n.language,
       });
 
       if (grantSingleUseCredit) {
@@ -208,7 +208,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         full_name: '',
         business_name: '',
         mobile_phone_number: '',
-        country_code: countryCodes[0].code, // Reset to valid default
+        country_code: countryCodes[0].code,
         is_admin: false,
         default_jurisdictions: [],
         send_invitation_email: true,
