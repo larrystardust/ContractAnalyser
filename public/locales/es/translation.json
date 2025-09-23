@@ -457,6 +457,7 @@
   "risk_level_none": "Sin Riesgo",
   "risk_level_unknown": "Desconocido",
   "loading_reports": "Cargando informes",
+  
   "category_compliance": "Cumplimiento Normativo",
   "category_risk": "Riesgo Legal",
   "category_data_protection": "Protección de Datos",
@@ -465,6 +466,7 @@
   "category_commercial": "Comercial",
   "category_dispute_resolution": "Resolución de Disputas",
   "category_intellectual_property": "Propiedad Intelectual",
+  
   "jurisdiction_uk": "Reino Unido",
   "jurisdiction_eu": "Unión Europea",
   "jurisdiction_ireland": "República de Irlanda",
