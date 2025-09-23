@@ -1289,7 +1289,7 @@
   "no_report_url_provided": "لم يتم توفير رابط التقرير.",
   "failed_to_fetch_report": "فشل في جلب التقرير (الحالة: {{status}}, {{statusText}}).",
   "link_expired_invalid": "الرابط منتهي الصلاحية أو غير صالح.",
-  "loading_report": "جاري تحميل التقرير",
+  "loading_report": "جاري تحميل التقرير...",
   "error_loading_report": "خطأ في تحميل التقرير",
 
   "maintenance_page_title": "الموقع تحت الصيانة",
