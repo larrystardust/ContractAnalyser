@@ -88,9 +88,9 @@ const AdminUsersPage: React.FC = () => {
     }
   };
 
-  const handleManageSubscription = async (userId: string, subscriptionId: string | null, role: 'owner' | 'member' | null) => {
+  const handleManageSubscription = async (userId: string, priceId: string | null, role: 'owner' | 'member' | null) => {
     try {
-      await adminService.manageUserSubscription(userId, subscriptionId, role);
+      await adminService.manageUserSubscription(userId, priceId, role);
       alert(t('user_subscription_role_updated_successfully')); // MODIFIED
       fetchUsersAndSubscriptions(); // Refresh the list to show updated subscription/role
     } catch (err: any) {
@@ -133,14 +133,17 @@ const AdminUsersPage: React.FC = () => {
       key: 'subscription_details',
       header: t('subscription_label'), // MODIFIED
       render: (item: AdminProfile) => {
-        if (item.single_use_credits > 0) {
-          return t('single_use_credits_display', { credits: item.single_use_credits }); // MODIFIED: Use translation key with interpolation
-        }
-        if (item.subscription_details) {
+        // Prioritize active subscription details
+        if (item.subscription_details && (item.subscription_details.status === 'active' || item.subscription_details.status === 'trialing')) {
           const sub = allSubscriptions.find(s => s.subscription_id === item.subscription_details?.subscription_id);
-          return `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`; // MODIFIED: Translate product name and status
+          return `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`;
         }
-        return t('none'); // MODIFIED
+        // If no active subscription, check for single-use credits
+        if (item.single_use_credits > 0) {
+          return t('single_use_credits_display', { credits: item.single_use_credits });
+        }
+        // If neither, display 'None'
+        return t('none');
       },
     },
     {
@@ -197,6 +200,26 @@ const AdminUsersPage: React.FC = () => {
         error={error}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        customActions={(contract: AdminProfile) => (
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleEdit(contract)}
+              icon={<UserPlus className="h-4 w-4" />}
+            >
+              {t('edit_button')}
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleDelete(contract)}
+              icon={<Trash2 className="h-4 w-4" />}
+            >
+              {t('delete_button')}
+            </Button>
+          </>
+        )}
       />
 
       {selectedUser && (
