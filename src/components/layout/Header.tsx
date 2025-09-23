@@ -155,10 +155,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
           <div className="md:hidden flex items-center space-x-2">
             {/* Language Selector for mobile */}
+            {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 w-24" {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1 w-24"
             >
               <option value="en">ENGLISH</option>
               <option value="fr">FRANCAIS</option>
