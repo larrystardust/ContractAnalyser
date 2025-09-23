@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import { ArrowLeft, UserPlus, Trash2 } from 'lucide-react'; // MODIFIED: Added Trash2
 import AdminDataTable from '../components/admin/AdminDataTable';
 import UserForm from '../components/admin/UserForm';
 import CreateUserForm from '../components/admin/CreateUserForm';
