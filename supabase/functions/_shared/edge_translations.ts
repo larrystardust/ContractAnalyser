@@ -63,6 +63,7 @@ export const edgeTranslations = {
     "email_subject_invitation": (inviterName: string) => `You're invited to ContractAnalyser by ${inviterName}!`,
     "email_invitation_body_p1": (inviterName: string) => `${inviterName} has invited you to join and start using their ContractAnalyser subscription!`,
     "email_invitation_body_p2": "Click the link below to accept the invitation and get started:",
+    "email_accept_invitation_button": "Accept Invitation",
     "email_invitation_body_p3": "If you don't have an account yet, you will be prompted to sign up first.",
     "email_invitation_body_p4": "Thank you for using ContractAnalyser.",
     "email_invitation_body_p5": "The ContractAnalyser Team",
