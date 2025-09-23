@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from '../ui/Button';
 import { Mail, Lock, User, Phone, Checkbox, AlertCircle, CheckCircle, Users as UsersIcon, Eye, EyeOff, Briefcase, Sparkles } from 'lucide-react';
 import adminService, { AvailableSubscription } from '../../services/adminService';
-import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils'; // MODIFIED: Import getJurisdictionLabel
+import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction } from '../../types';
 import { stripeProducts } from '../../../supabase/functions/_shared/stripe_products_data';
 import { useTranslation } from 'react-i18next'; // ADDED
@@ -102,6 +102,8 @@ interface CreateUserFormProps {
 }
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, allSubscriptions }) => {
+  const { t, i18n } = useTranslation(); // ADDED i18n
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -109,9 +111,8 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     full_name: '',
     business_name: '',
     mobile_phone_number: '',
-    country_code: countryCodes.code,
+    country_code: countryCodes[0].code, // FIXED: Initialize with a valid country code
     is_admin: false,
-    // REMOVED: email_confirm from state
     default_jurisdictions: [] as Jurisdiction[],
     send_invitation_email: true,
   });
@@ -124,7 +125,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const { t } = useTranslation(); // ADDED
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target;
@@ -167,13 +167,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
     setMessage(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError(t('passwords_do_not_match')); // MODIFIED
+      setError(t('passwords_do_not_match'));
       setLoading(false);
       return;
     }
 
     if (selectedPriceId && !selectedRole) {
-      setError(t('select_role_for_assigned_subscription')); // MODIFIED
+      setError(t('select_role_for_assigned_subscription'));
       setLoading(false);
       return;
     }
@@ -187,19 +187,20 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         mobile_phone_number: formData.mobile_phone_number,
         country_code: formData.country_code,
         is_admin: formData.is_admin,
-        email_confirm: true, // HARDCODED: Always send confirmation email
+        email_confirm: true,
         default_jurisdictions: formData.default_jurisdictions,
         price_id: selectedPriceId,
         role: selectedRole,
         send_invitation_email: formData.send_invitation_email,
         initial_password: formData.password,
+        adminLanguage: i18n.language, // ADDED: Pass admin's current UI language
       });
 
       if (grantSingleUseCredit) {
         await adminService.grantSingleUseCredit(userId);
       }
 
-      setMessage(t('user_created_successfully')); // MODIFIED
+      setMessage(t('user_created_successfully'));
       setFormData({
         email: '',
         password: '',
@@ -207,9 +208,8 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         full_name: '',
         business_name: '',
         mobile_phone_number: '',
-        country_code: countryCodes.code,
+        country_code: countryCodes[0].code, // Reset to valid default
         is_admin: false,
-        // email_confirm: true, // No longer needed in state
         default_jurisdictions: [],
         send_invitation_email: true,
       });
@@ -219,7 +219,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       onSuccess();
     } catch (err: any) {
       console.error('Error creating user:', err);
-      setError(err.message || t('failed_to_create_user')); // MODIFIED
+      setError(err.message || t('failed_to_create_user'));
     } finally {
       setLoading(false);
     }
@@ -247,7 +247,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{t('email_address')}</label> {/* MODIFIED */}
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{t('email_address')}</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -264,7 +264,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
 
       {/* Password Input */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label> {/* MODIFIED */}
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -288,7 +288,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
 
       {/* Confirm Password Input */}
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">{t('confirm_password')}</label> {/* MODIFIED */}
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">{t('confirm_password')}</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -311,7 +311,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       </div>
 
       <div>
-        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">{t('full_name')}</label> {/* MODIFIED */}
+        <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">{t('full_name')}</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -326,7 +326,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       </div>
 
       <div>
-        <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">{t('business_name')}</label> {/* MODIFIED */}
+        <label htmlFor="business_name" className="block text-sm font-medium text-gray-700 mb-1">{t('business_name')}</label>
         <div className="relative">
           <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -341,7 +341,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
       </div>
 
       <div>
-        <label htmlFor="mobile_phone_number" className="block text-sm font-medium text-gray-700 mb-1">{t('mobile_phone_number')}</label> {/* MODIFIED */}
+        <label htmlFor="mobile_phone_number" className="block text-sm font-medium text-gray-700 mb-1">{t('mobile_phone_number')}</label>
         <div className="relative flex">
           <select
             id="country_code"
@@ -380,11 +380,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             onChange={handleChange}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span className="ml-2">{t('grant_admin_privileges')}</span> {/* MODIFIED */}
+          <span className="ml-2">{t('grant_admin_privileges')}</span>
         </label>
       </div>
-
-      {/* REMOVED: email_confirm checkbox */}
 
       {/* Send Invitation Email Checkbox */}
       <div>
@@ -397,7 +395,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             onChange={handleChange}
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span className="ml-2">{t('send_invitation_email')}</span> {/* MODIFIED */}
+          <span className="ml-2">{t('send_invitation_email')}</span>
         </label>
       </div>
 
@@ -412,13 +410,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <span className="ml-2 flex items-center">
-            {t('grant_single_use_credit')} <Sparkles className="h-4 w-4 ml-1 text-yellow-500" /> {/* MODIFIED */}
+            {t('grant_single_use_credit')} <Sparkles className="h-4 w-4 ml-1 text-yellow-500" />
           </span>
         </label>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{t('default_jurisdictions')}</label> {/* MODIFIED */}
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('default_jurisdictions')}</label>
         <div className="flex flex-wrap gap-2">
           {getAllJurisdictions().map((jurisdiction) => (
             <button
@@ -431,17 +429,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
                   : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))} {/* MODIFIED: Use getJurisdictionLabel for consistency */}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           ))}
         </div>
       </div>
 
       <h3 className="text-lg font-medium text-gray-900 flex items-center mb-2 pt-4 border-t border-gray-200">
-        <UsersIcon className="h-5 w-5 text-blue-900 mr-2" /> {t('assign_subscription')} {/* MODIFIED */}
+        <UsersIcon className="h-5 w-5 text-blue-900 mr-2" /> {t('assign_subscription')}
       </h3>
       <div>
-        <label htmlFor="assign_subscription" className="block text-sm font-medium text-gray-700 mb-1">{t('assign_to_subscription')}:</label> {/* MODIFIED */}
+        <label htmlFor="assign_subscription" className="block text-sm font-medium text-gray-700 mb-1">{t('assign_to_subscription')}:</label>
         <select
           id="assign_subscription"
           name="assign_subscription"
@@ -450,14 +448,14 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           disabled={loading}
         >
-          <option value="">{t('no_subscription')}</option> {/* MODIFIED */}
+          <option value="">{t('no_subscription')}</option>
           {stripeProducts
             .filter(product => product.mode === 'admin_assigned')
             .map((product) => (
               <React.Fragment key={product.id}>
                 {product.pricing.monthly && (
                   <option value={product.pricing.monthly.priceId}>
-                    {getSimplifiedProductName(t(product.name))} {/* MODIFIED: Translate product.name */}
+                    {getSimplifiedProductName(t(product.name))}
                   </option>
                 )}
               </React.Fragment>
@@ -467,7 +465,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
 
       {selectedPriceId && (
         <div>
-          <label htmlFor="assign_role" className="block text-sm font-medium text-gray-700 mb-1">{t('role_in_subscription')}:</label> {/* MODIFIED */}
+          <label htmlFor="assign_role" className="block text-sm font-medium text-gray-700 mb-1">{t('role_in_subscription')}:</label>
           <select
             id="assign_role"
             name="assign_role"
@@ -477,19 +475,19 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
             required={selectedPriceId !== null}
             disabled={loading}
           >
-            <option value="">{t('select_role')}</option> {/* MODIFIED */}
-            <option value="owner">{t('owner')}</option> {/* MODIFIED */}
-            <option value="member">{t('member')}</option> {/* MODIFIED */}
+            <option value="">{t('select_role')}</option>
+            <option value="owner">{t('owner')}</option>
+            <option value="member">{t('member')}</option>
           </select>
         </div>
       )}
 
       <div className="flex justify-end space-x-3 mt-6">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
-          {t('cancel_button')} {/* MODIFIED */}
+          {t('cancel_button')}
         </Button>
         <Button type="submit" variant="primary" disabled={loading}>
-          {loading ? t('creating_user_button') : t('create_user_button')} {/* MODIFIED */}
+          {loading ? t('creating_user_button') : t('create_user_button')}
         </Button>
       </div>
     </form>
