@@ -457,7 +457,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
               <React.Fragment key={product.id}>
                 {product.pricing.monthly && (
                   <option value={product.pricing.monthly.priceId}>
-                    {getSimplifiedProductName(product.name)}
+                    {getSimplifiedProductName(t(product.name))} {/* MODIFIED: Translate product.name */}
                   </option>
                 )}
               </React.Fragment>
