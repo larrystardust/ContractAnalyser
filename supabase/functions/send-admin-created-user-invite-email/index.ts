@@ -35,16 +35,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, recipientName, initialPassword, userPreferredLanguage } = await req.json(); // ADDED userPreferredLanguage
+    const { recipientEmail, recipientName, initialPassword, userPreferredLanguage } = await req.json();
 
     console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
+    console.log('send-admin-created-user-invite-email: Recipient Name received:', recipientName); // Log the received recipientName
 
-    if (!recipientEmail || !initialPassword || !userPreferredLanguage) { // ADDED userPreferredLanguage to check
+    if (!recipientEmail || !initialPassword || !userPreferredLanguage) {
       console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword, userPreferredLanguage');
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
-
-    // REMOVED: Logic to fetch recipient's preferred language, as it's now passed from admin-create-user
 
     console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail} in language ${userPreferredLanguage}.`);
 
@@ -58,7 +57,7 @@ Deno.serve(async (req) => {
         to: [recipientEmail],
         subject: getTranslatedMessage('email_admin_created_user_subject', userPreferredLanguage),
         html: `
-          <p>${getTranslatedMessage('email_admin_created_user_body_p1', userPreferredLanguage, { recipientName: recipientName || recipientEmail })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_p1', userPreferredLanguage, { recipientName: String(recipientName || recipientEmail) })}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p2', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p3', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_admin_created_user_body_p4', userPreferredLanguage, { recipientEmail: recipientEmail })}</p>
@@ -66,8 +65,8 @@ Deno.serve(async (req) => {
           <p style="color: red; font-weight: bold;">
             ${getTranslatedMessage('email_admin_created_user_body_p6', userPreferredLanguage)}
           </p>
-          <p>To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.</p>
-          <p>If you have any questions, please contact support on our "Help" page.</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_login_instructions', userPreferredLanguage, { loginPageUrl: loginPageUrl })}</p>
+          <p>${getTranslatedMessage('email_admin_created_user_body_help_instructions', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_thank_you', userPreferredLanguage)}</p>
           <p>${getTranslatedMessage('email_team', userPreferredLanguage)}</p>
         `,
