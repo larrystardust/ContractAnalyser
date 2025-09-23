@@ -34,7 +34,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { recipientEmail, invitationLink, inviterName, userPreferredLanguage } = await req.json();
+    const { recipientEmail, invitationLink, inviterName: receivedInviterName, userPreferredLanguage } = await req.json();
+
+    // CRITICAL FIX: Ensure inviterName is a string, handling potential nested object
+    let inviterName: string;
+    if (typeof receivedInviterName === 'object' && receivedInvriterName !== null && 'inviterName' in receivedInvriterName) {
+      // If it's an object and contains 'inviterName' property, use that
+      inviterName = String(receivedInvriterName.inviterName);
+    } else {
+      // Otherwise, assume it's already the string or handle as fallback
+      inviterName = String(receivedInvriterName);
+    }
 
     if (!recipientEmail || !invitationLink || !inviterName) {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
