@@ -504,7 +504,7 @@
   "sample_contract_analysis": "Análisis de Contrato de Ejemplo",
   "no_completed_sample_contract_selected_sidebar": "Ningún Contrato de Ejemplo Completado Seleccionado",
   "select_completed_sample_contract_to_view_analysis": "Seleccione un contrato de ejemplo completado de la lista para ver su análisis.",
-  "data_protection_impact": "Impacto en la Protección de Datos",
+  
   "notification_preferences": "Preferencias de Notificación",
   "notification_type": "Tipo de Notificación",
   "email": "Correo Electrónico",
@@ -524,6 +524,7 @@
   "notification_preferences_saved_successfully": "¡Preferencias de notificación guardadas con éxito!",
   "failed_to_save_notification_preferences": "Error al guardar preferencias de notificación.",
   "note_email_reports_setting": "Nota: La configuración de \"Informes por Correo Electrónico\" se gestiona en \"Preferencias\" para la entrega general de informes por correo. Debe habilitarla si prefiere recibir Informes por Correo Electrónico.",
+  
   "new_passwords_do_not_match": "Las contraseñas nuevas no coinciden.",
   "password_updated_successfully": "¡Contraseña actualizada con éxito!",
   "failed_to_update_password": "Error al actualizar la contraseña.",
