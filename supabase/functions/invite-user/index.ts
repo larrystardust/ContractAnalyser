@@ -69,6 +69,8 @@ Deno.serve(async (req) => {
       }
       inviterFullName = inviterProfileData.full_name; // ADDED
     }
+    // Ensure inviterName is always a string, even if full_name is null
+    const inviterNameForEmail = inviterFullName || invitingUserEmail || 'A user'; // Robust fallback
     // END MODIFIED
 
     // RE-INTRODUCED: Self-invitation check to prevent overwriting owner's record
@@ -249,8 +251,8 @@ Deno.serve(async (req) => {
       body: {
         recipientEmail: invited_email,
         invitationLink: acceptInvitationUrl,
-        inviterName: inviterFullName || user.email, // MODIFIED: Use inviterFullName or fallback to user.email
-        userPreferredLanguage: inviterPreferredLanguage, // MODIFIED: Pass inviter's language
+        inviterName: inviterNameForEmail, // MODIFIED: Use inviterNameForEmail
+        userPreferredLanguage: inviterPreferredLanguage,
       },
     });
 
