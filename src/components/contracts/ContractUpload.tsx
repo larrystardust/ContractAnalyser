@@ -12,10 +12,10 @@ import { useTranslation } from 'react-i18next';
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'; // You can remove or comment this line
 
 // Set the worker source for pdfjs-dist using Vite's ?url suffix
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // New update 
 
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
