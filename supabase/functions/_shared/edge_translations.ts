@@ -87,8 +87,8 @@ export const edgeTranslations = {
     "email_admin_created_user_body_p4": "<strong>Email:</strong> {recipientEmail}",
     "email_admin_created_user_body_p5": "<strong>Password:</strong> {initialPassword}",
     "email_admin_created_user_body_p6": "For security reasons, we strongly recommend that you change this password immediately after your first login.",
-    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `To login and change your password, please visit <a href=${loginPageUrl}>the login page</a> and go to Settings and then Security and enter a new password.`, // MODIFIED
-    "email_admin_created_user_body_help_instructions": "If you have any questions, please contact support on our Help page.", // MODIFIED
+    "email_admin_created_user_body_login_instructions": ({ loginPageUrl }: { loginPageUrl: string }) => `To login and change your password, please visit <a href="${loginPageUrl}">the login page</a> and go to "Settings" and then "Security" and enter a new password.`, // MODIFIED
+    "email_admin_created_user_body_help_instructions": "If you have any questions, please contact support on our \"Help\" page.", // MODIFIED
 
     "message_otp_sent_successfully": "OTP sent successfully!",
     "message_invalid_otp_or_used": "Invalid OTP or OTP already used.",
