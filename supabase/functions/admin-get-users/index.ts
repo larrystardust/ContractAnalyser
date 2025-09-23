@@ -142,12 +142,22 @@ Deno.serve(async (req) => {
 
       let subscriptionDetails = null;
 
+      // Prioritize membership's active subscription
       if (membership && membership.subscription_id) {
-        subscriptionDetails = allStripeSubscriptionsMap.get(membership.subscription_id);
-      } else if (customerId) {
-        const directSubscription = subscriptionsData.find(s => s.customer_id === customerId);
-        if (directSubscription) {
-          subscriptionDetails = directSubscription;
+        const sub = allStripeSubscriptionsMap.get(membership.subscription_id);
+        if (sub && (sub.status === 'active' || sub.status === 'trialing')) {
+          subscriptionDetails = sub;
+        }
+      }
+
+      // If no active membership subscription, check for direct customer active subscriptions
+      if (!subscriptionDetails && customerId) {
+        // Find the most recent active subscription for this customer
+        const activeDirectSubscription = subscriptionsData.find(s =>
+          s.customer_id === customerId && (s.status === 'active' || s.status === 'trialing')
+        );
+        if (activeDirectSubscription) {
+          subscriptionDetails = activeDirectSubscription;
         }
       }
 
@@ -156,7 +166,7 @@ Deno.serve(async (req) => {
         email: authUser?.email || null,
         auth_created_at: authUser?.created_at || null,
         customer_id: customerId || null,
-        subscription_details: subscriptionDetails,
+        subscription_details: subscriptionDetails, // This will now be the active subscription or null
         membership_details: membership || null,
         single_use_credits: customerId ? (unconsumedOrdersCountMap.get(customerId) || 0) : 0
       };
