@@ -1301,8 +1301,5 @@
   "application_settings_maintenance_mode": "Maintenance Mode",
   "application_settings_maintenance_mode_hint": "Enable this to put the entire application into maintenance mode. Only administrators will be able to access the site.",
   "maintenance_mode_enabled": "Maintenance mode is ENABLED",
-  "maintenance_mode_disabled": "Maintenance mode is DISABLED",
-
-  "category_dispute_resolution": "Dispute Resolution",
-  "category_intellectual_property": "Intellectual Property"
+  "maintenance_mode_disabled": "Maintenance mode is DISABLED"
 }
