@@ -162,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-1 py-1 w-18"
             >
               <option value="en">ENG</option>
-              <option value="fr">FRAN</option>
+              <option value="fr">FRA</option>
               <option value="es">ESP</option>
               <option value="ar">ARAB</option>
             </select>
