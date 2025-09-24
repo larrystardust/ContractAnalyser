@@ -6,6 +6,7 @@ import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-rea
 import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
+// REMOVED: import LanguageSelector from '../ui/LanguageSelector'; // REMOVED: LanguageSelector import
 
 interface HeaderProps {
   onOpenHelpModal: () => void;
@@ -19,10 +20,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { unreadCount } = useNotifications(); // REMOVED 'notifications' and 'markAsRead'
-  const { t, i18n } = useTranslation(); // ADDED: useTranslation hook
+  const { unreadCount } = useNotifications();
+  const { t, i18n } = useTranslation();
 
-  // ADDED: useEffect to log unreadCount changes
   useEffect(() => {
     console.log('Header.tsx: useEffect - unreadCount changed to:', unreadCount);
   }, [unreadCount]);
@@ -65,7 +65,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   };
 
   const handleNotificationsClick = () => {
-    // Simply navigate to the notifications page
     navigate('/notifications');
   };
 
@@ -79,13 +78,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   const showAuthButtons = !session?.user && location.pathname !== '/auth/email-sent';
 
-  console.log('Header.tsx: Render - unreadCount:', unreadCount); // Changed existing log for clarity
+  console.log('Header.tsx: Render - unreadCount:', unreadCount);
 
-  // ADDED: Language change handler
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
-    // Update dir attribute on html element for RTL support
-    if (lng === 'ar') { // Add other RTL languages here if needed
+    if (lng === 'ar') {
       document.documentElement.setAttribute('dir', 'rtl');
     } else {
       document.documentElement.setAttribute('dir', 'ltr');
@@ -98,40 +95,51 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Scale className="h-8 w-8 text-BlueLogo mr-2" />
-            <span className="text-xl font-semibold text-BlueLogo">{t('app_name')}</span> {/* MODIFIED */}
+            <span className="text-xl font-semibold text-BlueLogo">{t('app_name')}</span>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation and Actions (visible on desktop) */}
+          <nav className="hidden md:flex items-center space-x-4">
             {session?.user ? (
               <>
-                <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('dashboard')}</Link> {/* MODIFIED */}
-                <Link to="/contracts" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('contracts')}</Link> {/* MODIFIED */}
-                <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('reports')}</Link> {/* MODIFIED */}
-                <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('settings')}</Link> {/* MODIFIED */}
-                <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('pricing')}</Link> {/* MODIFIED */}
+                <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('dashboard')}</Link>
+                <Link to="/contracts" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('contracts')}</Link>
+                <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('reports')}</Link>
+                <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('settings')}</Link>
+                <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('pricing')}</Link>
                 <Link to="/upload">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    icon={<Upload className="w-4 h-4" />}
-                  >
-                    {t('upload_contract')} {/* MODIFIED */}
+                  <Button variant="primary" size="sm" icon={<Upload className="w-4 h-4" />}>
+                    {t('upload_contract')}
                   </Button>
                 </Link>
+                {!loadingAdminStatus && isAdmin && (
+                  <Button variant="outline" size="sm" icon={<LayoutDashboard className="w-4 h-4" />} onClick={handleDashboardSwitch}>
+                    {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')}
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" icon={<Search className="w-4 h-4" />} onClick={handleSearchClick}>
+                  {t('search')}
+                </Button>
+                <Button variant="text" size="sm" className="p-1 relative" onClick={handleNotificationsClick}>
+                  <Bell className="w-5 h-5 text-blue-500" />
+                  {unreadCount > 0 && (<span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />)}
+                </Button>
+                <Button variant="text" size="sm" className="p-1" onClick={onOpenHelpModal}>
+                  <HelpCircle className="w-5 h-5 text-blue-500" />
+                </Button>
+                <Button variant="text" size="sm" className="p-1" onClick={handleLogout}>
+                  <LogOut className="w-5 h-5 text-blue-500" />
+                </Button>
               </>
             ) : (
               showAuthButtons && (
                 <>
-                  <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link> {/* MODIFIED */}
-                  <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link> {/* MODIFIED */}
+                  <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link>
+                  <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link>
                 </>
               )
             )}
-          </nav>
-
-          <div className="hidden md:flex items-center space-x-4">
-            {/* ADDED: Language Selector */}
+            {/* Language Selector for Desktop */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
@@ -142,62 +150,24 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               <option value="es">ESPANOL</option>
               <option value="ar">العربية</option>
             </select>
+          </nav>
 
-            {session?.user ? (
-              <>
-                {!loadingAdminStatus && isAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={<LayoutDashboard className="w-4 h-4" />}
-                    onClick={handleDashboardSwitch}
-                  >
-                    {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')} {/* MODIFIED */}
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={<Search className="w-4 h-4" />}
-                  onClick={handleSearchClick}
-                >
-                  {t('search')} {/* MODIFIED */}
-                </Button>
-                <Button
-                  variant="text"
-                  size="sm"
-                  className="p-1 relative"
-                  onClick={handleNotificationsClick}
-                >
-                  <Bell className="w-5 h-5 text-blue-500" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />
-                  )}
-                </Button>
-                <Button
-                  variant="text"
-                  size="sm"
-                  className="p-1"
-                  onClick={onOpenHelpModal}
-                >
-                  <HelpCircle className="w-5 h-5 text-blue-500" />
-                </Button>
-                <Button
-                  variant="text"
-                  size="sm"
-                  className="p-1"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="w-5 h-5 text-blue-500" />
-                </Button>
-              </>
-            ) : (
-              null
-            )}
-          </div>
+          {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Language Selector for mobile */}
+            {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
+            <select
+              onChange={(e) => changeLanguage(e.target.value)}
+              value={i18n.language}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-0 py-1 w-18"
+            >
+              <option value="en">ENG</option>
+              <option value="fr">FRA</option>
+              <option value="es">ESP</option>
+              <option value="ar">العربية</option>
+            </select>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+            {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
               className="text-blue-500 hover:text-blue-900 focus:outline-none"
@@ -212,18 +182,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu (conditionally rendered) */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg animate-slideDown">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
               {session?.user ? (
                 <>
-                  <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('dashboard')}</Link> {/* MODIFIED */}
-                  <Link to="/contracts" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('contracts')}</Link> {/* MODIFIED */}
-                  <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('reports')}</Link> {/* MODIFIED */}
-                  <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('settings')}</Link> {/* MODIFIED */}
-                  <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('pricing')}</Link> {/* MODIFIED */}
+                  <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('dashboard')}</Link>
+                  <Link to="/contracts" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('contracts')}</Link>
+                  <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('reports')}</Link>
+                  <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('settings')}</Link>
+                  <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('pricing')}</Link>
                   <div className="pt-2 border-t border-gray-200">
                     {!loadingAdminStatus && isAdmin && (
                       <Button
@@ -233,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                         icon={<LayoutDashboard className="w-4 h-4" />}
                         onClick={() => { handleDashboardSwitch(); toggleMobileMenu(); }}
                       >
-                        {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')} {/* MODIFIED */}
+                        {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')}
                       </Button>
                     )}
                     <Link to="/upload" onClick={toggleMobileMenu}>
@@ -243,7 +213,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                         className="w-full mt-2"
                         icon={<Upload className="w-4 h-4" />}
                       >
-                        {t('upload_contract')} {/* MODIFIED */}
+                        {t('upload_contract')}
                       </Button>
                     </Link>
                     <Button
@@ -253,7 +223,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                       icon={<HelpCircle className="w-4 h-4" />}
                       onClick={() => { onOpenHelpModal(); toggleMobileMenu(); }}
                     >
-                      {t('help')} {/* MODIFIED */}
+                      {t('help')}
                     </Button>
                     <Button
                       variant="text"
@@ -262,15 +232,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                       icon={<LogOut className="w-4 h-4" />}
                       onClick={() => { handleLogout(); toggleMobileMenu(); }}
                     >
-                      {t('logout')} {/* MODIFIED */}
+                      {t('logout')}
                     </Button>
                   </div>
                 </>
               ) : (
                 showAuthButtons && (
                   <>
-                    <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('login')}</Link> {/* MODIFIED */}
-                    <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('signup')}</Link> {/* MODIFIED */}
+                    <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('login')}</Link>
+                    <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('signup')}</Link>
                   </>
                 )
               )}
