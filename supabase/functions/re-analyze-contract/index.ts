@@ -104,6 +104,61 @@ Deno.serve(async (req) => {
     }
     console.log('re-analyze-contract: Contract content found.');
 
+    // --- START: Authorization Logic for re-analysis ---
+    // Check for active subscription
+    const { data: membershipData, error: membershipError } = await supabase
+      .from('subscription_memberships')
+      .select('subscription_id')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    let userSubscriptionId: string | null = null;
+    if (membershipError) {
+      console.error(`re-analyze-contract: Error fetching membership for user ${userId}:`, membershipError);
+    } else if (membershipData) {
+      userSubscriptionId = membershipData.subscription_id;
+    }
+
+    let consumedOrderId: number | null = null;
+    if (!userSubscriptionId) {
+      // If no active subscription, check for single-use credits
+      const { data: customerData, error: customerError } = await supabase
+        .from('stripe_customers')
+        .select('customer_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (customerError || !customerData?.customer_id) {
+        console.error(`re-analyze-contract: User ${userId} has no Stripe customer ID or error fetching:`, customerError);
+        return corsResponse({ error: 'No associated payment account found. Please ensure you have purchased a plan.' }, 403);
+      }
+
+      const customerId = customerData.customer_id;
+
+      // MODIFIED: Check for credits_remaining > 0 instead of is_consumed = false
+      const { data: unconsumedOrders, error: ordersError } = await supabase
+        .from('stripe_orders')
+        .select('id, credits_remaining')
+        .eq('customer_id', customerId)
+        .eq('payment_status', 'paid')
+        .eq('status', 'completed')
+        .gt('credits_remaining', 0) // MODIFIED: Check for credits_remaining > 0
+        .limit(1);
+
+      if (ordersError) {
+        console.error('re-analyze-contract: Error fetching unconsumed orders:', ordersError);
+        return corsResponse({ error: 'Failed to check available credits.' }, 500);
+      }
+
+      if (!unconsumedOrders || unconsumedOrders.length === 0) {
+        return corsResponse({ error: 'No active subscription or available single-use credits. Please purchase a plan to re-analyze contracts.' }, 403);
+      } else {
+        consumedOrderId = unconsumedOrders[0].id;
+      }
+    }
+    // --- END: Authorization Logic for re-analysis ---
+
     // Update contract status to 'analyzing' and reset progress
     console.log(`re-analyze-contract: Updating contract ${contractId} status to 'analyzing'.`);
     const { error: updateStatusError } = await supabase
@@ -159,6 +214,30 @@ Deno.serve(async (req) => {
       return corsResponse({ error: `Failed to re-analyze contract: ${analysisError.message}` }, 500);
     }
     console.log('re-analyze-contract: contract-analyzer invoked successfully.');
+
+    // MODIFIED: Decrement credits_remaining for single-use orders after successful re-analysis
+    if (consumedOrderId !== null) {
+      const { data: orderData, error: fetchOrderError } = await supabase
+        .from('stripe_orders')
+        .select('credits_remaining')
+        .eq('id', consumedOrderId)
+        .single();
+
+      if (fetchOrderError) {
+        console.error(`re-analyze-contract: Error fetching order ${consumedOrderId} for decrement:`, fetchOrderError);
+      } else if (orderData) {
+        const { error: decrementError } = await supabase
+          .from('stripe_orders')
+          .update({ credits_remaining: orderData.credits_remaining - 1 })
+          .eq('id', consumedOrderId);
+
+        if (decrementError) {
+          console.error(`re-analyze-contract: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
+        } else {
+          console.log(`re-analyze-contract: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
+        }
+      }
+    }
 
     console.log('re-analyze-contract: Re-analysis initiated successfully.');
     return corsResponse({ message: 'Re-analysis initiated successfully', analysis_response: analysisResponse });
