@@ -1227,6 +1227,7 @@
   "jurisdiction_unknown": "غير معروف",
   "unknown_product": "منتج غير معروف",
   "single_use_credits_display": "استخدام فردي (الاعتمادات: {{credits}})",
+  "no_single_use_credits_or_subscription_message": "ليس لديك أرصدة استخدام فردي أو اشتراك نشط. يرجى زيارة",
   "status_not_started": "لم يبدأ",
   "status_incomplete": "غير مكتمل",
   "status_incomplete_expired": "غير مكتمل منتهي الصلاحية",
