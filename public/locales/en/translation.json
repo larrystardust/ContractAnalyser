@@ -822,7 +822,7 @@
   "how_to_upload_contract_q": "How do I upload a contract?",
   "how_to_upload_contract_a": "After logging in, navigate to the \"Upload\" section. You can drag and drop your contract file or click \"Browse Files\" to select it from your computer.",
   "what_jurisdictions_q": "What jurisdictions do you cover?",
-  "what_jurisdictions_a": "Our AI is trained to analyze contracts across various jurisdictions, including UK, EU, Ireland, US, Canada, Australia and Others. You can select the relevant jurisdictions during the upload process.",
+  "what_jurisdictions_a": "Our AI is trained to analyze contracts across various jurisdictions, including UK, EU, Ireland, US, Canada, Australia, Islamic Law and Others. You can select the relevant jurisdictions during the upload process.",
   "how_long_analysis_q": "How long does analysis take?",
   "how_long_analysis_a": "Analysis time varies depending on the length and complexity of the contract. You can monitor the processing progress on your Dashboard.",
   "understanding_analysis_results": "Understanding Analysis Results",
