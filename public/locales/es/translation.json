@@ -1220,7 +1220,7 @@
   "jurisdiction_unknown": "Desconocido",
   "unknown_product": "Producto desconocido",
   "single_use_credits_display": "Uso Único (Créditos: {{credits}})",
-  "no_single_use_credits_or_subscription_message": "No tiene créditos de un solo uso o suscripción activa. Por favor, visite la",
+  "no_single_use_credits_or_subscription_message": "No tiene créditos de un solo uso o suscripción activa. Por favor, visite la ",
   "status_not_started": "No iniciado",
   "status_incomplete": "Incompleto",
   "status_incomplete_expired": "Incompleto expirado",
