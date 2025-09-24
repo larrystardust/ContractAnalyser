@@ -62,6 +62,7 @@ export interface StripeProduct {
   fileRetentionPolicy?: string;
   maxFiles?: number; // ADDED: Max files for the plan
   max_users?: number; // ADDED: Max users for the plan
+  credits?: number; // ADDED: New field for single-use credits
   tier: number;
   pricing: {
     monthly?: { priceId: string; price: number; interval: 'month' };
