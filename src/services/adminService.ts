@@ -14,7 +14,7 @@ export type AdminProfile = Database['public']['Tables']['profiles']['Row'] & {
   customer_id: string | null;
   subscription_details: (StripeSubscriptionRow & { product_info?: StripeProduct }) | null;
   membership_details: SubscriptionMembership | null;
-  single_use_credits: number;
+  single_use_credits: number; // MODIFIED: Changed type to number
 };
 
 export type AvailableSubscription = Pick<StripeSubscriptionRow, 'subscription_id' | 'price_id' | 'status' | 'max_users'> & {
