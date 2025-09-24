@@ -4,10 +4,11 @@ export const stripeProducts: StripeProduct[] = [
   {
     id: 'prod_SuPs2GtzhJZTZi',
     name: 'product_name_single_use', // MODIFIED to translation key
-    description: 'product_desc_single_use', // MODIFIED to translation key
+    description: 'product_desc_single_use_5_credits', // MODIFIED: New description key
     mode: 'payment',
     fileRetentionPolicy: 'file_retention_policy_single_use_desc', // MODIFIED to translation key
     tier: 1,
+    credits: 5, // ADDED: New credits property
     pricing: {
       one_time: {
         priceId: 'price_1Ryb2XChzNpNrJcahj0azZL0',
