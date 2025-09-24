@@ -1228,6 +1228,7 @@
   "jurisdiction_unknown": "Inconnu",
   "unknown_product": "Produit inconnu",
   "single_use_credits_display": "Usage Unique (Crédits : {{credits}})",
+  "no_single_use_credits_or_subscription_message": "Vous n'avez pas de crédits à usage unique ou d'abonnement actif. Veuillez visiter la",
   "status_not_started": "Non démarré",
   "status_incomplete": "Incomplet",
   "status_incomplete_expired": "Incomplet expiré",
