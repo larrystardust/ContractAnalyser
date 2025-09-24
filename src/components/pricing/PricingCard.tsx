@@ -121,7 +121,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
         </span>
         {currentPricingOption.interval === 'month' && <span className="text-gray-600">/{t('month')}</span>}
         {currentPricingOption.interval === 'year' && <span className="text-gray-600">/{t('year')}</span>}
-        {currentPricingOption.interval === 'one_time' && <span className="text-gray-600"> {t('one_time')}</span>}
+        {/* MODIFIED: Display "credits" for one-time payment */}
+        {currentPricingOption.interval === 'one_time' && product.credits && <span className="text-gray-600"> {t('for_credits', { count: product.credits })}</span>}
       </div>
 
       {product.fileRetentionPolicy && (
