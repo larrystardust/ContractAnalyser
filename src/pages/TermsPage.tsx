@@ -62,7 +62,8 @@ const TermsPage: React.FC = () => {
         </p>
         <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
           <li>
-            <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_terms_desc')} {/* MODIFIED */}
+            {/* MODIFIED: Updated description for single-use purchases */}
+            <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_terms_desc_credits')}
           </li>
           <li>
             <strong>{t('active_subscription_plans_label')}:</strong> {t('active_subscription_plans_terms_desc')} {/* MODIFIED */}
