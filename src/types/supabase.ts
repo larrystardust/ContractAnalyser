@@ -450,7 +450,7 @@ export type Database = {
           customer_id: string
           deleted_at: string | null
           id: number
-          is_consumed: boolean
+          credits_remaining: number // MODIFIED: Renamed from is_consumed, changed type to integer
           payment_intent_id: string
           payment_status: string
           price_id: string | null
@@ -466,7 +466,7 @@ export type Database = {
           customer_id: string
           deleted_at?: string | null
           id?: never
-          is_consumed?: boolean
+          credits_remaining?: number // MODIFIED: Renamed from is_consumed
           payment_intent_id: string
           payment_status: string
           price_id?: string | null
@@ -482,7 +482,7 @@ export type Database = {
           customer_id?: string
           deleted_at?: string | null
           id?: never
-          is_consumed?: boolean
+          credits_remaining?: number // MODIFIED: Renamed from is_consumed
           payment_intent_id?: string
           payment_status?: string
           price_id?: string | null
@@ -499,6 +499,7 @@ export type Database = {
           price_id: string
           product_id: string
           updated_at: string
+          credits: number | null // ADDED: New column
         }
         Insert: {
           created_at?: string
@@ -507,6 +508,7 @@ export type Database = {
           price_id: string
           product_id: string
           updated_at?: string
+          credits?: number | null // ADDED: New column
         }
         Update: {
           created_at?: string
@@ -515,6 +517,7 @@ export type Database = {
           price_id?: string
           product_id?: string
           updated_at?: string
+          credits?: number | null // ADDED: New column
         }
         Relationships: []
       }
@@ -823,6 +826,7 @@ export type Database = {
           price_id: string
           product_id: string
           updated_at: string
+          credits: number | null // ADDED: New column
         }
         Insert: {
           created_at?: string
@@ -831,6 +835,7 @@ export type Database = {
           price_id: string
           product_id: string
           updated_at?: string
+          credits?: number | null // ADDED: New column
         }
         Update: {
           created_at?: string
@@ -839,6 +844,7 @@ export type Database = {
           price_id?: string
           product_id?: string
           updated_at?: string
+          credits?: number | null // ADDED: New column
         }
         Relationships: []
       }
