@@ -127,6 +127,10 @@ async function handleEvent(event: Stripe.Event) {
           return;
         }
 
+        // ADDED: Extract credits from session metadata
+        const creditsFromMetadata = parseInt(session.metadata?.credits || '0', 10);
+        console.log('Stripe Webhook: Extracted creditsFromMetadata:', creditsFromMetadata);
+
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
           payment_intent_id: payment_intent as string,
