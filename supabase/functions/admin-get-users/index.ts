@@ -117,21 +117,22 @@ Deno.serve(async (req) => {
     }
     const membershipsMap = new Map(membershipsData.map(m => [m.user_id, m]));
 
-    // Fetch all unconsumed single-use orders
+    // MODIFIED: Fetch all orders with credits_remaining > 0
     const { data: ordersData, error: fetchOrdersError } = await supabase
       .from('stripe_orders')
-      .select('customer_id')
-      .eq('is_consumed', false)
+      .select('customer_id, credits_remaining')
       .eq('payment_status', 'paid')
-      .eq('status', 'completed');
+      .eq('status', 'completed')
+      .gt('credits_remaining', 0); // MODIFIED: Filter for credits_remaining > 0
 
     if (fetchOrdersError) {
       console.error('Error fetching unconsumed orders:', fetchOrdersError);
       return corsResponse({ error: 'Failed to fetch unconsumed orders' }, 500);
     }
-    const unconsumedOrdersCountMap = new Map<string, number>();
+    // MODIFIED: Sum credits_remaining for each customer
+    const customerCreditsMap = new Map<string, number>();
     ordersData.forEach(order => {
-      unconsumedOrdersCountMap.set(order.customer_id, (unconsumedOrdersCountMap.get(order.customer_id) || 0) + 1);
+      customerCreditsMap.set(order.customer_id, (customerCreditsMap.get(order.customer_id) || 0) + (order.credits_remaining || 0));
     });
 
     // Construct the combinedUsers array
@@ -168,7 +169,7 @@ Deno.serve(async (req) => {
         customer_id: customerId || null,
         subscription_details: subscriptionDetails, // This will now be the active subscription or null
         membership_details: membership || null,
-        single_use_credits: customerId ? (unconsumedOrdersCountMap.get(customerId) || 0) : 0
+        single_use_credits: customerId ? (customerCreditsMap.get(customerId) || 0) : 0 // MODIFIED: Use customerCreditsMap
       };
     });
 
