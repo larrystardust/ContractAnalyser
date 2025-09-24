@@ -4,6 +4,7 @@
     "lib": ["ES2023"],
     "module": "NodeNext", // Changed from ESNext
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
 
     /* Bundler mode */
     "moduleResolution": "NodeNext", // Changed from bundler
