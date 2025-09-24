@@ -824,7 +824,7 @@
   "how_to_upload_contract_q": "Comment télécharger un contrat ?",
   "how_to_upload_contract_a": "Après vous être connecté, naviguez vers la section \"Télécharger\". Vous pouvez glisser-déposer votre fichier de contrat ou cliquer sur \"Parcourir les fichiers\" pour le sélectionner depuis votre ordinateur.",
   "what_jurisdictions_q": "Quelles juridictions couvrez-vous ?",
-  "what_jurisdictions_a": "Notre IA est formée pour analyser les contrats dans diverses juridictions, notamment le Royaume-Uni, l'UE, l'Irlande, les États-Unis, le Canada, l'Australie et d'Autres. Vous pouvez sélectionner les juridictions pertinentes pendant le processus de téléchargement.",
+  "what_jurisdictions_a": "Notre IA est entraînée pour analyser les contrats dans diverses juridictions, y compris le Royaume-Uni, l'UE, l'Irlande, les États-Unis, le Canada, l'Australie, le droit islamique et d'Autres. Vous pouvez sélectionner les juridictions pertinentes pendant le processus de téléchargement.",
   "how_long_analysis_q": "Combien de temps prend l'analyse ?",
   "how_long_analysis_a": "Le temps d'analyse varie en fonction de la longueur et de la complexité du contrat. Vous pouvez surveiller la progression du traitement sur votre Tableau de Bord.",
   "understanding_analysis_results": "Comprendre les Résultats d'Analyse",
