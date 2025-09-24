@@ -466,7 +466,7 @@ const UserForm: React.FC<UserFormProps> = ({
             {isCreatingPortal ? t('opening_portal') : t('manage_subscription_stripe')} {/* MODIFIED */}
           </Button>
           {!user.customer_id && (
-            <p className="text-xs text-gray-500">{t('no_stripe_customer_id')}</p> 
+            <p className="text-xs text-gray-500 mt-2">{t('no_stripe_customer_id')}</p> 
           )}
         </div>
       </div>
