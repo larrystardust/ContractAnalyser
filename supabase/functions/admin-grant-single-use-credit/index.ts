@@ -34,9 +34,6 @@ function corsResponse(body: string | object | null, status = 200) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// REMOVED: Local translations object
-// REMOVED: Local getTranslatedMessage function
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsResponse(null, 204);
@@ -117,9 +114,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Find the single-use product's priceId
+    // Find the single-use product's priceId and credits
     const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
     const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
+    const creditsToGrant = singleUseProduct?.credits || 1; // Default to 1 if not specified
 
     if (!singleUsePriceId) {
       console.error('Single-use product price ID not found in stripe-config.ts');
@@ -131,12 +129,12 @@ Deno.serve(async (req) => {
       checkout_session_id: `admin_granted_${Date.now()}`,
       payment_intent_id: `admin_granted_pi_${Date.now()}`,
       customer_id: customerId,
-      amount_subtotal: 999,
-      amount_total: 999,
+      amount_subtotal: 0, // Admin granted, so amount is 0
+      amount_total: 0,   // Admin granted, so amount is 0
       currency: 'usd',
       payment_status: 'paid',
       status: 'completed',
-      is_consumed: false,
+      credits_remaining: creditsToGrant, // MODIFIED: Initialize with creditsToGrant
       price_id: singleUsePriceId,
     });
 
