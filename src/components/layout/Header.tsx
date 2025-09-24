@@ -139,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 </>
               )
             )}
-            {/* Language Selector for Desktop */}
+            {/* Language Selector for Desktop - now inside nav */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
@@ -153,13 +153,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           </nav>
 
           {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-2"> {/* Added flex and space-x-2 */}
             {/* Language Selector for mobile */}
-            {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-0 py-1 w-18"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
             >
               <option value="en">ENG</option>
               <option value="fr">FRA</option>
@@ -182,11 +181,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         </div>
       </div>
 
-      {/* Mobile Menu (conditionally rendered) */}
+      {/* Mobile Menu (conditionally rendered, language selector removed from here) */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg animate-slideDown">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
+              {/* REMOVED: Language Selector for mobile from here */}
               {session?.user ? (
                 <>
                   <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('dashboard')}</Link>
