@@ -146,26 +146,27 @@ Deno.serve(async (req) => {
         .maybeSingle();
     }, 5, 500);
 
+    // Define a comprehensive set of default notification settings
+    const defaultNotificationSettings = {
+      'analysis-complete': { email: true, inApp: true },
+      'high-risk-findings': { email: true, inApp: true },
+      'weekly-reports': { email: false, inApp: false },
+      'system-updates': { email: false, inApp: true },
+    };
+
     if (profileError) {
       console.warn(`contract-analyzer: Could not fetch profile for user ${userId}:`, profileError.message);
-      userNotificationSettings = {
-        'analysis-complete': { email: true, inApp: true },
-        'high-risk-findings': { email: true, inApp: true },
-        'weekly-reports': { email: false, inApp: false },
-        'system-updates': { email: false, inApp: true },
-      };
+      userNotificationSettings = defaultNotificationSettings; // Use full defaults on error
     } else {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      userNotificationSettings = (profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }>) || {
-        'analysis-complete': { email: true, inApp: true },
-        'high-risk-findings': { email: true, inApp: true },
-        'weekly-reports': { email: false, inApp: false },
-        'system-updates': { email: false, inApp: true },
+      // Merge fetched settings with defaults, ensuring all keys are present and user preferences override
+      userNotificationSettings = {
+        ...defaultNotificationSettings,
+        ...(profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {}),
       };
-      // ADDED: Set userPreferredLanguage from theme_preference or default to 'en'
-      // For notifications, we'll use the outputLanguage as the preferred language, as it's explicitly chosen by the user.
+      // Set userPreferredLanguage from outputLanguage, as it's explicitly chosen by the user for this analysis.
       userPreferredLanguage = outputLanguage;
     }
 
