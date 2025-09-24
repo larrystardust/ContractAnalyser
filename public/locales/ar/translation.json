@@ -1012,7 +1012,7 @@
   "product_name_single_use": "ContractAnalyser استخدام فردي",
   "product_desc_single_use": "للاستخدام لمرة واحدة فقط",
   "for_credits": "لـ {{count}} أرصدة",
-  "product_desc_single_use_5_credits": "للاستخدام لمرة واحدة، يتضمن 5 أرصدة تحليل.",
+  "product_desc_single_use_5_credits": "للاستخدام لمرة واحدة، يتضمن 5 أرصدة تحليل (تحليل 5 عقود).",
   "file_retention_policy_single_use_desc": "يتم الاحتفاظ بالملفات لمدة 30 يومًا.",
   "product_name_professional_use": "ContractAnalyser استخدام احترافي",
   "product_desc_professional_use": "خطة الاشتراك الاحترافية (استخدام غير محدود لمستخدمين اثنين فقط)",
