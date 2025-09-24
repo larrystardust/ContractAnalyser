@@ -1303,7 +1303,7 @@
   "link_expired_invalid": "الرابط منتهي الصلاحية أو غير صالح.",
   "loading_report": "جاري تحميل التقرير...",
   "error_loading_report": "خطأ في تحميل التقرير",
-  "error_pdf_processing_failed": "فشل معالجة ملف PDF. قد يكون المستند تالفًا أو أن تنسيقه غير مدعوم بالكامل.",
+  "error_pdf_processing_failed": "فشل معالجة ملف PDF. قد يكون المستند تالفًا أو أن تنسيقه غير مدعوم بالكامل. قم بتحديث هذه الصفحة وحاول مرة أخرى.",
 
   "maintenance_page_title": "الموقع تحت الصيانة",
   "maintenance_hero_title": "نحن تحت الصيانة",
