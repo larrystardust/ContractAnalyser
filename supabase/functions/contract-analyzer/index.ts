@@ -146,27 +146,26 @@ Deno.serve(async (req) => {
         .maybeSingle();
     }, 5, 500);
 
-    // Define a comprehensive set of default notification settings
-    const defaultNotificationSettings = {
-      'analysis-complete': { email: true, inApp: true },
-      'high-risk-findings': { email: true, inApp: true },
-      'weekly-reports': { email: false, inApp: false },
-      'system-updates': { email: false, inApp: true },
-    };
-
     if (profileError) {
       console.warn(`contract-analyzer: Could not fetch profile for user ${userId}:`, profileError.message);
-      userNotificationSettings = defaultNotificationSettings; // Use full defaults on error
+      userNotificationSettings = {
+        'analysis-complete': { email: true, inApp: true },
+        'high-risk-findings': { email: true, inApp: true },
+        'weekly-reports': { email: false, inApp: false },
+        'system-updates': { email: false, inApp: true },
+      };
     } else {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      // Merge fetched settings with defaults, ensuring all keys are present and user preferences override
-      userNotificationSettings = {
-        ...defaultNotificationSettings,
-        ...(profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {}),
+      userNotificationSettings = (profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }>) || {
+        'analysis-complete': { email: true, inApp: true },
+        'high-risk-findings': { email: true, inApp: true },
+        'weekly-reports': { email: false, inApp: false },
+        'system-updates': { email: false, inApp: true },
       };
-      // Set userPreferredLanguage from outputLanguage, as it's explicitly chosen by the user for this analysis.
+      // ADDED: Set userPreferredLanguage from theme_preference or default to 'en'
+      // For notifications, we'll use the outputLanguage as the preferred language, as it's explicitly chosen by the user.
       userPreferredLanguage = outputLanguage;
     }
 
@@ -516,26 +515,15 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     // MODIFIED: Decrement credits_remaining for single-use orders
     if (consumedOrderId !== null) {
-      // Fetch the current credits_remaining for the specific order
-      const { data: orderData, error: fetchOrderError } = await supabase
+      const { error: decrementError } = await supabase
         .from('stripe_orders')
-        .select('credits_remaining')
-        .eq('id', consumedOrderId)
-        .single(); // Use .single() as we expect one specific order
+        .update({ credits_remaining: (unconsumedOrders[0].credits_remaining || 0) - 1 }) // Decrement by 1
+        .eq('id', consumedOrderId);
 
-      if (fetchOrderError) {
-        console.error(`contract-analyzer: Error fetching order ${consumedOrderId} for decrement:`, fetchOrderError);
-      } else if (orderData) {
-        const { error: decrementError } = await supabase
-          .from('stripe_orders')
-          .update({ credits_remaining: (orderData.credits_remaining || 0) - 1 }) // Decrement by 1
-          .eq('id', consumedOrderId);
-
-        if (decrementError) {
-          console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
-        } else {
-          console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
-        }
+      if (decrementError) {
+        console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
+      } else {
+        console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
       }
     }
 
