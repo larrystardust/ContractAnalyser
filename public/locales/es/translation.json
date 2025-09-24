@@ -1296,7 +1296,7 @@
   "link_expired_invalid": "Enlace caducado o inválido.",
   "loading_report": "Cargando informe...",
   "error_loading_report": "Error al Cargar el Informe",
-  "error_pdf_processing_failed": "Fallo en el procesamiento del PDF. El documento podría estar dañado o su formato no es totalmente compatible.",
+  "error_pdf_processing_failed": "El procesamiento del PDF falló. El documento podría estar corrupto o su formato no es totalmente compatible. Actualice esta página e inténtelo de nuevo.",
 
   "maintenance_page_title": "Sitio en Mantenimiento",
   "maintenance_hero_title": "Estamos en Mantenimiento",
