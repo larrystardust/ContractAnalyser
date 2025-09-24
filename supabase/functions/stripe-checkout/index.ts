@@ -169,6 +169,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ADDED: Fetch credits from stripe_product_metadata for one-time payments
+    let credits = null;
+    if (mode === 'payment') {
+      const { data: productMetadata, error: metadataError } = await supabase
+        .from('stripe_product_metadata')
+        .select('credits')
+        .eq('price_id', price_id)
+        .maybeSingle();
+
+      if (metadataError) {
+        console.error('Error fetching product metadata for credits:', metadataError);
+        // Continue without credits, but log the error
+      } else if (productMetadata?.credits) {
+        credits = productMetadata.credits;
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -181,6 +198,8 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
+      // ADDED: Pass credits as metadata for one-time payments
+      metadata: mode === 'payment' && credits !== null ? { credits: credits.toString() } : undefined,
     });
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
