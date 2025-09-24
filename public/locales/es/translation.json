@@ -1004,6 +1004,8 @@
 
   "product_name_single_use": "ContractAnalyser Uso Único",
   "product_desc_single_use": "Para un solo uso",
+  "for_credits": "por {count} créditos",
+  "product_desc_single_use_5_credits": "Para un solo uso, incluye 5 créditos de análisis.",
   "file_retention_policy_single_use_desc": "Los archivos se conservan durante 30 días.",
   "product_name_professional_use": "ContractAnalyser Uso Profesional",
   "product_desc_professional_use": "Plan de Suscripción Profesional (Uso ilimitado para solo dos (2) usuarios)",
