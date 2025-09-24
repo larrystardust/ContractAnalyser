@@ -515,15 +515,26 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     // MODIFIED: Decrement credits_remaining for single-use orders
     if (consumedOrderId !== null) {
-      const { error: decrementError } = await supabase
+      // Fetch the current credits_remaining for the specific order
+      const { data: orderData, error: fetchOrderError } = await supabase
         .from('stripe_orders')
-        .update({ credits_remaining: (unconsumedOrders[0].credits_remaining || 0) - 1 }) // Decrement by 1
-        .eq('id', consumedOrderId);
+        .select('credits_remaining')
+        .eq('id', consumedOrderId)
+        .single(); // Use .single() as we expect one specific order
 
-      if (decrementError) {
-        console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
-      } else {
-        console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
+      if (fetchOrderError) {
+        console.error(`contract-analyzer: Error fetching order ${consumedOrderId} for decrement:`, fetchOrderError);
+      } else if (orderData) {
+        const { error: decrementError } = await supabase
+          .from('stripe_orders')
+          .update({ credits_remaining: (orderData.credits_remaining || 0) - 1 }) // Decrement by 1
+          .eq('id', consumedOrderId);
+
+        if (decrementError) {
+          console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
+        } else {
+          console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
+        }
       }
     }
 
