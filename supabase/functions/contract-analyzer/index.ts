@@ -43,18 +43,6 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// REMOVED: Local translations object, now in _shared/edge_translations.ts
-// const translations = {
-//   en: {
-//     analysis_complete_message: (contractName: string) => `Your contract "${contractName}" has been successfully analyzed.`,
-//     high_risk_findings_message: (contractName: string, count: number) => `Your contract "${contractName}" has ${count} high-risk findings. Review immediately.`,
-//     analysis_failed_message: (contractName: string) => `Contract analysis for "${contractName}" failed. Please try again or contact support.`
-//   },
-//   es: { /* ... */ },
-//   fr: { /* ... */ },
-//   ar: { /* ... */ }
-// };
-
 // MODIFIED: New helper function for translation with improved prompt
 async function translateText(text: string, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
@@ -220,13 +208,14 @@ Deno.serve(async (req) => {
 
     const customerId = customerData.customer_id;
 
+    // MODIFIED: Check for credits_remaining > 0 instead of is_consumed = false
     const { data: unconsumedOrders, error: ordersError } = await supabase
       .from('stripe_orders')
-      .select('id')
+      .select('id, credits_remaining')
       .eq('customer_id', customerId)
       .eq('payment_status', 'paid')
       .eq('status', 'completed')
-      .eq('is_consumed', false)
+      .gt('credits_remaining', 0) // MODIFIED: Check for credits_remaining > 0
       .limit(1);
 
     if (ordersError) {
@@ -524,16 +513,17 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       throw new Error(`Failed to finalize contract status: ${updateContractError.message}`);
     }
 
+    // MODIFIED: Decrement credits_remaining for single-use orders
     if (consumedOrderId !== null) {
-      const { error: consumeError } = await supabase
+      const { error: decrementError } = await supabase
         .from('stripe_orders')
-        .update({ is_consumed: true })
+        .update({ credits_remaining: (unconsumedOrders[0].credits_remaining || 0) - 1 }) // Decrement by 1
         .eq('id', consumedOrderId);
 
-      if (consumeError) {
-        console.error(`contract-analyzer: Error marking order ${consumedOrderId} as consumed:`, consumeError);
+      if (decrementError) {
+        console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
       } else {
-        // Successfully marked order as consumed.
+        console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
       }
     }
 
