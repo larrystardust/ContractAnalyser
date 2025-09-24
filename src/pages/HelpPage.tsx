@@ -150,7 +150,8 @@ const HelpPage: React.FC = () => {
             </p>
             <ul className="list-circle list-inside text-gray-700 ml-8 mt-1">
               <li>
-                <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_desc')}
+                {/* MODIFIED: Updated description for single-use purchases */}
+                <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_desc_credits')}
               </li>
               <li>
                 <strong>{t('active_subscription_plans_label')}:</strong> {t('active_subscription_plans_desc')}
