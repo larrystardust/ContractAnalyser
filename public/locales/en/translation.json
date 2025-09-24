@@ -1228,7 +1228,7 @@
   "jurisdiction_unknown": "Unknown",
   "unknown_product": "Unknown Product",
   "single_use_credits_display": "Single Use (Credits: {{credits}})",
-  "no_single_use_credits_or_subscription_message": "You have no single-use credits or active subscription. Please visit the",
+  "no_single_use_credits_or_subscription_message": "You have no single-use credits or active subscription. Please visit the ",
   "status_not_started": "Not Started",
   "status_incomplete": "Incomplete",
   "status_incomplete_expired": "Incomplete Expired",
