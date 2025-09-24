@@ -164,7 +164,7 @@ export const edgeTranslations = {
     single_use_purchases_terms_desc_credits: "For single-use purchases, your contract and its analysis results are retained for 30 days from the date of analysis. Each purchase grants 5 credits.",
     no_single_use_credits_available_alert: "You have no single-use credits available.",
     no_single_use_credits_or_subscription_message: "You have no single-use credits or active subscription. Please visit the",
-    single_use_retention_policy_credits: "For single-use purchases, your contract and its analysis results are retained for 30 days from the date of analysis. Each purchase grants 5 credits.",
+    single_use_retention_policy_credits: "For single-use purchases, your contract and its analysis results are retained for 30 days from the date of analysis. Each purchase grants 5 credits for 5 analysis.",
     max_files_storage_limit_policy: "For subscription plans, you can store up to {maxProfessional} files for Professional Use and up to {maxEnterprise} files for Enterprise Use.",
     single_use_credits_display: "{credits} credits",
   },
