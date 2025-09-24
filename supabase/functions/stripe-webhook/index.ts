@@ -136,7 +136,7 @@ async function handleEvent(event: Stripe.Event) {
           currency,
           payment_status: session.payment_status,
           status: 'completed',
-          is_consumed: false,
+          credits_remaining: creditsFromMetadata,
           price_id: priceId,
         });
 
