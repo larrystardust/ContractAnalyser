@@ -48,8 +48,8 @@ const LandingPagePricingSection: React.FC = () => {
         "price": product.pricing.one_time.price.toFixed(2),
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
-        "url": "https://www.contractanalyser.com/landing-pricing",
-        "name": `${t(product.name)} (${t('one_time')})` // MODIFIED: Translate product name
+        // MODIFIED: Update name to reflect credits
+        "name": `${t(product.name)} (${t('for_credits', { count: product.credits })})`
       });
     }
 
