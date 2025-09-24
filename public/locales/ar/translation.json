@@ -1287,7 +1287,7 @@
   "risk_medium": "متوسط",
   "risk_low": "منخفض",
   "risk_none": "لا يوجد",
-  "email_hello": "مرحباً {recipientName},",
+  "email_hello": "مرحباً {{recipientName}},",
   "email_analysis_complete": "تحليل عقدك القانوني اكتمل!",
   "email_view_full_report": "يمكنك عرض التقرير الكامل والنتائج التفصيلية مباشرة أدناه، أو النقر على الرابط لعرضه في متصفحك:",
   "email_view_full_report_button": "عرض التقرير الكامل في المتصفح",
