@@ -91,15 +91,24 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-between h-16">
+          {/* Left: Logo */}
           <div className="flex items-center">
             <Scale className="h-8 w-8 text-BlueLogo mr-2" />
             <span className="text-xl font-semibold text-BlueLogo">{t('app_name')}</span>
           </div>
 
-          {/* Desktop Navigation and Actions (visible on desktop) */}
-          <nav className="hidden md:flex items-center space-x-4">
+          {/* Center: Login/Signup buttons (only when not logged in, desktop only) */}
+          {!session?.user && showAuthButtons && (
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link>
+              <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link>
+            </div>
+          )}
+
+          {/* Right: Authenticated links/buttons + Language Selector (desktop only) */}
+          <div className="hidden md:flex items-center space-x-4">
             {session?.user ? (
               <>
                 <Link to="/dashboard" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('dashboard')}</Link>
@@ -132,12 +141,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 </Button>
               </>
             ) : (
-              showAuthButtons && (
-                <>
-                  <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link>
-                  <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link>
-                </>
-              )
+              null
             )}
             {/* Language Selector for Desktop */}
             <select
@@ -150,12 +154,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               <option value="es">ESPANOL</option>
               <option value="ar">العربية</option>
             </select>
-          </nav>
+          </div>
 
           {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
           <div className="md:hidden flex items-center space-x-2">
             {/* Language Selector for mobile */}
-            {/* MODIFIED: Added text-xs, px-2 py-1, w-24 */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
