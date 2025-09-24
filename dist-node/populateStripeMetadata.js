@@ -20,6 +20,7 @@ async function populateStripeProductMetadata() {
                 product_id: product.id,
                 max_users: product.name.includes('Professional Use') ? 2 : (product.name.includes('Enterprise Use') ? 999999 : null),
                 max_files: product.maxFiles || null,
+                credits: product.credits || null, // ADDED: Include credits
             });
         }
         if (product.pricing.yearly) {
@@ -28,6 +29,7 @@ async function populateStripeProductMetadata() {
                 product_id: product.id,
                 max_users: product.name.includes('Professional Use') ? 2 : (product.name.includes('Enterprise Use') ? 999999 : null),
                 max_files: product.maxFiles || null,
+                credits: product.credits || null, // ADDED: Include credits
             });
         }
         if (product.pricing.one_time) {
@@ -36,6 +38,7 @@ async function populateStripeProductMetadata() {
                 product_id: product.id,
                 max_users: null,
                 max_files: null,
+                credits: product.credits || null, // ADDED: Include credits
             });
         }
         for (const data of productData) {

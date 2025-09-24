@@ -1,11 +1,12 @@
 export const stripeProducts = [
     {
         id: 'prod_SuPs2GtzhJZTZi',
-        name: 'ContractAnalyser Single Use',
-        description: 'For one time use only',
+        name: 'product_name_single_use', // MODIFIED to translation key
+        description: 'product_desc_single_use_5_credits', // MODIFIED: New description key
         mode: 'payment',
-        fileRetentionPolicy: 'Files are retained for 30 days.',
+        fileRetentionPolicy: 'file_retention_policy_single_use_desc', // MODIFIED to translation key
         tier: 1,
+        credits: 5, // ADDED: New credits property
         pricing: {
             one_time: {
                 priceId: 'price_1Ryb2XChzNpNrJcahj0azZL0',
@@ -16,12 +17,12 @@ export const stripeProducts = [
     },
     {
         id: 'prod_SuPkz2RKm6alku',
-        name: 'ContractAnalyser Professional Use',
-        description: 'Professional Subscription Plan (Unlimited use for only two(2) users)',
+        name: 'product_name_professional_use', // MODIFIED to translation key
+        description: 'product_desc_professional_use', // MODIFIED to translation key
         mode: 'subscription',
-        fileRetentionPolicy: 'Files are retained for the duration of your active subscription plus a 30 day grace period.',
+        fileRetentionPolicy: 'file_retention_policy_subscription_desc', // MODIFIED to translation key
         maxFiles: 200,
-        max_users: 2, // ADDED: Correct max_users for Professional
+        max_users: 2,
         tier: 2,
         pricing: {
             monthly: {
@@ -38,12 +39,12 @@ export const stripeProducts = [
     },
     {
         id: 'prod_SuPptFOAtUB0Ve',
-        name: 'ContractAnalyser Enterprise Use',
-        description: 'Enterprise Subscription Plan (Unlimited use for unlimited users)',
+        name: 'product_name_enterprise_use', // MODIFIED to translation key
+        description: 'product_desc_enterprise_use', // MODIFIED to translation key
         mode: 'subscription',
-        fileRetentionPolicy: 'Files are retained for the duration of your active subscription plus a 30 day grace period.',
+        fileRetentionPolicy: 'file_retention_policy_subscription_desc', // MODIFIED to translation key
         maxFiles: 1000,
-        max_users: 999999, // ADDED: Correct max_users for Enterprise (using 999999 for consistency with existing "unlimited" logic)
+        max_users: 999999,
         tier: 3,
         pricing: {
             monthly: {
@@ -60,34 +61,34 @@ export const stripeProducts = [
     },
     // New Admin-Assigned Free Plans
     {
-        id: 'prod_AdminFreeProfessional', // Unique ID for admin-assigned free professional
-        name: 'ContractAnalyser Professional Use (Admin Free)',
-        description: 'Professional Subscription Plan (Admin Assigned - Free)',
-        mode: 'admin_assigned', // New mode
-        fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
+        id: 'prod_AdminFreeProfessional',
+        name: 'product_name_admin_free_professional', // MODIFIED to translation key
+        description: 'product_desc_admin_free_professional', // MODIFIED to translation key
+        mode: 'admin_assigned',
+        fileRetentionPolicy: 'file_retention_policy_admin_assigned_desc', // MODIFIED to translation key
         maxFiles: 200,
-        max_users: 2, // ADDED: Correct max_users for Admin Free Professional
+        max_users: 2,
         tier: 2,
         pricing: {
             monthly: {
-                priceId: 'price_admin_professional_free', // Unique ID, not a real Stripe price ID
+                priceId: 'price_admin_professional_free',
                 price: 0.00,
                 interval: 'month',
             },
         },
     },
     {
-        id: 'prod_AdminFreeEnterprise', // Unique ID for admin-assigned free enterprise
-        name: 'ContractAnalyser Enterprise Use (Admin Free)',
-        description: 'Enterprise Subscription Plan (Admin Assigned - Free)',
-        mode: 'admin_assigned', // New mode
-        fileRetentionPolicy: 'Files are retained indefinitely for admin-assigned plans.',
+        id: 'prod_AdminFreeEnterprise',
+        name: 'product_name_admin_free_enterprise', // MODIFIED to translation key
+        description: 'product_desc_admin_free_enterprise', // MODIFIED to translation key
+        mode: 'admin_assigned',
+        fileRetentionPolicy: 'file_retention_policy_admin_assigned_desc', // MODIFIED to translation key
         maxFiles: 1000,
-        max_users: 20, // ADDED: Correct max_users for Admin Free Enterprise
+        max_users: 10,
         tier: 3,
         pricing: {
             monthly: {
-                priceId: 'price_admin_enterprise_free', // Unique ID, not a real Stripe price ID
+                priceId: 'price_admin_enterprise_free',
                 price: 0.00,
                 interval: 'month',
             },
