@@ -165,7 +165,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       if (subscription && currentFileCount >= maxAllowedFiles) {
         alert(t('file_storage_limit_reached', { maxFiles: maxAllowedFiles }));
       } else if (!hasAvailableSingleUse()) {
-        alert(t('no_single_use_credit_alert'));
+        // MODIFIED: Updated message for no single-use credit
+        alert(t('no_single_use_credits_available_alert'));
       }
       return;
     }
@@ -230,8 +231,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                   <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>.
                 </p>
               ) : (
+                // MODIFIED: Updated message for no single-use credit or subscription
                 <p>
-                  {t('no_single_use_credit_or_subscription_message')}
+                  {t('no_single_use_credits_or_subscription_message')}
                   <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>
                   {t('to_start_uploading_analyzing_contracts')}.
                 </p>
@@ -245,7 +247,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
         <p className="font-bold">{t('important_data_retention_policy')}</p>
         <p className="text-sm">
-          {t('single_use_retention_policy')}
+          {t('single_use_retention_policy_credits')} {/* MODIFIED: Updated retention policy message */}
           {t('subscription_retention_policy')}
           {t('max_files_storage_limit_policy', { maxProfessional: 200, maxEnterprise: 1000 })}
           <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>.
