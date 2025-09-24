@@ -1013,7 +1013,7 @@
   "product_name_single_use": "ContractAnalyser Single Use",
   "product_desc_single_use": "For one time use only",
   "for_credits": "for {{count}} credits",
-  "product_desc_single_use_5_credits": "For one-time use, includes 5 analysis credits.",
+  "product_desc_single_use_5_credits": "For one-time use, includes 5 analysis credits (analyze 5 contracts).",
   "file_retention_policy_single_use_desc": "Files are retained for 30 days.",
   "product_name_professional_use": "ContractAnalyser Professional Use",
   "product_desc_professional_use": "Professional Subscription Plan (Unlimited use for only two(2) users)",
