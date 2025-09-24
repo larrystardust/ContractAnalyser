@@ -4,6 +4,7 @@ import { Database } from '../types/supabase';
 import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
 import { RealtimeChannel } from '@supabase/supabase-js';
 
+// MODIFIED: Update StripeOrder type to reflect credits_remaining
 export type StripeOrder = Database['public']['Tables']['stripe_orders']['Row'];
 
 export function useUserOrders() {
@@ -26,6 +27,7 @@ export function useUserOrders() {
       setLoading(true);
       setError(null);
 
+      // MODIFIED: Select credits_remaining instead of is_consumed
       const { data: ordersData, error: ordersError } = await supabase
         .from('stripe_orders')
         .select('*')
@@ -126,10 +128,11 @@ export function useUserOrders() {
       return false;
     }
 
+    // MODIFIED: Check if any order has credits_remaining > 0
     return orders.some(order => 
       order.payment_status === 'paid' && 
       order.status === 'completed' && 
-      order.is_consumed === false &&
+      (order.credits_remaining || 0) > 0 && // Check credits_remaining
       order.price_id === singleUsePriceId
     );
   };
@@ -143,10 +146,11 @@ export function useUserOrders() {
       return null;
     }
 
+    // MODIFIED: Return the ID of an order with credits_remaining > 0
     const availableOrder = orders.find(order => 
       order.payment_status === 'paid' && 
       order.status === 'completed' && 
-      order.is_consumed === false &&
+      (order.credits_remaining || 0) > 0 && // Check credits_remaining
       order.price_id === singleUsePriceId
     );
     return availableOrder ? availableOrder.id : null;
