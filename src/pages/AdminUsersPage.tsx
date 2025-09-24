@@ -139,6 +139,7 @@ const AdminUsersPage: React.FC = () => {
           return `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`;
         }
         // If no active subscription, check for single-use credits
+        // MODIFIED: Display single_use_credits
         if (item.single_use_credits > 0) {
           return t('single_use_credits_display', { credits: item.single_use_credits });
         }
