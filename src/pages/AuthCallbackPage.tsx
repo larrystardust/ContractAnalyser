@@ -84,20 +84,26 @@ const AuthCallbackPage: React.FC = () => {
 
         try {
           console.log('AuthCallbackPage: Starting try block.');
-          // Update login_at for the user
-          console.log('AuthCallbackPage: Attempting to update login_at.');
+          // Update login_at for the user (non-blocking)
+          console.log('AuthCallbackPage: Attempting to update login_at (non-blocking).');
           try {
-            console.log('AuthCallbackPage: Before await supabase.from("profiles").update({ login_at: ... }).');
-            await supabase
+            console.log('AuthCallbackPage: Before supabase.from("profiles").update({ login_at: ... }).');
+            supabase
               .from('profiles')
               .update({ login_at: new Date().toISOString() })
-              .eq('id', currentSession.user.id);
-            console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
+              .eq('id', currentSession.user.id)
+              .then(({ error: updateLoginError }) => {
+                if (updateLoginError) {
+                  console.error('AuthCallbackPage: Error updating login_at in background:', updateLoginError);
+                } else {
+                  console.log('AuthCallbackPage: login_at updated for user in background:', currentSession.user.id);
+                }
+              });
+            console.log('AuthCallbackPage: login_at update initiated (non-blocking).');
           } catch (updateLoginError) {
-            console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
-            // Do not re-throw, as this is not critical for login, but log it.
+            console.error('AuthCallbackPage: Sync error initiating login_at update:', updateLoginError);
           }
-          console.log('AuthCallbackPage: Finished login_at update section.');
+          console.log('AuthCallbackPage: Finished login_at update section (initiated).');
 
           // --- START: Language Preference Handling ---
           console.log('AuthCallbackPage: Starting language preference fetch.');
