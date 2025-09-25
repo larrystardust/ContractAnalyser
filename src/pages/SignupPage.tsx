@@ -182,7 +182,7 @@ const SignupPage: React.FC = () => {
     });
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: email.trim(), // MODIFIED: Trim the email input
       password,
       options: {
         emailRedirectTo: emailRedirectToUrl,
