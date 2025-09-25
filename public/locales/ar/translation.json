@@ -1314,5 +1314,15 @@
   "application_settings_maintenance_mode": "وضع الصيانة",
   "application_settings_maintenance_mode_hint": "قم بتمكين هذا لوضع التطبيق بأكمله في وضع الصيانة. سيتمكن المسؤولون فقط من الوصول إلى الموقع.",
   "maintenance_mode_enabled": "وضع الصيانة مُفعل",
-  "maintenance_mode_disabled": "وضع الصيانة مُعطل"
+  "maintenance_mode_disabled": "وضع الصيانة مُعطل",
+
+  "checking_status": "جاري التحقق من الحالة",
+  "active_subscription": "اشتراك نشط",
+  "unlimited_files_message": "لديك عدد غير محدود من تحميلات الملفات.",
+  "subscription_files_remaining": "لديك {{count}} ملفات متبقية من {{maxFiles}}.",
+  "single_use_credits_available": "الاعتمادات المتاحة للاستخدام الفردي",
+  "credits_remaining_message": "لديك {{count}} رصيد تحليل متبقي.",
+  "no_active_plan": "لا يوجد خطة نشطة",
+  "no_active_plan_message": "ليس لديك اشتراك نشط أو اعتمادات استخدام فردي متاحة. يرجى زيارة ",
+  "cannot_upload_no_credits_or_subscription": "لا يمكن التحميل: لا يوجد اشتراك نشط أو اعتمادات استخدام فردي متاحة."
 }
