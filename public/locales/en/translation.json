@@ -1319,5 +1319,15 @@
   "application_settings_maintenance_mode": "Maintenance Mode",
   "application_settings_maintenance_mode_hint": "Enable this to put the entire application into maintenance mode. Only administrators will be able to access the site.",
   "maintenance_mode_enabled": "Maintenance mode is ENABLED",
-  "maintenance_mode_disabled": "Maintenance mode is DISABLED"
+  "maintenance_mode_disabled": "Maintenance mode is DISABLED",
+  
+  "checking_status": "Checking Status",
+  "active_subscription": "Active Subscription",
+  "unlimited_files_message": "You have unlimited file uploads.",
+  "subscription_files_remaining": "You have {{count}} files remaining out of {{maxFiles}}.",
+  "single_use_credits_available": "Single-Use Credits Available",
+  "credits_remaining_message": "You have {{count}} analysis credits remaining.",
+  "no_active_plan": "No Active Plan",
+  "no_active_plan_message": "You do not have an active subscription or single-use credits. Please visit the ",
+  "cannot_upload_no_credits_or_subscription": "Cannot upload: No active subscription or available single-use credits."
 }
