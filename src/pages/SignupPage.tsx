@@ -180,6 +180,7 @@ const SignupPage: React.FC = () => {
         language_preference: i18n.language, // Still pass in user_metadata as a primary attempt
       },
     });
+    console.log('SignupPage: emailRedirectToUrl being used:', emailRedirectToUrl); // ADDED LOG
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(), // MODIFIED: Trim the email input
