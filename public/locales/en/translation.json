@@ -1329,5 +1329,6 @@
   "credits_remaining_message": "You have {{count}} analysis credits remaining.",
   "no_active_plan": "No Active Plan",
   "no_active_plan_message": "You do not have an available single-use credit or a subscription plan. Please purchase one from the ",
-  "cannot_upload_no_credits_or_subscription": "Cannot upload: No active subscription or available single-use credits."
+  "cannot_upload_no_credits_or_subscription": "Cannot upload: No active subscription or available single-use credits.",
+  "processing_authentication": "Processing authentication..."
 }
