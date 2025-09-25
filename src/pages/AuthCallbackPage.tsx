@@ -120,14 +120,14 @@ const AuthCallbackPage: React.FC = () => {
               setStatus('error');
               setMessage(t('failed_to_accept_invitation', { message: inviteError.message })); // MODIFIED
               processingRef.current = false;
-              navigate('/login', { replace: true });
+              setTimeout(() => navigate('/login', { replace: true }), 100); // ADDED setTimeout
               console.log('AuthCallbackPage: Redirecting to /login due to invitation error.'); // ADDED LOG
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage(t('authentication_invitation_successful')); // MODIFIED
               // After successful invitation acceptance, always redirect to the dashboard
-              navigate('/dashboard', { replace: true });
+              setTimeout(() => navigate('/dashboard', { replace: true }), 100); // ADDED setTimeout
               console.log('AuthCallbackPage: Redirecting to /dashboard after invitation acceptance.'); // ADDED LOG
               return; // Exit early after successful invitation and redirect
             }
@@ -135,7 +135,11 @@ const AuthCallbackPage: React.FC = () => {
             setMessage(t('authentication_successful')); // MODIFIED
           }
 
+          console.log('AuthCallbackPage: Before setStatus(success)'); // ADDED LOG
           setStatus('success');
+          console.log('AuthCallbackPage: After setStatus(success). Current status state should be "success".'); // ADDED LOG
+          console.log('AuthCallbackPage: Attempting redirection...'); // ADDED LOG
+
           // If no invitation token was processed, determine where to redirect based on admin status
           const { data: profileData, error: profileCheckError } = await supabase
             .from('profiles')
@@ -145,14 +149,14 @@ const AuthCallbackPage: React.FC = () => {
 
           if (profileCheckError) {
             console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
-            navigate('/dashboard', { replace: true });
-            console.log('AuthCallbackPage: Redirecting to /dashboard due to profileCheckError.'); // ADDED LOG
+            console.log('AuthCallbackPage: Navigating to /dashboard (profileCheckError).'); // ADDED LOG
+            setTimeout(() => navigate('/dashboard', { replace: true }), 100); // ADDED setTimeout
           } else if (profileData?.is_admin) {
-            navigate('/admin', { replace: true });
-            console.log('AuthCallbackPage: Redirecting to /admin.'); // ADDED LOG
+            console.log('AuthCallbackPage: Navigating to /admin (is_admin).'); // ADDED LOG
+            setTimeout(() => navigate('/admin', { replace: true }), 100); // ADDED setTimeout
           } else {
-            navigate('/dashboard', { replace: true });
-            console.log('AuthCallbackPage: Redirecting to /dashboard.'); // ADDED LOG
+            console.log('AuthCallbackPage: Navigating to /dashboard (default).'); // ADDED LOG
+            setTimeout(() => navigate('/dashboard', { replace: true }), 100); // ADDED setTimeout
           }
           // END Original Redirection Logic
 
@@ -160,28 +164,29 @@ const AuthCallbackPage: React.FC = () => {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(t('unexpected_error_occurred_auth', { message: overallError.message })); // MODIFIED
-          navigate('/login', { replace: true });
+          setTimeout(() => navigate('/login', { replace: true }), 100); // ADDED setTimeout
           console.log('AuthCallbackPage: Redirecting to /login due to overallError.'); // ADDED LOG
         } finally {
           processingRef.current = false;
+          console.log('AuthCallbackPage: processingRef.current set to false.'); // ADDED LOG
         }
       } else if (event === 'SIGNED_OUT') {
         setStatus('error');
         setMessage(t('session_ended')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        navigate('/login', { replace: true });
+        setTimeout(() => navigate('/login', { replace: true }), 100); // ADDED setTimeout
         console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.'); // ADDED LOG
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
         setMessage(t('auth_failed_no_session')); // MODIFIED
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
-        navigate('/login', { replace: true });
+        setTimeout(() => navigate('/login', { replace: true }), 100); // ADDED setTimeout
         console.log('AuthCallbackPage: Redirecting to /login due to INITIAL_SESSION with no session.'); // ADDED LOG
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage(t('email_not_confirmed')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        navigate('/login', { replace: true });
+        setTimeout(() => navigate('/login', { replace: true }), 100); // ADDED setTimeout
         console.log('AuthCallbackPage: Redirecting to /login because email not confirmed.'); // ADDED LOG
       }
     });
