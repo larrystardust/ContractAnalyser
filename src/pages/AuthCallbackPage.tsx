@@ -87,6 +87,7 @@ const AuthCallbackPage: React.FC = () => {
           // Update login_at for the user
           console.log('AuthCallbackPage: Attempting to update login_at.');
           try {
+            console.log('AuthCallbackPage: Before await supabase.from("profiles").update({ login_at: ... }).');
             await supabase
               .from('profiles')
               .update({ login_at: new Date().toISOString() })
@@ -94,10 +95,12 @@ const AuthCallbackPage: React.FC = () => {
             console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
           } catch (updateLoginError) {
             console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
+            // Do not re-throw, as this is not critical for login, but log it.
           }
+          console.log('AuthCallbackPage: Finished login_at update section.');
 
           // --- START: Language Preference Handling ---
-          console.log('AuthCallbackPage: Fetching user language preference...');
+          console.log('AuthCallbackPage: Starting language preference fetch.');
           const { data: profileDataForLanguage, error: profileLanguageError } = await supabase
             .from('profiles')
             .select('language_preference')
@@ -117,10 +120,11 @@ const AuthCallbackPage: React.FC = () => {
               document.documentElement.setAttribute('dir', 'ltr');
             }
           }
+          console.log('AuthCallbackPage: Finished language preference fetch.');
           // --- END: Language Preference Handling ---
 
           // Handle Invitation Acceptance (if token exists)
-          console.log('AuthCallbackPage: Checking for invitationToken.');
+          console.log('AuthCallbackPage: Starting invitation token check.');
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
             const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
@@ -135,22 +139,21 @@ const AuthCallbackPage: React.FC = () => {
               setStatus('error');
               setMessage(t('failed_to_accept_invitation', { message: inviteError.message }));
               processingRef.current = false;
-              console.log('AuthCallbackPage: Before navigate to /login due to invitation error.');
+              console.log('AuthCallbackPage: Calling navigate to /login due to invitation error.');
               navigate('/login', { replace: true });
-              console.log('AuthCallbackPage: After navigate to /login due to invitation error.');
               return; // Exit early after failed invitation and redirect
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage(t('authentication_invitation_successful'));
               // After successful invitation acceptance, always redirect to the dashboard
-              console.log('AuthCallbackPage: Before navigate to /dashboard after invitation acceptance.');
+              console.log('AuthCallbackPage: Calling navigate to /dashboard after invitation acceptance.');
               navigate('/dashboard', { replace: true });
-              console.log('AuthCallbackPage: After navigate to /dashboard after invitation acceptance.');
               return; // Exit early after successful invitation and redirect
             }
           } else {
             setMessage(t('authentication_successful'));
           }
+          console.log('AuthCallbackPage: Finished invitation token check.');
 
           console.log('AuthCallbackPage: Before setStatus(success)');
           setStatus('success');
@@ -167,43 +170,37 @@ const AuthCallbackPage: React.FC = () => {
 
           if (profileCheckError) {
             console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
-            console.log('AuthCallbackPage: Before navigate to /dashboard (profileCheckError).');
+            console.log('AuthCallbackPage: Calling navigate to /dashboard (profileCheckError).');
             navigate('/dashboard', { replace: true });
-            console.log('AuthCallbackPage: After navigate to /dashboard (profileCheckError).');
           } else if (profileData?.is_admin) {
-            console.log('AuthCallbackPage: Before navigate to /admin (is_admin).');
+            console.log('AuthCallbackPage: Calling navigate to /admin (is_admin).');
             navigate('/admin', { replace: true });
-            console.log('AuthCallbackPage: After navigate to /admin (is_admin).');
           } else {
-            console.log('AuthCallbackPage: Before navigate to /dashboard (default).');
+            console.log('AuthCallbackPage: Calling navigate to /dashboard (default).');
             navigate('/dashboard', { replace: true });
-            console.log('AuthCallbackPage: After navigate to /dashboard (default).');
           }
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
-          console.log('AuthCallbackPage: Before navigate to /login due to overallError.');
+          console.log('AuthCallbackPage: Calling navigate to /login due to overallError.');
           navigate('/login', { replace: true });
-          console.log('AuthCallbackPage: After navigate to /login due to overallError.');
           processingRef.current = false; // Allow retry if user refreshes or tries again
         }
       } else if (event === 'SIGNED_OUT') {
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
         setStatus('error');
         setMessage(t('session_ended'));
-        console.log('AuthCallbackPage: Before navigate to /login due to SIGNED_OUT event.');
+        console.log('AuthCallbackPage: Calling navigate to /login due to SIGNED_OUT event.');
         navigate('/login', { replace: true });
-        console.log('AuthCallbackPage: After navigate to /login due to SIGNED_OUT event.');
         processingRef.current = false;
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
         setStatus('error');
         setMessage(t('email_not_confirmed'));
-        console.log('AuthCallbackPage: Before navigate to /login because email not confirmed.');
+        console.log('AuthCallbackPage: Calling navigate to /login because email not confirmed.');
         navigate('/login', { replace: true });
-        console.log('AuthCallbackPage: After navigate to /login because email not confirmed.');
         processingRef.current = false;
       }
     });
