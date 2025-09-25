@@ -1013,7 +1013,7 @@
   "product_name_single_use": "ContractAnalyser Usage Unique",
   "product_desc_single_use": "Pour un usage unique seulement",
   "for_credits": "pour {{count}} crédits",
-  "product_desc_single_use_5_credits": "Pour un usage unique, comprend 5 crédits d'analyse (analyser 5 contrats).",
+  "product_desc_single_use_5_credits": "Pour un utilisateur unique, comprend 5 crédits d'analyse (analyse de 5 contrats).",
   "file_retention_policy_single_use_desc": "Les fichiers sont conservés pendant 30 jours.",
   "product_name_professional_use": "ContractAnalyser Usage Professionnel",
   "product_desc_professional_use": "Plan d'abonnement professionnel (Utilisation illimitée pour seulement deux (2) utilisateurs)",
