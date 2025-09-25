@@ -844,7 +844,6 @@
   "what_is_compliance_score_a": "The Compliance Score (0-100) is an overall assessment of how well the contract adheres to relevant legal and regulatory standards. A higher score indicates better compliance.",
   "what_is_data_protection_impact_q": "What is Data Protection Impact?",
   "what_is_data_protection_impact_a": "This section highlights any clauses or aspects of the contract that relate to data processing and privacy, assessing their impact on data protection compliance.",
-  "data_retention_policy_title": "Data Retention Policy",
   "how_long_retained_q": "How long are my uploaded files and analysis results retained?",
   "retention_period_depends": "The retention period for your uploaded contracts and their analysis results depends on your plan:",
   "single_use_purchases_label": "Single-Use Purchases:",
