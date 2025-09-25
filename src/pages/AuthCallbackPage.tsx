@@ -14,7 +14,7 @@ const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { t } = useTranslation(); // ADDED
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string>(t('processing_authentication')); // MODIFIED
@@ -63,20 +63,18 @@ const AuthCallbackPage: React.FC = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      if (processingRef.current) {
-        console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
-        return;
-      }
+      // Temporarily remove processingRef.current check for debugging redirection
+      // if (processingRef.current) {
+      //   console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
+      //   return;
+      // }
 
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
         processingRef.current = true; // Set flag to true
-
-        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
+        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present.');
+        console.log('AuthCallbackPage: currentSession.user.email_confirmed_at:', currentSession.user.email_confirmed_at); // ADDED LOG
 
         try {
-          // REMOVED: Call to create-user-profile Edge Function from here.
-          // This is now handled exclusively by SignupPage.tsx
-
           // Update login_at for the user
           try {
             await supabase
@@ -88,6 +86,37 @@ const AuthCallbackPage: React.FC = () => {
             console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
           }
 
+          // --- START: Language Preference Handling ---
+          console.log('AuthCallbackPage: Fetching user language preference...');
+          const { data: profileDataForLanguage, error: profileLanguageError } = await supabase
+            .from('profiles')
+            .select('language_preference')
+            .eq('id', currentSession.user.id)
+            .maybeSingle();
+
+          if (profileLanguageError) {
+            console.error('AuthCallbackPage: Error fetching user language preference:', profileLanguageError);
+          } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
+            console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference}`);
+            await i18n.changeLanguage(profileDataForLanguage.language_preference);
+            localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
+            // Also update dir attribute for RTL languages
+            if (profileDataForLanguage.language_preference === 'ar') {
+              document.documentElement.setAttribute('dir', 'rtl');
+            } else {
+              document.documentElement.setAttribute('dir', 'ltr');
+            }
+          }
+          // --- END: Language Preference Handling ---
+
+          // --- START: Simplified Redirection Logic for Debugging ---
+          console.log('AuthCallbackPage: Attempting simplified redirection to /dashboard.');
+          navigate('/dashboard', { replace: true });
+          return; // Exit early to prevent further logic from interfering during debug
+          // --- END: Simplified Redirection Logic for Debugging ---
+
+          // Original Redirection Logic (commented out for debugging)
+          /*
           // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
@@ -104,12 +133,14 @@ const AuthCallbackPage: React.FC = () => {
               setMessage(t('failed_to_accept_invitation', { message: inviteError.message })); // MODIFIED
               processingRef.current = false;
               navigate('/login', { replace: true });
+              console.log('AuthCallbackPage: Redirecting to /login due to invitation error.'); // ADDED LOG
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
               setMessage(t('authentication_invitation_successful')); // MODIFIED
               // After successful invitation acceptance, always redirect to the dashboard
               navigate('/dashboard', { replace: true });
+              console.log('AuthCallbackPage: Redirecting to /dashboard after invitation acceptance.'); // ADDED LOG
               return; // Exit early after successful invitation and redirect
             }
           } else {
@@ -125,20 +156,24 @@ const AuthCallbackPage: React.FC = () => {
             .maybeSingle();
 
           if (profileCheckError) {
-            console.error('Error checking admin status for redirection:', profileCheckError);
+            console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
             navigate('/dashboard', { replace: true });
+            console.log('AuthCallbackPage: Redirecting to /dashboard due to profileCheckError.'); // ADDED LOG
           } else if (profileData?.is_admin) {
             navigate('/admin', { replace: true });
+            console.log('AuthCallbackPage: Redirecting to /admin.'); // ADDED LOG
           } else {
             navigate('/dashboard', { replace: true });
+            console.log('AuthCallbackPage: Redirecting to /dashboard.'); // ADDED LOG
           }
-
+          */
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
           setMessage(t('unexpected_error_occurred_auth', { message: overallError.message })); // MODIFIED
           navigate('/login', { replace: true });
+          console.log('AuthCallbackPage: Redirecting to /login due to overallError.'); // ADDED LOG
         } finally {
           processingRef.current = false;
         }
@@ -147,16 +182,19 @@ const AuthCallbackPage: React.FC = () => {
         setMessage(t('session_ended')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
         navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.'); // ADDED LOG
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
         setMessage(t('auth_failed_no_session')); // MODIFIED
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
         navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login due to INITIAL_SESSION with no session.'); // ADDED LOG
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage(t('email_not_confirmed')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
         navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login because email not confirmed.'); // ADDED LOG
       }
     });
 
@@ -166,7 +204,7 @@ const AuthCallbackPage: React.FC = () => {
       // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams, location.hash, t]); // MODIFIED: Added t to dependency array
+  }, [navigate, supabase.auth, searchParams, location.hash, t, i18n]); // MODIFIED: Added i18n to dependency array
 
   const renderContent = () => {
     switch (status) {
