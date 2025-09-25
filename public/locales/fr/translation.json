@@ -1328,6 +1328,6 @@
   "single_use_credits_available": "Crédits à Usage Unique Disponibles",
   "credits_remaining_message": "Il vous reste {{count}} crédits d'analyse.",
   "no_active_plan": "Aucun Plan Actif",
-  "no_active_plan_message": "Vous n'avez pas d'abonnement actif ni de crédits à usage unique. Veuillez visiter la",
+  "no_active_plan_message": "Vous n'avez pas d'abonnement actif ni de crédits à usage unique. Veuillez visiter la ",
   "cannot_upload_no_credits_or_subscription": "Impossible de télécharger : Aucun abonnement actif ou crédits à usage unique disponibles."
 }
