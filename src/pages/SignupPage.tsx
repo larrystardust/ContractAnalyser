@@ -217,6 +217,7 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
+      localStorage.setItem('i18nextLng', i18n.language); // ADDED: Store selected language in localStorage
       navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
 
