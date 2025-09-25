@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, AlertTriangle } from 'lucide-react'; // ADDED: AlertTriangle
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
