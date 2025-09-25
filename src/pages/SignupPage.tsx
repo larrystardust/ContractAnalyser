@@ -167,8 +167,8 @@ const SignupPage: React.FC = () => {
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
-    // MODIFIED: Add current i18n language to emailRedirectToUrl
-    emailRedirectToUrl += `&lang=${i18n.language}`;
+    // REMOVED: Add current i18n language to emailRedirectToUrl
+    // emailRedirectToUrl += `&lang=${i18n.language}`;
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
@@ -199,7 +199,7 @@ const SignupPage: React.FC = () => {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      if (signUpData.user) {
+      if (signUpData.user) { 
         try {
           await supabase.functions.invoke('create-user-profile', {
             body: {
