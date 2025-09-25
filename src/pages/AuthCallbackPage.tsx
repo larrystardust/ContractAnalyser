@@ -64,25 +64,22 @@ const AuthCallbackPage: React.FC = () => {
       console.log('AuthCallbackPage: Auth state change event:', event);
       console.log('AuthCallbackPage: Current Session object:', currentSession);
 
-      // If INITIAL_SESSION or SIGNED_IN occurs but currentSession is null, it means something went wrong
-      // and the session couldn't be established or re-hydrated.
-      if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && !currentSession) {
-        console.error('AuthCallbackPage: INITIAL_SESSION or SIGNED_IN event with no currentSession. Authentication failed.');
-        setStatus('error');
-        setMessage(t('auth_failed_no_session'));
-        processingRef.current = false; // Allow re-processing if user tries again
-        setTimeout(() => navigate('/login', { replace: true }), 100);
-        console.log('AuthCallbackPage: Redirecting to /login due to no session.');
+      // Prevent re-entry if we've already started processing a successful sign-in
+      if (processingRef.current) {
+        console.log('AuthCallbackPage: Already processing a successful sign-in, skipping this auth state change.');
         return;
       }
 
+      // Handle INITIAL_SESSION with no currentSession - just log and wait for SIGNED_IN
+      if (event === 'INITIAL_SESSION' && !currentSession) {
+        console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Waiting for SIGNED_IN or explicit failure.');
+        return;
+      }
+
+      // This is the definitive event for a successful login
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
-        if (processingRef.current) { // Check here to prevent re-entry after a valid SIGNED_IN
-          console.log('AuthCallbackPage: Already processing a SIGNED_IN event, skipping this auth state change.');
-          return;
-        }
         console.log('AuthCallbackPage: Entering SIGNED_IN block for the first time.');
-        processingRef.current = true; // Mark as processing
+        processingRef.current = true; // Mark as processing successful sign-in
         console.log('AuthCallbackPage: processingRef.current set to true.');
 
         try {
@@ -180,9 +177,7 @@ const AuthCallbackPage: React.FC = () => {
           setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
           setTimeout(() => navigate('/login', { replace: true }), 100);
           console.log('AuthCallbackPage: Redirecting to /login due to overallError.');
-        } finally {
-          // processingRef.current is kept true to prevent further processing in this instance
-          // It will be reset on component unmount or if a new auth flow starts.
+          processingRef.current = false; // Allow retry if user refreshes or tries again
         }
       } else if (event === 'SIGNED_OUT') {
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
@@ -190,12 +185,14 @@ const AuthCallbackPage: React.FC = () => {
         setMessage(t('session_ended'));
         setTimeout(() => navigate('/login', { replace: true }), 100);
         console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.');
+        processingRef.current = false;
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
         setStatus('error');
         setMessage(t('email_not_confirmed'));
         setTimeout(() => navigate('/login', { replace: true }), 100);
         console.log('AuthCallbackPage: Redirecting to /login because email not confirmed.');
+        processingRef.current = false;
       }
     });
 
