@@ -1311,5 +1311,15 @@
   "application_settings_maintenance_mode": "Modo Mantenimiento",
   "application_settings_maintenance_mode_hint": "Habilite esto para poner toda la aplicación en modo mantenimiento. Solo los administradores podrán acceder al sitio.",
   "maintenance_mode_enabled": "El modo mantenimiento está ACTIVADO",
-  "maintenance_mode_disabled": "El modo mantenimiento está DESACTIVADO"
+  "maintenance_mode_disabled": "El modo mantenimiento está DESACTIVADO",
+
+  "checking_status": "Verificando Estado",
+  "active_subscription": "Suscripción Activa",
+  "unlimited_files_message": "Tienes subidas de archivos ilimitadas.",
+  "subscription_files_remaining": "Te quedan {{count}} archivos de {{maxFiles}}.",
+  "single_use_credits_available": "Créditos de Uso Único Disponibles",
+  "credits_remaining_message": "Te quedan {{count}} créditos de análisis.",
+  "no_active_plan": "Sin Plan Activo",
+  "no_active_plan_message": "No tienes una suscripción activa o créditos de un solo uso disponibles. Por favor, visita la ",
+  "cannot_upload_no_credits_or_subscription": "No se puede subir: No hay suscripción activa o créditos de un solo uso disponibles."
 }
