@@ -26,38 +26,7 @@ const AuthCallbackPage: React.FC = () => {
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
-    let finalRedirectPath: string | null = null;
-
-    // 1. Try to get 'redirect' from query parameters (for general redirects from AuthGuard/AdminGuard)
-    const queryRedirectParam = searchParams.get('redirect');
-    if (queryRedirectParam) {
-      finalRedirectPath = decodeURIComponent(queryRedirectParam);
-      console.log('AuthCallbackPage: Found redirect in query params:', finalRedirectPath);
-    }
-
-    // 2. Also check for 'redirect_to' in the URL hash (common for Supabase email confirmations)
-    // This takes precedence if found, as it's the direct instruction from Supabase.
-    const hashParams = new URLSearchParams(location.hash.substring(1)); // Remove '#'
-    const hashRedirectTo = hashParams.get('redirect_to');
-    if (hashRedirectTo) {
-      finalRedirectPath = decodeURIComponent(hashRedirectTo);
-      console.log('AuthCallbackPage: Found redirect_to in hash:', hashRedirectTo);
-    }
-
-    // Check if the finalRedirectPath contains an invitation token
-    let invitationToken: string | null = null;
-    if (finalRedirectPath) {
-      try {
-        const url = new URL(finalRedirectPath, window.location.origin); // Use origin as base for relative paths
-        const tokenParam = url.searchParams.get('token');
-        if (url.pathname === '/accept-invitation' && tokenParam) {
-          invitationToken = tokenParam;
-          console.log('AuthCallbackPage: Found invitation token in final redirect path:', invitationToken);
-        }
-      } catch (e) {
-        console.error('AuthCallbackPage: Error parsing final redirect path URL for token:', e);
-      }
-    }
+    // Removed finalRedirectPath, invitationToken logic as it's not used in this simplified test
 
     // Listen for auth state changes to detect when the session is set by the redirect
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
@@ -83,100 +52,25 @@ const AuthCallbackPage: React.FC = () => {
         console.log('AuthCallbackPage: processingRef.current set to true.');
 
         try {
-          // Update login_at for the user
-          try {
-            await supabase
-              .from('profiles')
-              .update({ login_at: new Date().toISOString() })
-              .eq('id', currentSession.user.id);
-            console.log('AuthCallbackPage: login_at updated for user:', currentSession.user.id);
-          } catch (updateLoginError) {
-            console.error('AuthCallbackPage: Error updating login_at:', updateLoginError);
-          }
-
-          // --- START: Language Preference Handling ---
-          console.log('AuthCallbackPage: Fetching user language preference...');
-          const { data: profileDataForLanguage, error: profileLanguageError } = await supabase
-            .from('profiles')
-            .select('language_preference')
-            .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileLanguageError) {
-            console.error('AuthCallbackPage: Error fetching user language preference:', profileLanguageError);
-          } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
-            console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference}`);
-            await i18n.changeLanguage(profileDataForLanguage.language_preference);
-            localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
-            // Also update dir attribute for RTL languages
-            if (profileDataForLanguage.language_preference === 'ar') {
-              document.documentElement.setAttribute('dir', 'rtl');
-            } else {
-              document.documentElement.setAttribute('dir', 'ltr');
-            }
-          }
-          // --- END: Language Preference Handling ---
-
-          // Handle Invitation Acceptance (if token exists)
-          if (invitationToken) {
-            console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
-            const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
-              body: { invitation_token: invitationToken },
-              headers: {
-                'Authorization': `Bearer ${currentSession.access_token}`,
-              },
-            });
-
-            if (inviteError) {
-              console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
-              setStatus('error');
-              setMessage(t('failed_to_accept_invitation', { message: inviteError.message }));
-              processingRef.current = false;
-              setTimeout(() => navigate('/login', { replace: true }), 100);
-              console.log('AuthCallbackPage: Redirecting to /login due to invitation error.');
-              return;
-            } else {
-              console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
-              setMessage(t('authentication_invitation_successful'));
-              // After successful invitation acceptance, always redirect to the dashboard
-              setTimeout(() => navigate('/dashboard', { replace: true }), 100);
-              console.log('AuthCallbackPage: Redirecting to /dashboard after invitation acceptance.');
-              return; // Exit early after successful invitation and redirect
-            }
-          } else {
-            setMessage(t('authentication_successful'));
-          }
-
-          console.log('AuthCallbackPage: Before setStatus(success)');
+          // --- SIMPLIFIED LOGIC FOR TESTING NAVIGATION ---
+          console.log('AuthCallbackPage: Session confirmed. Setting status to success and attempting direct navigation.');
           setStatus('success');
-          console.log('AuthCallbackPage: After setStatus(success). Current status state should be "success".');
-          console.log('AuthCallbackPage: Attempting navigation...');
+          setMessage(t('authentication_successful'));
 
-          // If no invitation token was processed, determine where to redirect based on admin status
-          const { data: profileData, error: profileCheckError } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileCheckError) {
-            console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
-            console.log('AuthCallbackPage: Navigating to /dashboard (profileCheckError).');
-            setTimeout(() => navigate('/dashboard', { replace: true }), 100);
-          } else if (profileData?.is_admin) {
-            console.log('AuthCallbackPage: Navigating to /admin (is_admin).');
-            setTimeout(() => navigate('/admin', { replace: true }), 100);
-          } else {
-            console.log('AuthCallbackPage: Navigating to /dashboard (default).');
-            setTimeout(() => navigate('/dashboard', { replace: true }), 100);
-          }
+          // Use a small timeout to ensure React state updates are processed before navigation
+          setTimeout(() => {
+            console.log('AuthCallbackPage: Inside setTimeout callback. Attempting navigate to /dashboard.');
+            navigate('/dashboard', { replace: true });
+            console.log('AuthCallbackPage: navigate() call executed.');
+          }, 100);
+          // --- END SIMPLIFIED LOGIC ---
 
         } catch (overallError: any) {
-          console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
+          console.error('AuthCallbackPage: Unexpected error during simplified auth callback processing:', overallError);
           setStatus('error');
           setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
           setTimeout(() => navigate('/login', { replace: true }), 100);
-          console.log('AuthCallbackPage: Redirecting to /login due to overallError.');
+          console.log('AuthCallbackPage: Redirecting to /login due to overallError in simplified flow.');
           processingRef.current = false; // Allow retry if user refreshes or tries again
         }
       } else if (event === 'SIGNED_OUT') {
@@ -202,7 +96,7 @@ const AuthCallbackPage: React.FC = () => {
       authListener.subscription?.unsubscribe();
       processingRef.current = false; // Reset flag on unmount
     };
-  }, [navigate, supabase.auth, searchParams, location.hash, t, i18n]);
+  }, [navigate, supabase.auth, t]); // Removed searchParams, location.hash, i18n as they are not used in this simplified test
 
   const renderContent = () => {
     switch (status) {
