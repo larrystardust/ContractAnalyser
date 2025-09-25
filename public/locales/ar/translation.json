@@ -1323,6 +1323,6 @@
   "single_use_credits_available": "الاعتمادات المتاحة للاستخدام الفردي",
   "credits_remaining_message": "لديك {{count}} رصيد تحليل متبقي.",
   "no_active_plan": "لا يوجد خطة نشطة",
-  "no_active_plan_message": "ليس لديك اشتراك نشط أو اعتمادات استخدام فردي متاحة. يرجى زيارة ",
+  "no_active_plan_message": "ليس لديك رصيد استخدام فردي متاح أو خطة اشتراك. يرجى شراء واحدة من ",
   "cannot_upload_no_credits_or_subscription": "لا يمكن التحميل: لا يوجد اشتراك نشط أو اعتمادات استخدام فردي متاحة."
 }
