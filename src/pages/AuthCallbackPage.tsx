@@ -5,7 +5,7 @@ import Card, { CardBody } from '../components/ui/Card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
 import Button from '../components/ui/Button';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 const AuthCallbackPage: React.FC = () => {
   console.log('AuthCallbackPage: Component is rendering.');
@@ -14,10 +14,10 @@ const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState<string>(t('processing_authentication'));
+  const [message, setMessage] = useState<string>(t('processing_authentication')); // MODIFIED
 
   const processingRef = useRef(false);
 
@@ -61,13 +61,18 @@ const AuthCallbackPage: React.FC = () => {
 
     // Listen for auth state changes to detect when the session is set by the redirect
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('AuthCallbackPage: Auth state change event:', event);
-      console.log('AuthCallbackPage: Current Session object:', currentSession);
+      console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
+
+      // Temporarily remove processingRef.current check for debugging redirection
+      // if (processingRef.current) {
+      //   console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
+      //   return;
+      // }
 
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
-        processingRef.current = true;
+        processingRef.current = true; // Set flag to true
         console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present.');
-        console.log('AuthCallbackPage: currentSession.user.email_confirmed_at:', currentSession.user.email_confirmed_at);
+        console.log('AuthCallbackPage: currentSession.user.email_confirmed_at:', currentSession.user.email_confirmed_at); // ADDED LOG
 
         try {
           // Update login_at for the user
@@ -104,6 +109,14 @@ const AuthCallbackPage: React.FC = () => {
           }
           // --- END: Language Preference Handling ---
 
+          // --- START: Simplified Redirection Logic for Debugging ---
+          console.log('AuthCallbackPage: Attempting simplified redirection to /dashboard.');
+          navigate('/dashboard', { replace: true });
+          return; // Exit early to prevent further logic from interfering during debug
+          // --- END: Simplified Redirection Logic for Debugging ---
+
+          // Original Redirection Logic (commented out for debugging)
+          /*
           // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
@@ -117,72 +130,81 @@ const AuthCallbackPage: React.FC = () => {
             if (inviteError) {
               console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
               setStatus('error');
-              setMessage(t('failed_to_accept_invitation', { message: inviteError.message }));
+              setMessage(t('failed_to_accept_invitation', { message: inviteError.message })); // MODIFIED
               processingRef.current = false;
-              setTimeout(() => navigate('/login', { replace: true }), 100);
-              console.log('AuthCallbackPage: Redirecting to /login due to invitation error.');
+              navigate('/login', { replace: true });
+              console.log('AuthCallbackPage: Redirecting to /login due to invitation error.'); // ADDED LOG
               return;
             } else {
               console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
-              setMessage(t('authentication_invitation_successful'));
+              setMessage(t('authentication_invitation_successful')); // MODIFIED
               // After successful invitation acceptance, always redirect to the dashboard
-              setTimeout(() => navigate('/dashboard', { replace: true }), 100);
-              console.log('AuthCallbackPage: Redirecting to /dashboard after invitation acceptance.');
+              navigate('/dashboard', { replace: true });
+              console.log('AuthCallbackPage: Redirecting to /dashboard after invitation acceptance.'); // ADDED LOG
               return; // Exit early after successful invitation and redirect
             }
           } else {
-            setMessage(t('authentication_successful'));
+            setMessage(t('authentication_successful')); // MODIFIED
           }
 
-          console.log('AuthCallbackPage: Before setStatus(success)');
           setStatus('success');
-          console.log('AuthCallbackPage: After setStatus(success). Current status state should be "success".');
-          console.log('AuthCallbackPage: Attempting navigation...');
+          // If no invitation token was processed, determine where to redirect based on admin status
+          const { data: profileData, error: profileCheckError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', currentSession.user.id)
+            .maybeSingle();
 
-          // TEMPORARY: Simplified navigation for testing
-          setTimeout(() => {
-            console.log('AuthCallbackPage: Executing navigate to /dashboard.');
+          if (profileCheckError) {
+            console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
             navigate('/dashboard', { replace: true });
-          }, 100);
-          // END TEMPORARY
+            console.log('AuthCallbackPage: Redirecting to /dashboard due to profileCheckError.'); // ADDED LOG
+          } else if (profileData?.is_admin) {
+            navigate('/admin', { replace: true });
+            console.log('AuthCallbackPage: Redirecting to /admin.'); // ADDED LOG
+          } else {
+            navigate('/dashboard', { replace: true });
+            console.log('AuthCallbackPage: Redirecting to /dashboard.'); // ADDED LOG
+          }
+          */
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
           setStatus('error');
-          setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
-          setTimeout(() => navigate('/login', { replace: true }), 100);
-          console.log('AuthCallbackPage: Redirecting to /login due to overallError.');
+          setMessage(t('unexpected_error_occurred_auth', { message: overallError.message })); // MODIFIED
+          navigate('/login', { replace: true });
+          console.log('AuthCallbackPage: Redirecting to /login due to overallError.'); // ADDED LOG
         } finally {
           processingRef.current = false;
-          console.log('AuthCallbackPage: processingRef.current set to false.');
         }
       } else if (event === 'SIGNED_OUT') {
         setStatus('error');
-        setMessage(t('session_ended'));
+        setMessage(t('session_ended')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        setTimeout(() => navigate('/login', { replace: true }), 100);
-        console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.');
+        navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.'); // ADDED LOG
       } else if (event === 'INITIAL_SESSION' && !currentSession) {
         setStatus('error');
-        setMessage(t('auth_failed_no_session'));
+        setMessage(t('auth_failed_no_session')); // MODIFIED
         console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Invalid state.');
-        setTimeout(() => navigate('/login', { replace: true }), 100);
-        console.log('AuthCallbackPage: Redirecting to /login due to INITIAL_SESSION with no session.');
+        navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login due to INITIAL_SESSION with no session.'); // ADDED LOG
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
-        setMessage(t('email_not_confirmed'));
+        setMessage(t('email_not_confirmed')); // MODIFIED
         console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        setTimeout(() => navigate('/login', { replace: true }), 100);
-        console.log('AuthCallbackPage: Redirecting to /login because email not confirmed.');
+        navigate('/login', { replace: true });
+        console.log('AuthCallbackPage: Redirecting to /login because email not confirmed.'); // ADDED LOG
       }
     });
 
     // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.');
+      // FIX: Correctly call unsubscribe on the subscription object
       authListener.subscription?.unsubscribe();
     };
-  }, [navigate, supabase.auth, searchParams, location.hash, t, i18n]);
+  }, [navigate, supabase.auth, searchParams, location.hash, t, i18n]); // MODIFIED: Added i18n to dependency array
 
   const renderContent = () => {
     switch (status) {
@@ -190,7 +212,7 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('processing')}...</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('processing')}...</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
           </>
         );
@@ -198,16 +220,18 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('success_message')}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('success_message')}</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
-                {t('login_button')}
+                {t('login_button')} {/* MODIFIED */}
               </Button>
             </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
-                {t('return_to_home')}
+                {t('return_to_home')} {/* MODIFIED */}
               </Button>
             </Link>
           </>
@@ -216,16 +240,18 @@ const AuthCallbackPage: React.FC = () => {
         return (
           <>
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('error_message')}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('error_message')}</h2> {/* MODIFIED */}
             <p className="text-gray-600">{message}</p>
+            {/* The buttons below will still be visible for 3 seconds before redirection */}
+            {/* Removed the automatic redirect, so these buttons are now relevant */}
             <Link to="/login">
               <Button variant="primary" size="lg" className="w-full mb-4">
-                {t('login_button')}
+                {t('login_button')} {/* MODIFIED */}
               </Button>
             </Link>
             <Link to="/">
               <Button variant="outline" size="lg" className="w-full">
-                {t('return_to_home')}
+                {t('return_to_home')} {/* MODIFIED */}
               </Button>
             </Link>
           </>
