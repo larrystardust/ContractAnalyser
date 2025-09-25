@@ -1329,5 +1329,16 @@
   "no_active_plan": "No Active Plan",
   "no_active_plan_message": "You do not have an available single-use credit or a subscription plan. Please purchase one from the ",
   "cannot_upload_no_credits_or_subscription": "Cannot upload: No active subscription or available single-use credits.",
-  "processing_authentication": "Processing authentication..."
+  "processing_authentication": "Processing authentication...",
+
+  "testimonials_title": "What Our Clients Say",
+  "testimonial_1_text": "ContractAnalyser has revolutionized our legal review process. What used to take days now takes minutes, allowing us to focus on strategic tasks. The accuracy and insights are unparalleled.",
+  "testimonial_1_author": "Sarah Chen",
+  "testimonial_1_title": "General Counsel, Tech Innovations Inc.",
+  "testimonial_2_text": "The AI-powered analysis is incredibly thorough. We've identified critical risks that manual reviews often missed, significantly strengthening our contract compliance and reducing potential liabilities.",
+  "testimonial_2_author": "David Lee",
+  "testimonial_2_title": "Head of Legal, Global Ventures",
+  "testimonial_3_text": "As a small business owner, legal fees for contract review were a huge burden. ContractAnalyser provides professional-grade analysis at a fraction of the cost, making legal compliance accessible and affordable.",
+  "testimonial_3_author": "Maria Rodriguez",
+  "testimonial_3_title": "CEO, Creative Solutions LLC"
 }
