@@ -4,6 +4,7 @@ import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChar
 import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData'; // ADDED: Import StructuredData
 import { useTranslation } from 'react-i18next'; // ADDED
+import TestimonialsSection from '../components/TestimonialsSection'; // ADDED: Import TestimonialsSection
 
 const LandingPage: React.FC = () => {
   const { t } = useTranslation(); // ADDED
@@ -255,6 +256,9 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* ADDED: Testimonials Section */}
+        <TestimonialsSection />
 
         {/* Transparent Pricing Section */}
         <section className="py-16 bg-gray-100 dark:bg-gray-700">
