@@ -61,13 +61,8 @@ const AuthCallbackPage: React.FC = () => {
 
     // Listen for auth state changes to detect when the session is set by the redirect
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
-
-      // Temporarily remove processingRef.current check for debugging redirection
-      // if (processingRef.current) {
-      //   console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
-      //   return;
-      // }
+      console.log('AuthCallbackPage: Auth state change event:', event);
+      console.log('AuthCallbackPage: Current Session object:', currentSession); // ADDED LOG
 
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
         processingRef.current = true; // Set flag to true
@@ -109,14 +104,7 @@ const AuthCallbackPage: React.FC = () => {
           }
           // --- END: Language Preference Handling ---
 
-          // --- START: Simplified Redirection Logic for Debugging ---
-          console.log('AuthCallbackPage: Attempting simplified redirection to /dashboard.');
-          navigate('/dashboard', { replace: true });
-          return; // Exit early to prevent further logic from interfering during debug
-          // --- END: Simplified Redirection Logic for Debugging ---
-
-          // Original Redirection Logic (commented out for debugging)
-          /*
+          // Original Redirection Logic (UNCOMMENTED)
           // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
@@ -166,7 +154,7 @@ const AuthCallbackPage: React.FC = () => {
             navigate('/dashboard', { replace: true });
             console.log('AuthCallbackPage: Redirecting to /dashboard.'); // ADDED LOG
           }
-          */
+          // END Original Redirection Logic
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
