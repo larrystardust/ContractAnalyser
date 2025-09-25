@@ -167,8 +167,8 @@ const SignupPage: React.FC = () => {
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
-    // ADDED: Add current i18n language to emailRedirectToUrl
-    emailRedirectToUrl += `&lang=${i18n.language}`;
+    // REMOVED: Add current i18n language to emailRedirectToUrl
+    // emailRedirectToUrl += `&lang=${i18n.language}`;
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
