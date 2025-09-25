@@ -64,17 +64,17 @@ const AuthCallbackPage: React.FC = () => {
       console.log('AuthCallbackPage: Auth state change event:', event);
       console.log('AuthCallbackPage: Current Session object:', currentSession);
 
-      // ADDED: Explicit check for empty hash on INITIAL_SESSION or SIGNED_IN
-      if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && !currentSession && !window.location.hash.includes('access_token')) {
-        console.error('AuthCallbackPage: Missing authentication tokens in URL hash. Cannot proceed.');
+      // If INITIAL_SESSION or SIGNED_IN occurs but currentSession is null, it means something went wrong
+      // and the session couldn't be established or re-hydrated.
+      if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && !currentSession) {
+        console.error('AuthCallbackPage: INITIAL_SESSION or SIGNED_IN event with no currentSession. Authentication failed.');
         setStatus('error');
-        setMessage(t('auth_failed_missing_tokens')); // New translation key needed
+        setMessage(t('auth_failed_no_session'));
         processingRef.current = false;
-        // Optionally, redirect to login after a delay or show buttons
-        setTimeout(() => navigate('/login', { replace: true }), 3000);
+        setTimeout(() => navigate('/login', { replace: true }), 100);
+        console.log('AuthCallbackPage: Redirecting to /login due to no session.');
         return;
       }
-
 
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
         processingRef.current = true;
@@ -186,10 +186,6 @@ const AuthCallbackPage: React.FC = () => {
         console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
         setTimeout(() => navigate('/login', { replace: true }), 100);
         console.log('AuthCallbackPage: Redirecting to /login due to SIGNED_OUT event.');
-      } else if (event === 'INITIAL_SESSION' && !currentSession) {
-        // This block is now handled by the explicit hash check above if tokens are missing
-        // If currentSession is null but hash has tokens, Supabase will eventually fire SIGNED_IN
-        console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Waiting for SIGNED_IN or hash check to fail.');
       } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
         setStatus('error');
         setMessage(t('email_not_confirmed'));
