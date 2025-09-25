@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
+import { Sparkles } from 'lucide-react'; // ADDED: Import Sparkles
 
 // Import text extraction libraries
 import * as pdfjsLib from 'pdfjs-dist';
@@ -24,7 +25,7 @@ interface ContractUploadProps {
 
 const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => {
   const { contracts, addContract, loadingContracts, refetchContracts } = useContracts();
-  const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError } = useUserOrders();
+  const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError, getTotalSingleUseCredits } = useUserOrders(); // MODIFIED: Get getTotalSingleUseCredits
   const { subscription, loading: loadingSubscription } = useSubscription();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -59,10 +60,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   const currentFileCount = contracts.length;
   // Determine max allowed files based on subscription, default to a very high number if no quota
   const maxAllowedFiles = subscription?.max_files || Infinity;
+  // ADDED: Get total single-use credits
+  const creditsRemaining = getTotalSingleUseCredits();
 
   // Determine if the user can upload based on available credits OR subscription quota
   const canUpload = !uploading && (
-    (hasAvailableSingleUse() && !loadingOrders) ||
+    (creditsRemaining > 0 && !loadingOrders) || // MODIFIED: Use creditsRemaining
     (subscription && !loadingSubscription && currentFileCount < maxAllowedFiles)
   );
 
@@ -162,12 +165,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canUpload) {
-      if (subscription && currentFileCount >= maxAllowedFiles) {
-        alert(t('file_storage_limit_reached', { maxFiles: maxAllowedFiles }));
-      } else if (!hasAvailableSingleUse()) {
-        // MODIFIED: Updated message for no single-use credit
-        alert(t('no_single_use_credits_available_alert'));
-      }
+      // MODIFIED: Removed specific alerts here as the blue box will show status
+      alert(t('cannot_upload_no_credits_or_subscription'));
       return;
     }
     if (file && selectedJurisdictions.length > 0) {
@@ -218,40 +217,58 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('upload_new_contract')}</h2>
-
-      {loadingOrders || loadingSubscription ? (
-        <p className="text-gray-600 mb-4">{t('checking_credits_subscription_status')}</p>
+      
+      {/* ADDED: Blue Alert Box for Credits/Subscription Status */}
+      {(loadingOrders || loadingSubscription) ? (
+        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+          <div className="flex items-center">
+            <Sparkles className="h-5 w-5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="font-bold">{t('checking_status')}</p>
+              <p className="text-sm">{t('checking_credits_subscription_status')}</p>
+            </div>
+          </div>
+        </div>
       ) : (
-        <>
-          {!hasAvailableSingleUse() && (!subscription || currentFileCount >= maxAllowedFiles) && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-              {subscription && currentFileCount >= maxAllowedFiles ? (
-                <p>
-                  {t('file_storage_limit_reached_message', { maxFiles: maxAllowedFiles })}
-                  <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>.
-                </p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+          <div className="flex items-center">
+            <Sparkles className="h-5 w-5 mr-3 flex-shrink-0" />
+            <div>
+              {subscription && (subscription.status === 'active' || subscription.status === 'trialing') ? (
+                <>
+                  <p className="font-bold">{t('active_subscription')}</p>
+                  <p className="text-sm">
+                    {subscription.max_files === Infinity ? t('unlimited_files_message') : t('subscription_files_remaining', { count: maxAllowedFiles - currentFileCount, maxFiles: maxAllowedFiles })}
+                  </p>
+                </>
+              ) : creditsRemaining > 0 ? (
+                <>
+                  <p className="font-bold">{t('single_use_credits_available')}</p>
+                  <p className="text-sm">{t('credits_remaining_message', { count: creditsRemaining })}</p>
+                </>
               ) : (
-                // MODIFIED: Updated message for no single-use credit or subscription
-                <p>
-                  {t('no_single_use_credits_or_subscription_message')}
-                  <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>
-                  {t('to_start_uploading_analyzing_contracts')}.
-                </p>
+                <>
+                  <p className="font-bold">{t('no_active_plan')}</p>
+                  <p className="text-sm">
+                    {t('no_active_plan_message')} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
+                  </p>
+                </>
               )}
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
 
-      {/* File Retention Policy Message */}
-      <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
-        <p className="font-bold">{t('important_data_retention_policy')}</p>
-        <p className="text-sm">
-          {t('single_use_retention_policy_credits')} {/* MODIFIED: Updated retention policy message */}
-          {t('subscription_retention_policy')}
-          {t('max_files_storage_limit_policy', { maxProfessional: 200, maxEnterprise: 1000 })}
-          <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>.
-        </p>
+      <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
+        <div className="flex items-center">
+          <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-bold">{t('important_document_format')}</p>
+            <p className="text-sm">
+              {t('ocr_limitation_message')}
+            </p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
