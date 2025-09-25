@@ -259,17 +259,17 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         </div>
       )}
 
-      <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
-        <div className="flex items-center">
-          <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
-          <div>
-            <p className="font-bold">{t('important_document_format')}</p>
-            <p className="text-sm">
-              {t('ocr_limitation_message')}
+      {/* File Retention Policy Message */}
+      <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+        <p className="font-bold">{t('important_data_retention_policy')}</p>
+        <p className="text-sm">
+          {t('single_use_retention_policy')}
+          {t('subscription_retention_policy')}
+          {t('max_files_storage_limit_policy', { maxProfessional: 200, maxEnterprise: 1000 })}
+          <Link to="/contracts" className="font-medium underline">{t('contracts_page')}</Link>.
             </p>
           </div>
         </div>
-      </div>
 
       <form onSubmit={handleSubmit}>
         <div
