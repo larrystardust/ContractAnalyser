@@ -1324,5 +1324,6 @@
   "credits_remaining_message": "لديك {{count}} رصيد تحليل متبقي.",
   "no_active_plan": "لا يوجد خطة نشطة",
   "no_active_plan_message": "ليس لديك رصيد استخدام فردي متاح أو خطة اشتراك. يرجى شراء واحدة من ",
-  "cannot_upload_no_credits_or_subscription": "لا يمكن التحميل: لا يوجد اشتراك نشط أو اعتمادات استخدام فردي متاحة."
+  "cannot_upload_no_credits_or_subscription": "لا يمكن التحميل: لا يوجد اشتراك نشط أو اعتمادات استخدام فردي متاحة.",
+  "processing_authentication": "جاري معالجة المصادقة..."
 }
