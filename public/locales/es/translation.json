@@ -1321,5 +1321,6 @@
   "credits_remaining_message": "Te quedan {{count}} créditos de análisis.",
   "no_active_plan": "Sin Plan Activo",
   "no_active_plan_message": "No tiene un crédito de un solo uso disponible o un plan de suscripción. Por favor, adquiera uno en la ",
-  "cannot_upload_no_credits_or_subscription": "No se puede subir: No hay suscripción activa o créditos de un solo uso disponibles."
+  "cannot_upload_no_credits_or_subscription": "No se puede subir: No hay suscripción activa o créditos de un solo uso disponibles.",
+  "processing_authentication": "Procesando autenticación..."
 }
