@@ -63,18 +63,21 @@ const AuthCallbackPage: React.FC = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('AuthCallbackPage: Auth state change event:', event, 'Current Session:', currentSession);
 
-      // Temporarily remove processingRef.current check for debugging redirection
-      // if (processingRef.current) {
-      //   console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
-      //   return;
-      // }
+      if (processingRef.current) {
+        console.log('AuthCallbackPage: Already processing, skipping duplicate execution.');
+        return;
+      }
 
       if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
         processingRef.current = true; // Set flag to true
-        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present.');
+
+        console.log('AuthCallbackPage: User SIGNED_IN and email_confirmed_at is present. Attempting profile creation and invitation acceptance.');
         console.log('AuthCallbackPage: currentSession.user.email_confirmed_at:', currentSession.user.email_confirmed_at); // ADDED LOG
 
         try {
+          // REMOVED: Call to create-user-profile Edge Function from here.
+          // This is now handled exclusively by SignupPage.tsx
+
           // Update login_at for the user
           try {
             await supabase
@@ -109,14 +112,6 @@ const AuthCallbackPage: React.FC = () => {
           }
           // --- END: Language Preference Handling ---
 
-          // --- START: Simplified Redirection Logic for Debugging ---
-          console.log('AuthCallbackPage: Attempting simplified redirection to /dashboard.');
-          navigate('/dashboard', { replace: true });
-          return; // Exit early to prevent further logic from interfering during debug
-          // --- END: Simplified Redirection Logic for Debugging ---
-
-          // Original Redirection Logic (commented out for debugging)
-          /*
           // Handle Invitation Acceptance (if token exists)
           if (invitationToken) {
             console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
@@ -166,7 +161,7 @@ const AuthCallbackPage: React.FC = () => {
             navigate('/dashboard', { replace: true });
             console.log('AuthCallbackPage: Redirecting to /dashboard.'); // ADDED LOG
           }
-          */
+
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
