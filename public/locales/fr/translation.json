@@ -1329,5 +1329,6 @@
   "credits_remaining_message": "Il vous reste {{count}} crédits d'analyse.",
   "no_active_plan": "Aucun Plan Actif",
   "no_active_plan_message": "Vous n'avez pas de crédit à usage unique disponible ou de plan d'abonnement. Veuillez en acheter un sur la ",
-  "cannot_upload_no_credits_or_subscription": "Impossible de télécharger : Aucun abonnement actif ou crédits à usage unique disponibles."
+  "cannot_upload_no_credits_or_subscription": "Impossible de télécharger : Aucun abonnement actif ou crédits à usage unique disponibles.",
+  "processing_authentication": "Traitement de l'authentification..."
 }
