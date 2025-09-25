@@ -167,7 +167,7 @@ const SignupPage: React.FC = () => {
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
-    // Add current i18n language to emailRedirectToUrl
+    // MODIFIED: Add current i18n language to emailRedirectToUrl
     emailRedirectToUrl += `&lang=${i18n.language}`;
 
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
@@ -199,7 +199,7 @@ const SignupPage: React.FC = () => {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      if (signUpData.user) { 
+      if (signUpData.user) {
         try {
           await supabase.functions.invoke('create-user-profile', {
             body: {
@@ -217,7 +217,6 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      localStorage.setItem('i18nextLng', i18n.language); // ADDED: Store selected language in localStorage
       navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
 
