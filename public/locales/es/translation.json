@@ -1322,5 +1322,16 @@
   "no_active_plan": "Sin Plan Activo",
   "no_active_plan_message": "No tiene un crédito de un solo uso disponible o un plan de suscripción. Por favor, adquiera uno en la ",
   "cannot_upload_no_credits_or_subscription": "No se puede subir: No hay suscripción activa o créditos de un solo uso disponibles.",
-  "processing_authentication": "Procesando autenticación..."
+  "processing_authentication": "Procesando autenticación...",
+
+  "testimonials_title": "Lo que dicen nuestros clientes",
+  "testimonial_1_text": "ContractAnalyser ha revolucionado nuestro proceso de revisión legal. Lo que solía llevar días ahora toma minutos, lo que nos permite centrarnos en tareas estratégicas. La precisión y los conocimientos son incomparables.",
+  "testimonial_1_author": "Sarah Chen",
+  "testimonial_1_title": "Asesora General, Tech Innovations Inc.",
+  "testimonial_2_text": "El análisis impulsado por IA es increíblemente exhaustivo. Hemos identificado riesgos críticos que las revisiones manuales a menudo pasaban por alto, fortaleciendo significativamente el cumplimiento de nuestros contratos y reduciendo las posibles responsabilidades.",
+  "testimonial_2_author": "David Lee",
+  "testimonial_2_title": "Jefe Legal, Global Ventures",
+  "testimonial_3_text": "Como propietario de una pequeña empresa, los honorarios legales por la revisión de contratos eran una gran carga. ContractAnalyser proporciona un análisis de nivel profesional a una fracción del costo, haciendo que el cumplimiento legal sea accesible y asequible.",
+  "testimonial_3_author": "María Rodríguez",
+  "testimonial_3_title": "CEO, Creative Solutions LLC"
 }
