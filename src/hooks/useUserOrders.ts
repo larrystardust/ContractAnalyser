@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
-import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data'; // MODIFIED PATH
+import { stripeProducts } from '../../supabase/functions/_shared/stripe_products_data';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 // MODIFIED: Update StripeOrder type to reflect credits_remaining
@@ -156,6 +156,23 @@ export function useUserOrders() {
     return availableOrder ? availableOrder.id : null;
   };
 
+  // ADDED: New function to get total single-use credits remaining
+  const getTotalSingleUseCredits = () => {
+    const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
+    const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
 
-  return { orders, loading, error, hasAvailableSingleUse, getAvailableSingleUseOrderId };
+    if (!singleUsePriceId) {
+      return 0;
+    }
+
+    return orders.reduce((total, order) => {
+      if (order.payment_status === 'paid' && order.status === 'completed' && order.price_id === singleUsePriceId) {
+        return total + (order.credits_remaining || 0);
+      }
+      return total;
+    }, 0);
+  };
+
+
+  return { orders, loading, error, hasAvailableSingleUse, getAvailableSingleUseOrderId, getTotalSingleUseCredits }; // MODIFIED: Export new function
 }
