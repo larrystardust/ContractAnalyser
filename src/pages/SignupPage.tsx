@@ -116,7 +116,7 @@ const SignupPage: React.FC = () => {
   const { isLoading } = useSessionContext();
   const [searchParams] = useSearchParams();
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
-  const { t, i18n } = useTranslation(); // MODIFIED: Ensure i18n is available
+  const { t } = useTranslation();
 
   useEffect(() => {
     const tokenFromUrl = searchParams.get('invitation_token');
@@ -147,7 +147,7 @@ const SignupPage: React.FC = () => {
     let redirectParamForEmailSentPage = '';
 
     const originalRedirectParam = searchParams.get('redirect');
-
+    
     let targetRedirectPath = '';
 
     if (invitationToken) {
@@ -167,9 +167,6 @@ const SignupPage: React.FC = () => {
       redirectParamForEmailSentPage = `?redirect=${encodeURIComponent(targetRedirectPath)}`;
     }
 
-    // REMOVED: Add current i18n language to emailRedirectToUrl
-    // emailRedirectToUrl += `&lang=${i18n.language}`;
-
     console.log('SignupPage: Options passed to supabase.auth.signUp:', {
       emailRedirectTo: emailRedirectToUrl,
       data: {
@@ -177,13 +174,11 @@ const SignupPage: React.FC = () => {
         business_name: businessName,
         mobile_phone_number: mobilePhoneNumber,
         country_code: selectedCountryCode,
-        language_preference: i18n.language, // Still pass in user_metadata as a primary attempt
       },
     });
-    console.log('SignupPage: emailRedirectToUrl being used:', emailRedirectToUrl); // ADDED LOG
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(), // MODIFIED: Trim the email input
+      email,
       password,
       options: {
         emailRedirectTo: emailRedirectToUrl,
@@ -192,7 +187,6 @@ const SignupPage: React.FC = () => {
           business_name: businessName,
           mobile_phone_number: mobilePhoneNumber,
           country_code: selectedCountryCode,
-          language_preference: i18n.language, // ADDED: Pass current i18n language
         },
       },
     });
@@ -200,7 +194,7 @@ const SignupPage: React.FC = () => {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      if (signUpData.user) { 
+      if (signUpData.user) {
         try {
           await supabase.functions.invoke('create-user-profile', {
             body: {
@@ -209,7 +203,6 @@ const SignupPage: React.FC = () => {
               businessName: businessName,
               mobilePhoneNumber: mobilePhoneNumber,
               countryCode: selectedCountryCode,
-              languagePreference: i18n.language, // ADDED: Pass language preference directly here
             },
           });
           console.log('Profile creation initiated from SignupPage.');
@@ -218,10 +211,9 @@ const SignupPage: React.FC = () => {
         }
       }
       localStorage.setItem('signup_email', email);
-      localStorage.setItem('i18nextLng', i18n.language); // ADDED: Store selected language in localStorage
       navigate(`/auth/email-sent${redirectParamForEmailSentPage}`);
     }
-
+    
     setLoading(false);
   };
 
