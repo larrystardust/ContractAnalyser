@@ -1319,5 +1319,15 @@
   "application_settings_maintenance_mode": "Mode Maintenance",
   "application_settings_maintenance_mode_hint": "Activez ceci pour mettre toute l'application en mode maintenance. Seuls les administrateurs pourront accéder au site.",
   "maintenance_mode_enabled": "Le mode maintenance est ACTIVÉ",
-  "maintenance_mode_disabled": "Le mode maintenance est DÉSACTIVÉ"
+  "maintenance_mode_disabled": "Le mode maintenance est DÉSACTIVÉ",
+
+  "checking_status": "Vérification du statut",
+  "active_subscription": "Abonnement Actif",
+  "unlimited_files_message": "Vous avez des téléchargements de fichiers illimités.",
+  "subscription_files_remaining": "Il vous reste {{count}} fichiers sur {{maxFiles}}.",
+  "single_use_credits_available": "Crédits à Usage Unique Disponibles",
+  "credits_remaining_message": "Il vous reste {{count}} crédits d'analyse.",
+  "no_active_plan": "Aucun Plan Actif",
+  "no_active_plan_message": "Vous n'avez pas d'abonnement actif ni de crédits à usage unique. Veuillez visiter la",
+  "cannot_upload_no_credits_or_subscription": "Impossible de télécharger : Aucun abonnement actif ou crédits à usage unique disponibles."
 }
