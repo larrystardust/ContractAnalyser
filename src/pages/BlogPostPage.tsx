@@ -25,7 +25,9 @@ const BlogPostPage: React.FC = () => {
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
 
-    // Regex to find both bold (**text**) and links ([text](url))
+    // Regex to find bold (**text**) or links ([text](url))
+    // This regex will capture either a bold block or a link block.
+    // The order in the regex matters for overlapping patterns, but the logic below handles it.
     const regex = /(\*\*([^*]+)\*\*)|\[([^\]]+)\]\(([^)]+)\)/g;
     let match;
 
@@ -35,24 +37,31 @@ const BlogPostPage: React.FC = () => {
         elements.push(text.substring(lastIndex, match.index));
       }
 
-      if (match[1]) { // It's a bold match
-        elements.push(<strong key={`${keyPrefix}-bold-${match.index}`}>{match[2]}</strong>);
-      } else if (match[3] && match[4]) { // It's a link match
-        // Check if the link is internal or external
-        const isInternalLink = match[4].startsWith('/') || match[4].startsWith(window.location.origin);
+      if (match[3] && match[4]) { // It's a link match: [text](url)
+        const linkText = match[3];
+        const linkUrl = match[4];
+        const isInternalLink = linkUrl.startsWith('/') || linkUrl.startsWith(window.location.origin);
         if (isInternalLink) {
           elements.push(
-            <Link key={`${keyPrefix}-link-${match.index}`} to={match[4]} className="text-blue-600 hover:underline">
-              {match[3]}
+            <Link key={`${keyPrefix}-link-${match.index}`} to={linkUrl} className="text-blue-600 hover:underline">
+              {linkText}
             </Link>
           );
         } else {
           elements.push(
-            <a key={`${keyPrefix}-link-${match.index}`} href={match[4]} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              {match[3]}
+            <a key={`${keyPrefix}-link-${match.index}`} href={linkUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              {linkText}
             </a>
           );
         }
+      } else if (match[1]) { // It's a bold match: **text**
+        const boldContent = match[2];
+        // Recursively parse the content inside the bold tags for links or other markdown
+        elements.push(
+          <strong key={`${keyPrefix}-bold-${match.index}`}>
+            {parseMarkdownText(boldContent, `${keyPrefix}-bold-inner-${match.index}`)}
+          </strong>
+        );
       }
       lastIndex = regex.lastIndex;
     }
