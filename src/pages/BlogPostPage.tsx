@@ -1,20 +1,40 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { blogPosts } from '../data/blogData'; // Import the blog posts data
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // MODIFIED: Import useTranslation
+import { useBlogPosts } from '../hooks/useBlogPosts'; // MODIFIED: Import useBlogPosts hook
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { t, i18n } = useTranslation(); // MODIFIED: Use useTranslation
+  const { blogPosts, loading, error } = useBlogPosts(); // MODIFIED: Use the hook
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-6 mt-16 text-center">
+        <p>{t('loading_blog_post')}...</p> {/* MODIFIED: Add translation key */}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-6 mt-16 text-center">
+        <p className="text-red-600">{t('error_loading_blog_post')}: {error}</p> {/* MODIFIED: Add translation key */}
+      </div>
+    );
+  }
+
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Blog Post Not Found</h1>
-        <p className="text-lg text-gray-700 mb-6">The post you are looking for does not exist.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('blog_post_not_found')}</h1> {/* MODIFIED: Translate */}
+        <p className="text-lg text-gray-700 mb-6">{t('blog_post_not_exist')}.</p> {/* MODIFIED: Translate */}
         <Link to="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Blog
+          {t('back_to_blog')} {/* MODIFIED: Translate */}
         </Link>
       </div>
     );
@@ -25,9 +45,7 @@ const BlogPostPage: React.FC = () => {
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
 
-    // Regex to find bold (**text**) or links ([text](url))
-    // This regex will capture either a bold block or a link block.
-    // The order in the regex matters for overlapping patterns, but the logic below handles it.
+    // Regex to find both bold (**text**) and links ([text](url))
     const regex = /(\*\*([^*]+)\*\*)|\[([^\]]+)\]\(([^)]+)\)/g;
     let match;
 
@@ -138,7 +156,7 @@ const BlogPostPage: React.FC = () => {
       <div className="mb-6">
         <Link to="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Blog
+          {t('back_to_blog')}
         </Link>
       </div>
 
@@ -148,7 +166,7 @@ const BlogPostPage: React.FC = () => {
         )}
         <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h1>
         <p className="text-lg text-gray-600 mb-8">
-          By {post.author} on {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })} {/* MODIFIED: Translate 'by' and 'on', use i18n.language for date format */}
         </p>
         <div className="prose prose-lg max-w-none">
           {renderContent(post.content)}
