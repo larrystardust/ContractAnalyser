@@ -991,6 +991,7 @@
   "resend_confirmation_email": "Reenviar Correo de Confirmación",
   "back_to_login_button": "Volver al Inicio de Sesión",
   "redirecting_to_signup": "Redirigiendo a la página de registro...",
+  "resend_email_cooldown_message": "Por motivos de seguridad, solo puede solicitar esto después de {{seconds}} segundos.",
 
   "sample_data_view_dashboard": "Vista de Datos de Ejemplo",
   "upgrade_to_analyze_own_contracts": "Este panel muestra resultados de análisis de ejemplo. ¡Actualice para analizar sus propios contratos!",
