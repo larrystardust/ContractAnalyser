@@ -6,7 +6,7 @@ import { useBlogPosts } from '../hooks/useBlogPosts'; // MODIFIED: Import useBlo
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t, i18n } = useTranslation(); // MODIFIED: Use useTranslation
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const { blogPosts, loading, error } = useBlogPosts(); // MODIFIED: Use the hook
 
   if (loading) {
