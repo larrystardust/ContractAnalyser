@@ -20,6 +20,50 @@ const BlogPostPage: React.FC = () => {
     );
   }
 
+  // Helper function to parse markdown-like text for bold and links
+  const parseMarkdownText = (text: string, keyPrefix: string) => {
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    // Regex to find both bold (**text**) and links ([text](url))
+    const regex = /(\*\*([^*]+)\*\*)|\[([^\]]+)\]\(([^)]+)\)/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      // Add preceding text as a plain string
+      if (match.index > lastIndex) {
+        elements.push(text.substring(lastIndex, match.index));
+      }
+
+      if (match[1]) { // It's a bold match
+        elements.push(<strong key={`${keyPrefix}-bold-${match.index}`}>{match[2]}</strong>);
+      } else if (match[3] && match[4]) { // It's a link match
+        // Check if the link is internal or external
+        const isInternalLink = match[4].startsWith('/') || match[4].startsWith(window.location.origin);
+        if (isInternalLink) {
+          elements.push(
+            <Link key={`${keyPrefix}-link-${match.index}`} to={match[4]} className="text-blue-600 hover:underline">
+              {match[3]}
+            </Link>
+          );
+        } else {
+          elements.push(
+            <a key={`${keyPrefix}-link-${match.index}`} href={match[4]} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              {match[3]}
+            </a>
+          );
+        }
+      }
+      lastIndex = regex.lastIndex;
+    }
+
+    // Add any remaining text
+    if (lastIndex < text.length) {
+      elements.push(text.substring(lastIndex));
+    }
+    return elements;
+  };
+
   // Function to render content, handling markdown-like headers and lists
   const renderContent = (contentArray: string[]) => {
     return contentArray.map((block, index) => {
@@ -37,23 +81,16 @@ const BlogPostPage: React.FC = () => {
           listItems.push(contentArray[i].substring(4));
           i++;
         }
-        // Render the list and skip the already processed items
-        index = i - 1; // Adjust index for the map loop
+        // Render the list and adjust index for the map loop
+        const currentListIndex = index;
+        index = i - 1; 
         return (
-          <ul key={index} className="list-disc list-inside text-gray-700 mb-4 space-y-2 pl-5">
-            {listItems.map((item, liIndex) => {
-              const parts = item.split('**');
-              return (
-                <li key={liIndex}>
-                  {parts.map((part, pIndex) => {
-                    if (pIndex % 2 === 1) {
-                      return <strong key={pIndex}>{part}</strong>;
-                    }
-                    return part;
-                  })}
-                </li>
-              );
-            })}
+          <ul key={currentListIndex} className="list-disc list-inside text-gray-700 mb-4 space-y-2 pl-5">
+            {listItems.map((item, liIndex) => (
+              <li key={`${currentListIndex}-li-${liIndex}`}>
+                {parseMarkdownText(item, `${currentListIndex}-li-${liIndex}`)}
+              </li>
+            ))}
           </ul>
         );
       }
@@ -65,36 +102,23 @@ const BlogPostPage: React.FC = () => {
           listItems.push(contentArray[i].replace(/^\d+\.\s/, ''));
           i++;
         }
-        // Render the list and skip the already processed items
-        index = i - 1; // Adjust index for the map loop
+        // Render the list and adjust index for the map loop
+        const currentListIndex = index;
+        index = i - 1; 
         return (
-          <ol key={index} className="list-decimal list-inside text-gray-700 mb-4 space-y-2 pl-5">
-            {listItems.map((item, liIndex) => {
-              const parts = item.split('**');
-              return (
-                <li key={liIndex}>
-                  {parts.map((part, pIndex) => {
-                    if (pIndex % 2 === 1) {
-                      return <strong key={pIndex}>{part}</strong>;
-                    }
-                    return part;
-                  })}
-                </li>
-              );
-            })}
+          <ol key={currentListIndex} className="list-decimal list-inside text-gray-700 mb-4 space-y-2 pl-5">
+            {listItems.map((item, liIndex) => (
+              <li key={`${currentListIndex}-ol-${liIndex}`}>
+                {parseMarkdownText(item, `${currentListIndex}-ol-${liIndex}`)}
+              </li>
+            ))}
           </ol>
         );
       }
-      // Handle bold text within paragraphs
-      const paragraphParts = block.split('**');
+      // Default to paragraph, parsing for bold and links
       return (
         <p key={index} className="text-gray-700 mb-4">
-          {paragraphParts.map((part, pIndex) => {
-            if (pIndex % 2 === 1) {
-              return <strong key={pIndex}>{part}</strong>;
-            }
-            return part;
-          })}
+          {parseMarkdownText(block, `p-${index}`)}
         </p>
       );
     });
