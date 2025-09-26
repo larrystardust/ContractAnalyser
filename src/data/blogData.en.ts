@@ -1,12 +1,4 @@
-export interface BlogPost {
-  slug: string;
-  title: string;
-  author: string;
-  date: string; // Format: YYYY-MM-DD
-  excerpt: string;
-  content: string[]; // Array of strings, each representing a paragraph or section
-  imageUrl?: string; // Optional image URL for the post header
-}
+import { BlogPost } from './blogData';
 
 export const blogPostsEn: BlogPost[] = [
   {
