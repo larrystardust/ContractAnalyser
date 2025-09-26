@@ -998,6 +998,7 @@
   "resend_confirmation_email": "Resend Confirmation Email",
   "back_to_login_button": "Back to Login",
   "redirecting_to_signup": "Redirecting to signup page...",
+  "resend_email_cooldown_message": "For security purposes, you can only request this after {{seconds}} seconds.",
 
   "sample_data_view_dashboard": "Sample Data View",
   "upgrade_to_analyze_own_contracts": "This dashboard shows sample analysis results. Upgrade to analyze your own contracts!",
