@@ -42,9 +42,11 @@ import LandingPageSampleDashboard from './components/dashboard/LandingPageSample
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword';
 import ErrorBoundary from './components/ErrorBoundary';
-import MaintenancePage from './pages/MaintenancePage'; // ADDED: Import MaintenancePage
-import { useAppSettings } from './hooks/useAppSettings'; // ADDED: Import useAppSettings
-import { useIsAdmin } from './hooks/useIsAdmin'; // ADDED: Import useIsAdmin
+import MaintenancePage from './pages/MaintenancePage';
+import { useAppSettings } from './hooks/useAppSettings';
+import { useIsAdmin } from './hooks/useIsAdmin';
+import BlogPage from './pages/BlogPage'; // ADDED: Import BlogPage
+import BlogPostPage from './pages/BlogPostPage'; // ADDED: Import BlogPostPage
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -52,8 +54,8 @@ function App() {
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const { session, isLoading: isSessionLoading } = useSessionContext();
-  const { settings: appSettings, loading: loadingAppSettings } = useAppSettings(); // ADDED: Fetch app settings
-  const { isAdmin, loadingAdminStatus } = useIsAdmin(); // ADDED: Fetch admin status
+  const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
+  const { isAdmin, loadingAdminStatus } = useIsAdmin();
 
   useTheme();
 
@@ -76,21 +78,22 @@ function App() {
       '/terms',
       '/privacy-policy',
       '/help',
-      '/maintenance', // ADDED: Maintenance page is public
+      '/maintenance',
+      '/blog', // ADDED: Blog page is public
+      '/blog/:slug', // ADDED: Individual blog posts are public
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
-    // ADDED: Maintenance Mode Redirection Logic
     if (!loadingAppSettings && appSettings?.is_maintenance_mode && !isAdmin && !publicPaths.includes(currentPathBase)) {
       navigate('/maintenance', { replace: true });
-      return; // Stop further redirection checks
+      return;
     }
 
     if (!isSessionLoading && !session && !publicPaths.includes(currentPathBase)) {
       navigate('/', { replace: true });
     }
-  }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]); // MODIFIED: Add appSettings, loadingAppSettings, isAdmin, loadingAdminStatus to dependency array
+  }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
   const handleOpenHelpModal = () => {
     if (session) {
@@ -105,7 +108,6 @@ function App() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-700">
         <ErrorBoundary>
           <Routes>
-            {/* ADDED: Maintenance Page Route */}
             <Route path="/maintenance" element={<MaintenancePage />} />
 
             {/* Routes without Header (truly no header) */}
@@ -133,6 +135,8 @@ function App() {
               <Route path="/help" element={<HelpPage />} />            
               <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
               <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
+              <Route path="/blog" element={<BlogPage />} /> {/* ADDED: Blog list route */}
+              <Route path="/blog/:slug" element={<BlogPostPage />} /> {/* ADDED: Individual blog post route */}
 
               {/* Protected Routes - wrapped with AuthGuard */}
               <Route element={<AuthGuard />}>
