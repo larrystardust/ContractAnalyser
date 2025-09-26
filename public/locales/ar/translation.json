@@ -993,6 +993,7 @@
   "resend_confirmation_email": "أعد إرسال البريد الإلكتروني التأكيدي",
   "back_to_login_button": "العودة إلى تسجيل الدخول",
   "redirecting_to_signup": "جاري التوجيه إلى صفحة التسجيل...",
+  "resend_email_cooldown_message": "لأغراض أمنية، يمكنك طلب ذلك فقط بعد {{seconds}} ثانية.",
 
   "sample_data_view_dashboard": "عرض بيانات نموذجية",
   "upgrade_to_analyze_own_contracts": "تعرض لوحة التحكم هذه نتائج تحليل نموذجية. قم بالترقية لتحليل عقودك الخاصة!",
