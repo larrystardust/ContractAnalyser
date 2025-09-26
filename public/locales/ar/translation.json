@@ -1335,5 +1335,10 @@
   "testimonial_2_title": "رئيس الشؤون القانونية، Global Ventures",
   "testimonial_3_text": "بصفتي مالكًا لشركة صغيرة، كانت الرسوم القانونية لمراجعة العقود عبئًا كبيرًا. يوفر ContractAnalyser تحليلًا احترافيًا بجزء بسيط من التكلفة، مما يجعل الامتثال القانوني متاحًا وبأسعار معقولة.",
   "testimonial_3_author": "ماريا رودريغيز",
-  "testimonial_3_title": "الرئيس التنفيذي، Creative Solutions LLC"
+  "testimonial_3_title": "الرئيس التنفيذي، Creative Solutions LLC",
+
+  "success_message": "نجاح!",
+  "authentication_successful": "تمت المصادقة بنجاح. جارى إعادة التوجيه...",
+  "login_button": "الذهاب إلى تسجيل الدخول",
+  "return_to_home": "العودة إلى الصفحة الرئيسية"
 }
