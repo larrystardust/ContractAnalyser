@@ -20,6 +20,7 @@ const AuthCallbackPage: React.FC = () => {
   const [message, setMessage] = useState<string>(t('processing_authentication'));
 
   const processingRef = useRef(false); // To prevent multiple navigations
+  const authListenerRef = useRef<any>(null); // Ref to hold the auth listener subscription
 
   useEffect(() => {
     console.log('AuthCallbackPage: useEffect triggered. processingRef.current:', processingRef.current); // ADDED LOG
@@ -59,177 +60,185 @@ const AuthCallbackPage: React.FC = () => {
       }
     }
 
-    // Listen for auth state changes to detect when the session is set by the redirect
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('AuthCallbackPage: Auth state change event:', event);
-      console.log('AuthCallbackPage: Current Session object:', currentSession);
+    // Only subscribe if not already subscribed
+    if (!authListenerRef.current) {
+      console.log('AuthCallbackPage: Subscribing to onAuthStateChange.');
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+        console.log('AuthCallbackPage: Auth state change event:', event);
+        console.log('AuthCallbackPage: Current Session object:', currentSession);
 
-      // Prevent re-entry if we've already started processing a successful sign-in
-      if (processingRef.current) {
-        console.log('AuthCallbackPage: Already processing a successful sign-in, skipping this auth state change.');
-        return;
-      }
+        // Prevent re-entry if we've already started processing a successful sign-in
+        if (processingRef.current) {
+          console.log('AuthCallbackPage: Already processing a successful sign-in, skipping this auth state change.');
+          return;
+        }
 
-      // Handle INITIAL_SESSION with no currentSession - just log and wait for SIGNED_IN
-      if (event === 'INITIAL_SESSION' && !currentSession) {
-        console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Waiting for SIGNED_IN or explicit failure.');
-        return;
-      }
+        // Handle INITIAL_SESSION with no currentSession - just log and wait for SIGNED_IN
+        if (event === 'INITIAL_SESSION' && !currentSession) {
+          console.warn('AuthCallbackPage: INITIAL_SESSION with no currentSession. Waiting for SIGNED_IN or explicit failure.');
+          return;
+        }
 
-      // This is the definitive event for a successful login
-      if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
-        console.log('AuthCallbackPage: Entering SIGNED_IN block for the first time.');
-        processingRef.current = true; // Mark as processing successful sign-in
-        console.log('AuthCallbackPage: processingRef.current set to true.');
+        // This is the definitive event for a successful login
+        if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
+          console.log('AuthCallbackPage: Entering SIGNED_IN block for the first time.');
+          processingRef.current = true; // Mark as processing successful sign-in
+          console.log('AuthCallbackPage: processingRef.current set to true.');
 
-        try {
-          console.log('AuthCallbackPage: Starting try block.');
-          // Update login_at for the user (non-blocking)
-          console.log('AuthCallbackPage: Attempting to update login_at (non-blocking).');
           try {
-            console.log('AuthCallbackPage: Before supabase.from("profiles").update({ login_at: ... }).');
+            console.log('AuthCallbackPage: Starting try block.');
+            // Update login_at for the user (non-blocking)
+            console.log('AuthCallbackPage: Attempting to update login_at (non-blocking).');
+            try {
+              console.log('AuthCallbackPage: Before supabase.from("profiles").update({ login_at: ... }).');
+              supabase
+                .from('profiles')
+                .update({ login_at: new Date().toISOString() })
+                .eq('id', currentSession.user.id)
+                .then(({ error: updateLoginError }) => {
+                  if (updateLoginError) {
+                    console.error('AuthCallbackPage: Error updating login_at in background:', updateLoginError);
+                  } else {
+                    console.log('AuthCallbackPage: login_at updated for user in background:', currentSession.user.id);
+                  }
+                });
+              console.log('AuthCallbackPage: login_at update initiated (non-blocking).');
+            } catch (updateLoginError) {
+              console.error('AuthCallbackPage: Sync error initiating login_at update:', updateLoginError);
+            }
+            console.log('AuthCallbackPage: Finished login_at update section (initiated).');
+
+            // --- START: Language Preference Handling (non-blocking) ---
+            console.log('AuthCallbackPage: Starting language preference fetch (non-blocking).');
             supabase
               .from('profiles')
-              .update({ login_at: new Date().toISOString() })
+              .select('language_preference')
               .eq('id', currentSession.user.id)
-              .then(({ error: updateLoginError }) => {
-                if (updateLoginError) {
-                  console.error('AuthCallbackPage: Error updating login_at in background:', updateLoginError);
-                } else {
-                  console.log('AuthCallbackPage: login_at updated for user in background:', currentSession.user.id);
+              .maybeSingle()
+              .then(({ data: profileDataForLanguage, error: profileLanguageError }) => {
+                if (profileLanguageError) {
+                  console.error('AuthCallbackPage: Error fetching user language preference in background:', profileLanguageError);
+                } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
+                  console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference} (non-blocking).`);
+                  i18n.changeLanguage(profileDataForLanguage.language_preference)
+                    .then(() => {
+                      localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
+                      // Also update dir attribute for RTL languages
+                      if (profileDataForLanguage.language_preference === 'ar') {
+                        document.documentElement.setAttribute('dir', 'rtl');
+                      } else {
+                        document.documentElement.setAttribute('dir', 'ltr');
+                      }
+                      console.log('AuthCallbackPage: i18n language changed and localStorage updated in background.');
+                    })
+                    .catch(langChangeError => {
+                      console.error('AuthCallbackPage: Error changing i18n language in background:', langChangeError);
+                    });
                 }
+                console.log('AuthCallbackPage: Language preference fetch and change initiated (non-blocking).');
+              })
+              .catch(fetchError => {
+                console.error('AuthCallbackPage: Sync error initiating language preference fetch:', fetchError);
               });
-            console.log('AuthCallbackPage: login_at update initiated (non-blocking).');
-          } catch (updateLoginError) {
-            console.error('AuthCallbackPage: Sync error initiating login_at update:', updateLoginError);
-          }
-          console.log('AuthCallbackPage: Finished login_at update section (initiated).');
+            console.log('AuthCallbackPage: Finished language preference handling section (initiated).');
+            // --- END: Language Preference Handling ---
 
-          // --- START: Language Preference Handling (non-blocking) ---
-          console.log('AuthCallbackPage: Starting language preference fetch (non-blocking).');
-          supabase
-            .from('profiles')
-            .select('language_preference')
-            .eq('id', currentSession.user.id)
-            .maybeSingle()
-            .then(({ data: profileDataForLanguage, error: profileLanguageError }) => {
-              if (profileLanguageError) {
-                console.error('AuthCallbackPage: Error fetching user language preference in background:', profileLanguageError);
-              } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
-                console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference} (non-blocking).`);
-                i18n.changeLanguage(profileDataForLanguage.language_preference)
-                  .then(() => {
-                    localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
-                    // Also update dir attribute for RTL languages
-                    if (profileDataForLanguage.language_preference === 'ar') {
-                      document.documentElement.setAttribute('dir', 'rtl');
-                    } else {
-                      document.documentElement.setAttribute('dir', 'ltr');
-                    }
-                    console.log('AuthCallbackPage: i18n language changed and localStorage updated in background.');
-                  })
-                  .catch(langChangeError => {
-                    console.error('AuthCallbackPage: Error changing i18n language in background:', langChangeError);
-                  });
+            // Handle Invitation Acceptance (if token exists)
+            console.log('AuthCallbackPage: Starting invitation token check.');
+            if (invitationToken) {
+              console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
+              const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
+                body: { invitation_token: invitationToken },
+                headers: {
+                  'Authorization': `Bearer ${currentSession.access_token}`,
+                },
+              });
+
+              if (inviteError) {
+                console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
+                setStatus('error');
+                setMessage(t('failed_to_accept_invitation', { message: inviteError.message }));
+                processingRef.current = false;
+                console.log('AuthCallbackPage: Calling navigate to /login due to invitation error.');
+                navigate('/login', { replace: true });
+                return; // Exit early after failed invitation and redirect
+              } else {
+                console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
+                setMessage(t('authentication_invitation_successful'));
+                // After successful invitation acceptance, always redirect to the dashboard
+                console.log('AuthCallbackPage: Calling navigate to /dashboard after invitation acceptance.');
+                navigate('/dashboard', { replace: true });
+                return; // Exit early after successful invitation and redirect
               }
-              console.log('AuthCallbackPage: Language preference fetch and change initiated (non-blocking).');
-            })
-            .catch(fetchError => {
-              console.error('AuthCallbackPage: Sync error initiating language preference fetch:', fetchError);
-            });
-          console.log('AuthCallbackPage: Finished language preference handling section (initiated).');
-          // --- END: Language Preference Handling ---
-
-          // Handle Invitation Acceptance (if token exists)
-          console.log('AuthCallbackPage: Starting invitation token check.');
-          if (invitationToken) {
-            console.log('AuthCallbackPage: Attempting to accept invitation with token:', invitationToken);
-            const { data: inviteData, error: inviteError } = await supabase.functions.invoke('accept-invitation', {
-              body: { invitation_token: invitationToken },
-              headers: {
-                'Authorization': `Bearer ${currentSession.access_token}`,
-              },
-            });
-
-            if (inviteError) {
-              console.error('AuthCallbackPage: Error accepting invitation:', inviteError);
-              setStatus('error');
-              setMessage(t('failed_to_accept_invitation', { message: inviteError.message }));
-              processingRef.current = false;
-              console.log('AuthCallbackPage: Calling navigate to /login due to invitation error.');
-              navigate('/login', { replace: true });
-              return; // Exit early after failed invitation and redirect
             } else {
-              console.log('AuthCallbackPage: Invitation accepted successfully:', inviteData);
-              setMessage(t('authentication_invitation_successful'));
-              // After successful invitation acceptance, always redirect to the dashboard
-              console.log('AuthCallbackPage: Calling navigate to /dashboard after invitation acceptance.');
-              navigate('/dashboard', { replace: true });
-              return; // Exit early after successful invitation and redirect
+              setMessage(t('authentication_successful'));
             }
-          } else {
-            setMessage(t('authentication_successful'));
+            console.log('AuthCallbackPage: Finished invitation token check.');
+
+            console.log('AuthCallbackPage: Before setStatus(success)');
+            setStatus('success');
+            console.log('AuthCallbackPage: After setStatus(success). Current status state should be "success".');
+            console.log('AuthCallbackPage: Attempting navigation based on admin status...');
+
+            // If no invitation token was processed, determine where to redirect based on admin status
+            console.log('AuthCallbackPage: Checking admin status for redirection.');
+            const { data: profileData, error: profileCheckError } = await supabase
+              .from('profiles')
+              .select('is_admin')
+              .eq('id', currentSession.user.id)
+              .maybeSingle();
+
+            if (profileCheckError) {
+              console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
+              console.log('AuthCallbackPage: Calling navigate to /dashboard (profileCheckError).');
+              navigate('/dashboard', { replace: true });
+            } else if (profileData?.is_admin) {
+              console.log('AuthCallbackPage: Calling navigate to /admin (is_admin).');
+              navigate('/admin', { replace: true });
+            } else {
+              console.log('AuthCallbackPage: Calling navigate to /dashboard (default).');
+              navigate('/dashboard', { replace: true });
+            }
+            console.log('AuthCallbackPage: Final navigation logic completed.'); // ADDED LOG
+
+          } catch (overallError: any) {
+            console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
+            setStatus('error');
+            setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
+            console.log('AuthCallbackPage: Calling navigate to /login due to overallError.');
+            navigate('/login', { replace: true });
+            processingRef.current = false; // Allow retry if user refreshes or tries again
           }
-          console.log('AuthCallbackPage: Finished invitation token check.');
-
-          console.log('AuthCallbackPage: Before setStatus(success)');
-          setStatus('success');
-          console.log('AuthCallbackPage: After setStatus(success). Current status state should be "success".');
-          console.log('AuthCallbackPage: Attempting navigation based on admin status...');
-
-          // If no invitation token was processed, determine where to redirect based on admin status
-          console.log('AuthCallbackPage: Checking admin status for redirection.');
-          const { data: profileData, error: profileCheckError } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileCheckError) {
-            console.error('AuthCallbackPage: Error checking admin status for redirection:', profileCheckError);
-            console.log('AuthCallbackPage: Calling navigate to /dashboard (profileCheckError).');
-            navigate('/dashboard', { replace: true });
-          } else if (profileData?.is_admin) {
-            console.log('AuthCallbackPage: Calling navigate to /admin (is_admin).');
-            navigate('/admin', { replace: true });
-          } else {
-            console.log('AuthCallbackPage: Calling navigate to /dashboard (default).');
-            navigate('/dashboard', { replace: true });
-          }
-          console.log('AuthCallbackPage: Final navigation logic completed.'); // ADDED LOG
-
-        } catch (overallError: any) {
-          console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
+        } else if (event === 'SIGNED_OUT') {
+          console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
           setStatus('error');
-          setMessage(t('unexpected_error_occurred_auth', { message: overallError.message }));
-          console.log('AuthCallbackPage: Calling navigate to /login due to overallError.');
+          setMessage(t('session_ended'));
+          console.log('AuthCallbackPage: Calling navigate to /login due to SIGNED_OUT event.');
           navigate('/login', { replace: true });
-          processingRef.current = false; // Allow retry if user refreshes or tries again
+          processingRef.current = false;
+        } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
+          console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
+          setStatus('error');
+          setMessage(t('email_not_confirmed'));
+          console.log('AuthCallbackPage: Calling navigate to /login because email not confirmed.');
+          navigate('/login', { replace: true });
+          processingRef.current = false;
         }
-      } else if (event === 'SIGNED_OUT') {
-        console.warn('AuthCallbackPage: User SIGNED_OUT during callback flow.');
-        setStatus('error');
-        setMessage(t('session_ended'));
-        console.log('AuthCallbackPage: Calling navigate to /login due to SIGNED_OUT event.');
-        navigate('/login', { replace: true });
-        processingRef.current = false;
-      } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
-        console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
-        setStatus('error');
-        setMessage(t('email_not_confirmed'));
-        console.log('AuthCallbackPage: Calling navigate to /login because email not confirmed.');
-        navigate('/login', { replace: true });
-        processingRef.current = false;
-      }
-    });
+      });
+      authListenerRef.current = authListener.subscription; // Store the subscription
+    }
+
 
     // Cleanup the listener when the component unmounts
     return () => {
       console.log('AuthCallbackPage: Cleaning up auth listener.'); // ADDED LOG
-      authListener.subscription?.unsubscribe();
+      if (authListenerRef.current) {
+        authListenerRef.current.unsubscribe();
+        authListenerRef.current = null; // Clear the ref
+      }
       processingRef.current = false; // Reset flag on unmount
     };
-  }, [navigate, supabase.auth, t]); // REMOVED i18n from dependencies
+  }, [navigate, supabase.auth, t]); // Removed i18n from dependencies
 
   const renderContent = () => {
     switch (status) {
