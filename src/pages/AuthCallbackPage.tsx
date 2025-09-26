@@ -66,6 +66,7 @@ const AuthCallbackPage: React.FC = () => {
       const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
         console.log('AuthCallbackPage: Auth state change event:', event);
         console.log('AuthCallbackPage: Current Session object:', currentSession);
+        console.log('AuthCallbackPage: currentSession?.user?.email_confirmed_at:', currentSession?.user?.email_confirmed_at); // ADDED LOG
 
         // Prevent re-entry if we've already started processing a successful sign-in
         if (processingRef.current) {
@@ -79,9 +80,9 @@ const AuthCallbackPage: React.FC = () => {
           return;
         }
 
-        // This is the definitive event for a successful login
-        if (event === 'SIGNED_IN' && currentSession?.user?.email_confirmed_at) {
-          console.log('AuthCallbackPage: Entering SIGNED_IN block for the first time.');
+        // This is the definitive event for a successful login or initial session with a confirmed email
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && currentSession?.user?.email_confirmed_at) { // MODIFIED CONDITION
+          console.log('AuthCallbackPage: Entering processing block for the first time from event:', event); // MODIFIED LOG
           processingRef.current = true; // Mark as processing successful sign-in
           console.log('AuthCallbackPage: processingRef.current set to true.');
 
@@ -216,8 +217,8 @@ const AuthCallbackPage: React.FC = () => {
           console.log('AuthCallbackPage: Calling navigate to /login due to SIGNED_OUT event.');
           navigate('/login', { replace: true });
           processingRef.current = false;
-        } else if (event === 'SIGNED_IN' && !currentSession?.user?.email_confirmed_at) {
-          console.warn('AuthCallbackPage: User SIGNED_IN but email not confirmed.');
+        } else if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && !currentSession?.user?.email_confirmed_at) { // MODIFIED CONDITION
+          console.warn('AuthCallbackPage: User SIGNED_IN/INITIAL_SESSION but email not confirmed.'); // MODIFIED LOG
           setStatus('error');
           setMessage(t('email_not_confirmed'));
           console.log('AuthCallbackPage: Calling navigate to /login because email not confirmed.');
