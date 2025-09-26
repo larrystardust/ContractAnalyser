@@ -1349,5 +1349,10 @@
   "login_button": "Aller à la connexion",
   "return_to_home": "Retour à l'accueil",
   "monthly": "Mensuel",
-  "yearly": "Annuel"
+  "yearly": "Annuel",
+
+  "blog_button": "Blog",
+  "back_to_landing_page": "Retour à la page d'accueil",
+  "our_blog_title": "Notre Blog",
+  "our_blog_description": "Restez informé des dernières avancées en matière d'IA dans la technologie juridique, l'analyse de contrats et la protection des entreprises."
 }
