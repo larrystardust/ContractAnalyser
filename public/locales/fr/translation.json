@@ -1341,5 +1341,10 @@
   "testimonial_2_title": "Chef du service juridique, Global Ventures",
   "testimonial_3_text": "En tant que propriétaire de petite entreprise, les frais juridiques pour la révision des contrats étaient un énorme fardeau. ContractAnalyser fournit une analyse de qualité professionnelle à une fraction du coût, rendant la conformité juridique accessible et abordable.",
   "testimonial_3_author": "Maria Rodriguez",
-  "testimonial_3_title": "PDG, Creative Solutions LLC"
+  "testimonial_3_title": "PDG, Creative Solutions LLC",
+
+  "success_message": "Succès !",
+  "authentication_successful": "Authentification réussie. Redirection en cours...",
+  "login_button": "Aller à la connexion",
+  "return_to_home": "Retour à l'accueil"
 }
