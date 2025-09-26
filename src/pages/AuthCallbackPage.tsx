@@ -105,28 +105,39 @@ const AuthCallbackPage: React.FC = () => {
           }
           console.log('AuthCallbackPage: Finished login_at update section (initiated).');
 
-          // --- START: Language Preference Handling ---
-          console.log('AuthCallbackPage: Starting language preference fetch.');
-          const { data: profileDataForLanguage, error: profileLanguageError } = await supabase
+          // --- START: Language Preference Handling (non-blocking) ---
+          console.log('AuthCallbackPage: Starting language preference fetch (non-blocking).');
+          supabase
             .from('profiles')
             .select('language_preference')
             .eq('id', currentSession.user.id)
-            .maybeSingle();
-
-          if (profileLanguageError) {
-            console.error('AuthCallbackPage: Error fetching user language preference:', profileLanguageError);
-          } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
-            console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference}`);
-            await i18n.changeLanguage(profileDataForLanguage.language_preference);
-            localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
-            // Also update dir attribute for RTL languages
-            if (profileDataForLanguage.language_preference === 'ar') {
-              document.documentElement.setAttribute('dir', 'rtl');
-            } else {
-              document.documentElement.setAttribute('dir', 'ltr');
-            }
-          }
-          console.log('AuthCallbackPage: Finished language preference fetch.');
+            .maybeSingle()
+            .then(({ data: profileDataForLanguage, error: profileLanguageError }) => {
+              if (profileLanguageError) {
+                console.error('AuthCallbackPage: Error fetching user language preference in background:', profileLanguageError);
+              } else if (profileDataForLanguage?.language_preference && i18n.language !== profileDataForLanguage.language_preference) {
+                console.log(`AuthCallbackPage: Changing language from ${i18n.language} to ${profileDataForLanguage.language_preference} (non-blocking).`);
+                i18n.changeLanguage(profileDataForLanguage.language_preference)
+                  .then(() => {
+                    localStorage.setItem('i18nextLng', profileDataForLanguage.language_preference);
+                    // Also update dir attribute for RTL languages
+                    if (profileDataForLanguage.language_preference === 'ar') {
+                      document.documentElement.setAttribute('dir', 'rtl');
+                    } else {
+                      document.documentElement.setAttribute('dir', 'ltr');
+                    }
+                    console.log('AuthCallbackPage: i18n language changed and localStorage updated in background.');
+                  })
+                  .catch(langChangeError => {
+                    console.error('AuthCallbackPage: Error changing i18n language in background:', langChangeError);
+                  });
+              }
+              console.log('AuthCallbackPage: Language preference fetch and change initiated (non-blocking).');
+            })
+            .catch(fetchError => {
+              console.error('AuthCallbackPage: Sync error initiating language preference fetch:', fetchError);
+            });
+          console.log('AuthCallbackPage: Finished language preference handling section (initiated).');
           // --- END: Language Preference Handling ---
 
           // Handle Invitation Acceptance (if token exists)
