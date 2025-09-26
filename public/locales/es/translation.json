@@ -1333,5 +1333,10 @@
   "testimonial_2_title": "Jefe Legal, Global Ventures",
   "testimonial_3_text": "Como propietario de una pequeña empresa, los honorarios legales por la revisión de contratos eran una gran carga. ContractAnalyser proporciona un análisis de nivel profesional a una fracción del costo, haciendo que el cumplimiento legal sea accesible y asequible.",
   "testimonial_3_author": "María Rodríguez",
-  "testimonial_3_title": "CEO, Creative Solutions LLC"
+  "testimonial_3_title": "CEO, Creative Solutions LLC",
+
+  "success_message": "¡Éxito!",
+  "authentication_successful": "Autenticación exitosa. Redirigiendo...",
+  "login_button": "Ir a Iniciar Sesión",
+  "return_to_home": "Volver a Inicio"
 }
