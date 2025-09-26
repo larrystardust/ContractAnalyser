@@ -1338,5 +1338,7 @@
   "success_message": "¡Éxito!",
   "authentication_successful": "Autenticación exitosa. Redirigiendo...",
   "login_button": "Ir a Iniciar Sesión",
-  "return_to_home": "Volver a Inicio"
+  "return_to_home": "Volver a Inicio",
+  "monthly": "Mensual",
+  "yearly": "Anual"
 }
