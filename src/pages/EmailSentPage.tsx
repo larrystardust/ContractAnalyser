@@ -4,7 +4,7 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useTranslation, Trans } from 'react-i18next'; // ADDED
+import { useTranslation, Trans } from 'react-i18next';
 
 const EmailSentPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,7 +15,7 @@ const EmailSentPage: React.FC = () => {
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [redirectParam, setRedirectParam] = useState<string | null>(null);
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Attempt to retrieve the email from local storage
@@ -25,30 +25,30 @@ const EmailSentPage: React.FC = () => {
     } else {
       // If no email found, maybe redirect to signup or show a different message
       // For now, we'll just set a generic message
-      setUserEmail(t('your_email_address')); // MODIFIED
+      setUserEmail(t('your_email_address'));
     }
 
-    // ADDED: Retrieve redirect parameter from URL
+    // Retrieve redirect parameter from URL
     const param = searchParams.get('redirect');
     if (param) {
       setRedirectParam(param);
     }
-  }, [searchParams, t]); // MODIFIED: Added t to dependency array
+  }, [searchParams, t]);
 
   const handleResendEmail = async () => {
     setLoading(true);
     setResendError(null);
     setResendMessage(null);
 
-    if (!userEmail || userEmail === t('your_email_address')) { // MODIFIED
-      setResendError(t('go_back_signup_valid_email')); // MODIFIED
+    if (!userEmail || userEmail === t('your_email_address')) {
+      setResendError(t('go_back_signup_valid_email'));
       setLoading(false);
       return;
     }
 
     try {
       let emailRedirectToUrl = `${import.meta.env.VITE_APP_BASE_URL}/auth/callback`;
-      // ADDED: If a redirect parameter exists, append it to the emailRedirectTo URL
+      // If a redirect parameter exists, append it to the emailRedirectTo URL
       if (redirectParam) {
         emailRedirectToUrl += `?redirect=${encodeURIComponent(redirectParam)}`;
       }
@@ -65,10 +65,19 @@ const EmailSentPage: React.FC = () => {
         throw error;
       }
 
-      setResendMessage(t('another_email_sent')); // MODIFIED
+      setResendMessage(t('another_email_sent'));
     } catch (err: any) {
       console.error('Error resending confirmation email:', err);
-      setResendError(err.message || t('failed_to_resend_email')); // MODIFIED
+      let errorMessage = err.message || t('failed_to_resend_email');
+
+      // Check for the specific cooldown message pattern
+      const cooldownMatch = errorMessage.match(/For security purposes, you can only request this after (\d+) seconds\./);
+      if (cooldownMatch && cooldownMatch[1]) {
+        const seconds = parseInt(cooldownMatch[1], 10);
+        errorMessage = t('resend_email_cooldown_message', { seconds });
+      }
+
+      setResendError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -88,7 +97,7 @@ const EmailSentPage: React.FC = () => {
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <Mail className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('email_sent_page_title')}</h2> {/* MODIFIED */}
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('email_sent_page_title')}</h2>
           <p className="mt-2 text-sm text-gray-600">
             <Trans 
               i18nKey="email_sent_message" 
@@ -122,7 +131,7 @@ const EmailSentPage: React.FC = () => {
               onClick={handleResendEmail}
               disabled={loading}
             >
-              {loading ? t('sending_email') : t('resend_confirmation_email')} {/* MODIFIED */}
+              {loading ? t('sending_email') : t('resend_confirmation_email')}
             </Button>
             <Button
               type="button"
@@ -132,7 +141,7 @@ const EmailSentPage: React.FC = () => {
               onClick={handleBackToLogin}
               disabled={loading}
             >
-              {t('back_to_login_button')} {/* MODIFIED */}
+              {t('back_to_login_button')}
             </Button>
           </div>
         </CardBody>
