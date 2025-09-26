@@ -12,8 +12,8 @@ const AuthCallbackPage: React.FC = () => {
 
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
+  const [searchParams] = useSearchParams(); // Keep useSearchParams for initial param access
+  const location = useLocation(); // Keep useLocation for initial hash access
   const { t, i18n } = useTranslation();
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -22,7 +22,7 @@ const AuthCallbackPage: React.FC = () => {
   const processingRef = useRef(false); // To prevent multiple navigations
 
   useEffect(() => {
-    console.log('AuthCallbackPage: useEffect triggered.');
+    console.log('AuthCallbackPage: useEffect triggered. processingRef.current:', processingRef.current); // ADDED LOG
     console.log('AuthCallbackPage: Current URL hash:', window.location.hash);
     console.log('AuthCallbackPage: Current URL search:', window.location.search);
 
@@ -196,6 +196,7 @@ const AuthCallbackPage: React.FC = () => {
             console.log('AuthCallbackPage: Calling navigate to /dashboard (default).');
             navigate('/dashboard', { replace: true });
           }
+          console.log('AuthCallbackPage: Final navigation logic completed.'); // ADDED LOG
 
         } catch (overallError: any) {
           console.error('AuthCallbackPage: Unexpected error during auth callback processing:', overallError);
@@ -228,7 +229,7 @@ const AuthCallbackPage: React.FC = () => {
       authListener.subscription?.unsubscribe();
       processingRef.current = false; // Reset flag on unmount
     };
-  }, [navigate, supabase.auth, searchParams, location.hash, t, i18n]);
+  }, [navigate, supabase.auth, t, i18n]); // REMOVED searchParams and location.hash from dependencies
 
   const renderContent = () => {
     switch (status) {
