@@ -1341,5 +1341,10 @@
   "login_button": "Ir a Iniciar Sesión",
   "return_to_home": "Volver a Inicio",
   "monthly": "Mensual",
-  "yearly": "Anual"
+  "yearly": "Anual",
+
+  "blog_button": "Blog",
+  "back_to_landing_page": "Volver a la página de inicio",
+  "our_blog_title": "Nuestro Blog",
+  "our_blog_description": "Manténgase al día con las últimas novedades en IA en tecnología legal, análisis de contratos y protección empresarial."
 }
