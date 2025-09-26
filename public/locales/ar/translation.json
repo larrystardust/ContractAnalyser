@@ -1340,5 +1340,7 @@
   "success_message": "نجاح!",
   "authentication_successful": "تمت المصادقة بنجاح. جارى إعادة التوجيه...",
   "login_button": "الذهاب إلى تسجيل الدخول",
-  "return_to_home": "العودة إلى الصفحة الرئيسية"
+  "return_to_home": "العودة إلى الصفحة الرئيسية",
+  "monthly": "شهري",
+  "yearly": "سنوي"
 }
