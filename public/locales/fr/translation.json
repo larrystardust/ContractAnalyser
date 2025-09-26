@@ -1354,5 +1354,15 @@
   "blog_button": "Blog",
   "back_to_landing_page": "Retour à la page d'accueil",
   "our_blog_title": "Notre Blog",
-  "our_blog_description": "Restez informé des dernières avancées en matière d'IA dans la technologie juridique, l'analyse de contrats et la protection des entreprises."
+  "our_blog_description": "Restez informé des dernières avancées en matière d'IA dans la technologie juridique, l'analyse de contrats et la protection des entreprises.",
+  "loading_blog_posts": "Chargement des articles de blog",
+  "error_loading_blog_posts": "Erreur lors du chargement des articles de blog",
+  "by": "Par",
+  "on": "le",
+  "read_more": "Lire la suite",
+  "loading_blog_post": "Chargement de l'article de blog",
+  "error_loading_blog_post": "Erreur lors du chargement de l'article de blog",
+  "blog_post_not_found": "Article de blog introuvable",
+  "blog_post_not_exist": "L'article que vous recherchez n'existe pas",
+  "back_to_blog": "Retour au blog"
 }
