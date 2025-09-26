@@ -999,6 +999,7 @@
   "resend_confirmation_email": "Renvoyer l'E-mail de Confirmation",
   "back_to_login_button": "Retour à la Connexion",
   "redirecting_to_signup": "Redirection vers la page d'inscription...",
+  "resend_email_cooldown_message": "Pour des raisons de sécurité, vous ne pouvez demander ceci qu'après {{seconds}} secondes.",
 
   "sample_data_view_dashboard": "Vue des Données d'Exemple",
   "upgrade_to_analyze_own_contracts": "Ce tableau de bord affiche des résultats d'analyse d'exemple. Mettez à niveau pour analyser vos propres contrats !",
