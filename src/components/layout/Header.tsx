@@ -5,8 +5,7 @@ import Button from '../ui/Button';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useIsAdmin } from '../../hooks/useIsAdmin';
 import { useNotifications } from '../../hooks/useNotifications';
-import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
-// REMOVED: import LanguageSelector from '../ui/LanguageSelector'; // REMOVED: LanguageSelector import
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   onOpenHelpModal: () => void;
@@ -70,9 +69,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   const handleDashboardSwitch = () => {
     if (location.pathname.startsWith('/admin')) {
-      navigate('/dashboard');
-    } else {
       navigate('/admin');
+    } else {
+      navigate('/dashboard');
     }
   };
 
@@ -126,9 +125,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                     {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')}
                   </Button>
                 )}
-                <Button variant="outline" size="sm" icon={<Search className="w-4 h-4" />} onClick={handleSearchClick}>
-                  {t('search')}
-                </Button>
                 <Button variant="text" size="sm" className="p-1 relative" onClick={handleNotificationsClick}>
                   <Bell className="w-5 h-5 text-blue-500" />
                   {unreadCount > 0 && (<span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />)}
@@ -141,7 +137,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 </Button>
               </>
             ) : (
-              null
+              <>
+                {/* ADDED: Blog link for unauthenticated users */}
+                <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Blog</Link>
+              </>
             )}
             {/* Language Selector for Desktop */}
             <select
@@ -244,6 +243,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   <>
                     <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('login')}</Link>
                     <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('signup')}</Link>
+                    {/* ADDED: Blog link for unauthenticated users in mobile menu */}
+                    <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>Blog</Link>
                   </>
                 )
               )}
