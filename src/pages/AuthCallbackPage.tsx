@@ -225,11 +225,11 @@ const AuthCallbackPage: React.FC = () => {
 
     // Cleanup the listener when the component unmounts
     return () => {
-      console.log('AuthCallbackPage: Cleaning up auth listener.');
+      console.log('AuthCallbackPage: Cleaning up auth listener.'); // ADDED LOG
       authListener.subscription?.unsubscribe();
       processingRef.current = false; // Reset flag on unmount
     };
-  }, [navigate, supabase.auth, t, i18n]); // REMOVED searchParams and location.hash from dependencies
+  }, [navigate, supabase.auth, t]); // REMOVED i18n from dependencies
 
   const renderContent = () => {
     switch (status) {
