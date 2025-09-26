@@ -1346,5 +1346,7 @@
   "success_message": "Succès !",
   "authentication_successful": "Authentification réussie. Redirection en cours...",
   "login_button": "Aller à la connexion",
-  "return_to_home": "Retour à l'accueil"
+  "return_to_home": "Retour à l'accueil",
+  "monthly": "Mensuel",
+  "yearly": "Annuel"
 }
