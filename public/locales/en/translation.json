@@ -1353,5 +1353,15 @@
   "blog_button": "Blog",
   "back_to_landing_page": "Back to Landing Page",
   "our_blog_title": "Our Blog",
-  "our_blog_description": "Stay updated with the latest insights on AI in legal tech, contract analysis, and business protection."
+  "our_blog_description": "Stay updated with the latest insights on AI in legal tech, contract analysis, and business protection.",
+  "loading_blog_posts": "Loading blog posts",
+  "error_loading_blog_posts": "Error loading blog posts",
+  "by": "By",
+  "on": "on",
+  "read_more": "Read More",
+  "loading_blog_post": "Loading blog post",
+  "error_loading_blog_post": "Error loading blog post",
+  "blog_post_not_found": "Blog Post Not Found",
+  "blog_post_not_exist": "The post you are looking for does not exist",
+  "back_to_blog": "Back to Blog"
 }
