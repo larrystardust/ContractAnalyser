@@ -2,7 +2,7 @@ import { BlogPost } from './blogData';
 
 export const blogPostsAr: BlogPost[] = [
   {
-    slug: 'revolutionize-contract-analysis-with-ai',
+    slug: 'ثورة في تحليل العقود باستخدام الذكاء الاصطناعي',
     title: 'توقف عن الغرق في المستندات القانونية: أحدث ثورة في تحليل العقود باستخدام الذكاء الاصطناعي',
     author: 'نيل لانجلي',
     date: '2025-09-26',
@@ -50,7 +50,7 @@ export const blogPostsAr: BlogPost[] = [
     imageUrl: 'https://images.pexels.com/photos/6238104/pexels-photo-6238104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
-    slug: 'unlock-time-slash-legal-costs',
+    slug: 'وفر الوقت وقلص التكاليف القانونية',
     title: 'وفر المزيد من الوقت وقلل التكاليف القانونية: كيف يغير الذكاء الاصطناعي مراجعة العقود لأصحاب الأعمال',
     author: 'نيل لانجلي',
     date: '2025-09-26',
@@ -84,7 +84,7 @@ export const blogPostsAr: BlogPost[] = [
     imageUrl: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
-    slug: 'protect-your-business-with-ai-contract-insights',
+    slug: 'احمِ عملك باستخدام رؤى الذكاء الاصطناعي للعقود',
     title: 'احمِ عملك: اتخذ قرارات أكثر ذكاءً باستخدام رؤى العقود المدعومة بالذكاء الاصطناعي',
     author: 'نيل لانجلي',
     date: '2025-09-26',
