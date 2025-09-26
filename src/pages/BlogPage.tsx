@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useBlogPosts } from '../hooks/useBlogPosts'; // MODIFIED: Import useBlogPosts hook
 
 const BlogPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const { blogPosts, loading, error } = useBlogPosts(); // MODIFIED: Use the hook
 
   if (loading) {
