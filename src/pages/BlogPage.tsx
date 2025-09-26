@@ -2,19 +2,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogData'; // Import the blog posts data
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 const BlogPage: React.FC = () => {
+  const { t } = useTranslation(); // ADDED: Initialize useTranslation
+
   return (
     <div className="container mx-auto px-4 py-6 mt-16">
       <div className="mb-6">
         <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Landing Page
+          {t('back_to_landing_page')} {/* MODIFIED: Use translation key */}
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Our Blog</h1>
-      <p className="text-lg text-gray-700 mb-10">Stay updated with the latest insights on AI in legal tech, contract analysis, and business protection.</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('our_blog_title')}</h1> {/* MODIFIED: Use translation key */}
+      <p className="text-lg text-gray-700 mb-10">{t('our_blog_description')}</p> {/* MODIFIED: Use translation key */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {blogPosts.map((post) => (
@@ -35,7 +38,7 @@ const BlogPage: React.FC = () => {
                 {post.excerpt}
               </p>
               <Link to={`/blog/${post.slug}`} className="text-blue-600 hover:text-blue-800 font-medium">
-                Read More &rarr;
+                Read More &rarr; {/* This is already correctly linked */}
               </Link>
             </div>
           </div>
