@@ -1346,5 +1346,15 @@
   "blog_button": "Blog",
   "back_to_landing_page": "Volver a la página de inicio",
   "our_blog_title": "Nuestro Blog",
-  "our_blog_description": "Manténgase al día con las últimas novedades en IA en tecnología legal, análisis de contratos y protección empresarial."
+  "our_blog_description": "Manténgase al día con las últimas novedades en IA en tecnología legal, análisis de contratos y protección empresarial.",
+  "loading_blog_posts": "Cargando publicaciones del blog",
+  "error_loading_blog_posts": "Error al cargar las publicaciones del blog",
+  "by": "Por",
+  "on": "el",
+  "read_more": "Leer más",
+  "loading_blog_post": "Cargando publicación del blog",
+  "error_loading_blog_post": "Error al cargar la publicación del blog",
+  "blog_post_not_found": "Publicación del blog no encontrada",
+  "blog_post_not_exist": "La publicación que busca no existe",
+  "back_to_blog": "Volver al blog"
 }
