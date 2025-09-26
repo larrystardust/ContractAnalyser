@@ -138,8 +138,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               </>
             ) : (
               <>
-                {/* ADDED: Blog link for unauthenticated users */}
-                <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">Blog</Link>
+                {/* MODIFIED: Use translation key for Blog link */}
+                <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('blog_button')}</Link>
               </>
             )}
             {/* Language Selector for Desktop */}
@@ -243,8 +243,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   <>
                     <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('login')}</Link>
                     <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('signup')}</Link>
-                    {/* ADDED: Blog link for unauthenticated users in mobile menu */}
-                    <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>Blog</Link>
+                    {/* MODIFIED: Use translation key for Blog link in mobile menu */}
+                    <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('blog_button')}</Link>
                   </>
                 )
               )}
