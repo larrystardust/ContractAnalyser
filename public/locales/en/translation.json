@@ -1348,5 +1348,10 @@
   "login_button": "Go to Login",
   "return_to_home": "Return to Home",
   "monthly": "Monthly",
-  "yearly": "Yearly"
+  "yearly": "Yearly",
+
+  "blog_button": "Blog",
+  "back_to_landing_page": "Back to Landing Page",
+  "our_blog_title": "Our Blog",
+  "our_blog_description": "Stay updated with the latest insights on AI in legal tech, contract analysis, and business protection."
 }
