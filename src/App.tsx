@@ -45,8 +45,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import MaintenancePage from './pages/MaintenancePage';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
-import BlogPage from './pages/BlogPage'; // ADDED: Import BlogPage
-import BlogPostPage from './pages/BlogPostPage'; // ADDED: Import BlogPostPage
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -79,18 +79,31 @@ function App() {
       '/privacy-policy',
       '/help',
       '/maintenance',
-      '/blog', // ADDED: Blog page is public
-      '/blog/:slug', // ADDED: Individual blog posts are public
+      '/blog',
+      '/blog/:slug', // This is the dynamic path
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
-    if (!loadingAppSettings && appSettings?.is_maintenance_mode && !isAdmin && !publicPaths.includes(currentPathBase)) {
+    // ADDED: New function to check if a path matches a public path pattern
+    const isPublicPath = (pathToCheck: string) => {
+      return publicPaths.some(publicPathPattern => {
+        if (publicPathPattern.includes(':slug')) {
+          // Convert pattern to a regex for matching dynamic segments
+          // Escape special characters in the pattern, then replace :slug with a regex for any segment
+          const regexPattern = new RegExp('^' + publicPathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
+          return regexPattern.test(pathToCheck);
+        }
+        return publicPathPattern === pathToCheck;
+      });
+    };
+
+    if (!loadingAppSettings && appSettings?.is_maintenance_mode && !isAdmin && !isPublicPath(currentPathBase)) {
       navigate('/maintenance', { replace: true });
       return;
     }
 
-    if (!isSessionLoading && !session && !publicPaths.includes(currentPathBase)) {
+    if (!isSessionLoading && !session && !isPublicPath(currentPathBase)) {
       navigate('/', { replace: true });
     }
   }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
@@ -135,8 +148,8 @@ function App() {
               <Route path="/help" element={<HelpPage />} />            
               <Route path="/sample-dashboard" element={<LandingPageSampleDashboard />} />
               <Route path="/landing-pricing" element={<LandingPagePricingSection />} /> 
-              <Route path="/blog" element={<BlogPage />} /> {/* ADDED: Blog list route */}
-              <Route path="/blog/:slug" element={<BlogPostPage />} /> {/* ADDED: Individual blog post route */}
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
 
               {/* Protected Routes - wrapped with AuthGuard */}
               <Route element={<AuthGuard />}>
