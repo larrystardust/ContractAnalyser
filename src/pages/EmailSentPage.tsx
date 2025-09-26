@@ -70,12 +70,17 @@ const EmailSentPage: React.FC = () => {
       console.error('Error resending confirmation email:', err);
       let errorMessage = err.message || t('failed_to_resend_email');
 
-      // Check for the specific cooldown message pattern
-      const cooldownMatch = errorMessage.match(/For security purposes, you can only request this after (\d+) seconds\./);
+      // --- START MODIFICATION ---
+      console.log('EmailSentPage: Raw error message from Supabase:', err.message); // Diagnostic log
+      // Refined regex to be more flexible: case-insensitive, optional trailing punctuation
+      const cooldownMatch = err.message.match(/for security purposes, you can only request this after (\d+) seconds/i);
+      console.log('EmailSentPage: Cooldown regex match result:', cooldownMatch); // Diagnostic log
+
       if (cooldownMatch && cooldownMatch[1]) {
         const seconds = parseInt(cooldownMatch[1], 10);
         errorMessage = t('resend_email_cooldown_message', { seconds });
       }
+      // --- END MODIFICATION ---
 
       setResendError(errorMessage);
     } finally {
