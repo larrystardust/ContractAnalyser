@@ -5,7 +5,7 @@ export const blogPostsEn: BlogPost[] = [
     slug: 'revolutionize-contract-analysis-with-ai',
     title: 'Stop Drowning in Legal Documents: Revolutionize Your Contract Analysis with AI',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2024-07-16',
     excerpt: 'In today\'s fast-paced business world, contracts are the backbone of every agreement, partnership, and transaction. Yet, the process of reviewing, understanding, and ensuring compliance within these complex legal documents remains a significant bottleneck for many organizations. Are you spending countless hours manually sifting through pages of legalese, risking costly errors, and delaying critical business decisions?',
     content: [
       'In today\'s fast-paced business world, contracts are the backbone of every agreement, partnership, and transaction. Yet, the process of reviewing, understanding, and ensuring compliance within these complex legal documents remains a significant bottleneck for many organizations. Are you spending countless hours manually sifting through pages of legalese, risking costly errors, and delaying critical business decisions?',
@@ -53,7 +53,7 @@ export const blogPostsEn: BlogPost[] = [
     slug: 'unlock-time-slash-legal-costs',
     title: 'Unlock More Time & Slash Legal Costs: How AI is Changing Contract Review for Business Owners',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2025-03-21',
     excerpt: 'As a business owner, your time is your most valuable asset. Every minute spent on administrative tasks, especially complex legal documents, is a minute not spent growing your business, innovating, or serving your customers. And let\'s be honest, legal fees can quickly eat into your budget.',
     content: [
       'As a business owner, your time is your most valuable asset. Every minute spent on administrative tasks, especially complex legal documents, is a minute not spent growing your business, innovating, or serving your customers. And let\'s be honest, legal fees can quickly eat into your budget.',
@@ -87,7 +87,7 @@ export const blogPostsEn: BlogPost[] = [
     slug: 'protect-your-business-with-ai-contract-insights',
     title: 'Protect Your Business: Make Smarter Decisions with AI-Powered Contract Insights',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2025-08-14',
     excerpt: 'Every business owner knows that contracts are more than just paperwork; they\'re promises, protections, and potential pitfalls. A single overlooked clause, a misunderstood term, or an unaddressed risk can lead to costly disputes, regulatory fines, or even the collapse of a deal.',
     content: [
       'Every business owner knows that contracts are more than just paperwork; they\'re promises, protections, and potential pitfalls. A single overlooked clause, a misunderstood term, or an unaddressed risk can lead to costly disputes, regulatory fines, or even the collapse of a deal.',
