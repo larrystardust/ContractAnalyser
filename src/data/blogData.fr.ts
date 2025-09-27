@@ -47,7 +47,7 @@ export const blogPostsFr: BlogPost[] = [
       'Vous voulez le voir en action d\'abord ?',
       '**[Voir un tableau de bord d\'exemple](https://www.contractanalyser.com/sample-dashboard)** | **[Découvrez nos tarifs transparents](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/6238104/pexels-photo-6238104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/8386437/pexels-photo-8386437.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'Gagnez du temps et réduisez les coûts juridiques',
@@ -81,7 +81,7 @@ export const blogPostsFr: BlogPost[] = [
       '**Prêt à récupérer votre temps et votre budget ?**',
       '**[Commencez votre analyse gratuite dès aujourd\'hui !](https://www.contractanalyser.com/signup)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'Protégez votre entreprise avec les insights de l\'IA sur les contrats',
@@ -112,6 +112,6 @@ export const blogPostsFr: BlogPost[] = [
       '**Prêt à obtenir des informations inégalées sur vos contrats et à protéger votre entreprise ?**',
       '**[Explorez un exemple de rapport d\'analyse](https://www.contractanalyser.com/sample-dashboard)** | **[Découvrez à quel point la protection peut être abordable](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
 ];
