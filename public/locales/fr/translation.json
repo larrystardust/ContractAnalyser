@@ -1364,5 +1364,10 @@
   "error_loading_blog_post": "Erreur lors du chargement de l'article de blog",
   "blog_post_not_found": "Article de blog introuvable",
   "blog_post_not_exist": "L'article que vous recherchez n'existe pas",
-  "back_to_blog": "Retour au blog"
+  "back_to_blog": "Retour au blog",
+
+  "enter_email_reset_instructions": "Entrez votre e-mail pour recevoir les instructions de réinitialisation du mot de passe.",
+  "send_reset_instructions": "Envoyer les instructions de réinitialisation", 
+  "password_reset_email_sent_alert": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.",
+  "password_reset_email_sent": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail."
 }
