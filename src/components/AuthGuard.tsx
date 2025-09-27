@@ -37,8 +37,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // Global state to track password reset flow across all browser tabs
   useEffect(() => {
-    // The isPasswordResetFlow prop was not being passed, so this logic was not fully active based on prop.
-    // Relying on localStorage flags set by ResetPassword page or URL hash.
     const checkGlobalResetFlow = () => {
       const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
       const startTime = localStorage.getItem('passwordResetFlowStartTime');
@@ -72,7 +70,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []); // No dependency on isPasswordResetFlow prop, as it's not passed.
+  }, []);
 
   // Check URL for recovery session (e.g., from password reset email link)
   useEffect(() => {
@@ -84,6 +82,13 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         setIsRecoverySession(true);
         localStorage.setItem('passwordResetFlowActive', 'true');
         localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
+      } else {
+        // MODIFIED: If hash changes and no longer contains 'type=recovery', ensure isRecoverySession is false
+        // This is a critical addition if the navigate call doesn't clear the hash immediately
+        const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
+        if (resetFlowActive !== 'true') { // Only set to false if not explicitly active from localStorage
+             setIsRecoverySession(false);
+        }
       }
     };
 
@@ -176,7 +181,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // If not authenticated, redirect to login
   if (!session || !session.user) {
-    // MODIFIED: Use translation key for the message
     console.log(t('auth_session_missing'));
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
