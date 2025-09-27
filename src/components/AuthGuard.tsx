@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; // Removed useRef
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
-// Removed isPasswordResetFlow from props as it's not being passed and is redundant
 interface AuthGuardProps {
   children?: React.ReactNode;
 }
@@ -13,6 +13,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate(); // useNavigate must be called unconditionally
+  const { t } = useTranslation(); // ADDED: Initialize useTranslation
 
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
@@ -175,6 +176,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // If not authenticated, redirect to login
   if (!session || !session.user) {
+    // MODIFIED: Use translation key for the message
+    console.log(t('auth_session_missing'));
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
