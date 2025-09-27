@@ -5,7 +5,7 @@ export const blogPostsFr: BlogPost[] = [
     slug: 'Révolutionnez l\'analyse des contrats avec l\'IA',
     title: 'Arrêtez de vous noyer dans les documents juridiques : Révolutionnez votre analyse de contrats avec l\'IA',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2024-07-16',
     excerpt: 'Dans le monde des affaires trépidant d\'aujourd\'hui, les contrats sont l\'épine dorsale de chaque accord, partenariat et transaction. Pourtant, le processus de révision, de compréhension et de garantie de la conformité au sein de ces documents juridiques complexes reste un goulot d\'étranglement important pour de nombreuses organisations. Passez-vous d\'innombrables heures à parcourir manuellement des pages de jargon juridique, risquant des erreurs coûteuses et retardant des décisions commerciales critiques ?',
     content: [
       'Dans le monde des affaires trépidant d\'aujourd\'hui, les contrats sont l\'épine dorsale de chaque accord, partenariat et transaction. Pourtant, le processus de révision, de compréhension et de garantie de la conformité au sein de ces documents juridiques complexes reste un goulot d\'étranglement important pour de nombreuses organisations. Passez-vous d\'innombrables heures à parcourir manuellement des pages de jargon juridique, risquant des erreurs coûteuses et retardant des décisions commerciales critiques ?',
@@ -53,7 +53,7 @@ export const blogPostsFr: BlogPost[] = [
     slug: 'Gagnez du temps et réduisez les coûts juridiques',
     title: 'Libérez plus de temps et réduisez les coûts juridiques : Comment l\'IA change la révision des contrats pour les propriétaires d\'entreprise',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2025-03-21',
     excerpt: 'En tant que propriétaire d\'entreprise, votre temps est votre atout le plus précieux. Chaque minute passée sur des tâches administratives, en particulier des documents juridiques complexes, est une minute non consacrée à la croissance de votre entreprise, à l\'innovation ou au service de vos clients. Et soyons honnêtes, les frais juridiques peuvent rapidement entamer votre budget.',
     content: [
       'En tant que propriétaire d\'entreprise, votre temps est votre atout le plus précieux. Chaque minute passée sur des tâches administratives, en particulier des documents juridiques complexes, est une minute non consacrée à la croissance de votre entreprise, à l\'innovation ou au service de vos clients. Et soyons honnêtes, les frais juridiques peuvent rapidement entamer votre budget.',
@@ -86,8 +86,8 @@ export const blogPostsFr: BlogPost[] = [
   {
     slug: 'Protégez votre entreprise avec les insights de l\'IA sur les contrats',
     title: 'Protégez votre entreprise : Prenez des décisions plus intelligentes grâce aux informations contractuelles basées sur l\'IA',
-    author: 'Neil Langley',
-    date: '2025-09-26',
+    author: 'Julie Simmons',
+    date: '2025-08-14',
     excerpt: 'Chaque propriétaire d\'entreprise sait que les contrats sont plus que de simples formalités administratives ; ce sont des promesses, des protections et des pièges potentiels. Une seule clause négligée, un terme mal interprété ou un risque non traité peut entraîner des litiges coûteux, des amendes réglementaires ou même l\'effondrement d\'un accord.',
     content: [
       'Chaque propriétaire d\'entreprise sait que les contrats sont plus que de simples formalités administratives ; ce sont des promesses, des protections et des pièges potentiels. Une seule clause négligée, un terme mal interprété ou un risque non traité peut entraîner des litiges coûteux, des amendes réglementaires ou même l\'effondrement d\'un accord.',
