@@ -79,7 +79,7 @@ export const blogPostsEn: BlogPost[] = [
       '*   **Multi-Jurisdictional Support**: Whether you operate locally or globally, our AI understands the nuances of various legal systems.',
       'Stop letting contracts be a drain on your time and budget. Empower your business with the efficiency and insight of ContractAnalyser.',
       '**Ready to reclaim your time and budget?**',
-      '**[Start Your Free Analysis Today!](https://www.contractanalyser.com/signup)**'
+      '**[Start Your Instant Analysis Today!](https://www.contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
