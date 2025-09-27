@@ -47,7 +47,7 @@ export const blogPostsEs: BlogPost[] = [
       '¿Quiere verlo en acción primero?',
       '**[Ver un panel de muestra](https://www.contractanalyser.com/sample-dashboard)** | **[Explore nuestros precios transparentes](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/8386437/pexels-photo-8386437.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog-photo-1000445.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'Ahorra tiempo y reduce costes legales',
