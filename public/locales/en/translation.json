@@ -1368,5 +1368,8 @@
   "enter_email_reset_instructions": "Enter your email to receive password reset instructions.",
   "send_reset_instructions": "Send Reset Instructions",
   "password_reset_email_sent": "A password reset email has been sent to your email address.",
-  "password_reset_email_sent_alert": "A password reset email has been sent to your email address."
+  "password_reset_email_sent_alert": "A password reset email has been sent to your email address.",
+  "auth_session_missing": "Auth session missing!",
+  "password_successfully_reset_alert": "Password has been successfully reset.",
+  "failed_to_reset_password_alert": "Failed to reset password."
 }
