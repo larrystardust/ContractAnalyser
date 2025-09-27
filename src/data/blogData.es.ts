@@ -86,7 +86,7 @@ export const blogPostsEs: BlogPost[] = [
   {
     slug: 'Protege tu empresa con insights de IA para contratos',
     title: 'Proteja su negocio: Tome decisiones más inteligentes con información de contratos impulsada por IA',
-    author: 'Neil Langley',
+    author: 'Julie Simmons',
     date: '2025-08-14',
     excerpt: 'Todo propietario de un negocio sabe que los contratos son más que simples trámites; son promesas, protecciones y posibles escollos. Una sola cláusula pasada por alto, un término malinterpretado o un riesgo no abordado pueden dar lugar a costosas disputas, multas reglamentarias o incluso el colapso de un acuerdo.',
     content: [
