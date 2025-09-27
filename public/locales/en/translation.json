@@ -1363,5 +1363,10 @@
   "error_loading_blog_post": "Error loading blog post",
   "blog_post_not_found": "Blog Post Not Found",
   "blog_post_not_exist": "The post you are looking for does not exist",
-  "back_to_blog": "Back to Blog"
+  "back_to_blog": "Back to Blog",
+
+  "enter_email_reset_instructions": "Enter your email to receive password reset instructions.",
+  "send_reset_instructions": "Send Reset Instructions",
+  "password_reset_email_sent": "A password reset email has been sent to your email address.",
+  "password_reset_email_sent_alert": "A password reset email has been sent to your email address."
 }
