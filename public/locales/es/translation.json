@@ -1356,5 +1356,10 @@
   "error_loading_blog_post": "Error al cargar la publicación del blog",
   "blog_post_not_found": "Publicación del blog no encontrada",
   "blog_post_not_exist": "La publicación que busca no existe",
-  "back_to_blog": "Volver al blog"
+  "back_to_blog": "Volver al blog",
+
+  "enter_email_reset_instructions": "Introduce tu correo electrónico para recibir instrucciones de restablecimiento de contraseña.",
+  "send_reset_instructions": "Enviar instrucciones de restablecimiento",
+  "password_reset_email_sent": "Se ha enviado un correo electrónico de restablecimiento de contraseña a tu dirección de correo electrónico.",
+  "password_reset_email_sent_alert": "Se ha enviado un correo electrónico de restablecimiento de contraseña a tu dirección de correo electrónico."
 }
