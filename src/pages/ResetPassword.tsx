@@ -111,7 +111,8 @@ const ResetPassword: React.FC = () => {
 
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
-        window.history.pushState(null, '', window.location.pathname + window.location.hash);
+        e.preventDefault(); // Prevent the browser from navigating back
+        // The AuthGuard will handle the actual redirection if the user tries to navigate away.
         setError(t('navigation_disabled_reset_password'));
       }
     };
@@ -119,7 +120,9 @@ const ResetPassword: React.FC = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
     
-    window.history.pushState(null, '', window.location.pathname + window.location.hash);
+    // REMOVED: window.history.pushState(null, '', window.location.pathname + window.location.hash);
+    // This line was likely causing the throttling by pushing state on every render.
+    // Rely on AuthGuard's <Navigate replace> for initial URL management.
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -128,7 +131,7 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [success, sessionTimer, location.hash, t]);
+  }, [success, sessionTimer, location.hash, t]); // location.hash is still a dependency for the listener logic
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
