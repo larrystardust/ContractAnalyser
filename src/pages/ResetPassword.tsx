@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useSessionContext } from '@supabase/auth-helpers-react';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   const { session } = useSessionContext();
   const location = useLocation();
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,21 +28,21 @@ const ResetPassword: React.FC = () => {
     localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
     localStorage.setItem('blockModalsDuringReset', 'true');
 
+    // This return cleanup is important if the component unmounts before success
     return () => {
+      // Only clear if not successful, otherwise handleSubmit will handle it
       if (!success) {
         localStorage.removeItem('passwordResetFlowActive');
         localStorage.removeItem('passwordResetFlowStartTime');
         localStorage.removeItem('blockModalsDuringReset');
       }
     };
-  }, [success]);
+  }, [success]); // Depend on success to know when to *not* clear on unmount
 
   // Block modal opening attempts
   useEffect(() => {
     const blockModals = () => {
-      // Prevent any modal from opening during password reset
       const modalBlockers = [
-        // Common modal selectors
         '[data-modal]',
         '[data-help]',
         '.modal-trigger',
@@ -50,21 +50,19 @@ const ResetPassword: React.FC = () => {
         '.help-icon',
         '#help-button',
         '#dashboard-help',
-        // Add any specific selectors for DashboardHelpModal
         '[onclick*="help"]',
         '[onclick*="modal"]',
         '[href*="help"]',
         '[href*="modal"]'
       ];
 
-      modalBlockers.forEach(selector => { // MODIFIED: Renamed 'element' to 'selector' for clarity
-        document.querySelectorAll(selector).forEach(element => { // CRITICAL FIX: Select elements by selector
+      modalBlockers.forEach(selector => {
+        document.querySelectorAll(selector).forEach(element => {
           element.addEventListener('click', (e) => {
             if (!success) {
               e.preventDefault();
               e.stopPropagation();
               setError(t('help_unavailable_during_reset_modal'));
-              // Force focus back to password fields
               document.getElementById('newPassword')?.focus();
             }
           }, true);
@@ -72,7 +70,6 @@ const ResetPassword: React.FC = () => {
       });
     };
 
-    // Run after a short delay to ensure DOM is loaded
     const timer = setTimeout(blockModals, 100);
 
     return () => {
@@ -157,15 +154,17 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
       
-      localStorage.setItem('passwordResetCompleted', 'true');
+      // CRITICAL CHANGE: Clear the active flow flags directly here
+      localStorage.removeItem('passwordResetFlowActive');
+      localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
-      
-      // CRITICAL ADDITION: Clear the URL hash immediately
+
+      // Clear the URL hash immediately
       window.history.replaceState({}, document.title, window.location.pathname);
 
       await supabase.auth.signOut();
 
-      // REMOVED: setTimeout. Navigate immediately.
+      // Navigate immediately.
       navigate('/login', { replace: true });
 
     } catch (error: any) {
@@ -180,6 +179,7 @@ const ResetPassword: React.FC = () => {
       if (sessionTimer) {
         clearTimeout(sessionTimer);
       }
+      // Ensure all relevant flags are cleared when manually going back to login
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
