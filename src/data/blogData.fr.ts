@@ -47,7 +47,7 @@ export const blogPostsFr: BlogPost[] = [
       'Vous voulez le voir en action d\'abord ?',
       '**[Voir un tableau de bord d\'exemple](https://www.contractanalyser.com/sample-dashboard)** | **[Découvrez nos tarifs transparents](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/1607377/pexels-photo-1607377.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog-photo-1000445.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'Gagnez du temps et réduisez les coûts juridiques',
