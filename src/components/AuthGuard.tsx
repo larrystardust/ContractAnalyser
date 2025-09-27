@@ -43,7 +43,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       } 
       // If neither hash nor valid localStorage indicates recovery, and localStorage was active, clear it.
       // This ensures a clean exit from the recovery state.
-      else if (!isHashRecovery && !isLocalStorageFlowValid && isLocalStorageFlowActive) {
+      else if (!isHashRecovery && !isLocalStorageValid && isLocalStorageFlowActive) {
           localStorage.removeItem('passwordResetFlowActive');
           localStorage.removeItem('passwordResetFlowStartTime');
       }
