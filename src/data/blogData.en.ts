@@ -47,7 +47,7 @@ export const blogPostsEn: BlogPost[] = [
       'Want to see it in action first?',
       '**[View a Sample Dashboard](https://www.contractanalyser.com/sample-dashboard)** | **[Explore Our Transparent Pricing](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/6238104/pexels-photo-6238104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/8386437/pexels-photo-8386437.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'unlock-time-slash-legal-costs',
@@ -81,7 +81,7 @@ export const blogPostsEn: BlogPost[] = [
       '**Ready to reclaim your time and budget?**',
       '**[Start Your Free Analysis Today!](https://www.contractanalyser.com/signup)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'protect-your-business-with-ai-contract-insights',
@@ -112,6 +112,6 @@ export const blogPostsEn: BlogPost[] = [
       '**Ready to gain unparalleled insight into your contracts and protect your business?**',
       '**[Explore a Sample Analysis Report](https://www.contractanalyser.com/sample-dashboard)** | **[See How Affordable Protection Can Be](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
 ];
