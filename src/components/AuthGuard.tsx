@@ -17,135 +17,50 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
-  const [isRecoverySession, setIsRecoverySession] = useState(false);
+  const [isRecoverySessionActive, setIsRecoverySessionActive] = useState(false); // Renamed for clarity
+  const [hasPasswordResetCompleted, setHasPasswordResetCompleted] = useState(false); // New state
 
-  // Check if user has successfully logged in after password reset
+  // Effect to track if password reset has completed
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const resetFlowCompleted = localStorage.getItem('passwordResetCompleted');
-      if (resetFlowCompleted === 'true') {
-        // Clear the reset flow flags if user has completed login
-        localStorage.removeItem('passwordResetFlowActive');
-        localStorage.removeItem('passwordResetFlowStartTime');
-        localStorage.removeItem('passwordResetCompleted');
-        setIsRecoverySession(false);
-      }
-    };
+    const resetFlowCompleted = localStorage.getItem('passwordResetCompleted');
+    if (resetFlowCompleted === 'true') {
+      setHasPasswordResetCompleted(true);
+      // Clear these localStorage items immediately once detected as completed
+      localStorage.removeItem('passwordResetFlowActive');
+      localStorage.removeItem('passwordResetFlowStartTime');
+      localStorage.removeItem('passwordResetCompleted');
+    } else {
+      setHasPasswordResetCompleted(false);
+    }
+  }, [session]); // Re-run when session changes (e.g., after signOut)
 
-    checkLoginStatus();
-  }, [session]);
-
-  // Global state to track password reset flow across all browser tabs
+  // Effect to determine if a recovery session is active based on hash and localStorage
   useEffect(() => {
-    const checkGlobalResetFlow = () => {
-      const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
-      const startTime = localStorage.getItem('passwordResetFlowStartTime');
-      
-      if (resetFlowActive === 'true' && startTime) {
-        const elapsedTime = Date.now() - parseInt(startTime);
-        if (elapsedTime < 15 * 60 * 1000) { // 15 minutes validity
-          setIsRecoverySession(true);
-        } else {
-          localStorage.removeItem('passwordResetFlowActive');
-          localStorage.removeItem('passwordResetFlowStartTime');
-          setIsRecoverySession(false); // Expired
-        }
-      }
-    };
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const hashType = hashParams.get('type');
+    const isHashRecovery = hashType === 'recovery';
 
-    checkGlobalResetFlow();
+    const isLocalStorageActive = localStorage.getItem('passwordResetFlowActive') === 'true';
+    const startTime = localStorage.getItem('passwordResetFlowStartTime');
+    const isLocalStorageValid = isLocalStorageActive && startTime && (Date.now() - parseInt(startTime)) < 15 * 60 * 1000;
 
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
-        setIsRecoverySession(true);
-      } else if (e.key === 'passwordResetCompleted' && e.newValue === 'true') {
-        localStorage.removeItem('passwordResetFlowActive');
-        localStorage.removeItem('passwordResetFlowStartTime');
-        setIsRecoverySession(false);
-      }
-    };
+    // A recovery session is active if the hash indicates it OR localStorage indicates it.
+    setIsRecoverySessionActive(isHashRecovery || isLocalStorageValid);
 
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  // Check URL for recovery session (e.g., from password reset email link)
-  useEffect(() => {
-    const checkRecoverySession = () => {
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const hashType = hashParams.get('type');
-      
-      if (hashType === 'recovery') {
-        setIsRecoverySession(true);
-        localStorage.setItem('passwordResetFlowActive', 'true');
-        localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
-      } else {
-        // MODIFIED: If hash changes and no longer contains 'type=recovery', ensure isRecoverySession is false
-        // This is a critical addition if the navigate call doesn't clear the hash immediately
-        const resetFlowActive = localStorage.getItem('passwordResetFlowActive');
-        if (resetFlowActive !== 'true') { // Only set to false if not explicitly active from localStorage
-             setIsRecoverySession(false);
-        }
-      }
-    };
-
-    checkRecoverySession();
+    // If hash is recovery, ensure localStorage flags are set for cross-tab sync
+    if (isHashRecovery && !isLocalStorageActive) {
+      localStorage.setItem('passwordResetFlowActive', 'true');
+      localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
+    }
   }, [location.hash]);
-
-  // Normal authentication flow check (moved to be unconditional)
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      if (loadingSession) return; // Wait for session to load
-
-      setLoadingAuthChecks(true);
-
-      if (!session?.user) {
-        setTargetAal(null);
-        setLoadingAuthChecks(false);
-        return;
-      }
-
-      try {
-        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) {
-          // If error fetching factors, assume aal2 for now to avoid blocking
-          // This might need more robust error handling depending on expected behavior
-          setTargetAal('aal2');
-          setLoadingAuthChecks(false);
-          return;
-        }
-
-        const hasMfaEnrolled = factors.totp.length > 0;
-
-        if (hasMfaEnrolled) {
-          const mfaPassedFlag = localStorage.getItem('mfa_passed');
-          if (mfaPassedFlag === 'true') {
-            setTargetAal('aal2');
-          } else {
-            setTargetAal('aal1');
-          }
-        } else {
-          setTargetAal('aal2');
-        }
-      } catch (err) {
-        console.error("AuthGuard: Error during MFA check:", err);
-        setTargetAal('aal2'); // Fallback to allow access on unexpected errors
-      } finally {
-        setLoadingAuthChecks(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, [session, loadingSession, supabase]);
-
 
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
-  if (isRecoverySession) {
+  // Only consider it a recovery session if isRecoverySessionActive is true AND the reset hasn't completed.
+  const shouldBlockForRecovery = isRecoverySessionActive && !hasPasswordResetCompleted;
+
+  if (shouldBlockForRecovery) {
     // Set global flag to block modals and overlays
     localStorage.setItem('blockModalsDuringReset', 'true');
     
@@ -157,7 +72,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       return <Navigate to={redirectUrl} replace />;
     }
   } else {
-    // Clear modal blocking when not in reset flow
+    // Clear modal blocking when not in an active recovery flow
     localStorage.removeItem('blockModalsDuringReset');
   }
 
