@@ -79,7 +79,7 @@ export const blogPostsAr: BlogPost[] = [
       '*   **دعم متعدد الولايات القضائية**: سواء كنت تعمل محليًا أو عالميًا، فإن الذكاء الاصطناعي لدينا يفهم الفروق الدقيقة في الأنظمة القانونية المختلفة.',
       'توقف عن السماح للعقود بأن تستنزف وقتك وميزانيتك. قم بتمكين عملك بكفاءة ورؤية ContractAnalyser.',
       '**هل أنت مستعد لاستعادة وقتك وميزانيتك؟**',
-      '**[ابدأ تحليلك المجاني اليوم!](https://www.contractanalyser.com/signup)**'
+      '**[ابدأ تحليلك الفوري اليوم!](https://www.contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
