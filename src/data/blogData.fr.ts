@@ -79,7 +79,7 @@ export const blogPostsFr: BlogPost[] = [
       '*   **Support multi-juridictionnel** : Que vous opériez localement ou mondialement, notre IA comprend les nuances des différents systèmes juridiques.',
       'Cessez de laisser les contrats épuiser votre temps et votre budget. Renforcez votre entreprise avec l\'efficacité et la perspicacité de ContractAnalyser.',
       '**Prêt à récupérer votre temps et votre budget ?**',
-      '**[Commencez votre analyse gratuite dès aujourd\'hui !](https://www.contractanalyser.com/signup)**'
+      '**[Commencez votre analyse instantanée dès aujourd\'hui !](https://www.contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
