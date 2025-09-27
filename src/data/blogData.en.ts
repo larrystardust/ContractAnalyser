@@ -86,7 +86,7 @@ export const blogPostsEn: BlogPost[] = [
   {
     slug: 'protect-your-business-with-ai-contract-insights',
     title: 'Protect Your Business: Make Smarter Decisions with AI-Powered Contract Insights',
-    author: 'Neil Langley',
+    author: 'Julie Simmons',
     date: '2025-08-14',
     excerpt: 'Every business owner knows that contracts are more than just paperwork; they\'re promises, protections, and potential pitfalls. A single overlooked clause, a misunderstood term, or an unaddressed risk can lead to costly disputes, regulatory fines, or even the collapse of a deal.',
     content: [
