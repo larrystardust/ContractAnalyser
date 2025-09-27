@@ -57,19 +57,16 @@ const ResetPassword: React.FC = () => {
         '[href*="modal"]'
       ];
 
-      modalBlockers.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-          element.addEventListener('click', (e) => {
-            if (!success) {
-              e.preventDefault();
-              e.stopPropagation();
-              setError(t('help_unavailable_during_reset_modal')); // MODIFIED
-              // Force focus back to password fields
-              document.getElementById('newPassword')?.focus();
-            }
-          }, true);
-        });
+      modalBlockers.forEach(element => {
+        element.addEventListener('click', (e) => {
+          if (!success) {
+            e.preventDefault();
+            e.stopPropagation();
+            setError(t('help_unavailable_during_reset_modal')); // MODIFIED
+            // Force focus back to password fields
+            document.getElementById('newPassword')?.focus();
+          }
+        }, true);
       });
     };
 
@@ -152,7 +149,7 @@ const ResetPassword: React.FC = () => {
 
     try {
       await resetPassword(newPassword);
-      setSuccess(t('password_reset_success')); // MODIFIED
+      setSuccess(t('password_reset_success'));
       
       if (sessionTimer) {
         clearTimeout(sessionTimer);
@@ -161,11 +158,14 @@ const ResetPassword: React.FC = () => {
       localStorage.setItem('passwordResetCompleted', 'true');
       localStorage.removeItem('blockModalsDuringReset');
       
+      // CRITICAL ADDITION: Clear the URL hash immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+
       await supabase.auth.signOut();
 
-      setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 1500);
+      // REMOVED: setTimeout. Navigate immediately.
+      navigate('/login', { replace: true });
+
     } catch (error: any) {
       setError(error instanceof Error ? error.message : t('failed_to_reset_password')); // MODIFIED
     } finally {
