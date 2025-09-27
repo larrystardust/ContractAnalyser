@@ -18,9 +18,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [targetAal, setTargetAal] = useState<'aal1' | 'aal2' | null>(null);
   const [loadingAuthChecks, setLoadingAuthChecks] = useState(true);
   const [isRecoverySessionActive, setIsRecoverySessionActive] = useState(false);
-  // REMOVED: const [hasPasswordResetCompleted, setHasPasswordResetCompleted] = useState(false); // Removed this state
-
-  // REMOVED: useEffect for hasPasswordResetCompleted
 
   // Effect to determine if a recovery session is active based on hash and localStorage
   useEffect(() => {
@@ -32,18 +29,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       const startTime = localStorage.getItem('passwordResetFlowStartTime');
       const isLocalStorageFlowValid = isLocalStorageFlowActive && startTime && (Date.now() - parseInt(startTime)) < 15 * 60 * 1000;
 
-      // A recovery session is active if the hash indicates it OR localStorage indicates it AND it's still valid.
       const currentlyActive = isHashRecovery || isLocalStorageFlowValid;
       setIsRecoverySessionActive(currentlyActive);
 
-      // If hash indicates recovery, ensure localStorage flags are set for cross-tab sync
       if (isHashRecovery && !isLocalStorageFlowActive) {
         localStorage.setItem('passwordResetFlowActive', 'true');
         localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
       } 
-      // If neither hash nor valid localStorage indicates recovery, and localStorage was active, clear it.
-      // This ensures a clean exit from the recovery state.
-      else if (!isHashRecovery && !isLocalStorageFlowValid && isLocalStorageFlowActive) { // CRITICAL FIX: Corrected typo from isLocalStorageValid to isLocalStorageFlowValid
+      else if (!isHashRecovery && !isLocalStorageFlowValid && isLocalStorageFlowActive) {
           localStorage.removeItem('passwordResetFlowActive');
           localStorage.removeItem('passwordResetFlowStartTime');
       }
@@ -63,6 +56,21 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, [location.hash]); // Depend on location.hash
+
+  // NEW EFFECT: Clear password reset flags upon successful login if not on the reset page
+  useEffect(() => {
+    if (session?.user && location.pathname !== '/reset-password') {
+      const isLocalStorageFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
+      if (isLocalStorageFlowActive) {
+        console.log('AuthGuard: User logged in, not on reset page, clearing stale password reset flags.');
+        localStorage.removeItem('passwordResetFlowActive');
+        localStorage.removeItem('passwordResetFlowStartTime');
+        localStorage.removeItem('blockModalsDuringReset');
+        // Force update the state to reflect that recovery is no longer active
+        setIsRecoverySessionActive(false); 
+      }
+    }
+  }, [session?.user?.id, location.pathname]); // Depend on user ID and pathname
 
 
   // Normal authentication flow check (moved to be unconditional)
@@ -113,8 +121,16 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
-  // The blocking condition is now simply isRecoverySessionActive
-  if (isRecoverySessionActive) { // MODIFIED: Simplified condition
+  if (isRecoverySessionActive) {
+    // CRITICAL FIX: Add console.log to debug why this is true
+    console.log('AuthGuard: isRecoverySessionActive is TRUE. Debugging details:');
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    console.log('  isHashRecovery:', hashParams.get('type') === 'recovery');
+    console.log('  isLocalStorageFlowActive:', localStorage.getItem('passwordResetFlowActive') === 'true');
+    const startTime = localStorage.getItem('passwordResetFlowStartTime');
+    console.log('  isLocalStorageFlowValid:', localStorage.getItem('passwordResetFlowActive') === 'true' && startTime && (Date.now() - parseInt(startTime)) < 15 * 60 * 1000);
+    console.log('  Current location.pathname:', location.pathname);
+
     // Set global flag to block modals and overlays
     localStorage.setItem('blockModalsDuringReset', 'true');
     
