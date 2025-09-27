@@ -1,18 +1,18 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // MODIFIED: Import useTranslation
-import { useBlogPosts } from '../hooks/useBlogPosts'; // MODIFIED: Import useBlogPosts hook
+import { useTranslation } from 'react-i18next';
+import { useBlogPosts } from '../hooks/useBlogPosts';
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
-  const { blogPosts, loading, error } = useBlogPosts(); // MODIFIED: Use the hook
+  const { t, i18n } = useTranslation();
+  const { blogPosts, loading, error } = useBlogPosts();
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p>{t('loading_blog_post')}...</p> {/* MODIFIED: Add translation key */}
+        <p>{t('loading_blog_post')}...</p>
       </div>
     );
   }
@@ -20,7 +20,7 @@ const BlogPostPage: React.FC = () => {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <p className="text-red-600">{t('error_loading_blog_post')}: {error}</p> {/* MODIFIED: Add translation key */}
+        <p className="text-red-600">{t('error_loading_blog_post')}: {error}</p>
       </div>
     );
   }
@@ -30,11 +30,11 @@ const BlogPostPage: React.FC = () => {
   if (!post) {
     return (
       <div className="container mx-auto px-4 py-6 mt-16 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('blog_post_not_found')}</h1> {/* MODIFIED: Translate */}
-        <p className="text-lg text-gray-700 mb-6">{t('blog_post_not_exist')}.</p> {/* MODIFIED: Translate */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{t('blog_post_not_found')}</h1>
+        <p className="text-lg text-gray-700 mb-6">{t('blog_post_not_exist')}.</p>
         <Link to="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back_to_blog')} {/* MODIFIED: Translate */}
+          {t('back_to_blog')}
         </Link>
       </div>
     );
@@ -93,65 +93,66 @@ const BlogPostPage: React.FC = () => {
 
   // Function to render content, handling markdown-like headers and lists
   const renderContent = (contentArray: string[]) => {
-    return contentArray.map((block, index) => {
+    const renderedElements: React.ReactNode[] = [];
+    let i = 0; // Use a mutable index for the for loop
+
+    while (i < contentArray.length) {
+      const block = contentArray[i];
+
       if (block.startsWith('### ')) {
-        return <h3 key={index} className="text-2xl font-semibold text-gray-900 mt-8 mb-4">{block.substring(4)}</h3>;
-      }
-      if (block.startsWith('## ')) {
-        return <h2 key={index} className="text-3xl font-bold text-gray-900 mt-10 mb-5">{block.substring(3)}</h2>;
-      }
-      if (block.startsWith('*   ')) {
-        // This is a list item, collect consecutive list items
+        renderedElements.push(<h3 key={i} className="text-2xl font-semibold text-gray-900 mt-8 mb-4">{block.substring(4)}</h3>);
+        i++;
+      } else if (block.startsWith('## ')) {
+        renderedElements.push(<h2 key={i} className="text-3xl font-bold text-gray-900 mt-10 mb-5">{block.substring(3)}</h2>);
+        i++;
+      } else if (block.startsWith('*   ')) {
         const listItems: string[] = [];
-        let i = index;
-        while (i < contentArray.length && contentArray[i].startsWith('*   ')) {
-          listItems.push(contentArray[i].substring(4));
-          i++;
+        let currentListItemIndex = i;
+        while (currentListItemIndex < contentArray.length && contentArray[currentListItemIndex].startsWith('*   ')) {
+          listItems.push(contentArray[currentListItemIndex].substring(4));
+          currentListItemIndex++;
         }
-        // Render the list and adjust index for the map loop
-        const currentListIndex = index;
-        index = i - 1; 
-        return (
-          <ul key={currentListIndex} className="list-disc list-inside text-gray-700 mb-4 space-y-2 pl-5">
+        renderedElements.push(
+          <ul key={i} className="list-disc list-inside text-gray-700 mb-4 space-y-2 pl-5">
             {listItems.map((item, liIndex) => (
-              <li key={`${currentListIndex}-li-${liIndex}`}>
-                {parseMarkdownText(item, `${currentListIndex}-li-${liIndex}`)}
+              <li key={`${i}-li-${liIndex}`}>
+                {parseMarkdownText(item, `${i}-li-${liIndex}`)}
               </li>
             ))}
           </ul>
         );
-      }
-      if (block.startsWith('1.  ')) {
-        // This is an ordered list item, collect consecutive list items
+        i = currentListItemIndex; // Advance the main loop index past the processed list items
+      } else if (block.startsWith('1.  ')) {
         const listItems: string[] = [];
-        let i = index;
-        while (i < contentArray.length && contentArray[i].match(/^\d+\.\s/)) {
-          listItems.push(contentArray[i].replace(/^\d+\.\s/, ''));
-          i++;
+        let currentListItemIndex = i;
+        while (currentListItemIndex < contentArray.length && contentArray[currentListItemIndex].match(/^\d+\.\s/)) {
+          listItems.push(contentArray[currentListItemIndex].replace(/^\d+\.\s/, ''));
+          currentListItemIndex++;
         }
-        // Render the list and adjust index for the map loop
-        const currentListIndex = index;
-        index = i - 1; 
-        return (
-          <ol key={currentListIndex} className="list-decimal list-inside text-gray-700 mb-4 space-y-2 pl-5">
+        renderedElements.push(
+          <ol key={i} className="list-decimal list-inside text-gray-700 mb-4 space-y-2 pl-5">
             {listItems.map((item, liIndex) => (
-              <li key={`${currentListIndex}-ol-${liIndex}`}>
-                {parseMarkdownText(item, `${currentListIndex}-ol-${liIndex}`)}
+              <li key={`${i}-ol-${liIndex}`}>
+                {parseMarkdownText(item, `${i}-ol-${liIndex}`)}
               </li>
             ))}
           </ol>
         );
+        i = currentListItemIndex; // Advance the main loop index past the processed list items
+      } else {
+        // Default to paragraph, parsing for bold and links
+        renderedElements.push(
+          <p key={i} className="text-gray-700 mb-4">
+            {parseMarkdownText(block, `p-${i}`)}
+          </p>
+        );
+        i++;
       }
-      // Default to paragraph, parsing for bold and links
-      return (
-        <p key={index} className="text-gray-700 mb-4">
-          {parseMarkdownText(block, `p-${index}`)}
-        </p>
-      );
-    });
+    }
+    return renderedElements;
   };
 
-  // ADDED: De-duplication logic for content blocks
+  // De-duplication logic for content blocks (still useful for data cleanliness)
   const uniqueContentBlocks: string[] = [];
   const seenBlocks = new Set<string>();
 
@@ -183,7 +184,7 @@ const BlogPostPage: React.FC = () => {
           {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <div className="prose prose-lg max-w-none">
-          {renderContent(uniqueContentBlocks)} {/* MODIFIED: Pass the de-duplicated content */}
+          {renderContent(uniqueContentBlocks)} {/* Pass the de-duplicated content */}
         </div>
       </article>
     </div>
