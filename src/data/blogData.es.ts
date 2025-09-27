@@ -5,7 +5,7 @@ export const blogPostsEs: BlogPost[] = [
     slug: 'Revoluciona el análisis de contratos con IA',
     title: 'Deje de ahogarse en documentos legales: Revolucione su análisis de contratos con IA',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2024-07-16',
     excerpt: 'En el vertiginoso mundo empresarial actual, los contratos son la columna vertebral de cada acuerdo, asociación y transacción. Sin embargo, el proceso de revisar, comprender y garantizar el cumplimiento dentro de estos complejos documentos legales sigue siendo un cuello de botella significativo para muchas organizaciones. ¿Está dedicando incontables horas a examinar manualmente páginas de jerga legal, arriesgándose a errores costosos y retrasando decisiones comerciales críticas?',
     content: [
       'En el vertiginoso mundo empresarial actual, los contratos son la columna vertebral de cada acuerdo, asociación y transacción. Sin embargo, el proceso de revisar, comprender y garantizar el cumplimiento dentro de estos complejos documentos legales sigue siendo un cuello de botella significativo para muchas organizaciones. ¿Está dedicando incontables horas a examinar manualmente páginas de jerga legal, arriesgándose a errores costosos y retrasando decisiones comerciales críticas?',
@@ -53,7 +53,7 @@ export const blogPostsEs: BlogPost[] = [
     slug: 'Ahorra tiempo y reduce costes legales',
     title: 'Libere más tiempo y reduzca los costos legales: Cómo la IA está cambiando la revisión de contratos para propietarios de negocios',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2025-03-21',
     excerpt: 'Como propietario de un negocio, su tiempo es su activo más valioso. Cada minuto dedicado a tareas administrativas, especialmente documentos legales complejos, es un minuto que no se dedica a hacer crecer su negocio, innovar o servir a sus clientes. Y seamos honestos, los honorarios legales pueden consumir rápidamente su presupuesto.',
     content: [
       'Como propietario de un negocio, su tiempo es su activo más valioso. Cada minuto dedicado a tareas administrativas, especialmente documentos legales complejos, es un minuto que no se dedica a hacer crecer su negocio, innovar o servir a sus clientes. Y seamos honestos, los honorarios legales pueden consumir rápidamente su presupuesto.',
@@ -87,7 +87,7 @@ export const blogPostsEs: BlogPost[] = [
     slug: 'Protege tu empresa con insights de IA para contratos',
     title: 'Proteja su negocio: Tome decisiones más inteligentes con información de contratos impulsada por IA',
     author: 'Neil Langley',
-    date: '2025-09-26',
+    date: '2025-08-14',
     excerpt: 'Todo propietario de un negocio sabe que los contratos son más que simples trámites; son promesas, protecciones y posibles escollos. Una sola cláusula pasada por alto, un término malinterpretado o un riesgo no abordado pueden dar lugar a costosas disputas, multas reglamentarias o incluso el colapso de un acuerdo.',
     content: [
       'Todo propietario de un negocio sabe que los contratos son más que simples trámites; son promesas, protecciones y posibles escollos. Una sola cláusula pasada por alto, un término malinterpretado o un riesgo no abordado pueden dar lugar a costosas disputas, multas reglamentarias o incluso el colapso de un acuerdo.',
