@@ -151,6 +151,20 @@ const BlogPostPage: React.FC = () => {
     });
   };
 
+  // ADDED: De-duplication logic for content blocks
+  const uniqueContentBlocks: string[] = [];
+  const seenBlocks = new Set<string>();
+
+  if (post.content) {
+    for (const block of post.content) {
+      const normalizedBlock = block.trim();
+      if (!seenBlocks.has(normalizedBlock)) {
+        uniqueContentBlocks.push(block);
+        seenBlocks.add(normalizedBlock);
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 mt-16">
       <div className="mb-6">
@@ -162,14 +176,14 @@ const BlogPostPage: React.FC = () => {
 
       <article className="bg-white rounded-lg shadow-md p-8 lg:p-12">
         {post.imageUrl && (
-          <img src={post.imageUrl} alt={post.title} className="w-full h-80 object-cover rounded-lg mb-8" />
+          <img src={post.imageUrl} alt={post.title} className="w-full h-80 object-cover object-center rounded-lg mb-8" />
         )}
         <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h1>
         <p className="text-lg text-gray-600 mb-8">
-          {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })} {/* MODIFIED: Translate 'by' and 'on', use i18n.language for date format */}
+          {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <div className="prose prose-lg max-w-none">
-          {renderContent(post.content)}
+          {renderContent(uniqueContentBlocks)} {/* MODIFIED: Pass the de-duplicated content */}
         </div>
       </article>
     </div>
