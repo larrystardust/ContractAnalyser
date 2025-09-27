@@ -79,7 +79,7 @@ export const blogPostsEs: BlogPost[] = [
       '*   **Soporte multijurisdiccional**: Ya sea que opere a nivel local o global, nuestra IA comprende los matices de varios sistemas legales.',
       'Deje de permitir que los contratos agoten su tiempo y presupuesto. Potencie su negocio con la eficiencia y la información de ContractAnalyser.',
       '**¿Listo para recuperar su tiempo y presupuesto?**',
-      '**[¡Comience su análisis gratuito hoy!](https://www.contractanalyser.com/signup)**'
+      '**[¡Comience su análisis instantáneo hoy mismo!](https://www.contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
