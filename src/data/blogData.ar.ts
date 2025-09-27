@@ -47,7 +47,7 @@ export const blogPostsAr: BlogPost[] = [
       'هل تريد رؤيته عمليًا أولاً؟',
       '**[عرض لوحة تحكم نموذجية](https://www.contractanalyser.com/sample-dashboard)** | **[استكشف أسعارنا الشفافة](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/6238104/pexels-photo-6238104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/8386437/pexels-photo-8386437.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'وفر الوقت وقلص التكاليف القانونية',
@@ -81,7 +81,7 @@ export const blogPostsAr: BlogPost[] = [
       '**هل أنت مستعد لاستعادة وقتك وميزانيتك؟**',
       '**[ابدأ تحليلك المجاني اليوم!](https://www.contractanalyser.com/signup)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
   {
     slug: 'احمِ عملك باستخدام رؤى الذكاء الاصطناعي للعقود',
@@ -112,6 +112,6 @@ export const blogPostsAr: BlogPost[] = [
       '**هل أنت مستعد لاكتساب رؤى لا مثيل لها في عقودك وحماية عملك؟**',
       '**[استكشف تقرير تحليل نموذجي](https://www.contractanalyser.com/sample-dashboard)** | **[اطلع على مدى سهولة الحصول على حماية ميسورة التكلفة](https://www.contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
 ];
