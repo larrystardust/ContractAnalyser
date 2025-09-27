@@ -57,16 +57,18 @@ const ResetPassword: React.FC = () => {
         '[href*="modal"]'
       ];
 
-      modalBlockers.forEach(element => {
-        element.addEventListener('click', (e) => {
-          if (!success) {
-            e.preventDefault();
-            e.stopPropagation();
-            setError(t('help_unavailable_during_reset_modal')); // MODIFIED
-            // Force focus back to password fields
-            document.getElementById('newPassword')?.focus();
-          }
-        }, true);
+      modalBlockers.forEach(selector => { // MODIFIED: Renamed 'element' to 'selector' for clarity
+        document.querySelectorAll(selector).forEach(element => { // CRITICAL FIX: Select elements by selector
+          element.addEventListener('click', (e) => {
+            if (!success) {
+              e.preventDefault();
+              e.stopPropagation();
+              setError(t('help_unavailable_during_reset_modal'));
+              // Force focus back to password fields
+              document.getElementById('newPassword')?.focus();
+            }
+          }, true);
+        });
       });
     };
 
@@ -76,7 +78,7 @@ const ResetPassword: React.FC = () => {
     return () => {
       clearTimeout(timer);
     };
-  }, [success, t]); // MODIFIED: Added t to dependency array
+  }, [success, t]);
 
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
@@ -98,14 +100,14 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [navigate, success, sessionTimer]); // MODIFIED: Added sessionTimer to dependency array
+  }, [navigate, success, sessionTimer]);
 
   // Block navigation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!success) {
         e.preventDefault();
-        e.returnValue = t('password_reset_progress_lost'); // MODIFIED
+        e.returnValue = t('password_reset_progress_lost');
         return e.returnValue;
       }
     };
@@ -113,7 +115,7 @@ const ResetPassword: React.FC = () => {
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
         window.history.pushState(null, '', window.location.pathname + window.location.hash);
-        setError(t('navigation_disabled_reset_password')); // MODIFIED
+        setError(t('navigation_disabled_reset_password'));
       }
     };
 
@@ -129,19 +131,19 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [success, sessionTimer, location.hash, t]); // MODIFIED: Added t to dependency array
+  }, [success, sessionTimer, location.hash, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (newPassword.length < 6) {
-      setError(t('password_must_be_6_chars')); // MODIFIED
+      setError(t('password_must_be_6_chars'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(t('passwords_do_not_match')); // MODIFIED
+      setError(t('passwords_do_not_match'));
       return;
     }
 
@@ -167,7 +169,7 @@ const ResetPassword: React.FC = () => {
       navigate('/login', { replace: true });
 
     } catch (error: any) {
-      setError(error instanceof Error ? error.message : t('failed_to_reset_password')); // MODIFIED
+      setError(error instanceof Error ? error.message : t('failed_to_reset_password'));
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +203,7 @@ const ResetPassword: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-xl font-bold text-gray-900 mb-6">{t('reset_your_password')}</h1> {/* MODIFIED */}
+          <h1 className="text-xl font-bold text-gray-900 mb-6">{t('reset_your_password')}</h1>
 
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg text-red-700">
@@ -218,7 +220,7 @@ const ResetPassword: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('new_password')} {/* MODIFIED */}
+                {t('new_password')}
               </label>
               <div className="relative">
                 <input
@@ -240,13 +242,13 @@ const ResetPassword: React.FC = () => {
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                {t('password_must_be_6_chars')} {/* MODIFIED */}
+                {t('password_must_be_6_chars')}
               </p>
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('confirm_password')} {/* MODIFIED */}
+                {t('confirm_password')}
               </label>
               <div className="relative">
                 <input
@@ -275,7 +277,7 @@ const ResetPassword: React.FC = () => {
               {isLoading ? (
                 <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></span>
               ) : (
-                t('reset_password') // MODIFIED
+                t('reset_password')
               )}
             </button>
           </form>
@@ -285,7 +287,7 @@ const ResetPassword: React.FC = () => {
               onClick={handleBackToLogin}
               className="text-sm text-blue-600 hover:text-blue-500"
             >
-              {t('back_to_login')} {/* MODIFIED */}
+              {t('back_to_login')}
             </button>
           </div>
         </div>
