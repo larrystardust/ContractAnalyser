@@ -1363,5 +1363,8 @@
   "enter_email_reset_instructions": "أدخل بريدك الإلكتروني لتلقي تعليمات إعادة تعيين كلمة المرور.",
   "send_reset_instructions": "إرسال تعليمات إعادة التعيين", 
   "password_reset_email_sent": "تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني.",
-  "password_reset_email_sent_alert": "تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني." 
+  "password_reset_email_sent_alert": "تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني.",
+  "auth_session_missing": "جلسة المصادقة مفقودة!",
+  "password_successfully_reset_alert": "تمت إعادة تعيين كلمة المرور بنجاح.",
+  "failed_to_reset_password_alert": "فشل في إعادة تعيين كلمة المرور."
 }
