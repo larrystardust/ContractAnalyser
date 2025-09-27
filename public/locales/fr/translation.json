@@ -1369,5 +1369,8 @@
   "enter_email_reset_instructions": "Entrez votre e-mail pour recevoir les instructions de réinitialisation du mot de passe.",
   "send_reset_instructions": "Envoyer les instructions de réinitialisation", 
   "password_reset_email_sent_alert": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.",
-  "password_reset_email_sent": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail."
+  "password_reset_email_sent": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.",
+  "auth_session_missing": "Session d'authentification manquante !",
+  "password_successfully_reset_alert": "Le mot de passe a été réinitialisé avec succès.", 
+  "failed_to_reset_password_alert": "Échec de la réinitialisation du mot de passe."
 }
