@@ -8,7 +8,6 @@ export const blogPostsEn: BlogPost[] = [
     date: '2024-07-16',
     excerpt: 'In today\'s fast-paced business world, contracts are the backbone of every agreement, partnership, and transaction. Yet, the process of reviewing, understanding, and ensuring compliance within these complex legal documents remains a significant bottleneck for many organizations. Are you spending countless hours manually sifting through pages of legalese, risking costly errors, and delaying critical business decisions?',
     content: [
-      'In today\'s fast-paced business world, contracts are the backbone of every agreement, partnership, and transaction. Yet, the process of reviewing, understanding, and ensuring compliance within these complex legal documents remains a significant bottleneck for many organizations. Are you spending countless hours manually sifting through pages of legalese, risking costly errors, and delaying critical business decisions?',
       'It\'s time for a change.',
       '### The Hidden Costs of Traditional Contract Review',
       'For too long, legal contract analysis has been a labor-intensive, time-consuming, and often expensive endeavor. Whether you\'re a legal professional, a business owner, or part of a compliance team, you\'ve likely faced these challenges:',
@@ -56,7 +55,6 @@ export const blogPostsEn: BlogPost[] = [
     date: '2025-03-21',
     excerpt: 'As a business owner, your time is your most valuable asset. Every minute spent on administrative tasks, especially complex legal documents, is a minute not spent growing your business, innovating, or serving your customers. And let\'s be honest, legal fees can quickly eat into your budget.',
     content: [
-      'As a business owner, your time is your most valuable asset. Every minute spent on administrative tasks, especially complex legal documents, is a minute not spent growing your business, innovating, or serving your customers. And let\'s be honest, legal fees can quickly eat into your budget.',
       'Sound familiar? You\'re not alone.',
       'Contracts are the lifeblood of business – from vendor agreements and client contracts to employment terms and partnership deeds. They\'re essential for protecting your interests, but the process of reviewing them can feel like a necessary evil: slow, expensive, and often overwhelming.',
       '### The Business Owner\'s Contract Conundrum',
@@ -90,7 +88,6 @@ export const blogPostsEn: BlogPost[] = [
     date: '2025-08-14',
     excerpt: 'Every business owner knows that contracts are more than just paperwork; they\'re promises, protections, and potential pitfalls. A single overlooked clause, a misunderstood term, or an unaddressed risk can lead to costly disputes, regulatory fines, or even the collapse of a deal.',
     content: [
-      'Every business owner knows that contracts are more than just paperwork; they\'re promises, protections, and potential pitfalls. A single overlooked clause, a misunderstood term, or an unaddressed risk can lead to costly disputes, regulatory fines, or even the collapse of a deal.',
       'Are you confident that every contract you sign truly protects your business interests? Or do you often feel a knot in your stomach, wondering what you might have missed?',
       '### The High Stakes of Contractual Risk',
       'For business owners, the risks associated with contracts are very real:',
