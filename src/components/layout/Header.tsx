@@ -239,6 +239,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           </div>
         </div>
       )}
+      <
     </header>
   </>
   );
