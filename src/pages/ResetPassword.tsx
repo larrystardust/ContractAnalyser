@@ -72,14 +72,16 @@ const ResetPassword: React.FC = () => {
       ];
 
       modalBlockers.forEach(selector => {
-        element.addEventListener('click', (e) => {
-          if (!success) {
-            e.preventDefault();
-            e.stopPropagation();
-            setError(t('help_unavailable_during_reset_modal'));
-            document.getElementById('newPassword')?.focus();
-          }
-        }, true);
+        document.querySelectorAll(selector).forEach(element => {
+          element.addEventListener('click', (e) => {
+            if (!success) {
+              e.preventDefault();
+              e.stopPropagation();
+              setError(t('help_unavailable_during_reset_modal'));
+              document.getElementById('newPassword')?.focus();
+            }
+          }, true);
+        });
       });
     };
 
