@@ -32,7 +32,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // CRITICAL FIX: If the session is AAL2, it means a full login has occurred, and we are NOT in a recovery flow.
   // This takes precedence over any lingering recovery flags.
-  const isRecoverySessionActive = session?.aal !== 'aal2' && (isHashRecovery || isSessionRecoveryFromSupabase || isLocalStorageRecoveryActive);
+  // MODIFIED: Refined isRecoverySessionActive to primarily check app_metadata
+  const isRecoverySessionActive = (session?.user?.app_metadata?.recovery_token_issued_at !== undefined) || isLocalStorageRecoveryActive;
 
   // --- Effect to manage localStorage flags for recovery state ---
   useEffect(() => {
@@ -98,6 +99,27 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     checkMfaEnrollment();
   }, [session?.user?.id, supabase]);
+
+  // CRITICAL FIX: Add a storage event listener for cross-tab session invalidation
+  useEffect(() => {
+    const handleCrossTabSignOut = async (e: StorageEvent) => {
+      if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
+        // A password reset flow has been initiated in another tab.
+        // If this tab is not on the reset-password page, force sign out and redirect.
+        if (location.pathname !== '/reset-password') {
+          console.log('AuthGuard: Detected password reset flow in another tab. Forcing sign out and redirecting to login.');
+          await supabase.auth.signOut(); // Force sign out in this tab
+          navigate('/login', { replace: true });
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleCrossTabSignOut);
+
+    return () => {
+      window.removeEventListener('storage', handleCrossTabSignOut);
+    };
+  }, [location.pathname, navigate, supabase]);
 
 
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
