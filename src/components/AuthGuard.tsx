@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'; // ADDED useCallback
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -9,7 +9,7 @@ interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = () => {
-  const { session, isLoading: loadingSession, error: sessionError } = useSessionContext(); // ADDED sessionError
+  const { session, isLoading: loadingSession, error: sessionError } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -153,7 +153,23 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       setIsSessionValidated(true); // Mark session as explicitly checked for this render cycle
     };
 
+    // Run on initial render and when dependencies change
     checkAndRedirect();
+
+    // Also run on 'pageshow' event to catch bfcache restores
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) { // If page is restored from bfcache
+        console.log('AuthGuard: Page restored from bfcache. Re-checking session.');
+        setIsSessionValidated(false); // Invalidate to force re-check
+        checkAndRedirect();
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, [location.pathname, isPasswordResetInitiated, loadingSession, loadingMfaStatus, navigate, supabase]);
 
 
@@ -161,9 +177,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // CRITICAL: This block MUST be the first conditional check after loading states
   // It ensures that if a recovery session is active, the user is *only* allowed on the /reset-password page.
-  if (isPasswordResetInitiated) { // MODIFIED: Use isPasswordResetInitiated
+  if (isPasswordResetInitiated) {
     console.log('AuthGuard: isPasswordResetInitiated is TRUE. Current location:', location.pathname);
-    console.log('AuthGuard: DEBUG - Session details when isPasswordResetInitiated is TRUE:', JSON.stringify(session, null, 2)); // ADDED DIAGNOSTIC LOG
+    console.log('AuthGuard: DEBUG - Session details when isPasswordResetInitiated is TRUE:', JSON.stringify(session, null, 2));
     console.log('AuthGuard: DEBUG - isHashRecovery:', isHashRecovery);
     console.log('AuthGuard: DEBUG - isSessionRecoveryFromSupabase:', isSessionRecoveryFromSupabase);
     console.log('AuthGuard: DEBUG - isLocalStorageRecoveryActive:', isLocalStorageRecoveryActive);
@@ -186,7 +202,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // Show loading indicator while session or MFA status is loading OR explicit session validation is pending
-  if (loadingSession || loadingMfaStatus || !isSessionValidated) { // MODIFIED: Added !isSessionValidated
+  if (loadingSession || loadingMfaStatus || !isSessionValidated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -209,7 +225,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // If the session AAL is 'aal1' and it's NOT a recovery flow (handled above) and NOT an MFA challenge page (handled above),
   // then it's an insufficient AAL for general protected content. Redirect to login.
-  if (session.aal === 'aal1' && !isPasswordResetInitiated && location.pathname !== '/mfa-challenge') { // MODIFIED: Use isPasswordResetInitiated
+  if (session.aal === 'aal1' && !isPasswordResetInitiated && location.pathname !== '/mfa-challenge') {
       console.log('AuthGuard: Session is aal1 and not a recovery or MFA challenge. Redirecting to login as AAL is insufficient.');
       return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
