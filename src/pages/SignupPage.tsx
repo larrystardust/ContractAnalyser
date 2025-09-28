@@ -5,7 +5,7 @@ import Button from '../components/ui/Button';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
 import { Mail, Lock, User, Phone, Eye, EyeOff, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from '../components/ui/LanguageSelector'; // ADDED
+import LanguageSelector from '../components/ui/LanguageSelector';
 
 // A simplified list of country codes for demonstration.
 // For a comprehensive list of over 80 countries, you would typically import from a library
@@ -413,9 +413,6 @@ const SignupPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
-      <div className="mt-4 flex justify-center">
-        <LanguageSelector /> {/* ADDED */}
-      </div>
     </div>
   );
 };
