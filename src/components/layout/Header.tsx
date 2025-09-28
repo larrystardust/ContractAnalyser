@@ -142,19 +142,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                 <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
               </>
             )}
-            {/* Language Selector for Desktop */}
-            <select
-              onChange={(e) => changeLanguage(e.target.value)}
-              value={i18n.language}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
-            >
-              <option value="en">ENGLISH</option>
-              <option value="fr">FRANCAIS</option>
-              <option value="es">ESPANOL</option>
-              <option value="ar">العربية</option>
-            </select>
-          </div>
-
           {/* Mobile Actions: Language Selector and Menu Button (visible on mobile) */}
           <div className="md:hidden flex items-center space-x-2">
             {/* Language Selector for mobile */}
