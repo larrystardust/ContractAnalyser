@@ -33,8 +33,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       alert(t('password_reset_email_sent_alert')); // MODIFIED
     } catch (error: any) {
       console.error("Password reset email error:", error);
-      alert(t('failed_to_send_password_reset_alert')); // MODIFIED
-      throw error;
+      
+      let userFacingMessage = t('failed_to_send_password_reset_alert'); // Default generic message
+
+      // Check for the specific rate-limiting error message
+      const cooldownMatch = error.message.match(/for security purposes, you can only request this after (\d+) seconds/i);
+      if (cooldownMatch && cooldownMatch[1]) {
+        const seconds = parseInt(cooldownMatch[1], 10);
+        userFacingMessage = t('password_reset_cooldown_message', { seconds });
+      } else if (error.message) {
+        userFacingMessage = error.message; // Use Supabase's message if it's not the cooldown and not generic
+      }
+
+      // Now, throw the translated user-facing message
+      throw new Error(userFacingMessage);
     }
   }, [t]); // MODIFIED: Added t to dependency array
 
