@@ -101,8 +101,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           {/* Center: Login/Signup buttons (only when not logged in, desktop only) */}
           {!session?.user && showAuthButtons && (
             <div className="hidden md:flex items-center space-x-4">
-              <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
-              <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
+              <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link>
+              <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link>
             </div>
           )}
 
@@ -139,19 +139,19 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
             ) : (
               <>
                 {/* MODIFIED: Use translation key for Blog link */}
-                <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
+                <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('blog_button')}</Link>
               </>
             )}
             {/* Language Selector for Desktop */}
             <select
               onChange={(e) => changeLanguage(e.target.value)}
               value={i18n.language}
-              className=""
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
             >
-              <option value=""></option>
-              <option value=""></option>
-              <option value=""></option>
-              <option value=""></option>
+              <option value="en">ENGLISH</option>
+              <option value="fr">FRANCAIS</option>
+              <option value="es">ESPANOL</option>
+              <option value="ar">العربية</option>
             </select>
           </div>
 
