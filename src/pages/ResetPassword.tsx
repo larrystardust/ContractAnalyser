@@ -28,16 +28,19 @@ const ResetPassword: React.FC = () => {
     localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
     localStorage.setItem('blockModalsDuringReset', 'true');
 
-    // This return cleanup is important if the component unmounts before success
+    // CRITICAL FIX: Always clear these flags when the component unmounts
+    // This ensures that even if the user navigates away or closes the tab,
+    // the recovery state is cleared, preventing lingering issues.
     return () => {
-      // Only clear if not successful, otherwise handleSubmit will handle it
-      if (!success) {
-        localStorage.removeItem('passwordResetFlowActive');
-        localStorage.removeItem('passwordResetFlowStartTime');
-        localStorage.removeItem('blockModalsDuringReset');
+      console.log('ResetPassword: useEffect cleanup - Clearing localStorage flags.');
+      localStorage.removeItem('passwordResetFlowActive');
+      localStorage.removeItem('passwordResetFlowStartTime');
+      localStorage.removeItem('blockModalsDuringReset');
+      if (sessionTimer) {
+        clearTimeout(sessionTimer);
       }
     };
-  }, [success]); // Depend on success to know when to *not* clear on unmount
+  }, []); // Run once on mount, cleanup on unmount
 
   // Block modal opening attempts
   useEffect(() => {
@@ -80,6 +83,8 @@ const ResetPassword: React.FC = () => {
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
     const timer = setTimeout(() => {
+      // These flags are now cleared by the component's unmount effect,
+      // but we can explicitly clear them here too for immediate effect if the timer fires.
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
@@ -97,7 +102,7 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [navigate, success, sessionTimer]);
+  }, [navigate, success]); // Removed sessionTimer from dependencies to avoid re-creating timer
 
   // Block navigation
   useEffect(() => {
@@ -120,18 +125,11 @@ const ResetPassword: React.FC = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
     
-    // REMOVED: window.history.pushState(null, '', window.location.pathname + window.location.hash);
-    // This line was likely causing the throttling by pushing state on every render.
-    // Rely on AuthGuard's <Navigate replace> for initial URL management.
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
-      if (sessionTimer) {
-        clearTimeout(sessionTimer);
-      }
     };
-  }, [success, sessionTimer, location.hash, t]); // location.hash is still a dependency for the listener logic
+  }, [success, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,10 +155,13 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
       
-      // CRITICAL CHANGE: Clear the active flow flags directly here
+      // CRITICAL: Clear the active flow flags directly here upon success
+      console.log('ResetPassword: handleSubmit - Clearing localStorage flags before navigation.');
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
+      console.log('ResetPassword: handleSubmit - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive'));
+
 
       // Clear the URL hash immediately
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -169,6 +170,16 @@ const ResetPassword: React.FC = () => {
 
       // Navigate immediately.
       navigate('/login', { replace: true });
+
+      // Defensive clearing after navigation, in case of race conditions
+      setTimeout(() => {
+        console.log('ResetPassword: handleSubmit - Clearing localStorage flags again after navigation delay.');
+        localStorage.removeItem('passwordResetFlowActive');
+        localStorage.removeItem('passwordResetFlowStartTime');
+        localStorage.removeItem('blockModalsDuringReset');
+        console.log('ResetPassword: handleSubmit - passwordResetFlowActive after delayed clearing:', localStorage.getItem('passwordResetFlowActive'));
+      }, 100);
+
 
     } catch (error: any) {
       console.error("Reset password error:", error); // Log the full error for debugging
@@ -192,9 +203,11 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
       // Ensure all relevant flags are cleared when manually going back to login
+      console.log('ResetPassword: handleBackToLogin - Clearing localStorage flags.');
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
+      console.log('ResetPassword: handleBackToLogin - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive'));
       
       await supabase.auth.signOut();
     } catch (error) {
