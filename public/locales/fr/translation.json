@@ -1372,5 +1372,6 @@
   "password_reset_email_sent": "Un e-mail de réinitialisation du mot de passe a été envoyé à votre adresse e-mail.",
   "auth_session_missing": "Session d'authentification manquante !",
   "password_successfully_reset_alert": "Le mot de passe a été réinitialisé avec succès.", 
-  "failed_to_reset_password_alert": "Échec de la réinitialisation du mot de passe."
+  "failed_to_reset_password_alert": "Échec de la réinitialisation du mot de passe.",
+  "invalid_login_credentials": "Identifiants de connexion invalides"
 }
