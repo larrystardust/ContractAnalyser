@@ -1366,5 +1366,6 @@
   "password_successfully_reset_alert": "La contraseña ha sido restablecida exitosamente.",
   "failed_to_reset_password_alert": "No se pudo restablecer la contraseña.",
   "invalid_login_credentials": "Credenciales de inicio de sesión no válidas",
-  "new_password_must_be_different": "La nueva contraseña debe ser diferente de la antigua."
+  "new_password_must_be_different": "La nueva contraseña debe ser diferente de la antigua.",
+  "failed_to_send_password_reset_alert": "Error al enviar el correo electrónico de restablecimiento de contraseña."
 }
