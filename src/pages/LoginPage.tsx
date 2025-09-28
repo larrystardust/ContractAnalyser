@@ -138,12 +138,11 @@ const LoginPage: React.FC = () => {
   const signupLink = redirectParam ? `/signup?redirect=${encodeURIComponent(redirectParam)}` : '/signup';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      {/* MODIFIED: LanguageSelector moved here */}
-      <div className="flex justify-center mb-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12"> {/* MODIFIED: Added flex-col */}
+      <div className="mb-0"> {/* MODIFIED: Changed mb-4 to mb-0 */}
         <LanguageSelector />
       </div>
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full mt-0"> {/* MODIFIED: Added mt-0 */}
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">
             {showForgotPassword ? t('reset_your_password') : t('login_to_app')}
