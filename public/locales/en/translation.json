@@ -1371,5 +1371,6 @@
   "password_reset_email_sent_alert": "A password reset email has been sent to your email address.",
   "auth_session_missing": "Auth session missing!",
   "password_successfully_reset_alert": "Password has been successfully reset.",
-  "failed_to_reset_password_alert": "Failed to reset password."
+  "failed_to_reset_password_alert": "Failed to reset password.",
+  "invalid_login_credentials": "Invalid login credentials"
 }
