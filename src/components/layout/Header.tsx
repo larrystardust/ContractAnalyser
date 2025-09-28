@@ -243,6 +243,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
         </div>
       )}
     </header
-  ;
+ 
 
 export default Header;
