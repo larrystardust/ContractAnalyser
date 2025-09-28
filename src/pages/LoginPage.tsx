@@ -98,6 +98,17 @@ const LoginPage: React.FC = () => {
             .update({ login_at: new Date().toISOString() })
             .eq('id', authData.user.id);
           console.log('LoginPage: login_at updated for user:', authData.user.id);
+
+          // CRITICAL FIX: Explicitly refresh session after successful login
+          // This helps ensure the AAL (Authentication Assurance Level) is correctly updated to aal2
+          // and any lingering recovery flags are cleared from the session object.
+          const { data: refreshedSessionData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error('LoginPage: Error refreshing session after login:', refreshError);
+          } else {
+            console.log('LoginPage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal);
+          }
+
         } catch (updateLoginError) {
           console.error('LoginPage: Error updating login_at:', updateLoginError);
         }
