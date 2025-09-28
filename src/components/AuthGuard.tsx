@@ -8,7 +8,7 @@ interface AuthGuardProps {
   children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = () => {
+const AuthGuard: React.FC<AuthGuardProps> => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
@@ -23,14 +23,16 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isHashRecovery = hashParams.get('type') === 'recovery';
 
   // The most robust check for a recovery session from Supabase itself
-  // CRITICAL FIX: A session is only considered a "recovery session" if it's AAL1 AND has the recovery token issued at.
+  // A session is only considered a "recovery session" if it's AAL1 AND has the recovery token issued at.
   // If the session is AAL2, it means a full login has occurred, and recovery is no longer active.
-  const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined && session?.aal === 'aal1';
+  const isSessionRecoveryFromSupabase = session?.user?.app_metadata?.recovery_token_issued_at !== undefined && session?.aal === 'aal1';
   
   // Check localStorage flag, which helps sync across tabs quickly
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
 
-  const isRecoverySessionActive = isHashRecovery || isSessionRecovery || isLocalStorageRecoveryActive;
+  // CRITICAL FIX: If the session is AAL2, it means a full login has occurred, and we are NOT in a recovery flow.
+  // This takes precedence over any lingering recovery flags.
+  const isRecoverySessionActive = session?.aal !== 'aal2' && (isHashRecovery || isSessionRecoveryFromSupabase || isLocalStorageRecoveryActive);
 
   // --- Effect to manage localStorage flags for recovery state ---
   useEffect(() => {
@@ -45,11 +47,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // Listen for storage events to sync state across tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' || e.key === 'blockModalsDuringReset') {
-        // By not using a state here, and instead re-calculating `isRecoverySessionActive`
-        // directly in the render function, we ensure it's always up-to-date.
-        // The `session` object from `useSessionContext` will trigger re-renders,
-        // and `location.hash` changes will also trigger re-renders.
-        // If the session object updates due to localStorage, that will trigger a re-render.
+        // This effect will re-run due to `isRecoverySessionActive` dependency,
+        // which will re-evaluate the state based on updated localStorage.
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -107,6 +106,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // It ensures that if a recovery session is active, the user is *only* allowed on the /reset-password page.
   if (isRecoverySessionActive) {
     console.log('AuthGuard: isRecoverySessionActive is TRUE. Current location:', location.pathname);
+    console.log('AuthGuard: DEBUG - Session details when isRecoverySessionActive is TRUE:', JSON.stringify(session, null, 2)); // ADDED DIAGNOSTIC LOG
     // Ensure the blockModalsDuringReset flag is set for all tabs if a recovery session is active
     localStorage.setItem('blockModalsDuringReset', 'true'); 
     
