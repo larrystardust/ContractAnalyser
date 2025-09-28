@@ -1372,5 +1372,6 @@
   "auth_session_missing": "Auth session missing!",
   "password_successfully_reset_alert": "Password has been successfully reset.",
   "failed_to_reset_password_alert": "Failed to reset password.",
-  "invalid_login_credentials": "Invalid login credentials"
+  "invalid_login_credentials": "Invalid login credentials",
+  "new_password_must_be_different": "New password should be different from the old password."
 }
