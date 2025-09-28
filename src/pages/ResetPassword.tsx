@@ -171,7 +171,16 @@ const ResetPassword: React.FC = () => {
       navigate('/login', { replace: true });
 
     } catch (error: any) {
-      setError(error instanceof Error ? error.message : t('failed_to_reset_password'));
+      console.error("Reset password error:", error); // Log the full error for debugging
+      // MODIFIED: Check for specific Supabase error message for "password too similar"
+      if (error.message && error.message.includes("New password should be different from the old password.")) {
+        setError(t('new_password_must_be_different'));
+      } else if (error.message && error.message.includes("Password is too similar to previous password")) {
+        setError(t('new_password_must_be_different')); // Map a common Supabase error to your translation
+      }
+      else {
+        setError(error instanceof Error ? error.message : t('failed_to_reset_password'));
+      }
     } finally {
       setIsLoading(false);
     }
