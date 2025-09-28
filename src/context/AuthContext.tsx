@@ -24,6 +24,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const sendPasswordResetEmail = useCallback(async (email: string) => { // MODIFIED: Removed redirectTo parameter
     try {
+      // CRITICAL FIX: Sign out globally before initiating password reset
+      // This invalidates all other active sessions for the user.
+      await supabase.auth.signOut({ scope: 'global' });
+      console.log('AuthContext: Signed out globally before sending password reset email.');
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`, // MODIFIED: Hardcoded the redirectTo URL
       });
