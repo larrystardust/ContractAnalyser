@@ -1366,5 +1366,6 @@
   "password_reset_email_sent_alert": "تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور إلى عنوان بريدك الإلكتروني.",
   "auth_session_missing": "جلسة المصادقة مفقودة!",
   "password_successfully_reset_alert": "تمت إعادة تعيين كلمة المرور بنجاح.",
-  "failed_to_reset_password_alert": "فشل في إعادة تعيين كلمة المرور."
+  "failed_to_reset_password_alert": "فشل في إعادة تعيين كلمة المرور.",
+  "invalid_login_credentials": "بيانات اعتماد تسجيل الدخول غير صالحة"
 }
