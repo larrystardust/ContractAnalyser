@@ -7,7 +7,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Database } from '../types/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from '../components/ui/LanguageSelector'; // ADDED
+import LanguageSelector from '../components/ui/LanguageSelector';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -43,6 +43,11 @@ const LoginPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!isSessionLoading && !session) {
+      // If there's no session and we're not loading, clear any stale MFA flag
+      localStorage.removeItem('mfa_passed');
+    }
+
     if (!isSessionLoading && session?.user) {
       if (session.aal === 'aal2') {
         redirectToDashboard(session.user.id);
@@ -134,6 +139,10 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      {/* MODIFIED: LanguageSelector moved here */}
+      <div className="flex justify-center mb-4">
+        <LanguageSelector />
+      </div>
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -271,9 +280,6 @@ const LoginPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
-      <div className="mt-4 flex justify-center">
-        <LanguageSelector /> {/* ADDED */}
-      </div>
     </div>
   );
 };
