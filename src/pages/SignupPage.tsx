@@ -232,12 +232,12 @@ const SignupPage: React.FC = () => {
   const loginLink = searchParams.get('redirect') ? `/login?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/login';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12"> {/* MODIFIED: Added flex-col */}
       {/* MODIFIED: LanguageSelector moved here */}
-      <div className="flex justify-center mb-4">
+      <div className="mb-0"> {/* MODIFIED: Changed mb-4 to mb-0 */}
         <LanguageSelector />
       </div>
-      <Card className="max-w-md w-full">
+      <Card className="max-w-md w-full mt-0"> {/* MODIFIED: Added mt-0 */}
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h2>
           <p className="mt-2 text-sm text-gray-600">
