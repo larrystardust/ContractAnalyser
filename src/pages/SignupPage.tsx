@@ -233,6 +233,10 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      {/* MODIFIED: LanguageSelector moved here */}
+      <div className="flex justify-center mb-4">
+        <LanguageSelector />
+      </div>
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">{t('create_your_account')}</h2>
