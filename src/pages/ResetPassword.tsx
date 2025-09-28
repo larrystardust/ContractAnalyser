@@ -40,6 +40,11 @@ const ResetPassword: React.FC = () => {
       supabase.auth.signOut().catch(console.error);
     }
 
+    // MODIFIED: Set persistent error message immediately on load if reset flow is active
+    if (localStorage.getItem('passwordResetFlowActive') === 'true' && !success) {
+      setError(t('navigation_disabled_reset_password'));
+    }
+
     // CRITICAL FIX: Always clear these flags when the component unmounts
     // This ensures that even if the user navigates away or closes the tab,
     // the recovery state is cleared, preventing lingering issues.
@@ -52,7 +57,7 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, [location.hash, sessionTimer]); // Depend on location.hash to detect recovery link clicks
+  }, [location.hash, sessionTimer, success, t]); // MODIFIED: Added success and t to dependencies
 
   // Block modal opening attempts
   useEffect(() => {
