@@ -8,7 +8,7 @@ interface AuthGuardProps {
   children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> = () => { // CORRECTED SYNTAX HERE
+const AuthGuard: React.FC<AuthGuardProps> = () => {
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
@@ -107,6 +107,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => { // CORRECTED SYNTAX HERE
   if (isRecoverySessionActive) {
     console.log('AuthGuard: isRecoverySessionActive is TRUE. Current location:', location.pathname);
     console.log('AuthGuard: DEBUG - Session details when isRecoverySessionActive is TRUE:', JSON.stringify(session, null, 2)); // ADDED DIAGNOSTIC LOG
+    console.log('AuthGuard: DEBUG - isHashRecovery:', isHashRecovery);
+    console.log('AuthGuard: DEBUG - isSessionRecoveryFromSupabase:', isSessionRecoveryFromSupabase);
+    console.log('AuthGuard: DEBUG - isLocalStorageRecoveryActive:', isLocalStorageRecoveryActive);
     // Ensure the blockModalsDuringReset flag is set for all tabs if a recovery session is active
     localStorage.setItem('blockModalsDuringReset', 'true'); 
     
