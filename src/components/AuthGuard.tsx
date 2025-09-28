@@ -15,44 +15,41 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [isRecoverySessionActive, setIsRecoverySessionActive] = useState(false);
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
-  const [isSupabaseRecoverySession, setIsSupabaseRecoverySession] = useState(false); // ADDED: New state for direct session recovery check
 
-  // Effect to determine if a recovery session is active based on hash, localStorage, AND Supabase session metadata
+  // --- Determine recovery state directly in render cycle for immediate effect ---
+  const hashParams = new URLSearchParams(location.hash.substring(1));
+  const isHashRecovery = hashParams.get('type') === 'recovery';
+
+  // The most robust check for a recovery session from Supabase itself
+  const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined;
+  
+  // Check localStorage flag, which helps sync across tabs quickly
+  const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
+
+  const isRecoverySessionActive = isHashRecovery || isSessionRecovery || isLocalStorageRecoveryActive;
+
+  // --- Effect to manage localStorage flags for recovery state ---
   useEffect(() => {
-    const checkRecoveryState = () => {
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const isHashRecovery = hashParams.get('type') === 'recovery';
+    if (isRecoverySessionActive) {
+      localStorage.setItem('passwordResetFlowActive', 'true');
+      localStorage.setItem('blockModalsDuringReset', 'true');
+    } else {
+      localStorage.removeItem('passwordResetFlowActive');
+      localStorage.removeItem('blockModalsDuringReset');
+    }
 
-      const isLocalStorageFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
-      const startTime = localStorage.getItem('passwordResetFlowStartTime');
-      const isLocalStorageFlowValid = isLocalStorageFlowActive && startTime && (Date.now() - parseInt(startTime)) < 15 * 60 * 1000;
-
-      // ADDED: Check session.user.app_metadata for recovery_token_issued_at
-      const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined;
-      setIsSupabaseRecoverySession(isSessionRecovery); // Update new state
-
-      // A recovery session is active if indicated by hash, localStorage, OR the Supabase session itself
-      const currentlyActive = isHashRecovery || isLocalStorageFlowValid || isSessionRecovery;
-      setIsRecoverySessionActive(currentlyActive);
-
-      if (isHashRecovery && !isLocalStorageFlowActive) {
-        localStorage.setItem('passwordResetFlowActive', 'true');
-        localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
-      } 
-      else if (!isHashRecovery && !isLocalStorageFlowValid && isLocalStorageFlowActive) {
-          localStorage.removeItem('passwordResetFlowActive');
-          localStorage.removeItem('passwordResetFlowStartTime');
-      }
-    };
-
-    checkRecoveryState();
-
+    // Listen for storage events to sync state across tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' || e.key === 'blockModalsDuringReset') {
-        checkRecoveryState();
+        // By not using a state here, and instead re-calculating `isRecoverySessionActive`
+        // directly in the render function, we ensure it's always up-to-date.
+        // The `session` object from `useSessionContext` will trigger re-renders,
+        // and `location.hash` changes will also trigger re-renders.
+        // The `localStorage` change itself doesn't directly trigger a re-render in React,
+        // but it will update the value that `isLocalStorageRecoveryActive` reads on the next render.
+        // If the session object updates due to localStorage, that will trigger a re-render.
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -60,21 +57,19 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [location.hash, session?.user?.app_metadata?.recovery_token_issued_at]); // MODIFIED: Added session metadata to dependency array
+  }, [isRecoverySessionActive]); // Re-run this effect if isRecoverySessionActive changes
 
   // Clear password reset flags upon successful login if not on the reset page
   useEffect(() => {
-    if (session?.user && location.pathname !== '/reset-password') {
+    if (session?.user && location.pathname !== '/reset-password' && !isRecoverySessionActive) {
       const isLocalStorageFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
       if (isLocalStorageFlowActive) {
         console.log('AuthGuard: User logged in, not on reset page, clearing stale password reset flags.');
         localStorage.removeItem('passwordResetFlowActive');
-        localStorage.removeItem('passwordResetFlowStartTime');
         localStorage.removeItem('blockModalsDuringReset');
-        setIsRecoverySessionActive(false); 
       }
     }
-  }, [session?.user?.id, location.pathname]);
+  }, [session?.user?.id, location.pathname, isRecoverySessionActive]);
 
   // Effect to determine if MFA is enrolled for the current user
   useEffect(() => {
@@ -86,12 +81,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return;
       }
       try {
-        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-        if (factorsError) {
-          console.error("AuthGuard: Error listing MFA factors:", factorsError);
-          setHasMfaEnrolled(false); // Assume no MFA enrolled on error
+        const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
+        if (getFactorsError) throw getFactorsError;
+
+        const totpFactor = factors?.totp.find(factor => factor.status === 'verified');
+        if (totpFactor) {
+          setHasMfaEnrolled(true);
         } else {
-          setHasMfaEnrolled(factors.totp.length > 0);
+          setHasMfaEnrolled(false);
         }
       } catch (err) {
         console.error("AuthGuard: Unexpected error during MFA enrollment check:", err);
@@ -106,11 +103,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
-  // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
-  // This block now uses the more robust isRecoverySessionActive which includes the session metadata check
+  // CRITICAL: This block MUST be the first conditional check after loading states
+  // It ensures that if a recovery session is active, the user is *only* allowed on the /reset-password page.
   if (isRecoverySessionActive) {
     console.log('AuthGuard: isRecoverySessionActive is TRUE. Current location:', location.pathname);
-    localStorage.setItem('blockModalsDuringReset', 'true');
+    // Ensure the blockModalsDuringReset flag is set for all tabs if a recovery session is active
+    localStorage.setItem('blockModalsDuringReset', 'true'); 
     
     if (location.pathname === '/reset-password') {
       return <Outlet />;
@@ -118,9 +116,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       // Force redirect to reset page, preserving the hash if it's still there
       const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
       const redirectUrl = `/reset-password${redirectHash}`;
+      console.log(`AuthGuard: Redirecting to ${redirectUrl} due to active recovery session.`);
       return <Navigate to={redirectUrl} replace />;
     }
   } else {
+    // If no recovery session is active, ensure the flags are cleared
+    localStorage.removeItem('passwordResetFlowActive');
     localStorage.removeItem('blockModalsDuringReset');
   }
 
