@@ -17,7 +17,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
-  // Removed isSessionValidated state
+  const [isRedirecting, setIsRedirecting] = useState(false); // NEW state for immediate redirection
 
   // --- Determine recovery state directly in render cycle for immediate effect ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -48,6 +48,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         if (location.pathname !== '/reset-password') {
           console.log('AuthGuard: Detected password reset flow initiated in another tab via localStorage. Forcing sign out and redirecting to login.');
           await supabase.auth.signOut(); // Force sign out in this tab
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       } else if (e.key === 'passwordResetFlowActive' && e.newValue === null) {
@@ -56,6 +57,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         // This might not be strictly necessary with the other checks, but adds robustness.
         if (isPasswordResetInitiated && location.pathname === '/reset-password') {
           console.log('AuthGuard: Detected password reset flow cleared in another tab. Redirecting to login.');
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       }
@@ -73,6 +75,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
           console.log('AuthGuard: BFcache restore detected during active password reset. Forcing sign out and redirecting.');
           await supabase.auth.signOut();
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       }
@@ -86,7 +89,46 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
   }, [isPasswordResetInitiated, location.pathname, navigate, supabase]); // Added location.pathname, navigate, supabase
 
+  // Effect to determine if MFA is enrolled for the current user
+  useEffect(() => {
+    const checkMfaEnrollment = async () => {
+      setLoadingMfaStatus(true);
+      if (!session?.user) {
+        setHasMfaEnrolled(false);
+        setLoadingMfaStatus(false);
+        return;
+      }
+      try {
+        const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
+        if (getFactorsError) throw getFactorsError;
+
+        const totpFactor = factors?.totp.find(factor => factor.status === 'verified');
+        if (totpFactor) {
+          setHasMfaEnrolled(true);
+        } else {
+          setHasMfaEnrolled(false);
+        }
+      } catch (err) {
+        console.error("AuthGuard: Unexpected error during MFA enrollment check:", err);
+        setHasMfaEnrolled(false);
+      } finally {
+        setLoadingMfaStatus(false);
+      }
+    };
+    checkMfaEnrollment();
+  }, [session?.user?.id, supabase]);
+
+
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
+
+  // NEW: If a redirect is already in progress, render a loading state immediately
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
+      </div>
+    );
+  }
 
   // Show loading indicator while session or MFA status is loading
   if (loadingSession || loadingMfaStatus) {
