@@ -1364,5 +1364,6 @@
   "password_reset_email_sent_alert": "Se ha enviado un correo electrónico de restablecimiento de contraseña a tu dirección de correo electrónico.",
   "auth_session_missing": "¡Sesión de autenticación perdida!",
   "password_successfully_reset_alert": "La contraseña ha sido restablecida exitosamente.",
-  "failed_to_reset_password_alert": "No se pudo restablecer la contraseña."
+  "failed_to_reset_password_alert": "No se pudo restablecer la contraseña.",
+  "invalid_login_credentials": "Credenciales de inicio de sesión no válidas"
 }
