@@ -8,7 +8,7 @@ interface AuthGuardProps {
   children?: React.ReactNode;
 }
 
-const AuthGuard: React.FC<AuthGuardProps> => {
+const AuthGuard: React.FC<AuthGuardProps> = () => { // CORRECTED SYNTAX HERE
   const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
