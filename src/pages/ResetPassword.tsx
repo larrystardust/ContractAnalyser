@@ -28,6 +28,18 @@ const ResetPassword: React.FC = () => {
     localStorage.setItem('passwordResetFlowStartTime', Date.now().toString());
     localStorage.setItem('blockModalsDuringReset', 'true');
 
+    // CRITICAL FIX: Immediately sign out the user when landing on the reset page via email link.
+    // This prevents the user from being "logged in" to the app before setting a new password.
+    // The access_token in the URL hash will still be available for supabase.auth.updateUser.
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+
+    if (accessToken && type === 'recovery') {
+      console.log('ResetPassword: Detected recovery access token in URL hash. Signing out current session.');
+      supabase.auth.signOut().catch(console.error);
+    }
+
     // CRITICAL FIX: Always clear these flags when the component unmounts
     // This ensures that even if the user navigates away or closes the tab,
     // the recovery state is cleared, preventing lingering issues.
@@ -40,7 +52,7 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
     };
-  }, []); // Run once on mount, cleanup on unmount
+  }, [location.hash, sessionTimer]); // Depend on location.hash to detect recovery link clicks
 
   // Block modal opening attempts
   useEffect(() => {
