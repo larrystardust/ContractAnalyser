@@ -409,7 +409,7 @@ const SignupPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
-      <div className="mt-1 flex justify-center">
+      <div className="mt-4 flex justify-center">
         <LanguageSelector /> {/* ADDED */}
       </div>
     </div>
