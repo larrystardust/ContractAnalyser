@@ -1373,5 +1373,6 @@
   "auth_session_missing": "Session d'authentification manquante !",
   "password_successfully_reset_alert": "Le mot de passe a été réinitialisé avec succès.", 
   "failed_to_reset_password_alert": "Échec de la réinitialisation du mot de passe.",
-  "invalid_login_credentials": "Identifiants de connexion invalides"
+  "invalid_login_credentials": "Identifiants de connexion invalides",
+  "new_password_must_be_different": "Le nouveau mot de passe doit être différent de l'ancien."
 }
