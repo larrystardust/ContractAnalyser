@@ -18,8 +18,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [isRecoverySessionActive, setIsRecoverySessionActive] = useState(false);
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
+  const [isSupabaseRecoverySession, setIsSupabaseRecoverySession] = useState(false); // ADDED: New state for direct session recovery check
 
-  // Effect to determine if a recovery session is active based on hash and localStorage
+  // Effect to determine if a recovery session is active based on hash, localStorage, AND Supabase session metadata
   useEffect(() => {
     const checkRecoveryState = () => {
       const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -29,7 +30,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       const startTime = localStorage.getItem('passwordResetFlowStartTime');
       const isLocalStorageFlowValid = isLocalStorageFlowActive && startTime && (Date.now() - parseInt(startTime)) < 15 * 60 * 1000;
 
-      const currentlyActive = isHashRecovery || isLocalStorageFlowValid;
+      // ADDED: Check session.user.app_metadata for recovery_token_issued_at
+      const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined;
+      setIsSupabaseRecoverySession(isSessionRecovery); // Update new state
+
+      // A recovery session is active if indicated by hash, localStorage, OR the Supabase session itself
+      const currentlyActive = isHashRecovery || isLocalStorageFlowValid || isSessionRecovery;
       setIsRecoverySessionActive(currentlyActive);
 
       if (isHashRecovery && !isLocalStorageFlowActive) {
@@ -54,7 +60,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [location.hash]);
+  }, [location.hash, session?.user?.app_metadata?.recovery_token_issued_at]); // MODIFIED: Added session metadata to dependency array
 
   // Clear password reset flags upon successful login if not on the reset page
   useEffect(() => {
@@ -101,6 +107,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
   // BLOCK ALL ACCESS DURING PASSWORD RESET FLOW
+  // This block now uses the more robust isRecoverySessionActive which includes the session metadata check
   if (isRecoverySessionActive) {
     console.log('AuthGuard: isRecoverySessionActive is TRUE. Current location:', location.pathname);
     localStorage.setItem('blockModalsDuringReset', 'true');
@@ -108,6 +115,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     if (location.pathname === '/reset-password') {
       return <Outlet />;
     } else {
+      // Force redirect to reset page, preserving the hash if it's still there
       const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
       const redirectUrl = `/reset-password${redirectHash}`;
       return <Navigate to={redirectUrl} replace />;
@@ -138,10 +146,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // CRITICAL FIX: If the session AAL is 'aal1' and it's NOT a password reset flow (already handled by isRecoverySessionActive)
-  // and NOT an MFA challenge page (handled above), then it's an insufficient AAL for general protected content.
-  // This specifically catches the case where a password reset link creates an aal1 session,
-  // but the user tries to access a protected route without completing the reset.
+  // If the session AAL is 'aal1' and it's NOT a recovery flow (handled above) and NOT an MFA challenge page (handled above),
+  // then it's an insufficient AAL for general protected content. Redirect to login.
   if (session.aal === 'aal1' && !isRecoverySessionActive && location.pathname !== '/mfa-challenge') {
       console.log('AuthGuard: Session is aal1 and not a recovery or MFA challenge. Redirecting to login as AAL is insufficient.');
       return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
