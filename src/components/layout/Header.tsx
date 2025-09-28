@@ -101,8 +101,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
           {/* Center: Login/Signup buttons (only when not logged in, desktop only) */}
           {!session?.user && showAuthButtons && (
             <div className="hidden md:flex items-center space-x-4">
-              <Link to="/login" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('login')}</Link>
-              <Link to="/signup" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('signup')}</Link>
+              <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
+              <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
             </div>
           )}
 
@@ -139,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
             ) : (
               <>
                 {/* MODIFIED: Use translation key for Blog link */}
-                <Link to="/blog" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('blog_button')}</Link>
+                <Link to="" className="text-blue-500 hover:text-blue-900 transition-colors font-medium">{t('')}</Link>
               </>
             )}
             {/* Language Selector for Desktop */}
