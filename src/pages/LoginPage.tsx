@@ -49,6 +49,15 @@ const LoginPage: React.FC = () => {
     }
 
     if (!isSessionLoading && session?.user) {
+      // Check if password reset flow is active in localStorage
+      const isPasswordResetFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
+      if (isPasswordResetFlowActive) {
+        console.log('LoginPage: Password reset flow is active, not redirecting to dashboard yet.');
+        // Do not redirect to dashboard if a password reset flow is active.
+        // AuthGuard will handle the redirect to /reset-password.
+        return;
+      }
+
       if (session.aal === 'aal2') {
         redirectToDashboard(session.user.id);
       } else {
@@ -99,12 +108,9 @@ const LoginPage: React.FC = () => {
             .eq('id', authData.user.id);
           console.log('LoginPage: login_at updated for user:', authData.user.id);
 
-          // CRITICAL FIX: Clear localStorage flags related to password reset flow
-          // immediately after successful login. This prevents AuthGuard from
-          // incorrectly identifying the session as a recovery session.
-          localStorage.removeItem('passwordResetFlowActive');
-          localStorage.removeItem('blockModalsDuringReset');
-          console.log('LoginPage: Cleared passwordResetFlowActive and blockModalsDuringReset from localStorage.');
+          // REMOVED: localStorage.removeItem('passwordResetFlowActive');
+          // REMOVED: localStorage.removeItem('blockModalsDuringReset');
+          // These are now managed by ResetPassword.tsx and AuthGuard.tsx
 
           // CRITICAL FIX: Explicitly refresh session after successful login
           // This helps ensure the AAL (Authentication Assurance Level) is correctly updated to aal2
@@ -114,35 +120,13 @@ const LoginPage: React.FC = () => {
             console.error('LoginPage: Error refreshing session after login:', refreshError);
           } else {
             console.log('LoginPage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal);
-            // Use the refreshed session data for redirection logic if available
-            if (refreshedSessionData?.session) {
-              if (refreshedSessionData.session.aal === 'aal2') {
-                redirectToDashboard(refreshedSessionData.session.user.id);
-              } else {
-                // If AAL is still aal1 after refresh, check MFA factors
-                const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-                if (factorsError) {
-                  console.error('Error listing MFA factors after refresh:', factorsError);
-                  redirectToDashboard(refreshedSessionData.session.user.id);
-                  return;
-                }
-                if (factors.totp.length > 0) {
-                  const redirectPath = searchParams.get('redirect') || '/dashboard';
-                  navigate(`/mfa-challenge?redirect=${encodeURIComponent(redirectPath)}`);
-                } else {
-                  redirectToDashboard(refreshedSessionData.session.user.id);
-                }
-              }
-            } else {
-              // Fallback to original authData.user if refresh didn't yield a session
-              redirectToDashboard(authData.user.id);
-            }
+            // The useEffect above will now handle the redirection based on the refreshed session.
           }
 
         } catch (updateLoginError) {
           console.error('LoginPage: Error updating login_at:', updateLoginError);
           // Even if updating login_at fails, proceed with redirection
-          redirectToDashboard(authData.user.id);
+          redirectToDashboard(authData.user.id); // Fallback if refresh fails or doesn't trigger useEffect
         }
       }
     }
