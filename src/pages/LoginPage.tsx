@@ -79,7 +79,12 @@ const LoginPage: React.FC = () => {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      // MODIFIED: Use translation string for specific error message
+      if (signInError.message === "Invalid login credentials") {
+        setError(t('invalid_login_credentials'));
+      } else {
+        setError(signInError.message);
+      }
     } else {
       if (authData.user) { 
         try {
