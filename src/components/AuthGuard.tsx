@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'; // ADDED useCallback
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -9,7 +9,7 @@ interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = () => {
-  const { session, isLoading: loadingSession } = useSessionContext();
+  const { session, isLoading: loadingSession, error: sessionError } = useSessionContext(); // ADDED sessionError
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
+  const [isSessionValidated, setIsSessionValidated] = useState(false); // NEW state to track explicit session validation
 
   // --- Determine recovery state directly in render cycle for immediate effect ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -30,14 +31,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // Check localStorage flag, which helps sync across tabs quickly
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
 
-  // CRITICAL FIX: If the session is AAL2, it means a full login has occurred, and we are NOT in a recovery flow.
-  // This takes precedence over any lingering recovery flags.
-  // MODIFIED: Refined isRecoverySessionActive to primarily check app_metadata
-  const isRecoverySessionActive = (session?.user?.app_metadata?.recovery_token_issued_at !== undefined) || isLocalStorageRecoveryActive;
+  // CRITICAL: This flag indicates that a password reset *process* has been initiated.
+  // It should be true if either the hash indicates recovery, or localStorage indicates it.
+  // The actual session state (null, aal1, aal2) is then evaluated against this.
+  const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
   // --- Effect to manage localStorage flags for recovery state ---
   useEffect(() => {
-    if (isRecoverySessionActive) {
+    if (isPasswordResetInitiated) {
       localStorage.setItem('passwordResetFlowActive', 'true');
       localStorage.setItem('blockModalsDuringReset', 'true');
     } else {
@@ -48,8 +49,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // Listen for storage events to sync state across tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' || e.key === 'blockModalsDuringReset') {
-        // This effect will re-run due to `isRecoverySessionActive` dependency,
-        // which will re-evaluate the state based on updated localStorage.
+        // Force a re-evaluation of AuthGuard state
+        // By updating a state variable, we ensure the component re-renders and re-evaluates conditions.
+        setIsSessionValidated(false); // Invalidate current validation to force re-check
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -57,11 +59,11 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [isRecoverySessionActive]); // Re-run this effect if isRecoverySessionActive changes
+  }, [isPasswordResetInitiated]); // Re-run this effect if isPasswordResetInitiated changes
 
   // Clear password reset flags upon successful login if not on the reset page
   useEffect(() => {
-    if (session?.user && location.pathname !== '/reset-password' && !isRecoverySessionActive) {
+    if (session?.user && location.pathname !== '/reset-password' && !isPasswordResetInitiated) {
       const isLocalStorageFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
       if (isLocalStorageFlowActive) {
         console.log('AuthGuard: User logged in, not on reset page, clearing stale password reset flags.');
@@ -69,7 +71,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         localStorage.removeItem('blockModalsDuringReset');
       }
     }
-  }, [session?.user?.id, location.pathname, isRecoverySessionActive]);
+  }, [session?.user?.id, location.pathname, isPasswordResetInitiated]);
 
   // Effect to determine if MFA is enrolled for the current user
   useEffect(() => {
@@ -121,14 +123,47 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
   }, [location.pathname, navigate, supabase]);
 
+  // NEW CRITICAL EFFECT: Aggressively check session validity on navigation and if reset is initiated
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (loadingSession || loadingMfaStatus) return; // Wait for initial loading
+
+      // If a password reset is initiated, and we are NOT on the reset page,
+      // we must ensure the session is null and redirect to login.
+      if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
+        console.log('AuthGuard: Password reset initiated, and not on reset page. Forcing session check and potential sign out.');
+        const { data: { session: currentSession }, error: getSessionError } = await supabase.auth.getSession();
+        
+        if (getSessionError || !currentSession) {
+          console.log('AuthGuard: No valid session found after explicit check. Redirecting to login.');
+          await supabase.auth.signOut(); // Ensure local session is cleared
+          navigate('/login', { replace: true });
+          return;
+        } else {
+          // Even if a session is returned, if it's a recovery session (aal1 with recovery_token_issued_at)
+          // and we're not on the reset page, it's still an invalid state for dashboard access.
+          if (currentSession.user?.app_metadata?.recovery_token_issued_at !== undefined && currentSession.aal === 'aal1') {
+            console.log('AuthGuard: Detected recovery session (aal1 with recovery_token_issued_at) outside of reset page. Forcing sign out and redirecting to login.');
+            await supabase.auth.signOut();
+            navigate('/login', { replace: true });
+            return;
+          }
+        }
+      }
+      setIsSessionValidated(true); // Mark session as explicitly checked for this render cycle
+    };
+
+    checkAndRedirect();
+  }, [location.pathname, isPasswordResetInitiated, loadingSession, loadingMfaStatus, navigate, supabase]);
+
 
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
   // CRITICAL: This block MUST be the first conditional check after loading states
   // It ensures that if a recovery session is active, the user is *only* allowed on the /reset-password page.
-  if (isRecoverySessionActive) {
-    console.log('AuthGuard: isRecoverySessionActive is TRUE. Current location:', location.pathname);
-    console.log('AuthGuard: DEBUG - Session details when isRecoverySessionActive is TRUE:', JSON.stringify(session, null, 2)); // ADDED DIAGNOSTIC LOG
+  if (isPasswordResetInitiated) { // MODIFIED: Use isPasswordResetInitiated
+    console.log('AuthGuard: isPasswordResetInitiated is TRUE. Current location:', location.pathname);
+    console.log('AuthGuard: DEBUG - Session details when isPasswordResetInitiated is TRUE:', JSON.stringify(session, null, 2)); // ADDED DIAGNOSTIC LOG
     console.log('AuthGuard: DEBUG - isHashRecovery:', isHashRecovery);
     console.log('AuthGuard: DEBUG - isSessionRecoveryFromSupabase:', isSessionRecoveryFromSupabase);
     console.log('AuthGuard: DEBUG - isLocalStorageRecoveryActive:', isLocalStorageRecoveryActive);
@@ -141,17 +176,17 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       // Force redirect to reset page, preserving the hash if it's still there
       const redirectHash = location.hash.includes('type=recovery') ? location.hash : '';
       const redirectUrl = `/reset-password${redirectHash}`;
-      console.log(`AuthGuard: Redirecting to ${redirectUrl} due to active recovery session.`);
+      console.log(`AuthGuard: Redirecting to ${redirectUrl} due to active password reset initiation.`);
       return <Navigate to={redirectUrl} replace />;
     }
   } else {
-    // If no recovery session is active, ensure the flags are cleared
+    // If no password reset is initiated, ensure the flags are cleared
     localStorage.removeItem('passwordResetFlowActive');
     localStorage.removeItem('blockModalsDuringReset');
   }
 
-  // Show loading indicator while session or MFA status is loading
-  if (loadingSession || loadingMfaStatus) {
+  // Show loading indicator while session or MFA status is loading OR explicit session validation is pending
+  if (loadingSession || loadingMfaStatus || !isSessionValidated) { // MODIFIED: Added !isSessionValidated
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -174,7 +209,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // If the session AAL is 'aal1' and it's NOT a recovery flow (handled above) and NOT an MFA challenge page (handled above),
   // then it's an insufficient AAL for general protected content. Redirect to login.
-  if (session.aal === 'aal1' && !isRecoverySessionActive && location.pathname !== '/mfa-challenge') {
+  if (session.aal === 'aal1' && !isPasswordResetInitiated && location.pathname !== '/mfa-challenge') { // MODIFIED: Use isPasswordResetInitiated
       console.log('AuthGuard: Session is aal1 and not a recovery or MFA challenge. Redirecting to login as AAL is insufficient.');
       return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
