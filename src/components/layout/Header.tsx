@@ -148,10 +148,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
               value={i18n.language}
               className=""
             >
-              <option value="en"></option>
-              <option value="fr"></option>
-              <option value="es"></option>
-              <option value="ar"></option>
+              <option value=""></option>
+              <option value=""></option>
+              <option value=""></option>
+              <option value=""></option>
             </select>
           </div>
 
