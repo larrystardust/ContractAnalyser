@@ -23,7 +23,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isHashRecovery = hashParams.get('type') === 'recovery';
 
   // The most robust check for a recovery session from Supabase itself
-  const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined;
+  // CRITICAL FIX: A session is only considered a "recovery session" if it's AAL1 AND has the recovery token issued at.
+  // If the session is AAL2, it means a full login has occurred, and recovery is no longer active.
+  const isSessionRecovery = session?.user?.app_metadata?.recovery_token_issued_at !== undefined && session?.aal === 'aal1';
   
   // Check localStorage flag, which helps sync across tabs quickly
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
@@ -47,8 +49,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         // directly in the render function, we ensure it's always up-to-date.
         // The `session` object from `useSessionContext` will trigger re-renders,
         // and `location.hash` changes will also trigger re-renders.
-        // The `localStorage` change itself doesn't directly trigger a re-render in React,
-        // but it will update the value that `isLocalStorageRecoveryActive` reads on the next render.
         // If the session object updates due to localStorage, that will trigger a re-render.
       }
     };
