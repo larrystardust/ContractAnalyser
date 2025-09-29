@@ -116,7 +116,7 @@ function App() {
       setIsDashboardHelpModal(true);
     } else {
       // MODIFIED: Redirect to landing page if not authenticated
-      navigate('/', { replace: true });
+      navigate('/');
     }
   };
 
