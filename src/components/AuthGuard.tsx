@@ -30,9 +30,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // It should be true if either the hash indicates recovery, or localStorage indicates it.
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // --- Effect to manage localStorage flags for recovery state and aggressive redirection ---
+  // --- Effect to manage localStorage flags for recovery state ---
   useEffect(() => {
-    // Always manage localStorage flags based on current state
     if (isPasswordResetInitiated) {
       localStorage.setItem('passwordResetFlowActive', 'true');
       localStorage.setItem('blockModalsDuringReset', 'true');
@@ -41,34 +40,24 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       localStorage.removeItem('blockModalsDuringReset');
     }
 
-    // CRITICAL: If password reset is initiated and we are NOT on the reset-password page,
-    // force global sign out and redirect immediately. This is the primary defense.
-    if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
-      console.log('AuthGuard: Detected password reset flow initiated and not on reset page. Forcing global sign out and redirecting to login.');
-      setIsRedirecting(true); // Set redirecting state immediately to prevent rendering
-      supabase.auth.signOut({ scope: 'global' }).then(() => {
-        navigate('/login', { replace: true });
-      }).catch(err => {
-        console.error('AuthGuard: Error during global sign out:', err);
-        // Even if sign out fails, still attempt to redirect
-        navigate('/login', { replace: true });
-      });
-      return; // Crucial to stop further execution of this effect
-    }
-
     // Listen for storage events to sync state across tabs
-    const handleStorageChange = async (e: StorageEvent) => {
+    const handleStorageChange = async (e: StorageEvent) => { // Made async
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
+        // If a password reset is initiated in another tab, and this tab is not on the reset page,
+        // force sign out and redirect.
         if (location.pathname !== '/reset-password') {
-          console.log('AuthGuard: Detected password reset flow initiated in another tab via localStorage. Forcing global sign out and redirecting to login.');
-          setIsRedirecting(true);
-          await supabase.auth.signOut({ scope: 'global' });
+          console.log('AuthGuard: Detected password reset flow initiated in another tab via localStorage. Forcing sign out and redirecting to login.');
+          await supabase.auth.signOut(); // Force sign out in this tab
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       } else if (e.key === 'passwordResetFlowActive' && e.newValue === null) {
+        // If the flag is cleared in another tab (e.g., reset completed or timed out),
+        // ensure this tab also clears its state if it was previously in a reset flow.
+        // This might not be strictly necessary with the other checks, but adds robustness.
         if (isPasswordResetInitiated && location.pathname === '/reset-password') {
           console.log('AuthGuard: Detected password reset flow cleared in another tab. Redirecting to login.');
-          setIsRedirecting(true);
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       }
@@ -76,24 +65,29 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     window.addEventListener('storage', handleStorageChange);
 
     // Also run on 'pageshow' event to catch bfcache restores
-    const handlePageShow = async (event: PageTransitionEvent) => {
-      if (event.persisted) {
+    const handlePageShow = async (event: PageTransitionEvent) => { // Made async
+      if (event.persisted) { // If page is restored from bfcache
         console.log('AuthGuard: Page restored from bfcache. Re-checking password reset status.');
+        // Force a re-evaluation of the AuthGuard's state by navigating to current location
+        // This effectively forces a re-render and re-evaluation of all useEffects and conditions.
+        // A simple navigate(location.pathname) might not work if the path is the same.
+        // A more aggressive approach is to force a sign out if the flag is active.
         if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
-          console.log('AuthGuard: BFcache restore detected during active password reset. Forcing global sign out and redirecting.');
-          setIsRedirecting(true);
-          await supabase.auth.signOut({ scope: 'global' });
+          console.log('AuthGuard: BFcache restore detected during active password reset. Forcing sign out and redirecting.');
+          await supabase.auth.signOut();
+          setIsRedirecting(true); // Set redirecting state
           navigate('/login', { replace: true });
         }
       }
     };
     window.addEventListener('pageshow', handlePageShow);
 
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
+  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]); // Added location.pathname, navigate, supabase
 
   // Effect to determine if MFA is enrolled for the current user
   useEffect(() => {
@@ -127,7 +121,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
 
-  // If a redirect is already in progress, render a loading state immediately
+  // NEW: If a redirect is already in progress, render a loading state immediately
   if (isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -151,6 +145,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     console.log('AuthGuard: isPasswordResetInitiated is TRUE. Current location:', location.pathname);
     console.log('AuthGuard: DEBUG - Session details when isPasswordResetInitiated is TRUE:', JSON.stringify(session, null, 2));
     console.log('AuthGuard: DEBUG - isHashRecovery:', isHashRecovery);
+    // isSessionRecoveryFromSupabase is not directly used here, but its logic is part of isPasswordResetInitiated
     console.log('AuthGuard: DEBUG - isLocalStorageRecoveryActive:', isLocalStorageRecoveryActive);
     
     // Ensure the blockModalsDuringReset flag is set for all tabs if a recovery session is active
@@ -159,9 +154,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     if (location.pathname === '/reset-password') {
       return <Outlet />;
     } else {
-      // Force sign out globally and redirect to login if trying to access any other page during reset flow
-      console.log(`AuthGuard: Password reset initiated, but not on reset page. Forcing global sign out and redirecting to login.`);
-      supabase.auth.signOut({ scope: 'global' }); // MODIFIED: Added { scope: 'global' }
+      // Force sign out and redirect to login if trying to access any other page during reset flow
+      console.log(`AuthGuard: Password reset initiated, but not on reset page. Forcing sign out and redirecting to login.`);
+      supabase.auth.signOut(); // Force sign out
       return <Navigate to="/login" replace />;
     }
   } else {
