@@ -52,7 +52,7 @@ import DashboardHelpModal from './components/dashboard/DashboardHelpModal';
 import { useTranslation } from 'react-i18next'; 
 
 function App() {
-  const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
+  // REMOVED: isDashboardHelpModalOpen state
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
@@ -110,11 +110,11 @@ function App() {
     }
   }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
-  // ✅ FIXED: Block HelpModal if unauthenticated
+  // MODIFIED: handleOpenHelpModal now navigates to the help page
   const handleOpenHelpModal = async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      setIsDashboardHelpModal(true);
+      navigate('/dashboard-help'); // Navigate to the standalone help page
     } else {
       navigate('/'); // kick unauthenticated users back to landing
     }
@@ -141,8 +141,7 @@ function App() {
             {/* Routes with Header (MainLayout) */}
             <Route element={<MainLayout
               onOpenHelpModal={handleOpenHelpModal}
-              isDashboardHelpModalOpen={isDashboardHelpModalOpen}
-              setIsDashboardHelpModal={setIsDashboardHelpModal}
+              // REMOVED: isDashboardHelpModalOpen and setIsDashboardHelpModal props
             />}>
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth/email-sent" element={<EmailSentPage />} />
@@ -166,19 +165,8 @@ function App() {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
 
-                {/* Protected Help Modal */}
-                <Route
-                  path="/dashboard-help"
-                  element={
-                    <Modal
-                      isOpen={isDashboardHelpModalOpen}
-                      onClose={() => setIsDashboardHelpModal(false)}
-                      title={t('dashboard_help_title')}
-                    >
-                      <DashboardHelpModal />
-                    </Modal>
-                  }
-                />
+                {/* MODIFIED: DashboardHelpModal is now a standalone route */}
+                <Route path="/dashboard-help" element={<DashboardHelpModal />} />
               </Route>
 
               {/* Admin Protected Routes */}
