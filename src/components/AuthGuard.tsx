@@ -34,7 +34,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
       // Force sign out globally (all sessions, all browsers)
       supabase.auth.signOut({ scope: 'global' }).finally(() => {
-        if (location.pathname !== '/reset-password') {
+        if (location.pathname !== '/reset-password' && location.pathname !== '/') {
           setIsRedirecting(true);
           navigate('/reset-password', { replace: true });
         }
@@ -62,9 +62,17 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
     const handlePopState = () => {
-      if (isPasswordResetInitiated || !session) {
-        console.log('AuthGuard: Prevented back/forward navigation into protected route.');
-        navigate('/reset-password', { replace: true });
+      // If reset flow is active OR session is missing OR only at aal1 (not fully authenticated)
+      if (
+        isPasswordResetInitiated ||
+        !session ||
+        !session.user ||
+        session.aal === 'aal1' // Magic link / email-only stage is blocked
+      ) {
+        if (location.pathname !== '/reset-password' && location.pathname !== '/') {
+          console.log('AuthGuard: Blocked back/forward navigation to protected route.');
+          navigate('/reset-password', { replace: true });
+        }
       }
     };
 
@@ -82,7 +90,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate]);
+  }, [isPasswordResetInitiated, session, navigate, location.pathname]);
 
   // --- MFA check ---
   useEffect(() => {
@@ -117,26 +125,29 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // --- Enforce reset-password lockdown ---
+  // --- Reset-password lockdown ---
   if (isPasswordResetInitiated) {
-    if (location.pathname === '/reset-password') {
+    if (location.pathname === '/reset-password' || location.pathname === '/') {
       return <Outlet />;
     } else {
       return <Navigate to="/reset-password" replace />;
     }
   }
 
-  // --- Enforce normal auth rules ---
+  // --- Require full login ---
   if (!session || !session.user) {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    return <Navigate to="/" replace />;
   }
 
+  // Block weak sessions (email-only, magic link stage)
+  if (session.aal === 'aal1') {
+    console.log('AuthGuard: Session is aal1 (email-only). Blocking access until full login.');
+    return <Navigate to="/" replace />;
+  }
+
+  // Enforce MFA if enabled
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
-
-  if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    return <Navigate to="/mfa-challenge" replace />;
   }
 
   return <Outlet />;
