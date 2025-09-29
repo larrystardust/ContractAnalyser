@@ -36,7 +36,7 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
-import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
@@ -47,9 +47,9 @@ import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
-import Modal from './components/ui/Modal'; // ADDED: Import Modal
-import DashboardHelpModal from './components/dashboard/DashboardHelpModal'; // ADDED: Import DashboardHelpModal
-import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
+import Modal from './components/ui/Modal';
+import DashboardHelpModal from './components/dashboard/DashboardHelpModal';
+import { useTranslation } from 'react-i18next';
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -57,9 +57,10 @@ function App() {
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const { session, isLoading: isSessionLoading } = useSessionContext();
+  const supabase = useSupabaseClient(); // ✅ Init Supabase client
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { t } = useTranslation(); // ADDED: Initialize useTranslation
+  const { t } = useTranslation();
 
   useTheme();
 
@@ -84,18 +85,21 @@ function App() {
       '/help',
       '/maintenance',
       '/blog',
-      '/blog/:slug', // Dynamic blog route
+      '/blog/:slug',
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
-    // ADDED: New function to check if a path matches a public path pattern
     const isPublicPath = (pathToCheck: string) => {
       return publicPaths.some(publicPathPattern => {
         if (publicPathPattern.includes(':slug')) {
-          // Convert pattern to a regex for matching dynamic segments
-          // Escape special characters in the pattern, then replace :slug with a regex for any segment
-          const regexPattern = new RegExp('^' + publicPathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
+          const regexPattern = new RegExp(
+            '^' +
+              publicPathPattern
+                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                .replace(/:slug/g, '[^/]+') +
+              '$'
+          );
           return regexPattern.test(pathToCheck);
         }
         return publicPathPattern === pathToCheck;
@@ -112,12 +116,13 @@ function App() {
     }
   }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
+  // ✅ Authenticated-only DashboardHelpModal
   const handleOpenHelpModal = async () => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       setIsDashboardHelpModal(true);
     } else {
-      navigate('/'); // kick to landing if no verified session
+      navigate('/'); // block and redirect if not authenticated
     }
   };
 
@@ -128,7 +133,7 @@ function App() {
           <Routes>
             <Route path="/maintenance" element={<MaintenancePage />} />
 
-            {/* Routes without Header (truly no header) */}
+            {/* Routes without Header */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -139,12 +144,16 @@ function App() {
             <Route path="/public-report-view" element={<PublicReportViewerPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Routes with Header (using MainLayout) */}
-            <Route element={<MainLayout
-              onOpenHelpModal={handleOpenHelpModal}
-              isDashboardHelpModalOpen={isDashboardHelpModalOpen}
-              setIsDashboardHelpModal={setIsDashboardHelpModal}
-            />}>
+            {/* Routes with Header */}
+            <Route
+              element={
+                <MainLayout
+                  onOpenHelpModal={handleOpenHelpModal}
+                  isDashboardHelpModalOpen={isDashboardHelpModalOpen}
+                  setIsDashboardHelpModal={setIsDashboardHelpModal}
+                />
+              }
+            >
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth/email-sent" element={<EmailSentPage />} />
               <Route path="/disclaimer" element={<DisclaimerPage />} />
@@ -156,7 +165,7 @@ function App() {
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
 
-              {/* Protected Routes - wrapped with AuthGuard */}
+              {/* Protected Routes */}
               <Route element={<AuthGuard />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/contracts" element={<ContractsPage />} />
@@ -167,22 +176,26 @@ function App() {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
 
-                {/* ADDED: DashboardHelpModal is now fully protected */}
+                {/* ✅ DashboardHelpModal protected here */}
                 <Route
                   path="/dashboard-help"
                   element={
-                    <Modal
-                      isOpen={isDashboardHelpModalOpen}
-                      onClose={() => setIsDashboardHelpModal(false)}
-                      title={t('dashboard_help_title')}
-                    >
-                      <DashboardHelpModal />
-                    </Modal>
+                    session ? (
+                      <Modal
+                        isOpen={isDashboardHelpModalOpen}
+                        onClose={() => setIsDashboardHelpModal(false)}
+                        title={t('dashboard_help_title')}
+                      >
+                        <DashboardHelpModal />
+                      </Modal>
+                    ) : (
+                      <Navigate to="/" replace />
+                    )
                   }
                 />
               </Route>
 
-              {/* Admin Protected Routes - wrapped with AdminGuard */}
+              {/* Admin Protected Routes */}
               <Route element={<AdminGuard />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
                 <Route path="/admin/inquiries" element={<AdminInquiriesPage />} />
