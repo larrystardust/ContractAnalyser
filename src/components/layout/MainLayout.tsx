@@ -7,11 +7,10 @@ import { useTranslation } from 'react-i18next'; // ADDED
 
 interface MainLayoutProps {
   onOpenHelpModal: () => void;
-  isDashboardHelpModalOpen: boolean;
-  setIsDashboardHelpModal: (isOpen: boolean) => void;
+  // REMOVED: isDashboardHelpModalOpen and setIsDashboardHelpModal props
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal, isDashboardHelpModalOpen, setIsDashboardHelpModal }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal }) => {
   const { t } = useTranslation(); // ADDED
 
   // This function is passed to DashboardHelpModal, which is part of this layout
@@ -25,14 +24,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ onOpenHelpModal, isDashboardHel
       <main>
         <Outlet /> {/* This is where nested routes will render */}
       </main>
-      {/* Dashboard Help Modal */}
-      <Modal
-        isOpen={isDashboardHelpModalOpen}
-        onClose={() => setIsDashboardHelpModal(false)}
-        title={t('dashboard_help_title')} // MODIFIED
-      >
-        <DashboardHelpModal onReportIssue={handleReportIssue} />
-      </Modal>
+      {/* REMOVED: Dashboard Help Modal wrapper */}
     </>
   );
 };
