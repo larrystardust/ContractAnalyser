@@ -84,7 +84,7 @@ function App() {
       '/help',
       '/maintenance',
       '/blog',
-      '/blog/:slug', // Dynamic blog route
+      '/blog/:slug', // This is the dynamic path
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -116,8 +116,7 @@ function App() {
     if (session) {
       setIsDashboardHelpModal(true);
     } else {
-      // MODIFIED: Redirect to landing page if not authenticated, removed { replace: true }
-      navigate('/');
+      navigate('/login?redirect=' + encodeURIComponent(location.pathname + location.search));
     }
   };
 
@@ -166,20 +165,6 @@ function App() {
                 <Route path="/upload" element={<UploadPage />} />
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
-
-                {/* ADDED: DashboardHelpModal is now fully protected */}
-                <Route
-                  path="/dashboard-help"
-                  element={
-                    <Modal
-                      isOpen={isDashboardHelpModalOpen}
-                      onClose={() => setIsDashboardHelpModal(false)}
-                      title={t('dashboard_help_title')}
-                    >
-                      <DashboardHelpModal />
-                    </Modal>
-                  }
-                />
               </Route>
 
               {/* Admin Protected Routes - wrapped with AdminGuard */}
@@ -195,6 +180,16 @@ function App() {
             </Route>
           </Routes>
         </ErrorBoundary>
+        {/* MODIFIED: Conditionally render DashboardHelpModal only if a session exists */}
+        {session && (
+          <Modal
+            isOpen={isDashboardHelpModalOpen}
+            onClose={() => setIsDashboardHelpModal(false)}
+            title={t('dashboard_help_title')}
+          >
+            <DashboardHelpModal />
+          </Modal>
+        )}
       </div>
     </ContractProvider>
   );
