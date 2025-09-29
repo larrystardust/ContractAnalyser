@@ -47,6 +47,9 @@ import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
+import Modal from './components/ui/Modal'; // ADDED: Import Modal
+import DashboardHelpModal from './components/dashboard/DashboardHelpModal'; // ADDED: Import DashboardHelpModal
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -56,6 +59,7 @@ function App() {
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
+  const { t } = useTranslation(); // ADDED: Initialize useTranslation
 
   useTheme();
 
@@ -176,6 +180,16 @@ function App() {
             </Route>
           </Routes>
         </ErrorBoundary>
+        {/* MODIFIED: Conditionally render DashboardHelpModal only if a session exists */}
+        {session && (
+          <Modal
+            isOpen={isDashboardHelpModalOpen}
+            onClose={() => setIsDashboardHelpModal(false)}
+            title={t('dashboard_help_title')}
+          >
+            <DashboardHelpModal />
+          </Modal>
+        )}
       </div>
     </ContractProvider>
   );
