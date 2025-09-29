@@ -36,7 +36,7 @@ import AdminReportsPage from './pages/AdminReportsPage';
 import MainLayout from './components/layout/MainLayout';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
-import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react'; // ✅ FIXED
+import { useSessionContext } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
 import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
@@ -47,9 +47,9 @@ import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
-import Modal from './components/ui/Modal'; 
-import DashboardHelpModal from './components/dashboard/DashboardHelpModal'; 
-import { useTranslation } from 'react-i18next'; 
+import Modal from './components/ui/Modal'; // ADDED: Import Modal
+import DashboardHelpModal from './components/dashboard/DashboardHelpModal'; // ADDED: Import DashboardHelpModal
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 function App() {
   const [isDashboardHelpModalOpen, setIsDashboardHelpModal] = useState(false);
@@ -57,10 +57,9 @@ function App() {
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const { session, isLoading: isSessionLoading } = useSessionContext();
-  const supabase = useSupabaseClient(); // ✅ FIXED: Add supabase client
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // ADDED: Initialize useTranslation
 
   useTheme();
 
@@ -85,14 +84,17 @@ function App() {
       '/help',
       '/maintenance',
       '/blog',
-      '/blog/:slug',
+      '/blog/:slug', // Dynamic blog route
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
 
+    // ADDED: New function to check if a path matches a public path pattern
     const isPublicPath = (pathToCheck: string) => {
       return publicPaths.some(publicPathPattern => {
         if (publicPathPattern.includes(':slug')) {
+          // Convert pattern to a regex for matching dynamic segments
+          // Escape special characters in the pattern, then replace :slug with a regex for any segment
           const regexPattern = new RegExp('^' + publicPathPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
           return regexPattern.test(pathToCheck);
         }
@@ -110,13 +112,12 @@ function App() {
     }
   }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
-  // ✅ FIXED: Block HelpModal if unauthenticated
-  const handleOpenHelpModal = async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
+  const handleOpenHelpModal = () => {
+    if (session) {
       setIsDashboardHelpModal(true);
     } else {
-      navigate('/'); // kick unauthenticated users back to landing
+      // MODIFIED: Redirect to landing page if not authenticated, removed { replace: true }
+      navigate('/');
     }
   };
 
@@ -127,7 +128,7 @@ function App() {
           <Routes>
             <Route path="/maintenance" element={<MaintenancePage />} />
 
-            {/* Routes without Header */}
+            {/* Routes without Header (truly no header) */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -138,7 +139,7 @@ function App() {
             <Route path="/public-report-view" element={<PublicReportViewerPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Routes with Header (MainLayout) */}
+            {/* Routes with Header (using MainLayout) */}
             <Route element={<MainLayout
               onOpenHelpModal={handleOpenHelpModal}
               isDashboardHelpModalOpen={isDashboardHelpModalOpen}
@@ -155,7 +156,7 @@ function App() {
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
 
-              {/* Protected Routes */}
+              {/* Protected Routes - wrapped with AuthGuard */}
               <Route element={<AuthGuard />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/contracts" element={<ContractsPage />} />
@@ -166,7 +167,7 @@ function App() {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
 
-                {/* Protected Help Modal */}
+                {/* ADDED: DashboardHelpModal is now fully protected */}
                 <Route
                   path="/dashboard-help"
                   element={
@@ -181,7 +182,7 @@ function App() {
                 />
               </Route>
 
-              {/* Admin Protected Routes */}
+              {/* Admin Protected Routes - wrapped with AdminGuard */}
               <Route element={<AdminGuard />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
                 <Route path="/admin/inquiries" element={<AdminInquiriesPage />} />
