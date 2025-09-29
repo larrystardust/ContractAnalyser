@@ -25,9 +25,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
+  // --- Reset lock logic ---
+  const resetLockActive = isPasswordResetInitiated && !session;
+
   // --- Global invalidation when reset starts ---
   useEffect(() => {
-    if (isPasswordResetInitiated) {
+    if (isPasswordResetInitiated && !session) {
       // Broadcast reset state across all tabs
       localStorage.setItem('passwordResetFlowActive', 'true');
       localStorage.setItem('blockModalsDuringReset', 'true');
@@ -39,15 +42,17 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
           navigate('/reset-password', { replace: true });
         }
       });
-    } else {
-      // Clean up flags once reset flow ends
+    }
+
+    if (session) {
+      // Once the user logs in again, clear reset flags
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('blockModalsDuringReset');
     }
 
     // Sync reset status across open tabs
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
+      if (e.key === 'passwordResetFlowActive' && e.newValue === 'true' && !session) {
         console.log('AuthGuard: Reset flow triggered in another tab → forcing redirect.');
         supabase.auth.signOut({ scope: 'global' }).finally(() => {
           navigate('/reset-password', { replace: true });
@@ -57,19 +62,19 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     window.addEventListener('storage', handleStorageChange);
 
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
+  }, [isPasswordResetInitiated, location.pathname, navigate, supabase, session]);
 
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
     const handlePopState = () => {
-      if (isPasswordResetInitiated || !session) {
+      if (resetLockActive) {
         console.log('AuthGuard: Prevented back/forward navigation into protected route.');
         navigate('/reset-password', { replace: true });
       }
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
+      if (event.persisted && resetLockActive) {
         console.log('AuthGuard: Page restored from bfcache → forcing reload.');
         window.location.reload();
       }
@@ -82,7 +87,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate]);
+  }, [resetLockActive, navigate]);
 
   // --- MFA check ---
   useEffect(() => {
@@ -118,7 +123,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // --- Enforce reset-password lockdown ---
-  if (isPasswordResetInitiated) {
+  if (resetLockActive) {
     if (location.pathname === '/reset-password') {
       return <Outlet />;
     } else {
@@ -139,6 +144,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
+  // ✅ At this point: session is valid → allow dashboard
   return <Outlet />;
 };
 
