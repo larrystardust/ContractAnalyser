@@ -125,9 +125,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                     {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')}
                   </Button>
                 )}
-                {/* ADDED: Search Button for Desktop */}
-                <Button variant="text" size="sm" className="p-1" onClick={handleSearchClick}>
-                  <Search className="w-5 h-5 text-blue-500" />
+                {/* MODIFIED: Search Button for Desktop to include text */}
+                <Button variant="text" size="sm" icon={<Search className="w-5 h-5" />} onClick={handleSearchClick}>
+                  {t('search')}
                 </Button>
                 <Button variant="text" size="sm" className="p-1 relative" onClick={handleNotificationsClick}>
                   <Bell className="w-5 h-5 text-blue-500" />
