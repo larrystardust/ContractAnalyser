@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next'; // ADDED Trans import
 
 interface DashboardHelpModalProps {
-  onReportIssue?: () => void;
+  // REMOVED: onReportIssue prop
 }
 
 const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
@@ -96,70 +96,73 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
-          <Bug className="h-5 w-5 mr-2" /> {t('click_here_report_issue')}
-        </Button>
+    // ADDED: Main container div for page styling
+    <div className="container mx-auto px-4 py-6 mt-16">
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
+            <Bug className="h-5 w-5 mr-2" /> {t('click_here_report_issue')}
+          </Button>
+        </div>
+
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+          <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')}
+        </h3>
+        <p className="text-gray-700 mb-4">
+          {t('dashboard_overview_desc_modal')}
+        </p>
+        <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
+          <li>
+            **{t('contract_list_modal')}**: {t('contract_list_desc_modal')}
+          </li>
+          <li>
+            **{t('analysis_progress_modal')}**: {t('analysis_progress_desc_modal')}
+          </li>
+          <li>
+            **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')}
+          </li>
+        </ul>
+
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+          <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')}
+        </h3>
+        <p className="text-gray-700 mb-4">
+          {t('analysis_results_desc_modal')}
+        </p>
+        <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
+          <li>
+            **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')}
+          </li>
+          <li>
+            **{t('compliance_score_modal')}**: {t('compliance_score_desc_modal')}
+          </li>
+          <li>
+            **{t('findings_modal')}**: {t('findings_desc_modal')}
+          </li>
+          <li>
+            **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')}
+          </li>
+        </ul>
+
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+          <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')}
+        </h3>
+        <p className="text-gray-700">
+          <Trans i18nKey="further_questions_contact_support_modal"
+            components={{
+              helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline" />
+            }}
+          />
+        </p>
+
+        <Modal
+          isOpen={isSupportTicketModalOpen}
+          onClose={() => setIsSupportTicketModalOpen(false)}
+          title={t('report_an_issue_modal')}
+        >
+          <SupportTicketForm />
+        </Modal>
       </div>
-
-      <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')}
-      </h3>
-      <p className="text-gray-700 mb-4">
-        {t('dashboard_overview_desc_modal')}
-      </p>
-      <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
-        <li>
-          **{t('contract_list_modal')}**: {t('contract_list_desc_modal')}
-        </li>
-        <li>
-          **{t('analysis_progress_modal')}**: {t('analysis_progress_desc_modal')}
-        </li>
-        <li>
-          **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')}
-        </li>
-      </ul>
-
-      <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')}
-      </h3>
-      <p className="text-gray-700 mb-4">
-        {t('analysis_results_desc_modal')}
-      </p>
-      <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
-        <li>
-          **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')}
-        </li>
-        <li>
-          **{t('compliance_score_modal')}**: {t('compliance_score_desc_modal')}
-        </li>
-        <li>
-          **{t('findings_modal')}**: {t('findings_desc_modal')}
-        </li>
-        <li>
-          **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')}
-        </li>
-      </ul>
-
-      <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
-        <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')}
-      </h3>
-      <p className="text-gray-700">
-        <Trans i18nKey="further_questions_contact_support_modal"
-          components={{
-            helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline" />
-          }}
-        />
-      </p>
-
-      <Modal
-        isOpen={isSupportTicketModalOpen}
-        onClose={() => setIsSupportTicketModalOpen(false)}
-        title={t('report_an_issue_modal')}
-      >
-        <SupportTicketForm />
-      </Modal>
     </div>
   );
 };
