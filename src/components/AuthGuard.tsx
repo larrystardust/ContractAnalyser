@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Removed useCallback as it's not strictly needed here
+import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -9,7 +9,7 @@ interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = () => {
-  const { session, isLoading: loadingSession, error: sessionError } = useSessionContext();
+  const { session, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,20 +17,62 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
-  const [isRedirecting, setIsRedirecting] = useState(false); // NEW state for immediate redirection
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // --- Determine recovery state directly in render cycle for immediate effect ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isHashRecovery = hashParams.get('type') === 'recovery';
-  
-  // Check localStorage flag, which helps sync across tabs quickly
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
-
-  // CRITICAL: This flag indicates that a password reset *process* has been initiated.
-  // It should be true if either the hash indicates recovery, or localStorage indicates it.
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // --- Effect to manage localStorage flags for recovery state ---
+  // 🔒 Enforce re-check when using browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!session || !session.user) {
+        console.log('AuthGuard: Blocked back/forward navigation without session.');
+        navigate('/login', { replace: true });
+      }
+      if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
+        console.log('AuthGuard: Blocked back/forward navigation during password reset.');
+        navigate('/login', { replace: true });
+      }
+      if (hasMfaEnrolled && session?.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
+        console.log('AuthGuard: Blocked forward/back navigation requiring MFA.');
+        navigate('/mfa-challenge', { replace: true });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [session, isPasswordResetInitiated, location.pathname, hasMfaEnrolled, navigate]);
+
+  // 🔒 HARD LOCK: Prevent BFCache restores, force reload on back/forward
+  useEffect(() => {
+    // Disable automatic scroll restoration (prevents instant bfcache snaps)
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    const handleBeforeUnload = () => {
+      // Hint to browser: don’t store this page in bfcache
+      localStorage.setItem('disableBFCache', Date.now().toString());
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('AuthGuard: BFCache restore detected. Forcing reload for fresh auth check.');
+        window.location.reload(); // Full reload ensures revalidation
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
+  // --- Recovery state enforcement ---
   useEffect(() => {
     if (isPasswordResetInitiated) {
       localStorage.setItem('passwordResetFlowActive', 'true');
@@ -40,56 +82,36 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       localStorage.removeItem('blockModalsDuringReset');
     }
 
-    // Listen for storage events to sync state across tabs
-    const handleStorageChange = async (e: StorageEvent) => { // Made async
+    if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
+      setIsRedirecting(true);
+      supabase.auth.signOut({ scope: 'global' }).then(() => {
+        navigate('/login', { replace: true });
+      }).catch(() => {
+        navigate('/login', { replace: true });
+      });
+      return;
+    }
+
+    const handleStorageChange = async (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
-        // If a password reset is initiated in another tab, and this tab is not on the reset page,
-        // force sign out and redirect.
         if (location.pathname !== '/reset-password') {
-          console.log('AuthGuard: Detected password reset flow initiated in another tab via localStorage. Forcing sign out and redirecting to login.');
-          await supabase.auth.signOut(); // Force sign out in this tab
-          setIsRedirecting(true); // Set redirecting state
+          setIsRedirecting(true);
+          await supabase.auth.signOut({ scope: 'global' });
           navigate('/login', { replace: true });
         }
       } else if (e.key === 'passwordResetFlowActive' && e.newValue === null) {
-        // If the flag is cleared in another tab (e.g., reset completed or timed out),
-        // ensure this tab also clears its state if it was previously in a reset flow.
-        // This might not be strictly necessary with the other checks, but adds robustness.
         if (isPasswordResetInitiated && location.pathname === '/reset-password') {
-          console.log('AuthGuard: Detected password reset flow cleared in another tab. Redirecting to login.');
-          setIsRedirecting(true); // Set redirecting state
+          setIsRedirecting(true);
           navigate('/login', { replace: true });
         }
       }
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // Also run on 'pageshow' event to catch bfcache restores
-    const handlePageShow = async (event: PageTransitionEvent) => { // Made async
-      if (event.persisted) { // If page is restored from bfcache
-        console.log('AuthGuard: Page restored from bfcache. Re-checking password reset status.');
-        // Force a re-evaluation of the AuthGuard's state by navigating to current location
-        // This effectively forces a re-render and re-evaluation of all useEffects and conditions.
-        // A simple navigate(location.pathname) might not work if the path is the same.
-        // A more aggressive approach is to force a sign out if the flag is active.
-        if (isPasswordResetInitiated && location.pathname !== '/reset-password') {
-          console.log('AuthGuard: BFcache restore detected during active password reset. Forcing sign out and redirecting.');
-          await supabase.auth.signOut();
-          setIsRedirecting(true); // Set redirecting state
-          navigate('/login', { replace: true });
-        }
-      }
-    };
-    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('pageshow', handlePageShow);
-    };
-  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]); // Added location.pathname, navigate, supabase
-
-  // Effect to determine if MFA is enrolled for the current user
+  // --- MFA enforcement ---
   useEffect(() => {
     const checkMfaEnrollment = async () => {
       setLoadingMfaStatus(true);
@@ -99,17 +121,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return;
       }
       try {
-        const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
-        if (getFactorsError) throw getFactorsError;
-
-        const totpFactor = factors?.totp.find(factor => factor.status === 'verified');
-        if (totpFactor) {
-          setHasMfaEnrolled(true);
-        } else {
-          setHasMfaEnrolled(false);
-        }
+        const { data: factors, error } = await supabase.auth.mfa.listFactors();
+        if (error) throw error;
+        const totpFactor = factors?.totp.find(f => f.status === 'verified');
+        setHasMfaEnrolled(!!totpFactor);
       } catch (err) {
-        console.error("AuthGuard: Unexpected error during MFA enrollment check:", err);
+        console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
         setLoadingMfaStatus(false);
@@ -118,10 +135,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     checkMfaEnrollment();
   }, [session?.user?.id, supabase]);
 
-
-  // --- ALL HOOKS MUST BE CALLED ABOVE THIS LINE ---
-
-  // NEW: If a redirect is already in progress, render a loading state immediately
   if (isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -130,7 +143,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // Show loading indicator while session or MFA status is loading
   if (loadingSession || loadingMfaStatus) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -139,55 +151,27 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // CRITICAL: This block MUST be the first conditional check after loading states
-  // It ensures that if a password reset is initiated, the user is *only* allowed on the /reset-password page.
   if (isPasswordResetInitiated) {
-    console.log('AuthGuard: isPasswordResetInitiated is TRUE. Current location:', location.pathname);
-    console.log('AuthGuard: DEBUG - Session details when isPasswordResetInitiated is TRUE:', JSON.stringify(session, null, 2));
-    console.log('AuthGuard: DEBUG - isHashRecovery:', isHashRecovery);
-    // isSessionRecoveryFromSupabase is not directly used here, but its logic is part of isPasswordResetInitiated
-    console.log('AuthGuard: DEBUG - isLocalStorageRecoveryActive:', isLocalStorageRecoveryActive);
-    
-    // Ensure the blockModalsDuringReset flag is set for all tabs if a recovery session is active
-    localStorage.setItem('blockModalsDuringReset', 'true'); 
-    
     if (location.pathname === '/reset-password') {
       return <Outlet />;
     } else {
-      // Force sign out and redirect to login if trying to access any other page during reset flow
-      console.log(`AuthGuard: Password reset initiated, but not on reset page. Forcing sign out and redirecting to login.`);
-      supabase.auth.signOut(); // Force sign out
+      supabase.auth.signOut({ scope: 'global' });
       return <Navigate to="/login" replace />;
     }
-  } else {
-    // If no password reset is initiated, ensure the flags are cleared
-    localStorage.removeItem('passwordResetFlowActive');
-    localStorage.removeItem('blockModalsDuringReset');
   }
 
-  // If not authenticated, redirect to login
   if (!session || !session.user) {
-    console.log(t('auth_session_missing'));
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If MFA is enrolled AND the current session's AAL is 'aal1' (meaning MFA hasn't been completed for this session)
-  // AND the user is NOT on the MFA challenge page, redirect to MFA challenge.
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-    console.log('AuthGuard: User has MFA enrolled and session is aal1. Redirecting to MFA challenge.');
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If the session AAL is 'aal1' and it's NOT a recovery flow (handled above) and NOT an MFA challenge page (handled above),
-  // then it's an insufficient AAL for general protected content. Redirect to login.
   if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-      console.log('AuthGuard: Session is aal1 and not a recovery or MFA challenge. Redirecting to login as AAL is insufficient.');
-      return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If we reach here, the user is authenticated with sufficient AAL for the current context.
-  // Either session.aal is aal2, or session.aal is aal1 and it's an MFA challenge page.
-  // Or session.aal is aal1, no MFA enrolled, and it's a protected route (which is fine).
   return <Outlet />;
 };
 
