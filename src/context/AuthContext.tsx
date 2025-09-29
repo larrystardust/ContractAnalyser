@@ -1,11 +1,23 @@
 import React, { createContext, useContext, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useTranslation } from 'react-i18next'; // ADDED
+import { useNavigate, useLocation, NavigateFunction } from "react-router-dom"; // ADDED
 
 interface AuthContextType {
   sendPasswordResetEmail: (email: string) => Promise<void>; // MODIFIED: Removed redirectTo parameter
   resetPassword: (newPassword: string) => Promise<void>;
 }
+
+// Helper function to clear navigation history and force a hard reload
+// This function is now primarily used as a fallback/final reset mechanism
+const clearNavigationHistory = (navigate: NavigateFunction) => {
+  // Replace the current entry with the landing page
+  // This prevents going back to authenticated pages
+  navigate("/", { replace: true });
+
+  // Force a page reload to clear any in-memory state
+  window.location.href = "/";
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
