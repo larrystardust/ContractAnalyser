@@ -38,6 +38,7 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import MfaChallengePage from './pages/MfaChallengePage';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import PublicReportViewerPage from './pages/PublicReportViewerPage';
+import LandingPageSampleDashboard from './components/dashboard/LandingPageSampleDashboard';
 import LandingPagePricingSection from './components/pricing/LandingPagePricingSection'; 
 import ResetPassword from './pages/ResetPassword';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -115,7 +116,7 @@ function App() {
     if (session) {
       setIsDashboardHelpModal(true);
     } else {
-      // MODIFIED: Redirect to landing page if not authenticated
+      // MODIFIED: Redirect to landing page if not authenticated, removed { replace: true }
       navigate('/');
     }
   };
