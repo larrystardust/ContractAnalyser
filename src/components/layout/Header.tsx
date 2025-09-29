@@ -125,6 +125,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                     {location.pathname.startsWith('/admin') ? t('dashboard') : t('admin_dashboard')}
                   </Button>
                 )}
+                {/* ADDED: Search Button for Desktop */}
+                <Button variant="text" size="sm" className="p-1" onClick={handleSearchClick}>
+                  <Search className="w-5 h-5 text-blue-500" />
+                </Button>
                 <Button variant="text" size="sm" className="p-1 relative" onClick={handleNotificationsClick}>
                   <Bell className="w-5 h-5 text-blue-500" />
                   {unreadCount > 0 && (<span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500" />)}
@@ -196,6 +200,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   <Link to="/reports" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('reports')}</Link>
                   <Link to="/settings" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('settings')}</Link>
                   <Link to="/pricing" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>{t('pricing')}</Link>
+                  {/* ADDED: Search Link for Mobile */}
+                  <Link to="/search" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>
+                    {t('search')}
+                  </Link>
                   <div className="pt-2 border-t border-gray-200">
                     {!loadingAdminStatus && isAdmin && (
                       <Button
