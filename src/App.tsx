@@ -112,12 +112,12 @@ function App() {
     }
   }, [location, session, navigate, isSessionLoading, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
-  const handleOpenHelpModal = () => {
-    if (session) {
+  const handleOpenHelpModal = async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
       setIsDashboardHelpModal(true);
     } else {
-      // MODIFIED: Redirect to landing page if not authenticated, removed { replace: true }
-      navigate('/');
+      navigate('/'); // kick to landing if no verified session
     }
   };
 
