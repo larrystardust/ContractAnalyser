@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   </Button>
                 )}
                 {/* MODIFIED: Search Button for Desktop to include text */}
-                <Button variant="text" size="sm" icon={<Search className="w-5 h-5" />} onClick={handleSearchClick}>
+                <Button variant="outline" size="sm" icon={<Search className="w-5 h-5" />} onClick={handleSearchClick}>
                   {t('search')}
                 </Button>
                 <Button variant="text" size="sm" className="p-1 relative" onClick={handleNotificationsClick}>
