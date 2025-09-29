@@ -9,12 +9,13 @@ interface AuthGuardProps {
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = () => {
-  const { session, isLoading: loadingSession } = useSessionContext();
+  const { session: contextSession, isLoading: loadingSession } = useSessionContext();
   const supabase = useSupabaseClient<Database>();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [verifiedSession, setVerifiedSession] = useState(contextSession);
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -28,11 +29,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // --- Global invalidation when reset starts ---
   useEffect(() => {
     if (isPasswordResetInitiated) {
-      // Broadcast reset state across all tabs
       localStorage.setItem('passwordResetFlowActive', 'true');
       localStorage.setItem('blockModalsDuringReset', 'true');
 
-      // Force sign out globally (all sessions, all browsers)
       supabase.auth.signOut({ scope: 'global' }).finally(() => {
         if (location.pathname !== '/reset-password') {
           setIsRedirecting(true);
@@ -40,12 +39,10 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         }
       });
     } else {
-      // Clean up flags once reset flow ends
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('blockModalsDuringReset');
     }
 
-    // Sync reset status across open tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
         console.log('AuthGuard: Reset flow triggered in another tab → forcing redirect.');
@@ -59,22 +56,37 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
-  // --- HARD lock back/forward buttons + BFCache ---
+  // --- HARD lock back/forward buttons + BFCache + Supabase recheck ---
   useEffect(() => {
-    const handlePopState = () => {
-      if (isPasswordResetInitiated || !session) {
-        console.log('AuthGuard: Prevented back/forward navigation into protected route.');
-        navigate('/reset-password', { replace: true });
+    const recheckSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setVerifiedSession(data.session ?? null);
+
+      // Block navigation if no verified session and not on reset/login
+      if (!data.session) {
+        if (isPasswordResetInitiated) {
+          navigate('/reset-password', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       }
+    };
+
+    const handlePopState = () => {
+      console.log('AuthGuard: popstate detected → forcing session recheck.');
+      recheckSession();
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         console.log('AuthGuard: Page restored from bfcache → forcing reload.');
         window.location.reload();
+      } else {
+        recheckSession();
       }
     };
 
+    recheckSession(); // Run at mount
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('pageshow', handlePageShow);
 
@@ -82,13 +94,13 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate]);
+  }, [isPasswordResetInitiated, supabase, navigate]);
 
-  // --- MFA check ---
+  // --- MFA check (only if session is verified) ---
   useEffect(() => {
     const checkMfaEnrollment = async () => {
       setLoadingMfaStatus(true);
-      if (!session?.user) {
+      if (!verifiedSession?.user) {
         setHasMfaEnrolled(false);
         setLoadingMfaStatus(false);
         return;
@@ -106,7 +118,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       }
     };
     checkMfaEnrollment();
-  }, [session?.user?.id, supabase]);
+  }, [verifiedSession?.user?.id, supabase]);
 
   // --- UI States ---
   if (isRedirecting || loadingSession || loadingMfaStatus) {
@@ -119,7 +131,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- Enforce reset-password lockdown ---
   if (isPasswordResetInitiated) {
-    if (location.pathname === '/reset-password' || location.pathname === '/') {
+    if (location.pathname === '/reset-password') {
       return <Outlet />;
     } else {
       return <Navigate to="/reset-password" replace />;
@@ -127,15 +139,15 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // --- Enforce normal auth rules ---
-  if (!session || !session.user) {
+  if (!verifiedSession || !verifiedSession.user) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
+  if (hasMfaEnrolled && verifiedSession.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
+  if (verifiedSession.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
