@@ -11,7 +11,7 @@ const supabase = createClient(
 // Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
-    'Access-Control-Allow-Origin': '*', // IMPORTANT: Adjust this in production to your frontend domain (e.g., 'https://your-app.netlify.app') for security
+    'Access-Control-Allow-Origin': 'https://www.contractanalyser.com', // MODIFIED: Changed to specific domain
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
     'Content-Type': 'application/json',
