@@ -1375,6 +1375,7 @@
   "email_verified_successfully": "Correo electrónico verificado con éxito.",
   "your_message_sent": "¡Su mensaje ha sido enviado con éxito!",
   "how_long_retained_a": "El período de retención de sus contratos y resultados de análisis depende de su plan. Para compras de un solo uso, los archivos se retienen durante 30 días. Para planes de suscripción activos, los archivos se retienen durante la duración de su suscripción activa más un período de gracia de 30 días.",
+  "message_recaptcha_failed": "La verificación reCAPTCHA falló. Por favor, inténtelo de nuevo.",
   "sending_message": "Enviando mensaje",
   "otp_code": "Código OTP"
 }
