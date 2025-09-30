@@ -24,7 +24,7 @@ const ContactForm: React.FC = () => {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpMessage, setOtpMessage] = useState<string | null>(null);
-  const { t } = useTranslation(); // ADDED
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   // Reset OTP status if email changes
   useEffect(() => {
@@ -61,7 +61,7 @@ const ContactForm: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ email: formData.email, browserLanguage: i18n.language }), // MODIFIED: Pass i18n.language
       });
 
       if (!response.ok) {
@@ -96,7 +96,7 @@ const ContactForm: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: formData.email, otp_code: otpCode }),
+        body: JSON.stringify({ email: formData.email, otp_code: otpCode, browserLanguage: i18n.language }), // MODIFIED: Pass i18n.language
       });
 
       if (!response.ok) {
@@ -145,6 +145,7 @@ const ContactForm: React.FC = () => {
           subject: formData.subject,
           message: formData.message,
           recaptcha_token: recaptchaToken,
+          browserLanguage: i18n.language, // MODIFIED: Pass i18n.language
         }),
       });
 
