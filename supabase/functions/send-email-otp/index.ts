@@ -11,9 +11,19 @@ const supabase = createClient(
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 // Helper for CORS responses
-function corsResponse(body: string | object | null, status = 200) {
+function corsResponse(body: string | object | null, status = 200, origin: string | null = null) {
+  const allowedOrigins = [
+    'https://www.contractanalyser.com',
+    'https://contractanalyser.com'
+  ];
+  
+  let accessControlAllowOrigin = '*'; // Default to wildcard for development/safety if origin is not allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    accessControlAllowOrigin = origin;
+  }
+
   const headers = {
-    'Access-Control-Allow-Origin': 'https://www.contractanalyser.com',
+    'Access-Control-Allow-Origin': accessControlAllowOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
     'Content-Type': 'application/json',
@@ -25,12 +35,14 @@ function corsResponse(body: string | object | null, status = 200) {
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get('Origin'); // Get the origin from the request
+
   if (req.method === 'OPTIONS') {
-    return corsResponse(null, 204);
+    return corsResponse(null, 204, origin); // Pass origin to corsResponse
   }
 
   if (req.method !== 'POST') {
-    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405);
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405, origin); // Pass origin
   }
 
   try {
@@ -39,7 +51,7 @@ Deno.serve(async (req) => {
     const userPreferredLanguage = browserLanguage || 'en';
 
     if (!email) {
-      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400);
+      return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400, origin); // Pass origin
     }
 
     // Generate a 6-digit OTP
@@ -57,7 +69,7 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error storing OTP:', insertError);
-      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to generate OTP.' }) }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to generate OTP.' }) }, 500, origin); // Pass origin
     }
 
     // Send OTP via email using Resend
@@ -76,14 +88,14 @@ Deno.serve(async (req) => {
 
     if (resendError) {
       console.error('Error sending email via Resend:', resendError);
-      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to send OTP email.' }) }, 500);
+      return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to send OTP email.' }) }, 500, origin); // Pass origin
     }
 
     console.log(`OTP sent to ${email}:`, data);
-    return corsResponse({ message: getTranslatedMessage('message_otp_sent_successfully', userPreferredLanguage) });
+    return corsResponse({ message: getTranslatedMessage('message_otp_sent_successfully', userPreferredLanguage) }, 200, origin); // Pass origin
 
   } catch (error: any) {
     console.error('Error in send-email-otp Edge Function:', error);
-    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500, origin); // Pass origin
   }
 });
