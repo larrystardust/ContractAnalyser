@@ -13,7 +13,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 // Helper for CORS responses
 function corsResponse(body: string | object | null, status = 200) {
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://www.contractanalyser.com',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
     'Content-Type': 'application/json',
@@ -34,30 +34,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, browserLanguage } = await req.json(); // MODIFIED: Accept browserLanguage
-    let userPreferredLanguage = browserLanguage || 'en'; // MODIFIED: Prioritize browserLanguage if available
-
-    // Attempt to fetch user's language preference if profile exists
-    const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: email, page: 1, perPage: 1 });
-    let userId = null;
-    if (!authUserError && authUser.users.length > 0) {
-      userId = authUser.users[0].id;
-    }
-
-    if (userId) {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('language_preference')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profileError) {
-        console.warn('Error fetching profile for language preference in send-email-otp:', profileError);
-      } else if (profileData?.language_preference) {
-        userPreferredLanguage = profileData.language_preference; // Use profile preference if found
-      }
-    }
-    // END MODIFIED
+    const { email, browserLanguage } = await req.json();
+    // Prioritize browserLanguage directly for unauthenticated OTP flow
+    const userPreferredLanguage = browserLanguage || 'en';
 
     if (!email) {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400);
