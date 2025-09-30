@@ -1379,5 +1379,7 @@
   "password_reset_cooldown_message": "Pour des raisons de sécurité, vous ne pouvez faire cette demande qu'après {{seconds}} secondes.",
   "otp_sent_to_email": "OTP envoyé à votre adresse e-mail.",
   "enter_otp": "Saisissez l'OTP",
-  "verify_otp": "Vérifier l'OTP"
+  "verify_otp": "Vérifier l'OTP",
+  "email_verified_successfully": "E-mail vérifié avec succès.",
+  "your_message_sent": "Votre message a été envoyé avec succès !"
 }
