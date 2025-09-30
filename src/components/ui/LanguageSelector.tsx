@@ -12,6 +12,7 @@ const LanguageSelector: React.FC = () => {
     } else {
       document.documentElement.setAttribute('dir', 'ltr');
     }
+    window.location.reload(); // ADDED: Force a full page reload
   };
 
   return (
