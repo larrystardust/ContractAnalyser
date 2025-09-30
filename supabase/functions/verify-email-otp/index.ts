@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, otp_code } = await req.json();
-    let userPreferredLanguage = 'en'; // Default to English
+    const { email, otp_code, browserLanguage } = await req.json(); // MODIFIED: Accept browserLanguage
+    let userPreferredLanguage = browserLanguage || 'en'; // MODIFIED: Prioritize browserLanguage if available
 
     // ADDED: Attempt to fetch user's language preference if profile exists
     const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: email, page: 1, perPage: 1 });
@@ -51,10 +51,10 @@ Deno.serve(async (req) => {
       if (profileError) {
         console.warn('Error fetching profile for language preference in verify-email-otp:', profileError);
       } else if (profileData?.language_preference) {
-        userPreferredLanguage = profileData.language_preference;
+        userPreferredLanguage = profileData.language_preference; // Use profile preference if found
       }
     }
-    // END ADDED
+    // END MODIFIED
 
     if (!email || !otp_code) {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400);
