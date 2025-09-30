@@ -1,13 +1,29 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
+import { useTranslation } from 'react-i18next';
 
 export function useStripe() {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const session = useSession();
-  const { i18n } = useTranslation(); // ADDED: Get i18n instance for current language
+  const { i18n } = useTranslation();
+
+  // ADDED: List of Stripe-supported locales
+  const stripeSupportedLocales = [
+    'auto', 'bg', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es', 'es-419', 'et', 'fi', 'fil', 'fr', 'fr-CA', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'lt', 'lv', 'ms', 'mt', 'nb', 'nl', 'pl', 'pt', 'pt-BR', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'vi', 'zh', 'zh-HK', 'zh-TW'
+  ];
+
+  // ADDED: Helper function to get the effective locale for Stripe
+  const getStripeLocale = useCallback(() => {
+    const currentLang = i18n.language;
+    if (stripeSupportedLocales.includes(currentLang)) {
+      return currentLang;
+    }
+    // Fallback to English if the current language is not supported by Stripe
+    return 'en';
+  }, [i18n.language]);
+
 
   const createCheckoutSession = useCallback(
     async (priceId: string, mode: 'subscription' | 'payment') => {
@@ -33,7 +49,7 @@ export function useStripe() {
             success_url: `${window.location.origin}/checkout/success`,
             cancel_url: `${window.location.origin}/checkout/cancel`,
             mode: mode,
-            locale: i18n.language, // ADDED: Pass current language
+            locale: getStripeLocale(), // MODIFIED: Use getStripeLocale()
           }),
         });
 
@@ -55,7 +71,7 @@ export function useStripe() {
         // e.g., using a toast notification
       }
     },
-    [supabase, navigate, i18n.language] // MODIFIED: Add i18n.language to dependencies
+    [supabase, navigate, getStripeLocale] // MODIFIED: Add getStripeLocale to dependencies
   );
 
   const createCustomerPortalSession = useCallback(async () => {
@@ -72,7 +88,7 @@ export function useStripe() {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          locale: i18n.language, // ADDED: Pass current language
+          locale: getStripeLocale(), // MODIFIED: Use getStripeLocale()
         }),
       });
 
@@ -91,7 +107,7 @@ export function useStripe() {
       console.error('Error creating customer portal session:', error);
       alert(`Failed to open billing portal: ${error.message}`);
     }
-  }, [supabase, session, navigate, i18n.language]); // MODIFIED: Add i18n.language to dependencies
+  }, [supabase, session, navigate, getStripeLocale]); // MODIFIED: Add getStripeLocale to dependencies
 
 
   return { createCheckoutSession, createCustomerPortalSession };
