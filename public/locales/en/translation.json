@@ -1382,5 +1382,6 @@
   "email_verified_successfully": "Email verified successfully.",
   "your_message_sent": "Your message has been sent successfully!",
   "how_long_retained_a": "The retention period for your contracts and analysis results depends on your plan. For single-use purchases, files are retained for 30 days. For active subscription plans, files are retained for the duration of your active subscription plus a 30-day grace period.",
+  "sending_message": "Sending message",
   "otp_code": "OTP Code"
 }
