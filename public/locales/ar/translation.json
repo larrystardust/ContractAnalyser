@@ -1373,5 +1373,7 @@
   "password_reset_cooldown_message": "لأسباب أمنية، يمكنك طلب ذلك فقط بعد {{seconds}} ثانية.",
   "otp_sent_to_email": "تم إرسال رمز التحقق (OTP) إلى بريدك الإلكتروني.",
   "enter_otp": "أدخل رمز التحقق (OTP)", 
-  "verify_otp": "تحقق من رمز التحقق (OTP)"
+  "verify_otp": "تحقق من رمز التحقق (OTP)",
+  "email_verified_successfully": "تم التحقق من البريد الإلكتروني بنجاح.",
+  "your_message_sent": "تم إرسال رسالتك بنجاح!"
 }
