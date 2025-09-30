@@ -32,9 +32,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { first_name, last_name, email, subject, message, recaptcha_token } = await req.json();
+    const { first_name, last_name, email, subject, message, recaptcha_token, browserLanguage } = await req.json(); // MODIFIED: Accept browserLanguage
     // For unauthenticated flows, we default to English as we don't have user's preference
-    const userPreferredLanguage = 'en'; // ADDED: Default to English for unauthenticated flow
+    const userPreferredLanguage = browserLanguage || 'en'; // MODIFIED: Prioritize browserLanguage if available
 
     if (!first_name || !last_name || !email || !subject || !message || !recaptcha_token) {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', userPreferredLanguage) }, 400);
