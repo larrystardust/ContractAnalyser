@@ -1383,6 +1383,7 @@
   "email_verified_successfully": "E-mail vérifié avec succès.",
   "your_message_sent": "Votre message a été envoyé avec succès !",
   "how_long_retained_a": "La période de rétention de vos contrats et résultats d'analyse dépend de votre plan. Pour les achats à usage unique, les fichiers sont conservés pendant 30 jours. Pour les plans d'abonnement actifs, les fichiers sont conservés pendant la durée de votre abonnement actif plus une période de grâce de 30 jours.",
+  "message_recaptcha_failed": "La vérification reCAPTCHA a échoué. Veuillez réessayer.",
   "sending_message": "Envoi du message",
   "otp_code": "Code OTP"
 }
