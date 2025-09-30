@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
@@ -43,37 +44,37 @@ function corsResponse(body: string | object | null, status = 200, origin: string
 }
 
 Deno.serve(async (req) => {
+  let userPreferredLanguage = 'en'; // Default language
+
   try {
     if (req.method === 'OPTIONS') {
       return corsResponse({}, 204);
     }
 
     if (req.method !== 'POST') {
-      return corsResponse({ error: 'Method not allowed' }, 405);
+      return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', userPreferredLanguage) }, 405); // MODIFIED
     }
 
-    let requestBody: { target_user_id?: string, locale?: string } = {}; // MODIFIED: Added locale to requestBody type
+    let requestBody: { target_user_id?: string, locale?: string } = {};
     try {
-      // Attempt to parse JSON body
       requestBody = await req.json();
     } catch (e) {
-      // If parsing fails (e.g., empty body), log and proceed with empty object
       console.warn('Could not parse request body as JSON, assuming empty body for target_user_id:', e);
-      // requestBody remains {}
     }
 
-    const { target_user_id, locale } = requestBody; // MODIFIED: Destructure locale
+    const { target_user_id, locale } = requestBody;
+    userPreferredLanguage = locale || 'en'; // MODIFIED: Set userPreferredLanguage from locale
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return corsResponse({ error: 'Authorization header missing' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_authorization_header_missing', userPreferredLanguage) }, 401); // MODIFIED
     }
     const token = authHeader.replace('Bearer ', '');
 
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     if (getUserError || !user) {
-      return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
+      return corsResponse({ error: getTranslatedMessage('message_unauthorized_invalid_token', userPreferredLanguage) }, 401); // MODIFIED
     }
 
     let userIdToManage = user.id;
@@ -87,7 +88,7 @@ Deno.serve(async (req) => {
         .single();
 
       if (adminProfileError || !adminProfile?.is_admin) {
-        return corsResponse({ error: 'Forbidden: Only administrators can manage other users\' billing.' }, 403);
+        return corsResponse({ error: getTranslatedMessage('message_forbidden_admin_only_billing', userPreferredLanguage) }, 403); // MODIFIED
       }
       userIdToManage = target_user_id;
     }
@@ -101,7 +102,7 @@ Deno.serve(async (req) => {
 
     if (customerError || !customerData?.customer_id) {
       console.error(`User ${userIdToManage} has no Stripe customer ID or error fetching:`, customerError);
-      return corsResponse({ error: 'No associated Stripe customer found for this user.' }, 404);
+      return corsResponse({ error: getTranslatedMessage('message_no_stripe_customer_found', userPreferredLanguage) }, 404); // MODIFIED
     }
 
     const customerId = customerData.customer_id;
@@ -118,6 +119,6 @@ const portalSession = await stripe.billingPortal.sessions.create({
 
   } catch (error: any) {
     console.error(`Error creating customer portal session: ${error.message}`);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: error.message }) }, 500); // MODIFIED
   }
 });
