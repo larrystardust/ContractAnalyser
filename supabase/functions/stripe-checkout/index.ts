@@ -12,9 +12,20 @@ const stripe = new Stripe(stripeSecret, {
   },
 });
 
-function corsResponse(body: string | object | null, status = 200) {
+// Helper for CORS responses
+function corsResponse(body: string | object | null, status = 200, origin: string | null = null) {
+  const allowedOrigins = [
+    'https://www.contractanalyser.com',
+    'https://contractanalyser.com'
+  ];
+  
+  let accessControlAllowOrigin = '*'; // Default to wildcard for development/safety if origin is not allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    accessControlAllowOrigin = origin;
+  }
+
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': accessControlAllowOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
   };
