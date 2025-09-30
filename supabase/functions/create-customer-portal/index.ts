@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    let requestBody: { target_user_id?: string } = {};
+    let requestBody: { target_user_id?: string, locale?: string } = {}; // MODIFIED: Added locale to requestBody type
     try {
       // Attempt to parse JSON body
       requestBody = await req.json();
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       // requestBody remains {}
     }
 
-    const { target_user_id } = requestBody; // Now target_user_id will be undefined if body was empty or invalid
+    const { target_user_id, locale } = requestBody; // MODIFIED: Destructure locale
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -106,11 +106,12 @@ Deno.serve(async (req) => {
 
     const customerId = customerData.customer_id;
     
-console.log(`create-customer-portal: Constructing return_url: ${req.headers.get('Origin')}/settings/billing`); // ADDED LOG
+console.log(`create-customer-portal: Constructing return_url: ${req.headers.get('Origin')}/settings/billing`);
 // Create a Stripe Customer Portal session
 const portalSession = await stripe.billingPortal.sessions.create({
   customer: customerId,
   return_url: `${req.headers.get('Origin')}/settings/billing`, // Redirect back to billing settings
+  locale: locale, // ADDED: Pass locale to Stripe Customer Portal
 });
 
     return corsResponse({ url: portalSession.url });
