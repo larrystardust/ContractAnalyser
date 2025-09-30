@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    const { price_id, success_url, cancel_url, mode } = await req.json();
+    const { price_id, success_url, cancel_url, mode, locale } = await req.json(); // MODIFIED: Added locale
 
     const error = validateParameters(
       { price_id, success_url, cancel_url, mode },
@@ -209,6 +209,7 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
+      locale: locale, // ADDED: Pass locale to Stripe Checkout
       // ADDED: Pass credits as metadata for one-time payments
       metadata: mode === 'payment' && credits !== null ? { credits: credits.toString() } : undefined,
     });
