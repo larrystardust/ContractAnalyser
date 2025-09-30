@@ -68,10 +68,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   };
 
   const handleDashboardSwitch = () => {
+    // MODIFIED: Invert the navigation logic to correctly switch dashboards
     if (location.pathname.startsWith('/admin')) {
-      navigate('/admin');
+      navigate('/dashboard'); // If currently on an admin page, go to user dashboard
     } else {
-      navigate('/dashboard');
+      navigate('/admin'); // If currently on a user page, go to admin dashboard
     }
   };
 
