@@ -118,7 +118,14 @@ const MfaChallengePage: React.FC = () => {
 
     } catch (err: any) {
       console.error('MFA verification error:', err);
-      setError(err.message || t('invalid_2fa_code')); // MODIFIED
+      let errorMessage = err.message;
+      // MODIFIED: Explicitly check for the specific untranslated string
+      if (errorMessage === "Invalid TOTP code entered") {
+        errorMessage = t('invalid_2fa_code');
+      } else {
+        errorMessage = errorMessage || t('invalid_2fa_code'); // Fallback if err.message is something else or null
+      }
+      setError(errorMessage); // MODIFIED
     } finally {
       setLoading(false);
     }
