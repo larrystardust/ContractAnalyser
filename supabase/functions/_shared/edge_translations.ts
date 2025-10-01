@@ -125,6 +125,9 @@ export const edgeTranslations = {
     "product_name_admin_free_enterprise": "Enterprise Use (Admin Free)",
     "previous_plan": "Previous Plan",
 
+    // ADDED: Admin grant credit key
+    "credit_granted_message": "An administrator has granted you 5 analysis credits for {productName}.",
+
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `Your one-time payment for ${productName} has been processed successfully.`,
     subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`,
