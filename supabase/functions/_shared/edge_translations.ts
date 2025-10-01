@@ -125,13 +125,16 @@ export const edgeTranslations = {
     "product_name_admin_free_enterprise": "Enterprise Use (Admin Free)",
     "previous_plan": "Previous Plan",
 
+    // ADDED: Notification admin credit
+    "credit_granted_message": "An administrator has granted you 5 analysis credits for {{productName}}.",
+
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `Your one-time payment for ${productName} has been processed successfully.`,
     subscription_plan_changed_message: ({ oldPlan, newPlan }: { oldPlan: string; newPlan: string }) => `Your subscription plan has changed from ${oldPlan} to ${newPlan}.`,
     subscription_active_message: ({ productName }: { productName: string }) => `Your ${productName} subscription is now active.`,
     subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`,
     subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`,
-    credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you 5 analysis credits for ${productName}.`,
+    credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you a single-use credit for ${productName}.`,
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Subscription Removed",
