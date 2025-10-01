@@ -93,7 +93,7 @@ const NotificationsPage: React.FC = () => {
                     </span>
                   </div>
                   <p className={`text-sm mt-1 ${notification.is_read ? 'text-gray-500' : 'text-gray-700'}`}>
-                    {t(notification.message)} {/* MODIFIED: Added t() */}
+                    {notification.message} {/* MODIFIED: Removed t() */}
                   </p>
                   <div className="mt-3 flex space-x-2">
                     {!notification.is_read && (
