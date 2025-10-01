@@ -52,7 +52,7 @@ const ApplicationPreferences: React.FC = () => {
 
       if (i18n.language !== dbLanguage) {
         console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
-        i18n.changeLanguage(dbLanguage);
+        i18n.changeLanguage(dbLanguage); // This updates i18n instance and localStorage, and sets dir attribute
       } else {
         console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
       }
@@ -76,6 +76,18 @@ const ApplicationPreferences: React.FC = () => {
   useEffect(() => {
     fetchPreferences();
   }, [fetchPreferences]);
+
+  // ADDED: New useEffect to force reload if language changes after initial render
+  useEffect(() => {
+    // This effect runs after fetchPreferences has potentially updated i18n.language
+    // Compare the current i18n language with the 'lang' attribute of the HTML document
+    // which reflects the language the page was initially loaded with.
+    const htmlLang = document.documentElement.getAttribute('lang');
+    if (htmlLang && htmlLang !== i18n.language) {
+      console.log(`AP: Detected language mismatch (HTML: ${htmlLang}, i18n: ${i18n.language}). Forcing reload.`);
+      window.location.reload();
+    }
+  }, [i18n.language]); // Depend on i18n.language to trigger when it changes
 
   // ADDED: handleJurisdictionToggle function
   const handleJurisdictionToggle = (jurisdiction: Jurisdiction) => {
