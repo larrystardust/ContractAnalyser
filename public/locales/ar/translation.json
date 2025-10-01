@@ -1095,7 +1095,7 @@
   "subscription_active_message": "اشتراكك في {{productName}} نشط الآن.",
   "subscription_alert_message": "حالة اشتراكك في {{productName}} هي الآن {{status}}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.",
   "subscription_canceled_at_period_end_message": "تم إلغاء اشتراكك في {{productName}} وسينتهي في {{endDate}}.",
-  "credit_granted_message": "لقد منحك المسؤول رصيدًا لمرة واحدة لـ {{productName}}.",
+  "credit_granted_message": "لقد منحك المسؤول 5 أرصدة تحليل لـ {{productName}}.",
 
   "Data Transfer Risk": "مخاطر نقل البيانات",
   "Ambiguous Termination Clause": "بند إنهاء غامض",
