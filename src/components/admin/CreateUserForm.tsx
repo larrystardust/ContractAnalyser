@@ -193,7 +193,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, al
         role: selectedRole, // ADDED: Pass selectedRole
         send_invitation_email: formData.send_invitation_email,
         initial_password: formData.password,
-        // REMOVED: adminLanguage: i18n.language, // Removed this line
+        adminLanguage: i18n.language, // MODIFIED: Re-added this line
       });
 
       if (grantSingleUseCredit) {
