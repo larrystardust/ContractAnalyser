@@ -118,8 +118,10 @@ const ApplicationPreferences: React.FC = () => {
     setError(null);
     setMessage(null);
     try {
+      const languageChanged = i18n.language !== selectedLanguage; // Check if language actually changed
+
       console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
-      i18n.changeLanguage(selectedLanguage);
+      i18n.changeLanguage(selectedLanguage); // This updates the i18n instance and localStorage
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -130,7 +132,7 @@ const ApplicationPreferences: React.FC = () => {
             theme_preference: selectedTheme,
             email_reports_enabled: emailReportsEnabled,
             auto_start_analysis_enabled: autoStartAnalysisEnabled,
-            default_jurisdictions: selectedDefaultJurisdictions, // ADDED: Save default jurisdictions
+            default_jurisdictions: selectedDefaultJurisdictions,
           },
           { onConflict: 'id' }
         );
@@ -143,6 +145,10 @@ const ApplicationPreferences: React.FC = () => {
       console.log("AP: Language preference saved successfully.");
 
       await fetchPreferences(); // Call fetchPreferences to re-sync state with DB
+
+      if (languageChanged) { // Only reload if the language preference was actually changed
+        window.location.reload();
+      }
 
     } catch (err: any) {
       console.error('Error saving notification preferences:', err);
