@@ -1100,7 +1100,7 @@
   "subscription_active_message": "Your {{productName}} subscription is now active.",
   "subscription_alert_message": "Your {{productName}} subscription status is now {{status}}. Please check your billing details.",
   "subscription_canceled_at_period_end_message": "Your {{productName}} subscription has been cancelled and will end on {{endDate}}.",
-  "credit_granted_message": "An administrator has granted you a single-use credit for {{productName}}.",
+  "credit_granted_message": "An administrator has granted you 5 analysis credits for {{productName}}.",
 
   "Data Transfer Risk": "Data Transfer Risk",
   "Ambiguous Termination Clause": "Ambiguous Termination Clause",
