@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
         is_admin: is_admin, // ADDED: Persist is_admin
         default_jurisdictions: default_jurisdictions, // ADDED: Persist default_jurisdictions
         theme_preference: defaultTheme,
-        language_preference: adminLanguage,
+        language_preference: null, // MODIFIED: Set language_preference to null
       });
 
     if (insertProfileError) {
