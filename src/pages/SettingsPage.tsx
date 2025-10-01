@@ -72,7 +72,7 @@ const SettingsPage: React.FC = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={item.href === '/settings/preferences' ? () => window.location.reload() : undefined} // ADDED: Force reload for preferences
+                    // REMOVED: onClick={item.href === '/settings/preferences' ? () => window.location.reload() : undefined}
                     className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                       ${isActiveRoute(item.href)
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
