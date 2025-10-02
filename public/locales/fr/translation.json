@@ -1036,6 +1036,8 @@
   "member_role": "Membre",
   "owner_role": "Propriétaire",
   "owner_only_upgrade_enterprise_button": "Propriétaire seulement",
+  "invited_members_cannot_purchase_yearly": "Les membres invités ne peuvent pas acheter annuellement",
+  "invited_members_cannot_purchase_yearly_message": "Les membres invités ne peuvent pas acheter de forfaits annuels. Veuillez contacter le propriétaire de l'abonnement pour gérer les forfaits annuels.",
 
   "unsupported_file_type_alert": "Type de fichier non pris en charge. Veuillez télécharger un fichier PDF, DOCX ou DOC.",
   "unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte.",
