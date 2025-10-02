@@ -1029,6 +1029,7 @@
   "not_started_status": "لم يبدأ",
   "member_role": "عضو",
   "owner_role": "مالك",
+  "owner_only_upgrade_enterprise_button": "المالك فقط",
 
   "unsupported_file_type_alert": "نوع الملف غير مدعوم. يرجى تحميل ملف PDF أو DOCX أو DOC.",
   "unsupported_file_type_for_text_extraction": "نوع الملف غير مدعوم لاستخراج النص.",
