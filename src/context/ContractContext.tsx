@@ -17,7 +17,7 @@ interface ContractContextType {
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
 
-export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loadingContracts, setLoadingContracts] = useState(true);
   const [errorContracts, setErrorContracts] = useState<Error | null>(null);
@@ -192,7 +192,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         console.error('Error invoking Edge Function:', edgeFunctionError);
         await supabase.from('contracts').update({ status: 'failed' }).eq('id', data.id);
       } else {
-        console.log('Edge Function invoked successfully:', edgeFunctionData);
+        // console.log('Edge Function invoked successfully:', edgeFunctionData); // REMOVED
         // ADDED: Update the contract with the translated name received from the Edge Function
         if (edgeFunctionData?.translated_contract_name) {
           await supabase.from('contracts').update({ translated_name: edgeFunctionData.translated_contract_name }).eq('id', data.id);
@@ -254,8 +254,9 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (storageError) {
           console.error('Error deleting original contract file from storage:', storageError);
+          // Don't throw, try to delete the DB record anyway
         } else {
-          console.log(`Successfully deleted original contract file: ${filePath}`);
+          // console.log(`Successfully deleted original contract file: ${filePath}`); // REMOVED
         }
       }
 
@@ -268,7 +269,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (reportStorageError) {
           console.error('Error deleting report file from storage:', reportStorageError);
         } else {
-          console.log(`Successfully deleted report file: ${reportFilePath}`);
+          // console.log(`Successfully deleted report file: ${reportFilePath}`); // REMOVED
         }
       }
 
@@ -285,7 +286,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
 
       setContracts(prevContracts => prevContracts.filter(contract => contract.id !== contractId));
-      console.log(`Contract ${contractId} and its associated files deleted successfully.`);
+      // console.log(`Contract ${contractId} and its associated files deleted successfully.`); // REMOVED
     } catch (error: any) {
       console.error('Error deleting contract:', error);
       setErrorContracts(error);
@@ -329,7 +330,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
             userFacingMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
             try {
               const errorBody = await error.context.json();
-              console.log('ContractContext: Parsed 403 error body for logging:', errorBody);
+              // console.log('ContractContext: Parsed 403 error body for logging:', errorBody); // REMOVED
             } catch (parseError) {
               console.warn('ContractContext: Could not parse 403 error response body for logging:', parseError);
             }
@@ -338,7 +339,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
             userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.';
             try {
               const errorBody = await error.context.json();
-              console.log('ContractContext: Parsed non-403 FunctionsHttpError body for logging:', errorBody);
+              // console.log('ContractContext: Parsed non-403 FunctionsHttpError body for logging:', errorBody); // REMOVED
             } catch (parseError) {
               console.warn('ContractContext: Could not parse non-403 FunctionsHttpError response body for logging:', parseError);
             }
@@ -354,7 +355,7 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         throw new Error(userFacingMessage);
       }
 
-      console.log('Re-analysis initiated:', data);
+      // console.log('Re-analysis initiated:', data); // REMOVED
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
       setContracts(prevContracts =>
