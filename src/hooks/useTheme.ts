@@ -1,3 +1,4 @@
+// src/hooks/useTheme.ts
 import { useEffect, useRef } from 'react'; // Import useRef
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
@@ -85,12 +86,9 @@ export function useTheme() {
             filter: `id=eq.${session.user.id}`, // Listen only for changes to the current user's profile
           },
           (payload) => {
-            // Check if the theme_preference column was updated in the payload
-            if (payload.new.theme_preference !== payload.old.theme_preference) {
-              console.log('Realtime update detected for theme_preference:', payload.new.theme_preference);
-              // Immediately apply the new theme from the real-time payload and save to localStorage
-              applyThemeToHtmlAndSave(payload.new.theme_preference as 'light' | 'dark' | 'system');
-            }
+            // console.log('Realtime update detected for theme_preference:', payload.new.theme_preference); // REMOVED
+            // Immediately apply the new theme from the real-time payload and save to localStorage
+            applyThemeToHtmlAndSave(payload.new.theme_preference as 'light' | 'dark' | 'system');
           }
         )
         .subscribe();
