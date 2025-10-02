@@ -1030,6 +1030,8 @@
   "member_role": "عضو",
   "owner_role": "مالك",
   "owner_only_upgrade_enterprise_button": "المالك فقط",
+  "invited_members_cannot_purchase_yearly": "لا يمكن للأعضاء المدعوين الشراء سنويًا",
+  "invited_members_cannot_purchase_yearly_message": "لا يمكن للأعضاء المدعوين شراء الخطط السنوية. يرجى الاتصال بمالك الاشتراك لإدارة الخطط السنوية.",
 
   "unsupported_file_type_alert": "نوع الملف غير مدعوم. يرجى تحميل ملف PDF أو DOCX أو DOC.",
   "unsupported_file_type_for_text_extraction": "نوع الملف غير مدعوم لاستخراج النص.",
