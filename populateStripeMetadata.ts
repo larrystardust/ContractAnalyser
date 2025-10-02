@@ -15,7 +15,7 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 async function populateStripeProductMetadata() {
-  console.log('Starting population of stripe_product_metadata table...');
+  // console.log('Starting population of stripe_product_metadata table...'); // REMOVED
 
   for (const product of stripeProducts) {
     const productData = [];
@@ -58,12 +58,12 @@ async function populateStripeProductMetadata() {
       if (error) {
         console.error(`Error upserting data for price_id ${data.price_id}:`, error.message);
       } else {
-        console.log(`Successfully upserted data for price_id: ${data.price_id}`);
+        // console.log(`Successfully upserted data for price_id: ${data.price_id}`); // REMOVED
       }
     }
   }
 
-  console.log('Population process completed.');
+  // console.log('Population process completed.'); // REMOVED
 }
 
 populateStripeProductMetadata().catch(console.error);
