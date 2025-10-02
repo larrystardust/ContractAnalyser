@@ -16,6 +16,9 @@ const stripe = new Stripe(stripeSecret, {
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+// REMOVED: Local translations object
+// REMOVED: Local getTranslatedMessage function
+
 Deno.serve(async (req) => {
   try {
     if (req.method === 'OPTIONS') {
@@ -117,7 +120,7 @@ async function handleEvent(event: Stripe.Event) {
         } = fullSession;
 
         const priceId = line_items?.data?.[0]?.price?.id || null;
-        console.log('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.');
+        console.log('Stripe Webhook: Extracted priceId:', priceId);
 
         if (!priceId) {
           console.error('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.');
@@ -168,15 +171,13 @@ async function handleEvent(event: Stripe.Event) {
     }
   } else if (event.type.startsWith('customer.subscription.')) {
     console.info(`Processing subscription event ${event.type} for customer: ${customerId}`);
-    // MODIFIED: Pass event.type to syncCustomerFromStripe
-    await syncCustomerFromStripe(customerId, userId, userPreferredLanguage, event.type);
+    await syncCustomerFromStripe(customerId, userId, userPreferredLanguage);
   } else {
     console.log(`Unhandled event type: ${event.type}`);
   }
 }
 
-// MODIFIED: Added eventType parameter
-async function syncCustomerFromStripe(customerId: string, userId: string | null, userPreferredLanguage: string, eventType: string) {
+async function syncCustomerFromStripe(customerId: string, userId: string | null, userPreferredLanguage: string) {
   try {
     // 1. Fetch the current state of the subscription from our DB *before* any updates
     const { data: oldSubscriptionDb, error: oldSubError } = await supabase
@@ -388,17 +389,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
     // Only send notification if there was a meaningful change in status or price
     if (oldStatus !== newStatus || oldPriceId !== newPriceId) {
         if (newStatus === 'active' || newStatus === 'trialing') {
-            // MODIFIED: Add condition to check eventType for 'customer.subscription.created'
-            if (eventType === 'customer.subscription.created' && oldStatus !== 'active' && oldStatus !== 'trialing') {
-                // This is the initial activation notification
-                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, { productName: translatedProductName });
-                await insertNotification(
-                    userId,
-                    'notification_title_subscription_active',
-                    notificationMessage,
-                    'success'
-                );
-            } else if (oldPriceId !== newPriceId) {
+            if (oldPriceId !== newPriceId) {
                 // This is a plan change (upgrade/downgrade)
                 const notificationMessage = getTranslatedMessage('subscription_plan_changed_message', userPreferredLanguage, { oldPlan: translatedOldProductName, newPlan: translatedProductName });
                 await insertNotification(
@@ -406,6 +397,15 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
                     'notification_title_subscription_plan_changed',
                     notificationMessage,
                     'info'
+                );
+            } else if (oldStatus !== 'active' && oldStatus !== 'trialing') {
+                // Status changed to active (e.g., from canceled, past_due, not_started)
+                const notificationMessage = getTranslatedMessage('subscription_active_message', userPreferredLanguage, { productName: translatedProductName });
+                await insertNotification(
+                    userId,
+                    'notification_title_subscription_active',
+                    notificationMessage,
+                    'success'
                 );
             }
         } else if (newStatus === 'canceled' || newStatus === 'unpaid' || newStatus === 'past_due') {
