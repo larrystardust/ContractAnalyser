@@ -64,9 +64,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
       shouldBeDisabled = true;
     } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
       shouldBeDisabled = true;
-    } else if (isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Check for member or invited status
+    } else if (isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       shouldBeDisabled = true;
-    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Check for member or invited status
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
+      shouldBeDisabled = true;
+    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED
       shouldBeDisabled = true;
     }
   }
@@ -77,14 +79,16 @@ const PricingCard: React.FC<PricingCardProps> = ({
   } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
     buttonText = t('zero_payment');
   } else if (isDowngradeOption) {
-    buttonText = t('downgrade_button'); // MODIFIED: New key for downgrade button
-    if (userMembership?.role === 'member' || userMembership?.status === 'invited') { // MODIFIED: Check for member or invited status
-      buttonText = t('owner_only_button'); // MODIFIED: New key for owner only button
+    buttonText = t('downgrade_button');
+    if (userMembership?.role === 'member' || userMembership?.status === 'invited') {
+      buttonText = t('owner_only_button');
     }
-  } else if (product.name === 'product_name_enterprise_use') { // MODIFIED: Use translation key
-    buttonText = (userMembership?.role === 'member' || userMembership?.status === 'invited') ? t('owner_only_upgrade_enterprise_button') : t('upgrade_button'); // MODIFIED: New key for upgrade button
+  } else if (product.name === 'product_name_enterprise_use') {
+    buttonText = (userMembership?.role === 'member' || userMembership?.status === 'invited') ? t('owner_only_upgrade_enterprise_button') : t('upgrade_button');
+  } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED
+    buttonText = t('invited_members_cannot_purchase_yearly'); // MODIFIED
   } else {
-    buttonText = t('purchase_button'); // MODIFIED: New key for purchase button
+    buttonText = t('purchase_button');
   }
 
   const handlePurchase = () => {
@@ -100,8 +104,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
     // If it's a downgrade option, direct to customer portal
     if (isDowngradeOption) {
       createCustomerPortalSession();
-    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // MODIFIED: Use translation key and check for member/invited status
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       // 🚫 Block member from purchasing Enterprise Use
+      return;
+    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: Block invited members from purchasing yearly
       return;
     } else if (product.mode === 'payment') {
       createCheckoutSession(currentPricingOption.priceId, 'payment');
@@ -112,8 +118,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
-      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t(product.name)}</h3> {/* MODIFIED: Translate product name */}
-      <p className="text-gray-600 mb-6">{t(product.description)}</p> {/* MODIFIED: Translate product description */}
+      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t(product.name)}</h3>
+      <p className="text-gray-600 mb-6">{t(product.description)}</p>
       
       <div className="mb-6">
         <span className="text-4xl font-extrabold text-gray-900">
@@ -121,13 +127,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
         </span>
         {currentPricingOption.interval === 'month' && <span className="text-gray-600">/{t('month')}</span>}
         {currentPricingOption.interval === 'year' && <span className="text-gray-600">/{t('year')}</span>}
-        {/* MODIFIED: Display "credits" for one-time payment */}
         {currentPricingOption.interval === 'one_time' && product.credits && <span className="text-gray-600"> {t('for_credits', { count: product.credits })}</span>}
       </div>
 
       {product.fileRetentionPolicy && (
         <p className="text-sm text-gray-500 mb-6">
-          <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)} {/* MODIFIED: Translate file retention policy */}
+          <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)}
           {product.maxFiles && (
             <>
               <br />
@@ -156,14 +161,19 @@ const PricingCard: React.FC<PricingCardProps> = ({
           {t('no_payment_needed_admin_assigned')}
         </p>
       )}
-      {isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // MODIFIED: Check for member or invited status
+      {isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           {t('only_owner_manage_downgrades')}
         </p>
       )}
-      {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // MODIFIED: Use translation key and check for member/invited status
+      {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           {t('only_owner_upgrade_enterprise')}
+        </p>
+      )}
+      {billingPeriod === 'yearly' && userMembership?.status === 'invited' && ( // MODIFIED
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          {t('invited_members_cannot_purchase_yearly_message')}
         </p>
       )}
     </div>
