@@ -1048,7 +1048,7 @@
   "checking_credits_subscription_status": "Checking available credits and subscription status...",
   "file_storage_limit_reached_message": "You have reached your file storage limit of {{maxFiles}} files. To add more files, please delete old files from your ",
   "contracts_page": "Contracts page",
-  "no_single_use_credit_or_subscription_message": "You do not have an available single-use credit or a subscription plan. Please purchase one from the ",
+  "no_single_use_credit_or_subscription_message": "You do not have an available single-user credit or a subscription plan. Please purchase one from the ",
   "pricing_page": "Pricing page",
   "to_start_uploading_analyzing_contracts": " to start uploading and analyzing contracts",
   "important_data_retention_policy": "Important Data Retention Policy",
@@ -1331,7 +1331,7 @@
   "single_use_credits_available": "Single-Use Credits Available",
   "credits_remaining_message": "You have {{count}} analysis credits remaining.",
   "no_active_plan": "No Active Plan",
-  "no_active_plan_message": "You do not have an available single-use credit or a subscription plan. Please purchase one from the ",
+  "no_active_plan_message": "You do not have an available single-user credit or a subscription plan. Please purchase one from the ",
   "cannot_upload_no_credits_or_subscription": "Cannot upload: No active subscription or available single-use credits.",
   "processing_authentication": "Processing authentication...",
 
