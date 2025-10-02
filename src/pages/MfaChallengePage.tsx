@@ -98,7 +98,7 @@ const MfaChallengePage: React.FC = () => {
       if (refreshError) {
         console.error('MfaChallengePage: Error refreshing session after MFA verification:', refreshError);
       } else {
-        console.log('MfaChallengePage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal);
+        // console.log('MfaChallengePage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal); // REMOVED
       }
 
       // Now, explicitly get the session again to ensure we have the latest state
@@ -106,7 +106,7 @@ const MfaChallengePage: React.FC = () => {
       if (getSessionError) {
         console.error('MfaChallengePage: Error getting session after refresh:', getSessionError);
       } else {
-        console.log('MfaChallengePage: Current session AAL after refresh and getSession:', currentSessionAfterRefresh?.aal);
+        // console.log('MfaChallengePage: Current session AAL after refresh and getSession:', currentSessionAfterRefresh?.aal); // REMOVED
       }
 
       // Set localStorage flag to indicate MFA was passed
