@@ -1,4 +1,3 @@
-// src/hooks/useTheme.ts
 import { useEffect, useRef } from 'react'; // Import useRef
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
