@@ -229,7 +229,6 @@ const LandingPage: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_empower_team_title')}</h3> {/* MODIFIED */}
                   <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_empower_team_description')}</p> {/* MODIFIED */}
-                </p>
               </div>
             </div>
           </div>
