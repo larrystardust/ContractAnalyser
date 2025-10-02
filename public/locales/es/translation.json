@@ -1027,6 +1027,7 @@
   "not_started_status": "No iniciado",
   "member_role": "Miembro",
   "owner_role": "Propietario",
+  "owner_only_upgrade_enterprise_button": "Solo propietario",
 
   "unsupported_file_type_alert": "Tipo de archivo no compatible. Por favor, suba PDF, DOCX o DOC.",
   "unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto.",
