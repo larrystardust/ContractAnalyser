@@ -17,8 +17,8 @@ const AdminGuard: React.FC = () => {
     const checkAdminAndMfaStatus = async () => {
       if (loadingSession) return;
 
-      console.log('AdminGuard: Current session AAL:', session?.aal); // Log current AAL
-      console.log('AdminGuard: Current session user:', session?.user?.id); // Log current user ID
+      // console.log('AdminGuard: Current session AAL:', session?.aal); // REMOVED
+      // console.log('AdminGuard: Current session user:', session?.user?.id); // REMOVED
 
       if (!session?.user) {
         setIsAdmin(false);
@@ -52,22 +52,22 @@ const AdminGuard: React.FC = () => {
         }
 
         const hasMfaEnrolled = factors.totp.length > 0;
-        console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled);
+        // console.log('AdminGuard: User has MFA enrolled:', hasMfaEnrolled); // REMOVED
 
         if (hasMfaEnrolled) {
           // If MFA is enrolled, check localStorage for the mfa_passed flag
           const mfaPassedFlag = localStorage.getItem('mfa_passed');
           if (mfaPassedFlag === 'true') {
-            console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Granting access.');
+            // console.log('AdminGuard: MFA enrolled and mfa_passed flag found. Granting access.'); // REMOVED
             setTargetAal('aal2');
           } else {
             // MFA enrolled but no flag, redirect to challenge
-            console.log('AdminGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.');
+            // console.log('AdminGuard: MFA enrolled but no mfa_passed flag. Redirecting to challenge.'); // REMOVED
             setTargetAal('aal1'); // User needs to complete MFA challenge
           }
         } else {
           // If no MFA is enrolled, AAL1 is sufficient.
-          console.log('AdminGuard: No MFA enrolled. Granting access.');
+          // console.log('AdminGuard: No MFA enrolled. Granting access.'); // REMOVED
           setTargetAal('aal2');
         }
       } catch (err) {
@@ -95,26 +95,26 @@ const AdminGuard: React.FC = () => {
 
   // If not loading, check if a user session exists.
   if (!session || !session.user) {
-    console.log('AdminGuard: No active user session found. Redirecting to login page.');
+    // console.log('AdminGuard: No active user session found. Redirecting to login page.'); // REMOVED
     // MODIFIED: Pass current path and search as redirect parameter
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // Admin specific check
   if (!isAdmin) {
-    console.log('AdminGuard: User is not an admin. Redirecting to dashboard.');
+    // console.log('AdminGuard: User is not an admin. Redirecting to dashboard.'); // REMOVED
     return <Navigate to="/dashboard" replace />;
   }
 
   // MFA check for admin
   if (targetAal === 'aal1') {
-    console.log('AdminGuard: Admin user has MFA enrolled but session is aal1. Redirecting to MFA challenge.');
+    // console.log('AdminGuard: Admin user has MFA enrolled but session is aal1. Redirecting to MFA challenge.'); // REMOVED
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // If an authenticated admin user is found and MFA check passed, render the protected content.
   if (targetAal === 'aal2') {
-    console.log('AdminGuard: User is an admin and MFA check passed. Rendering protected content.');
+    // console.log('AdminGuard: User is an admin and MFA check passed. Rendering protected content.'); // REMOVED
     return <Outlet />;
   }
 
