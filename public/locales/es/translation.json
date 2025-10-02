@@ -1028,6 +1028,8 @@
   "member_role": "Miembro",
   "owner_role": "Propietario",
   "owner_only_upgrade_enterprise_button": "Solo propietario",
+  "invited_members_cannot_purchase_yearly": "Los miembros invitados no pueden comprar anualmente",
+  "invited_members_cannot_purchase_yearly_message": "Los miembros invitados no pueden comprar planes anuales. Póngase en contacto con el propietario de la suscripción para gestionar los planes anuales.",
 
   "unsupported_file_type_alert": "Tipo de archivo no compatible. Por favor, suba PDF, DOCX o DOC.",
   "unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto.",
