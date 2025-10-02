@@ -10,7 +10,7 @@ i18n
   .init({
     fallbackLng: 'en', // Use 'en' if a translation is not found for the current language
     // lng: localStorage.getItem('i18nextLng') || 'en', // REMOVED: LanguageDetector handles this
-    debug: true, // <--- CRITICAL: Set to true for debugging
+    debug: false, // <--- MODIFIED: Set to false for production
     interpolation: {
       escapeValue: false, // React already escapes by default
     },
