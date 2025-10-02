@@ -15,9 +15,9 @@ export function useSubscription() {
 
   useEffect(() => {
     async function getSubscriptionAndMembership() {
-      console.log('useSubscription: Fetching subscription and membership...');
+      // console.log('useSubscription: Fetching subscription and membership...'); // REMOVED
       if (!session?.user?.id) {
-        console.log('useSubscription: No user session. Resetting state.');
+        // console.log('useSubscription: No user session. Resetting state.'); // REMOVED
         setSubscription(null);
         setMembership(null);
         setLoading(false);
@@ -32,10 +32,10 @@ export function useSubscription() {
         let fetchedMembership: SubscriptionMembership | null = null;
 
         // 1. First, try to fetch the user's membership record
-        console.log('useSubscription: Attempting to fetch membership record for user:', session.user.id);
+        // console.log('useSubscription: Attempting to fetch membership record for user:', session.user.id); // REMOVED
         const { data: memberData, error: memberError } = await supabase
           .from('subscription_memberships')
-          .select('*')
+          .select('subscription_id, role, status, invited_by, invited_email_address') // Select all columns needed for membership
           .eq('user_id', session.user.id)
           .in('status', ['active', 'invited']) // Consider both active and invited memberships
           .maybeSingle();
@@ -49,9 +49,9 @@ export function useSubscription() {
           // If a membership record is found, use its subscription_id to fetch the subscription details
           fetchedMembership = memberData;
           setMembership(fetchedMembership);
-          console.log('useSubscription: Found membership:', fetchedMembership);
+          // console.log('useSubscription: Found membership:', fetchedMembership); // REMOVED
 
-          console.log('useSubscription: Fetching subscription details for subscription_id:', fetchedMembership.subscription_id);
+          // console.log('useSubscription: Fetching subscription details for subscription_id:', fetchedMembership.subscription_id); // REMOVED
           const { data: subData, error: subError } = await supabase
             .from('stripe_subscriptions')
             .select('*, max_users, max_files')
@@ -64,13 +64,13 @@ export function useSubscription() {
           }
           fetchedSubscription = subData;
           setSubscription(fetchedSubscription);
-          console.log('useSubscription: Found subscription:', fetchedSubscription);
+          // console.log('useSubscription: Found subscription:', fetchedSubscription); // REMOVED
 
         } else {
           // 2. If no membership record is found, check if the user is a direct customer (owner)
           // This path is now primarily for users who subscribed directly and the webhook
           // might not have processed yet, or for admin-assigned plans.
-          console.log('useSubscription: No membership found. Attempting to fetch customer record for user:', session.user.id);
+          // console.log('useSubscription: No membership found. Attempting to fetch customer record for user:', session.user.id); // REMOVED
           const { data: customerData, error: customerError } = await supabase
             .from('stripe_customers')
             .select('customer_id')
@@ -83,8 +83,8 @@ export function useSubscription() {
           }
 
           if (customerData?.customer_id) {
-            console.log('useSubscription: Found customer_id:', customerData.customer_id);
-            console.log('useSubscription: Fetching direct subscription for customer_id:', customerData.customer_id);
+            // console.log('useSubscription: Found customer_id:', customerData.customer_id); // REMOVED
+            // console.log('useSubscription: Fetching direct subscription for customer_id:', customerData.customer_id); // REMOVED
             const { data: subData, error: subError } = await supabase
               .from('stripe_subscriptions')
               .select('*, max_users, max_files')
@@ -100,7 +100,7 @@ export function useSubscription() {
             }
             fetchedSubscription = subData;
             setSubscription(fetchedSubscription);
-            console.log('useSubscription: Found direct subscription:', fetchedSubscription);
+            // console.log('useSubscription: Found direct subscription:', fetchedSubscription); // REMOVED
 
             // --- START: Removed client-side upsert for owner membership ---
             // This logic is now handled server-side by the stripe-webhook Edge Function.
@@ -109,7 +109,7 @@ export function useSubscription() {
             // The client-side should primarily read the state.
             // --- END: Removed client-side upsert for owner membership ---
           } else {
-            console.log('useSubscription: No customer_id found for user.');
+            // console.log('useSubscription: No customer_id found for user.'); // REMOVED
           }
         }
       } catch (err: any) {
@@ -118,7 +118,7 @@ export function useSubscription() {
         setSubscription(null);
         setMembership(null);
       } finally {
-        console.log('useSubscription: Finished fetching. Loading set to false.');
+        // console.log('useSubscription: Finished fetching. Loading set to false.'); // REMOVED
         setLoading(false);
       }
     }
