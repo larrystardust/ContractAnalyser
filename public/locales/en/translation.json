@@ -1035,6 +1035,8 @@
   "member_role": "Member",
   "owner_role": "Owner",
   "owner_only_upgrade_enterprise_button": "Owner Only",
+  "invited_members_cannot_purchase_yearly": "Invited members cannot purchase yearly",
+  "invited_members_cannot_purchase_yearly_message": "Invited members cannot purchase yearly plans. Please contact the subscription owner to manage yearly plans.",
 
   "unsupported_file_type_alert": "Unsupported file type. Please upload PDF, DOCX, or DOC.",
   "unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction.",
