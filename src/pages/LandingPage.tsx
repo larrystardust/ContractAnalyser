@@ -2,12 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap } from 'lucide-react';
 import Button from '../components/ui/Button';
-import StructuredData from '../components/StructuredData'; // ADDED: Import StructuredData
-import { useTranslation } from 'react-i18next'; // ADDED
-import TestimonialsSection from '../components/TestimonialsSection'; // ADDED: Import TestimonialsSection
+import StructuredData from '../components/StructuredData';
+import { useTranslation } from 'react-i18next';
+import TestimonialsSection from '../components/TestimonialsSection';
 
 const LandingPage: React.FC = () => {
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -45,6 +45,17 @@ const LandingPage: React.FC = () => {
           // "https://www.linkedin.com/company/contractanalyser", // REMOVED: social profiles
           // "https://twitter.com/contractanalyser" // REMOVED: social profies
         ]
+      },
+      // ADDED: Schema for the Blog Page
+      {
+        "@type": "WebPage",
+        "@id": "https://www.contractanalyser.com/blog",
+        "url": "https://www.contractanalyser.com/blog",
+        "name": t('our_blog_title'),
+        "description": t('our_blog_description'),
+        "isPartOf": {
+          "@id": "https://www.contractanalyser.com/#website"
+        }
       }
     ]
   };
@@ -218,7 +229,7 @@ const LandingPage: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_empower_team_title')}</h3> {/* MODIFIED */}
                   <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_empower_team_description')}</p> {/* MODIFIED */}
-                </div>
+                </p>
               </div>
             </div>
           </div>
@@ -338,7 +349,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-8 bg-gray-800 text-white text-center text-sm">
+        <footer className="py-8 bg-gray-800 text-white text-sm">
           <div className="container mx-auto px-4">
             <p>{t('footer_copyright', { year: new Date().getFullYear() })}</p> {/* MODIFIED */}
             <div className="mt-4 flex justify-center space-x-4">
