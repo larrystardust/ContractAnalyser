@@ -1034,6 +1034,7 @@
   "not_started_status": "Not started",
   "member_role": "Member",
   "owner_role": "Owner",
+  "owner_only_upgrade_enterprise_button": "Owner Only",
 
   "unsupported_file_type_alert": "Unsupported file type. Please upload PDF, DOCX, or DOC.",
   "unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction.",
