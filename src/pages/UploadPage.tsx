@@ -7,7 +7,7 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 const UploadPage: React.FC = () => {
-  console.log('UploadPage component rendered');
+  // console.log('UploadPage component rendered'); // REMOVED
   const [isUploading, setIsUploading] = useState(false);
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { settings: appSettings, loading: loadingAppSettings, error: appSettingsError } = useAppSettings();
