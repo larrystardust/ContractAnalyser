@@ -24,9 +24,9 @@ const BillingSettings: React.FC = () => {
   const { t } = useTranslation(); // ADDED
 
   // ADDED: Console logs for debugging session and loading states
-  console.log('BillingSettings: session', session);
-  console.log('BillingSettings: loading (from useSubscription)', loading);
-  console.log('BillingSettings: loadingContracts (from useContracts)', loadingContracts);
+  // console.log('BillingSettings: session', session); // REMOVED
+  // console.log('BillingSettings: loading (from useSubscription)', loading); // REMOVED
+  // console.log('BillingSettings: loadingContracts (from useContracts)', loadingContracts); // REMOVED
 
   // MODIFIED: Update getCurrentPlan to correctly find the product and its pricing option
   const getCurrentPlan = (): CurrentPlanInfo | null => {
