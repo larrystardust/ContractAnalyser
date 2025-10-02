@@ -1049,7 +1049,7 @@
   "checking_credits_subscription_status": "Vérification des crédits disponibles et du statut de l'abonnement...",
   "file_storage_limit_reached_message": "Vous avez atteint votre limite de stockage de fichiers de {{maxFiles}} fichiers. Pour ajouter plus de fichiers, veuillez supprimer les anciens de votre ",
   "contracts_page": "page Contrats",
-  "no_single_use_credit_or_subscription_message": "Vous n'avez pas de crédit à usage unique disponible ou de plan d'abonnement. Veuillez en acheter un sur la ",
+  "no_single_use_credit_or_subscription_message": "Vous n'avez pas de crédit à usage unique disponible ou de plan d'abonnement. Veuillez en acheter un auprès du ",
   "pricing_page": "page Tarifs",
   "to_start_uploading_analyzing_contracts": " pour commencer à télécharger et analyser des contrats.",
   "important_data_retention_policy": "Politique importante de conservation des données",
@@ -1332,7 +1332,7 @@
   "single_use_credits_available": "Crédits à Usage Unique Disponibles",
   "credits_remaining_message": "Il vous reste {{count}} crédits d'analyse.",
   "no_active_plan": "Aucun Plan Actif",
-  "no_active_plan_message": "Vous n'avez pas de crédit à usage unique disponible ou de plan d'abonnement. Veuillez en acheter un sur la ",
+  "no_active_plan_message": "Vous n'avez pas de crédit à usage unique disponible ou de plan d'abonnement. Veuillez en acheter un auprès du ",
   "cannot_upload_no_credits_or_subscription": "Impossible de télécharger : Aucun abonnement actif ou crédits à usage unique disponibles.",
   "processing_authentication": "Traitement de l'authentification...",
 
