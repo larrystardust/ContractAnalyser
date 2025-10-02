@@ -99,7 +99,7 @@ const countryCodes = [
 
 
 const SignupPage: React.FC = () => {
-  console.log('SignupPage: Component rendered. Current URL:', window.location.href);
+  // console.log('SignupPage: Component rendered. Current URL:', window.location.href); // REMOVED
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -170,17 +170,17 @@ const SignupPage: React.FC = () => {
     // REMOVED: Add current i18n language to emailRedirectToUrl
     // emailRedirectToUrl += `&lang=${i18n.language}`;
 
-    console.log('SignupPage: Options passed to supabase.auth.signUp:', {
-      emailRedirectTo: emailRedirectToUrl,
-      data: {
-        full_name: fullName,
-        business_name: businessName,
-        mobile_phone_number: mobilePhoneNumber,
-        country_code: selectedCountryCode,
-        language_preference: i18n.language, // Still pass in user_metadata as a primary attempt
-      },
-    });
-    console.log('SignupPage: emailRedirectToUrl being used:', emailRedirectToUrl); // ADDED LOG
+    // console.log('SignupPage: Options passed to supabase.auth.signUp:', { // REMOVED
+    //   emailRedirectTo: emailRedirectToUrl,
+    //   data: {
+    //     full_name: fullName,
+    //     business_name: businessName,
+    //     mobile_phone_number: mobilePhoneNumber,
+    //     country_code: selectedCountryCode,
+    //     language_preference: i18n.language, // Still pass in user_metadata as a primary attempt
+    //   },
+    // });
+    // console.log('SignupPage: emailRedirectToUrl being used:', emailRedirectToUrl); // REMOVED
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(), // MODIFIED: Trim the email input
@@ -212,7 +212,7 @@ const SignupPage: React.FC = () => {
               languagePreference: i18n.language, // ADDED: Pass language preference directly here
             },
           });
-          console.log('Profile creation initiated from SignupPage.');
+          // console.log('Profile creation initiated from SignupPage.'); // REMOVED
         } catch (profileError) {
           console.error('Error initiating profile creation from SignupPage:', profileError);
         }
