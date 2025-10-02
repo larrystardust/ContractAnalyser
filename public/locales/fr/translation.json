@@ -1035,6 +1035,7 @@
   "not_started_status": "Non démarré",
   "member_role": "Membre",
   "owner_role": "Propriétaire",
+  "owner_only_upgrade_enterprise_button": "Propriétaire seulement",
 
   "unsupported_file_type_alert": "Type de fichier non pris en charge. Veuillez télécharger un fichier PDF, DOCX ou DOC.",
   "unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte.",
