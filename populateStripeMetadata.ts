@@ -24,9 +24,9 @@ async function populateStripeProductMetadata() {
       productData.push({
         price_id: product.pricing.monthly.priceId,
         product_id: product.id,
-        max_users: product.name.includes('Professional Use') ? 2 : (product.name.includes('Enterprise Use') ? 999999 : null),
-        max_files: product.maxFiles || null,
-        credits: product.credits || null, // ADDED: Include credits
+        max_users: product.max_users || null, // MODIFIED: Use product.max_users directly
+        max_files: product.maxFiles || null, // MODIFIED: Use product.maxFiles directly
+        credits: product.credits || null,
       });
     }
 
@@ -34,9 +34,9 @@ async function populateStripeProductMetadata() {
       productData.push({
         price_id: product.pricing.yearly.priceId,
         product_id: product.id,
-        max_users: product.name.includes('Professional Use') ? 2 : (product.name.includes('Enterprise Use') ? 999999 : null),
-        max_files: product.maxFiles || null,
-        credits: product.credits || null, // ADDED: Include credits
+        max_users: product.max_users || null, // MODIFIED: Use product.max_users directly
+        max_files: product.maxFiles || null, // MODIFIED: Use product.maxFiles directly
+        credits: product.credits || null,
       });
     }
 
@@ -44,9 +44,9 @@ async function populateStripeProductMetadata() {
       productData.push({
         price_id: product.pricing.one_time.priceId,
         product_id: product.id,
-        max_users: null,
-        max_files: null,
-        credits: product.credits || null, // ADDED: Include credits
+        max_users: null, // One-time products don't have max_users
+        max_files: null, // One-time products don't have max_files
+        credits: product.credits || null,
       });
     }
 
