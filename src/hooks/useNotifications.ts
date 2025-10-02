@@ -19,7 +19,7 @@ export function useNotifications() {
     if (!session?.user?.id) {
       setNotifications([]);
       setLoading(false);
-      console.log('DEBUG: fetchNotifications - No user ID, setting notifications to empty array.');
+      // console.log('DEBUG: fetchNotifications - No user ID, setting notifications to empty array.'); // REMOVED
       return;
     }
 
@@ -37,9 +37,9 @@ export function useNotifications() {
         throw fetchError;
       }
 
-      console.log('DEBUG: fetchNotifications - Data received from Supabase:', JSON.stringify(data, null, 2));
+      // console.log('DEBUG: fetchNotifications - Data received from Supabase:', JSON.stringify(data, null, 2)); // REMOVED
       setNotifications(data || []);
-      console.log('DEBUG: fetchNotifications - Notifications state after set (from fetch):', JSON.stringify(data || [], null, 2));
+      // console.log('DEBUG: fetchNotifications - Notifications state after set (from fetch):', JSON.stringify(data || [], null, 2)); // REMOVED
 
     } catch (err: any) {
       console.error('Error fetching notifications:', err);
@@ -61,14 +61,14 @@ export function useNotifications() {
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },
           (payload) => {
-            console.log('DEBUG: Realtime INSERT event received. Payload:', JSON.stringify(payload, null, 2));
+            // console.log('DEBUG: Realtime INSERT event received. Payload:', JSON.stringify(payload, null, 2)); // REMOVED
             // Directly add the new notification to the state for immediate update
             setNotifications((prev) => [payload.new as Notification, ...prev]);
           }
         )
         .subscribe();
       notificationChannelRef.current = newNotificationChannel;
-      console.log('DEBUG: Realtime channel subscribed. Current state:', newNotificationChannel.state);
+      // console.log('DEBUG: Realtime channel subscribed. Current state:', newNotificationChannel.state); // REMOVED
     }
 
     // Cleanup function: Unsubscribe from the real-time channel when the component unmounts
@@ -76,7 +76,7 @@ export function useNotifications() {
       const currentChannel = notificationChannelRef.current;
       if (currentChannel && (currentChannel.state === 'joined' || currentChannel.state === 'joining')) {
         supabase.removeChannel(currentChannel);
-        console.log('DEBUG: Realtime channel unsubscribed.');
+        // console.log('DEBUG: Realtime channel unsubscribed.'); // REMOVED
       }
       notificationChannelRef.current = null;
     };
@@ -148,12 +148,12 @@ export function useNotifications() {
 
   const unreadNotifications = notifications.filter(notif => {
     const isReadBoolean = Boolean(notif.is_read);
-    console.log(`DEBUG: Filtering notification ID: ${notif.id}, is_read: ${notif.is_read}, isReadBoolean: ${isReadBoolean}, !isReadBoolean: ${!isReadBoolean}`);
+    // console.log(`DEBUG: Filtering notification ID: ${notif.id}, is_read: ${notif.is_read}, isReadBoolean: ${isReadBoolean}, !isReadBoolean: ${!isReadBoolean}`); // REMOVED
     return !isReadBoolean;
   });
   const unreadCount = unreadNotifications.length;
-  console.log('DEBUG: Filtered unread notifications array:', unreadNotifications);
-  console.log('DEBUG: Calculated unreadCount:', unreadCount);
+  // console.log('DEBUG: Filtered unread notifications array:', unreadNotifications); // REMOVED
+  // console.log('DEBUG: Calculated unreadCount:', unreadCount); // REMOVED
 
 
   return { notifications, loading, error, unreadCount, markAsRead, markAllAsRead, deleteNotification, fetchNotifications };
