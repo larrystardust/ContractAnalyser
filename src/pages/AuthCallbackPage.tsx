@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 
 const AuthCallbackPage: React.FC = () => {
+  // console.log('AuthCallbackPage: Component rendered. Current URL:', window.location.href); // REMOVED
   const supabase = useSupabaseClient<Database>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
