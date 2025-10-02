@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBlogPosts } from '../hooks/useBlogPosts';
+import StructuredData from '../components/StructuredData'; // ADDED
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -166,28 +167,60 @@ const BlogPostPage: React.FC = () => {
     }
   }
 
-  return (
-    <div className="container mx-auto px-4 py-6 mt-16">
-      <div className="mb-6">
-        <Link to="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back_to_blog')}
-        </Link>
-      </div>
+  // ADDED: Structured Data for BlogPostPage
+  const blogPostSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "url": `https://www.contractanalyser.com/blog/${post.slug}`,
+    "image": post.imageUrl ? [post.imageUrl] : undefined, // Image as an array
+    "datePublished": post.date,
+    "dateModified": post.date, // Assuming datePublished is also dateModified if not separate
+    "author": {
+      "@type": "Person",
+      "name": post.author
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ContractAnalyser",
+      "url": "https://www.contractanalyser.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.contractanalyser.com/favicon.ico"
+      }
+    },
+    "description": post.excerpt,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://www.contractanalyser.com/blog/${post.slug}`
+    }
+  };
 
-      <article className="bg-white rounded-lg shadow-md p-8 lg:p-12">
-        {post.imageUrl && (
-          <img src={post.imageUrl} alt={post.title} className="w-full h-80 object-cover object-center rounded-lg mb-8" />
-        )}
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h1>
-        <p className="text-lg text-gray-600 mb-8">
-          {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-        <div className="prose prose-lg max-w-none">
-          {renderContent(uniqueContentBlocks)} {/* Pass the de-duplicated content */}
+  return (
+    <>
+      <StructuredData schema={blogPostSchema} /> {/* ADDED */}
+      <div className="container mx-auto px-4 py-6 mt-16">
+        <div className="mb-6">
+          <Link to="/blog" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('back_to_blog')}
+          </Link>
         </div>
-      </article>
-    </div>
+
+        <article className="bg-white rounded-lg shadow-md p-8 lg:p-12">
+          {post.imageUrl && (
+            <img src={post.imageUrl} alt={post.title} className="w-full h-80 object-cover object-center rounded-lg mb-8" />
+          )}
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h1>
+          <p className="text-lg text-gray-600 mb-8">
+            {t('by')} {post.author} {t('on')} {new Date(post.date).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+          <div className="prose prose-lg max-w-none">
+            {renderContent(uniqueContentBlocks)}
+          </div>
+        </article>
+      </div>
+    </>
   );
 };
 
