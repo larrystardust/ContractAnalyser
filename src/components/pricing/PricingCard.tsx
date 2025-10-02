@@ -68,7 +68,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
       shouldBeDisabled = true;
     } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       shouldBeDisabled = true;
-    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED
+    } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Specific condition for Professional Use yearly
+      shouldBeDisabled = true;
+    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: This condition is now redundant if the above covers all non-owner members for yearly plans. Keeping it for now, but the new one is more specific.
       shouldBeDisabled = true;
     }
   }
@@ -85,7 +87,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
     }
   } else if (product.name === 'product_name_enterprise_use') {
     buttonText = (userMembership?.role === 'member' || userMembership?.status === 'invited') ? t('owner_only_upgrade_enterprise_button') : t('upgrade_button');
-  } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED
+  } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Specific button text for Professional Use yearly
+    buttonText = t('invited_members_cannot_purchase_yearly');
+  } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: This condition is now redundant if the above covers all non-owner members for yearly plans. Keeping it for now, but the new one is more specific.
     buttonText = t('invited_members_cannot_purchase_yearly'); // MODIFIED
   } else {
     buttonText = t('purchase_button');
@@ -106,6 +110,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
       createCustomerPortalSession();
     } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       // 🚫 Block member from purchasing Enterprise Use
+      return;
+    } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Block Professional Use yearly for members
       return;
     } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: Block invited members from purchasing yearly
       return;
@@ -169,6 +175,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
       {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
         <p className="text-xs text-gray-500 mt-2 text-center">
           {t('only_owner_upgrade_enterprise')}
+        </p>
+      )}
+      {product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // ADDED: Specific message for Professional Use yearly
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          {t('invited_members_cannot_purchase_yearly_message')}
         </p>
       )}
       {billingPeriod === 'yearly' && userMembership?.status === 'invited' && ( // MODIFIED
