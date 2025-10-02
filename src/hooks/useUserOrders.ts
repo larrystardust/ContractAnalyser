@@ -102,7 +102,7 @@ export function useUserOrders() {
             filter: `customer_id=eq.${customerId}`,
           },
           (payload) => {
-            console.log('Realtime update for stripe_orders:', payload);
+            // console.log('Realtime update for stripe_orders:', payload); // REMOVED
             fetchOrders(customerId);
           }
         )
