@@ -1,3 +1,4 @@
+// src/pages/ResetPassword.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -36,7 +37,7 @@ const ResetPassword: React.FC = () => {
     const type = hashParams.get('type');
 
     if (accessToken && type === 'recovery') {
-      console.log('ResetPassword: Detected recovery access token in URL hash. Signing out current session.');
+      // console.log('ResetPassword: Detected recovery access token in URL hash. Signing out current session.'); // REMOVED
       supabase.auth.signOut().catch(console.error);
     }
 
@@ -49,7 +50,7 @@ const ResetPassword: React.FC = () => {
     // This ensures that even if the user navigates away or closes the tab,
     // the recovery state is cleared, preventing lingering issues.
     return () => {
-      console.log('ResetPassword: useEffect cleanup - Clearing localStorage flags.');
+      // console.log('ResetPassword: useEffect cleanup - Clearing localStorage flags.'); // REMOVED
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
@@ -58,44 +59,6 @@ const ResetPassword: React.FC = () => {
       }
     };
   }, [location.hash, sessionTimer, success, t]); // MODIFIED: Added success and t to dependencies
-
-  // Block modal opening attempts
-  useEffect(() => {
-    const blockModals = () => {
-      const modalBlockers = [
-        '[data-modal]',
-        '[data-help]',
-        '.modal-trigger',
-        '.help-button',
-        '.help-icon',
-        '#help-button',
-        '#dashboard-help',
-        '[onclick*="help"]',
-        '[onclick*="modal"]',
-        '[href*="help"]',
-        '[href*="modal"]'
-      ];
-
-      modalBlockers.forEach(selector => {
-        document.querySelectorAll(selector).forEach(element => {
-          element.addEventListener('click', (e) => {
-            if (!success) {
-              e.preventDefault();
-              e.stopPropagation();
-              setError(t('help_unavailable_during_reset_modal'));
-              document.getElementById('newPassword')?.focus();
-            }
-          }, true);
-        });
-      });
-    };
-
-    const timer = setTimeout(blockModals, 100);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [success, t]);
 
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
@@ -123,14 +86,6 @@ const ResetPassword: React.FC = () => {
 
   // Block navigation
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!success) {
-        e.preventDefault();
-        e.returnValue = t('password_reset_progress_lost');
-        return e.returnValue;
-      }
-    };
-
     const handlePopState = (e: PopStateEvent) => {
       if (!success) {
         e.preventDefault(); // Prevent the browser from navigating back
@@ -139,11 +94,9 @@ const ResetPassword: React.FC = () => {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('popstate', handlePopState);
     
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
   }, [success, t]);
@@ -173,11 +126,11 @@ const ResetPassword: React.FC = () => {
       }
       
       // CRITICAL: Clear the active flow flags directly here upon success
-      console.log('ResetPassword: handleSubmit - Clearing localStorage flags before navigation.');
+      // console.log('ResetPassword: handleSubmit - Clearing localStorage flags before navigation.'); // REMOVED
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
-      console.log('ResetPassword: handleSubmit - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive'));
+      // console.log('ResetPassword: handleSubmit - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive')); // REMOVED
 
 
       // Clear the URL hash immediately
@@ -190,11 +143,11 @@ const ResetPassword: React.FC = () => {
 
       // Defensive clearing after navigation, in case of race conditions
       setTimeout(() => {
-        console.log('ResetPassword: handleSubmit - Clearing localStorage flags again after navigation delay.');
+        // console.log('ResetPassword: handleSubmit - Clearing localStorage flags again after navigation delay.'); // REMOVED
         localStorage.removeItem('passwordResetFlowActive');
         localStorage.removeItem('passwordResetFlowStartTime');
         localStorage.removeItem('blockModalsDuringReset');
-        console.log('ResetPassword: handleSubmit - passwordResetFlowActive after delayed clearing:', localStorage.getItem('passwordResetFlowActive'));
+        // console.log('ResetPassword: handleSubmit - passwordResetFlowActive after delayed clearing:', localStorage.getItem('passwordResetFlowActive')); // REMOVED
       }, 100);
 
 
@@ -220,11 +173,11 @@ const ResetPassword: React.FC = () => {
         clearTimeout(sessionTimer);
       }
       // Ensure all relevant flags are cleared when manually going back to login
-      console.log('ResetPassword: handleBackToLogin - Clearing localStorage flags.');
+      // console.log('ResetPassword: handleBackToLogin - Clearing localStorage flags.'); // REMOVED
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
-      console.log('ResetPassword: handleBackToLogin - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive'));
+      // console.log('ResetPassword: handleBackToLogin - passwordResetFlowActive after clearing:', localStorage.getItem('passwordResetFlowActive')); // REMOVED
       
       await supabase.auth.signOut();
     } catch (error) {
