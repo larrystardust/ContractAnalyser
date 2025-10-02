@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
       // Check if password reset flow is active in localStorage
       const isPasswordResetFlowActive = localStorage.getItem('passwordResetFlowActive') === 'true';
       if (isPasswordResetFlowActive) {
-        console.log('LoginPage: Password reset flow is active, not redirecting to dashboard yet.');
+        // console.log('LoginPage: Password reset flow is active, not redirecting to dashboard yet.'); // REMOVED
         // Do not redirect to dashboard if a password reset flow is active.
         // AuthGuard will handle the redirect to /reset-password.
         return;
@@ -110,7 +110,7 @@ const LoginPage: React.FC = () => {
             .from('profiles')
             .update({ login_at: new Date().toISOString() })
             .eq('id', authData.user.id);
-          console.log('LoginPage: login_at updated for user:', authData.user.id);
+          // console.log('LoginPage: login_at updated for user:', authData.user.id); // REMOVED
 
           // CRITICAL FIX: Explicitly refresh session after successful login
           // This helps ensure the AAL (Authentication Assurance Level) is correctly updated to aal2
@@ -119,7 +119,7 @@ const LoginPage: React.FC = () => {
           if (refreshError) {
             console.error('LoginPage: Error refreshing session after login:', refreshError);
           } else {
-            console.log('LoginPage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal);
+            // console.log('LoginPage: Session refreshed. New AAL:', refreshedSessionData?.session?.aal); // REMOVED
             // The useEffect above will now handle the redirection based on the refreshed session.
           }
 
