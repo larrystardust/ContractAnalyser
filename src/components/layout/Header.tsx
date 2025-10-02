@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    console.log('Header.tsx: useEffect - unreadCount changed to:', unreadCount);
+    // console.log('Header.tsx: useEffect - unreadCount changed to:', unreadCount); // REMOVED
   }, [unreadCount]);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !sessionData.session) {
-        console.info('No active session found, skipping signOut call');
+        // console.info('No active session found, skipping signOut call'); // REMOVED
       } else {
         await supabase.auth.signOut({ scope: 'local' });
       }
@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
   const showAuthButtons = !session?.user && location.pathname !== '/auth/email-sent';
 
-  console.log('Header.tsx: Render - unreadCount:', unreadCount);
+  // console.log('Header.tsx: Render - unreadCount:', unreadCount); // REMOVED
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
