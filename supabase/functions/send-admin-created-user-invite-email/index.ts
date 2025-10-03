@@ -47,15 +47,15 @@ Deno.serve(async (req) => {
   try {
     const { recipientEmail, recipientName, initialPassword, userPreferredLanguage } = await req.json();
 
-    console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail);
-    console.log('send-admin-created-user-invite-email: Recipient Name received:', recipientName);
+    // console.log('send-admin-created-user-invite-email: Received request for recipient:', recipientEmail); // REMOVED
+    // console.log('send-admin-created-user-invite-email: Recipient Name received:', recipientName); // REMOVED
 
     if (!recipientEmail || !initialPassword || !userPreferredLanguage) {
       console.error('send-admin-created-user-invite-email: Missing required email parameters: recipientEmail, initialPassword, userPreferredLanguage');
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
 
-    console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail} in language ${userPreferredLanguage}.`);
+    // console.log(`send-admin-created-user-invite-email: Attempting to send email to ${recipientEmail} in language ${userPreferredLanguage}.`); // REMOVED
 
     // Get APP_BASE_URL from environment variables
     const appBaseUrl = Deno.env.get('APP_BASE_URL');
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         console.error('send-admin-created-user-invite-email: Error sending email via Resend:', error);
         return corsResponse({ success: false, message: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: `Failed to send invitation email: ${error.message}` }) });
       }
-      console.log('send-admin-created-user-invite-email: Email sent successfully via Resend:', data);
+      // console.log('send-admin-created-user-invite-email: Email sent successfully via Resend:', data); // REMOVED
       return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', userPreferredLanguage) });
 
     } catch (emailSendError: any) {
