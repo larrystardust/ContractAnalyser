@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log('send-invitation-email: Received requestBody:', requestBody); // Log the full request body
+    // console.log('send-invitation-email: Received requestBody:', requestBody); // REMOVED
 
     const { recipientEmail, invitationLink, inviterName, userPreferredLanguage } = requestBody;
 
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_missing_required_fields', 'en') }, 400);
     }
 
-    console.log(`Attempting to send invitation email to ${recipientEmail} from ${finalInviterName}`);
+    // console.log(`Attempting to send invitation email to ${recipientEmail} from ${finalInviterName}`); // REMOVED
 
     // Translate subject and body
     const subject = getTranslatedMessage('email_subject_invitation', userPreferredLanguage, { inviterName: finalInviterName });
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         console.error('Error sending email via Resend:', error);
         return corsResponse({ success: false, message: getTranslatedMessage('message_invitation_sent_email_error', userPreferredLanguage, { errorMessage: error.message }) });
       }
-      console.log('Email sent successfully via Resend:', data);
+      // console.log('Email sent successfully via Resend:', data); // REMOVED
       return corsResponse({ success: true, message: getTranslatedMessage('message_invitation_sent_successfully', userPreferredLanguage) });
 
     } catch (emailSendError: any) {
