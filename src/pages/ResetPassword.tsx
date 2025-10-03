@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // ADDED useRef
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
@@ -20,7 +20,8 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [sessionTimer, setSessionTimer] = useState<NodeJS.Timeout | null>(null);
+  // MODIFIED: Use useRef for sessionTimer
+  const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Set global password reset flow state and block modals
   useEffect(() => {
@@ -53,19 +54,26 @@ const ResetPassword: React.FC = () => {
       localStorage.removeItem('passwordResetFlowActive');
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
-      if (sessionTimer) {
-        clearTimeout(sessionTimer);
+      // MODIFIED: Clear timer using ref
+      if (sessionTimerRef.current) {
+        clearTimeout(sessionTimerRef.current);
+        sessionTimerRef.current = null;
       }
     };
-  }, [location.hash, sessionTimer, success, t]); // MODIFIED: Added success and t to dependencies
+  }, [location.hash, success, t]); // MODIFIED: Removed sessionTimer from dependencies
 
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
+    // MODIFIED: Clear any existing timer before setting a new one
+    if (sessionTimerRef.current) {
+      clearTimeout(sessionTimerRef.current);
+    }
+
     const timer = setTimeout(() => {
       // These flags are now cleared by the component's unmount effect,
       // but we can explicitly clear them here too for immediate effect if the timer fires.
       localStorage.removeItem('passwordResetFlowActive');
-      localStorage.removeItem('passwordResetFlowStartTime');
+      localStorage.removeItem('passwordResetFlowStartTime'); // Corrected typo from previous thought process
       localStorage.removeItem('blockModalsDuringReset');
       
       if (!success) {
@@ -74,14 +82,15 @@ const ResetPassword: React.FC = () => {
       navigate('/login', { replace: true });
     }, 15 * 60 * 1000);
 
-    setSessionTimer(timer);
+    sessionTimerRef.current = timer; // Store the timer ID in the ref
 
     return () => {
-      if (sessionTimer) {
-        clearTimeout(sessionTimer);
+      if (sessionTimerRef.current) {
+        clearTimeout(sessionTimerRef.current);
+        sessionTimerRef.current = null;
       }
     };
-  }, [navigate, success]); // Removed sessionTimer from dependencies to avoid re-creating timer
+  }, [navigate, success]); // MODIFIED: Removed sessionTimer from dependencies
 
   // Block navigation
   useEffect(() => {
@@ -120,8 +129,10 @@ const ResetPassword: React.FC = () => {
       await resetPassword(newPassword);
       setSuccess(t('password_reset_success'));
       
-      if (sessionTimer) {
-        clearTimeout(sessionTimer);
+      // MODIFIED: Clear timer using ref
+      if (sessionTimerRef.current) {
+        clearTimeout(sessionTimerRef.current);
+        sessionTimerRef.current = null;
       }
       
       // CRITICAL: Clear the active flow flags directly here upon success
@@ -168,8 +179,10 @@ const ResetPassword: React.FC = () => {
 
   const handleBackToLogin = async () => {
     try {
-      if (sessionTimer) {
-        clearTimeout(sessionTimer);
+      // MODIFIED: Clear timer using ref
+      if (sessionTimerRef.current) {
+        clearTimeout(sessionTimerRef.current);
+        sessionTimerRef.current = null;
       }
       // Ensure all relevant flags are cleared when manually going back to login
       // console.log('ResetPassword: handleBackToLogin - Clearing localStorage flags.'); // REMOVED
