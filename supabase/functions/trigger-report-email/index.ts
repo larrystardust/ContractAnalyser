@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const globalEmailReportsEnabled = appSettings?.global_email_reports_enabled ?? true; // Default to true
 
     if (!globalEmailReportsEnabled) {
-      console.log(`Email sending for contract ${contractId} skipped because global email reports are disabled.`);
+      // console.log(`Email sending for contract ${contractId} skipped because global email reports are disabled.`); // REMOVED
       return corsResponse({ message: 'Email sending skipped due to global settings' });
     }
 
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
     const sendEmail = profileData?.email_reports_enabled || false; // Get individual user preference
 
     if (!sendEmail) {
-      console.log(`Email sending for contract ${contractId} skipped due to user preference.`);
+      // console.log(`Email sending for contract ${contractId} skipped due to user preference.`); // REMOVED
       return corsResponse({ message: 'Email sending skipped due to user preference' });
     }
 
@@ -114,15 +114,15 @@ Deno.serve(async (req) => {
     const emailSubject = getTranslatedMessage('email_subject_report_ready', userPreferredLanguage, { contractName: contractName || contractId }); // MODIFIED
     const emailMessage = reportSummary; // This is the executive summary
 
-    console.log('trigger-report-email: Parameters for send-analysis-report-email:');
-    console.log(`  userId: ${userId}`);
-    console.log(`  recipientEmail: ${recipientEmail}`);
-    console.log(`  subject: ${emailSubject}`);
-    console.log(`  message: ${emailMessage ? 'Present' : 'MISSING'}`); // Check presence
-    console.log(`  recipientName: ${userName}`);
-    console.log(`  reportHtmlContent: ${reportHtmlContent ? 'Present' : 'MISSING'}`); // Check presence
-    console.log(`  reportLink: ${reportLink ? 'Present' : 'MISSING'}`); // Check presence
-    console.log(`  userPreferredLanguage: ${userPreferredLanguage ? 'Present' : 'MISSING'}`); // Check presence
+    // console.log('trigger-report-email: Parameters for send-analysis-report-email:'); // REMOVED
+    // console.log(`  userId: ${userId}`); // REMOVED
+    // console.log(`  recipientEmail: ${recipientEmail}`); // REMOVED
+    // console.log(`  subject: ${emailSubject}`); // REMOVED
+    // console.log(`  message: ${emailMessage ? 'Present' : 'MISSING'}`); // REMOVED
+    // console.log(`  recipientName: ${userName}`); // REMOVED
+    // console.log(`  reportHtmlContent: ${reportHtmlContent ? 'Present' : 'MISSING'}`); // REMOVED
+    // console.log(`  reportLink: ${reportLink ? 'Present' : 'MISSING'}`); // REMOVED
+    // console.log(`  userPreferredLanguage: ${userPreferredLanguage ? 'Present' : 'MISSING'}`); // REMOVED
 
     // Invoke the actual email sending function
     const { data: emailFnData, error: emailFnError } = await supabase.functions.invoke('send-analysis-report-email', {
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       console.error('Error invoking send-analysis-report-email Edge Function:', emailFnError);
       return corsResponse({ error: `Failed to send email: ${emailFnError.message}` }, 500);
     } else {
-      console.log('send-analysis-report-email Edge Function invoked successfully:', emailFnData);
+      // console.log('send-analysis-report-email Edge Function invoked successfully:', emailFnData); // REMOVED
       return corsResponse({ message: 'Email sending process initiated successfully' });
     }
 
