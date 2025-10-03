@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     return corsResponse({ error: 'Method not allowed' }, 405);
   }
 
-  console.log('Starting delete-old-files Edge Function...');
+  // console.log('Starting delete-old-files Edge Function...'); // REMOVED
 
   try {
     // Calculate the date 30 days ago
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoISO = thirtyDaysAgo.toISOString();
 
-    console.log(`Looking for single-use contracts created before: ${thirtyDaysAgoISO} or any contracts marked for deletion by admin.`);
+    // console.log(`Looking for single-use contracts created before: ${thirtyDaysAgoISO} or any contracts marked for deletion by admin.`); // REMOVED
 
     // 1. Query for contracts to be deleted, including their analysis results for report_file_path
     const { data: contractsToDelete, error: fetchError } = await supabase
@@ -68,11 +68,11 @@ Deno.serve(async (req) => {
     }
 
     if (!contractsToDelete || contractsToDelete.length === 0) {
-      console.log('No contracts found for automatic deletion or marked for admin deletion.');
+      // console.log('No contracts found for automatic deletion or marked for admin deletion.'); // REMOVED
       return corsResponse({ message: 'No contracts to delete.' });
     }
 
-    console.log(`Found ${contractsToDelete.length} contracts to delete.`);
+    // console.log(`Found ${contractsToDelete.length} contracts to delete.`); // REMOVED
 
     const deletionResults = await Promise.all(contractsToDelete.map(async (contract) => {
       try {
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
             console.error(`Error deleting original contract file ${originalContractFilePath} from storage:`, storageError);
             // Don't throw, try to delete the DB record anyway
           } else {
-            console.log(`Successfully deleted original contract file: ${originalContractFilePath}`);
+            // console.log(`Successfully deleted original contract file: ${originalContractFilePath}`); // REMOVED
           }
         }
 
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
           if (reportStorageError) {
             console.error(`Error deleting report file ${reportFilePath} from storage:`, reportStorageError);
           } else {
-            console.log(`Successfully deleted report file: ${reportFilePath}`);
+            // console.log(`Successfully deleted report file: ${reportFilePath}`); // REMOVED
           }
         }
 
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
           console.error(`Error deleting contract record ${contract.id} from database:`, dbError);
           return { id: contract.id, status: 'failed', reason: dbError.message };
         } else {
-          console.log(`Successfully deleted contract record: ${contract.id}`);
+          // console.log(`Successfully deleted contract record: ${contract.id}`); // REMOVED
           return { id: contract.id, status: 'success' };
         }
       } catch (innerError: any) {
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     const successfulDeletions = deletionResults.filter(r => r.status === 'success').length;
     const failedDeletions = deletionResults.filter(r => r.status === 'failed').length;
 
-    console.log(`Finished deleting old files. Successful: ${successfulDeletions}, Failed: ${failedDeletions}`);
+    // console.log(`Finished deleting old files. Successful: ${successfulDeletions}, Failed: ${failedDeletions}`); // REMOVED
 
     return corsResponse({
       message: `Deletion process completed. ${successfulDeletions} contracts deleted, ${failedDeletions} failed.`,
