@@ -19,15 +19,9 @@ interface AdminDataTableProps<T> {
   customActions?: (item: T) => React.ReactNode;
 }
 
-const AdminDataTable = <T extends { id: string | number }>({
-  data,
-  columns,
-  loading,
-  error,
-  onEdit,
-  onDelete,
-  customActions,
-}: AdminDataTableProps<T>) => {
+const AdminDataTable = <T extends { id: string | number }>(
+  { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
+) => {
   const { t } = useTranslation();
 
   if (loading) {
@@ -42,9 +36,7 @@ const AdminDataTable = <T extends { id: string | number }>({
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">
-          {t('error_label')}: {error}
-        </p>
+        <p className="text-red-600">{t('error_label')}: {error}</p>
       </div>
     );
   }
@@ -71,14 +63,13 @@ const AdminDataTable = <T extends { id: string | number }>({
                 {column.header}
               </th>
             ))}
-            <th
-              scope="col"
-              className="relative px-6 py-3"
-            >
+            <th scope="col" className="relative px-6 py-3">
               <span className="sr-only">{t('actions_table')}</span>
             </th>
           </tr>
         </thead>
+
+        {/* FIX: Use plain <tbody>, no CardBody wrapper */}
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((item) => (
             <tr key={item.id}>
