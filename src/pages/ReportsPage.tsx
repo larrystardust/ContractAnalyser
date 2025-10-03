@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { RiskLevel } from '../types'; // ADDED: Import RiskLevel type
 
 const ReportsPage: React.FC = () => {
-  console.log('ReportsPage component rendered');
+  // console.log('ReportsPage component rendered'); // COMMENTED OUT
   const { contracts, loadingContracts } = useContracts();
   const { t } = useTranslation();
   
@@ -125,7 +125,7 @@ const ReportsPage: React.FC = () => {
                     {(() => {
                       const keyToTranslate = getRiskLevelLabel(riskLevel as RiskLevel);
                       const translatedValue = t(keyToTranslate);
-                      console.log(`ReportsPage Debug: Attempting to translate key "${keyToTranslate}". Result: "${translatedValue}"`);
+                      // console.log(`ReportsPage Debug: Attempting to translate key "${keyToTranslate}". Result: "${translatedValue}"`); // COMMENTED OUT
                       return translatedValue;
                     })()}
                   </p>
