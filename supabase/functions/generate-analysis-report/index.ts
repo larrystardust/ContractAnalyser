@@ -54,18 +54,18 @@ Deno.serve(async (req) => {
 
     try {
       rawBody = await req.text();
-      console.log('generate-analysis-report: Raw request body received:', rawBody);
+      // console.log('generate-analysis-report: Raw request body received:', rawBody); // REMOVED
       if (rawBody) {
         requestBody = JSON.parse(rawBody);
       }
-      console.log('generate-analysis-report: Parsed requestBody:', requestBody);
+      // console.log('generate-analysis-report: Parsed requestBody:', requestBody); // REMOVED
     } catch (e) {
       console.error('generate-analysis-report: Error parsing request body as JSON:', e);
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
     const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult, outputLanguage } = requestBody; // MODIFIED: Added outputLanguage
-    console.log('generate-analysis-report: Extracted contractId:', contractId);
+    // console.log('generate-analysis-report: Extracted contractId:', contractId); // REMOVED
 
     if (!contractId) {
       return corsResponse({ error: 'Missing contractId' }, 400);
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
     // If analysisResult is not provided or is incomplete, fetch it from the database
     if (!finalAnalysisResult || !finalAnalysisResult.executive_summary || !finalAnalysisResult.findings) {
-      console.log(`Fetching analysis results for contractId: ${contractId} from database.`);
+      // console.log(`Fetching analysis results for contractId: ${contractId} from database.`); // REMOVED
       const { data: contractData, error: contractFetchError } = await supabase
         .from('contracts')
         .select(`
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       }
 
       finalContractName = contractData.name;
-      finalAnalysisResult = contractData.analysis_results[0]; // Assuming one analysis result per contract
+      finalAnalysisResult = contractData.analysis_results; // Assuming one analysis result per contract
     }
 
     // Embedded CSS content from public/report.css
