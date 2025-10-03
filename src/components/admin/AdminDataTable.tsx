@@ -53,7 +53,7 @@ const AdminDataTable = <T extends { id: string | number },>( // ADDED: Trailing 
     <div className="overflow-x-auto bg-white shadow-md rounded-lg">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
-          <tr>
+          <tr>{/* MODIFIED: Ensure no whitespace/newline after <tr> */}
             {columns.map((column) => (
               <th
                 key={String(column.key)}
@@ -62,21 +62,18 @@ const AdminDataTable = <T extends { id: string | number },>( // ADDED: Trailing 
               >
                 {column.header}
               </th>
-            ))}
-            <th scope="col" className="relative px-6 py-3">
+            ))}<th scope="col" className="relative px-6 py-3"> {/* MODIFIED: No whitespace/newline before <th> */}
               <span className="sr-only">{t('actions_table')}</span> {/* MODIFIED */}
-            </th>
-          </tr>
+            </th></tr>{/* MODIFIED: Ensure no whitespace/newline before </tr> */}
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((item) => (
-            <tr key={item.id}>
+            <tr key={item.id}>{/* MODIFIED: Ensure no whitespace/newline after <tr> */}
               {columns.map((column) => (
                 <td key={String(column.key)} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {column.render ? column.render(item) : String(item[column.key])}
                 </td>
-              ))}
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              ))}<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"> {/* MODIFIED: No whitespace/newline before <td> */}
                 <div className="flex items-center justify-end space-x-2">
                   {customActions ? (
                     customActions(item)
@@ -101,8 +98,7 @@ const AdminDataTable = <T extends { id: string | number },>( // ADDED: Trailing 
                     </>
                   )}
                 </div>
-              </td>
-            </tr>
+              </td></tr>{/* MODIFIED: Ensure no whitespace/newline before </tr> */}
           ))}
         </tbody>
       </table>
