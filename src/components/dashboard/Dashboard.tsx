@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'; // ADDED
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(selectedContractId);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
@@ -31,13 +31,13 @@ const Dashboard: React.FC = () => {
 
   // Temporary log for debugging
   useEffect(() => {
-    console.log('Dashboard Render Check:');
-    console.log('  isSessionLoading:', isSessionLoading);
-    console.log('  session:', session);
-    console.log('  session?.user?.id:', session?.user?.id);
-    console.log('  loadingSubscription:', loadingSubscription);
-    console.log('  loadingOrders:', loadingOrders);
-    console.log('  loadingContracts:', loadingContracts);
+    // console.log('Dashboard Render Check:'); // COMMENTED OUT
+    // console.log('  isSessionLoading:', isSessionLoading); // COMMENTED OUT
+    // console.log('  session:', session); // COMMENTED OUT
+    // console.log('  session?.user?.id:', session?.user?.id); // COMMENTED OUT
+    // console.log('  loadingSubscription:', loadingSubscription); // COMMENTED OUT
+    // console.log('  loadingOrders:', loadingOrders); // COMMENTED OUT
+    // console.log('  loadingContracts:', loadingContracts); // COMMENTED OUT
   }, [isSessionLoading, session, loadingSubscription, loadingOrders, loadingContracts]);
 
 
