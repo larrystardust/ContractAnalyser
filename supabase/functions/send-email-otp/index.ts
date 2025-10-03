@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_server_error', userPreferredLanguage, { errorMessage: 'Failed to send OTP email.' }) }, 500, origin); // Pass origin
     }
 
-    console.log(`OTP sent to ${email}:`, data);
+    // console.log(`OTP sent to ${email}:`, data); // REMOVED
     return corsResponse({ message: getTranslatedMessage('message_otp_sent_successfully', userPreferredLanguage) }, 200, origin); // Pass origin
 
   } catch (error: any) {
