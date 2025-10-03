@@ -77,7 +77,7 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
       max_tokens: 1000, // Adjust as needed
     });
     const translatedContent = translationCompletion.choices[0].message?.content?.trim();
-    console.log(`translateText: Original: "${text}" -> Translated: "${translatedContent}"`);
+    // console.log(`translateText: Original: "${text}" -> Translated: "${translatedContent}"`); // REMOVED
 
     // If the translation is empty, return the original text as a fallback
     if (!translatedContent) {
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     outputLanguage = output_language || 'en';
     originalContractName = original_contract_name; // ADDED: Assign original contract name from request body
 
-    console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}. Original name: ${originalContractName}`); // ADDED: Log original name
+    // console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}. Original name: ${originalContractName}`); // REMOVED
 
     if (!contractId || !contractText) {
       return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
 
     // ADDED: Translate the original contract name
     translatedContractName = await translateText(originalContractName, outputLanguage);
-    console.log(`contract-analyzer: Translated contract name: "${originalContractName}" to "${translatedContractName}"`); // ADDED: Log translation result
+    // console.log(`contract-analyzer: Translated contract name: "${originalContractName}" to "${translatedContractName}"`); // REMOVED
 
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
@@ -375,35 +375,35 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     let analysisData: any;
     try {
       analysisData = JSON.parse(aiResponseContent);
-      console.log('contract-analyzer: Raw AI analysis data (before post-processing translation):', JSON.stringify(analysisData, null, 2));
+      // console.log('contract-analyzer: Raw AI analysis data (before post-processing translation):', JSON.stringify(analysisData, null, 2)); // REMOVED
     } catch (parseError) {
       console.error('contract-analyzer: Error parsing OpenAI response JSON:', parseError);
       throw new Error('Failed to parse AI analysis response.');
     }
 
     // ADDED: Post-processing translation step
-    console.log(`contract-analyzer: Translating AI output to ${outputLanguage}...`);
+    // console.log(`contract-analyzer: Translating AI output to ${outputLanguage}...`); // REMOVED
     
     // Translate Executive Summary
-    console.log(`contract-analyzer: Translating executiveSummary...`);
+    // console.log(`contract-analyzer: Translating executiveSummary...`); // REMOVED
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
     // Translate Data Protection Impact
     if (analysisData.dataProtectionImpact) {
-      console.log(`contract-analyzer: Translating dataProtectionImpact...`);
+      // console.log(`contract-analyzer: Translating dataProtectionImpact...`); // REMOVED
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
     // Translate Findings
     for (const finding of analysisData.findings) {
-      console.log(`contract-analyzer: Translating finding title: "${finding.title}"`);
+      // console.log(`contract-analyzer: Translating finding title: "${finding.title}"`); // REMOVED
       finding.title = await translateText(finding.title, outputLanguage);
-      console.log(`contract-analyzer: Translating finding description: "${finding.description}"`);
+      // console.log(`contract-analyzer: Translating finding description: "${finding.description}"`); // REMOVED
       finding.description = await translateText(finding.description, outputLanguage);
-      console.log(`contract-analyzer: Translating finding recommendations...`);
+      // console.log(`contract-analyzer: Translating finding recommendations...`); // REMOVED
       finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
       if (finding.clauseReference) {
-        console.log(`contract-analyzer: Translating finding clauseReference: "${finding.clauseReference}"`);
+        // console.log(`contract-analyzer: Translating finding clauseReference: "${finding.clauseReference}"`); // REMOVED
         finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
       }
     }
@@ -411,13 +411,13 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     // Translate Jurisdiction Summaries
     for (const key in analysisData.jurisdictionSummaries) {
       const summary = analysisData.jurisdictionSummaries[key];
-      console.log(`contract-analyzer: Translating jurisdiction summary for ${key} applicableLaws...`);
+      // console.log(`contract-analyzer: Translating jurisdiction summary for ${key} applicableLaws...`); // REMOVED
       summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
-      console.log(`contract-analyzer: Translating jurisdiction summary for ${key} keyFindings...`);
+      // console.log(`contract-analyzer: Translating jurisdiction summary for ${key} keyFindings...`); // REMOVED
       summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
     }
-    console.log('contract-analyzer: Post-processing translation complete.');
-    console.log('contract-analyzer: Final AI analysis data (after post-processing translation):', JSON.stringify(analysisData, null, 2));
+    // console.log('contract-analyzer: Post-processing translation complete.'); // REMOVED
+    // console.log('contract-analyzer: Final AI analysis data (after post-processing translation):', JSON.stringify(analysisData, null, 2)); // REMOVED
     // END ADDED: Post-processing translation step
 
 
@@ -544,7 +544,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         if (decrementError) {
           console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
         } else {
-          console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`);
+          // console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`); // REMOVED
         }
       }
     }
