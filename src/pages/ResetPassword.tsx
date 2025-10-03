@@ -20,8 +20,8 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // MODIFIED: Use useRef for sessionTimer
-  const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // MODIFIED: Change type from NodeJS.Timeout to number | null
+  const sessionTimerRef = useRef<number | null>(null);
 
   // Set global password reset flow state and block modals
   useEffect(() => {
@@ -55,7 +55,7 @@ const ResetPassword: React.FC = () => {
       localStorage.removeItem('passwordResetFlowStartTime');
       localStorage.removeItem('blockModalsDuringReset');
       // MODIFIED: Clear timer using ref
-      if (sessionTimerRef.current) {
+      if (sessionTimerRef.current !== null) { // Explicitly check for null
         clearTimeout(sessionTimerRef.current);
         sessionTimerRef.current = null;
       }
@@ -65,7 +65,7 @@ const ResetPassword: React.FC = () => {
   // Auto-redirect to login after 15 minutes
   useEffect(() => {
     // MODIFIED: Clear any existing timer before setting a new one
-    if (sessionTimerRef.current) {
+    if (sessionTimerRef.current !== null) { // Explicitly check for null
       clearTimeout(sessionTimerRef.current);
     }
 
@@ -85,7 +85,7 @@ const ResetPassword: React.FC = () => {
     sessionTimerRef.current = timer; // Store the timer ID in the ref
 
     return () => {
-      if (sessionTimerRef.current) {
+      if (sessionTimerRef.current !== null) { // Explicitly check for null
         clearTimeout(sessionTimerRef.current);
         sessionTimerRef.current = null;
       }
@@ -130,7 +130,7 @@ const ResetPassword: React.FC = () => {
       setSuccess(t('password_reset_success'));
       
       // MODIFIED: Clear timer using ref
-      if (sessionTimerRef.current) {
+      if (sessionTimerRef.current !== null) { // Explicitly check for null
         clearTimeout(sessionTimerRef.current);
         sessionTimerRef.current = null;
       }
@@ -180,7 +180,7 @@ const ResetPassword: React.FC = () => {
   const handleBackToLogin = async () => {
     try {
       // MODIFIED: Clear timer using ref
-      if (sessionTimerRef.current) {
+      if (sessionTimerRef.current !== null) { // Explicitly check for null
         clearTimeout(sessionTimerRef.current);
         sessionTimerRef.current = null;
       }
