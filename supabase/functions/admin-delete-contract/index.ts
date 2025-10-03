@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
 
     const originalContractFilePath = contractData?.file_path;
     const reportFilePath = contractData?.analysis_results && contractData.analysis_results.length > 0
-      ? contractData.analysis_results[0].report_file_path
+      ? contractData.analysis_results.report_file_path
       : null;
 
     // Delete original contract file from Supabase Storage
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
       if (storageError) {
         console.error(`Error deleting original contract file ${originalContractFilePath} from storage:`, storageError);
       } else {
-        console.log(`Successfully deleted original contract file: ${originalContractFilePath}`);
+        // console.log(`Successfully deleted original contract file: ${originalContractFilePath}`); // REMOVED
       }
     }
 
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       if (reportStorageError) {
         console.error(`Error deleting report file ${reportFilePath} from storage:`, reportStorageError);
       } else {
-        console.log(`Successfully deleted report file: ${reportFilePath}`);
+        // console.log(`Successfully deleted report file: ${reportFilePath}`); // REMOVED
       }
     }
 
