@@ -167,6 +167,7 @@
   "manage_inquiries": "Gérer les demandes",
   "view_messages_contact_form": "Afficher les messages soumis via le formulaire de contact.",
   "manage_support_tickets": "Gérer les tickets de support",
+  "no_support_tickets_found": "Aucun ticket d'assistance trouvé.",
   "handle_user_support_requests": "Gérer les demandes de support des utilisateurs.",
   "application_settings": "Paramètres de l'application",
   "configure_global_parameters": "Configurer les paramètres globaux de l'application.",
