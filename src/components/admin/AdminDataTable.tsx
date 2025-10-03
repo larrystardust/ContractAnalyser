@@ -99,7 +99,8 @@ function AdminDataTable<T extends { id: string | number }>(
                     </>
                   )}
                 </div>
-              </td></tr>{/* MODIFIED: Ensure no whitespace/newline before </tr> */}
+              </td>
+            </tr>{/* MODIFIED: Ensure no whitespace/newline before </tr> */}
           ))}
         </tbody>
       </table>
