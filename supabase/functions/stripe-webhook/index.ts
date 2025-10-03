@@ -61,7 +61,7 @@ async function handleEvent(event: Stripe.Event) {
   }
 
   if (event.type === 'payment_intent.succeeded' && (stripeData as Stripe.PaymentIntent).invoice === null) {
-    console.log('Ignoring payment_intent.succeeded event not linked to an invoice.');
+    // console.log('Ignoring payment_intent.succeeded event not linked to an invoice.'); // REMOVED
     return;
   }
 
@@ -92,20 +92,20 @@ async function handleEvent(event: Stripe.Event) {
 
   if (event.type === 'checkout.session.completed') {
     const session = stripeData as Stripe.Checkout.Session;
-    console.log('Stripe Webhook: Received checkout.session.completed event. Session:', JSON.stringify(session, null, 2));
+    // console.log('Stripe Webhook: Received checkout.session.completed event. Session:', JSON.stringify(session, null, 2)); // REMOVED
 
     if (session.mode === 'subscription') {
       // For subscriptions, rely on 'customer.subscription.created' or 'customer.subscription.updated'
       // to trigger syncCustomerFromStripe. This prevents duplicate processing.
-      console.info(`Checkout session completed for subscription. Will rely on customer.subscription events for sync.`);
+      // console.info(`Checkout session completed for subscription. Will rely on customer.subscription events for sync.`); // REMOVED
       return; // Exit early, let other webhooks handle the sync
     } else if (session.mode === 'payment' && session.payment_status === 'paid') {
-      console.log('Stripe Webhook: Handling one-time payment.');
+      // console.log('Stripe Webhook: Handling one-time payment.'); // REMOVED
       try {
         const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
           expand: ['line_items'],
         });
-        console.log('Stripe Webhook: Retrieved full session with line_items:', JSON.stringify(fullSession, null, 2));
+        // console.log('Stripe Webhook: Retrieved full session with line_items:', JSON.stringify(fullSession, null, 2)); // REMOVED
 
         const {
           id: checkout_session_id,
@@ -117,7 +117,7 @@ async function handleEvent(event: Stripe.Event) {
         } = fullSession;
 
         const priceId = line_items?.data?.[0]?.price?.id || null;
-        console.log('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.');
+        // console.log('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.'); // REMOVED
 
         if (!priceId) {
           console.error('Stripe Webhook: Price ID is null or undefined for one-time payment. Cannot insert order.');
@@ -126,7 +126,7 @@ async function handleEvent(event: Stripe.Event) {
 
         // ADDED: Extract credits from session metadata
         const creditsFromMetadata = parseInt(session.metadata?.credits || '0', 10);
-        console.log('Stripe Webhook: Extracted creditsFromMetadata:', creditsFromMetadata);
+        // console.log('Stripe Webhook: Extracted creditsFromMetadata:', creditsFromMetadata); // REMOVED
 
         const { error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
@@ -145,7 +145,7 @@ async function handleEvent(event: Stripe.Event) {
           console.error('Stripe Webhook: Error inserting order into stripe_orders table:', orderError);
           return;
         }
-        console.log('Stripe Webhook: Order successfully inserted into stripe_orders table.');
+        // console.log('Stripe Webhook: Order successfully inserted into stripe_orders table.'); // REMOVED
 
         if (userId) { // Only send notification if userId was successfully retrieved
           const singleUseProduct = stripeProducts.find(p => p.pricing.one_time?.priceId === priceId);
@@ -159,19 +159,19 @@ async function handleEvent(event: Stripe.Event) {
             notificationMessage,
             'success'
           );
-          console.log('Stripe Webhook: Notification sent for one-time payment.');
+          // console.log('Stripe Webhook: Notification sent for one-time payment.'); // REMOVED
         }
-        console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
+        // console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`); // REMOVED
       } catch (error) {
         console.error('Stripe Webhook: Error processing one-time payment:', error);
       }
     }
   } else if (event.type.startsWith('customer.subscription.')) {
-    console.info(`Processing subscription event ${event.type} for customer: ${customerId}`);
+    // console.info(`Processing subscription event ${event.type} for customer: ${customerId}`); // REMOVED
     // MODIFIED: Pass event.type to syncCustomerFromStripe
     await syncCustomerFromStripe(customerId, userId, userPreferredLanguage, event.type);
   } else {
-    console.log(`Unhandled event type: ${event.type}`);
+    // console.log(`Unhandled event type: ${event.type}`); // REMOVED
   }
 }
 
@@ -198,7 +198,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
     });
 
     if (subscriptions.data.length === 0) {
-      console.info(`No active subscriptions found for customer: ${customerId}`);
+      // console.info(`No active subscriptions found for customer: ${customerId}`); // REMOVED
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
         {
           customer_id: customerId,
@@ -252,14 +252,14 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
     const oldDbSubscriptionId = oldSubscriptionDb?.subscription_id;
     const newStripeSubscriptionId = stripeSubscription.id;
 
-    console.log(`DEBUG: userId: ${userId}, oldDbSubscriptionId: ${oldDbSubscriptionId}, newStripeSubscriptionId: ${newStripeSubscriptionId}`);
+    // console.log(`DEBUG: userId: ${userId}, oldDbSubscriptionId: ${oldDbSubscriptionId}, newStripeSubscriptionId: ${newStripeSubscriptionId}`); // REMOVED
 
     // --- START OF CRITICAL FIX ---
     // Step 1: If the subscription ID is changing, explicitly nullify ALL contracts referencing the OLD subscription ID.
     // This ensures the foreign key constraint is released before the stripe_subscriptions table is updated.
     if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
-      console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}.`);
-      console.log(`Attempting to nullify contracts referencing old subscription ID: ${oldDbSubscriptionId}...`);
+      // console.log(`Subscription ID changed from ${oldDbSubscriptionId} to ${newStripeSubscriptionId}.`); // REMOVED
+      // console.log(`Attempting to nullify contracts referencing old subscription ID: ${oldDbSubscriptionId}...`); // REMOVED
 
       // First, find all contract IDs that reference the old subscription ID
       const { data: contractsToNullify, error: fetchContractsToNullifyError } = await supabase
@@ -274,7 +274,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
 
       if (contractsToNullify && contractsToNullify.length > 0) {
         const contractIds = contractsToNullify.map(c => c.id);
-        console.log(`Found ${contractIds.length} contracts to nullify: ${contractIds.join(', ')}`);
+        // console.log(`Found ${contractIds.length} contracts to nullify: ${contractIds.join(', ')}`); // REMOVED
 
         // Now, update these specific contracts to set their subscription_id to NULL
         const { count: nullifiedCount, error: nullifyContractsError } = await supabase
@@ -287,9 +287,9 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
           console.error('Error nullifying contracts\' subscription_id:', nullifyContractsError);
           throw new Error('Failed to nullify contracts for subscription ID change.');
         }
-        console.log(`Contracts' old subscription_id successfully nullified. Affected rows: ${nullifiedCount}`);
+        // console.log(`Contracts' old subscription_id successfully nullified. Affected rows: ${nullifiedCount}`); // REMOVED
       } else {
-        console.log(`No contracts found referencing old subscription ID: ${oldDbSubscriptionId}.`);
+        // console.log(`No contracts found referencing old subscription ID: ${oldDbSubscriptionId}.`); // REMOVED
       }
     }
 
@@ -321,12 +321,12 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
       console.error('Error upserting subscription:', subUpsertError);
       throw new Error('Failed to update subscription status in database');
     }
-    console.log('stripe_subscriptions table successfully upserted with new subscription ID.');
+    // console.log('stripe_subscriptions table successfully upserted with new subscription ID.'); // REMOVED
 
     // Step 3: Re-link contracts to the new subscription ID
     // This is necessary for contracts that were just nullified.
     if (oldDbSubscriptionId && oldDbSubscriptionId !== newStripeSubscriptionId) {
-      console.log(`Re-linking contracts to new subscription ID: ${newStripeSubscriptionId}...`);
+      // console.log(`Re-linking contracts to new subscription ID: ${newStripeSubscriptionId}...`); // REMOVED
       const { error: relinkContractsError } = await supabase
         .from('contracts')
         .update({ subscription_id: newStripeSubscriptionId })
@@ -337,7 +337,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
         console.error('Error re-linking contracts to new subscription ID:', relinkContractsError);
         throw new Error('Failed to re-link contracts to new subscription ID.');
       }
-      console.log('Contracts successfully re-linked to new subscription ID.');
+      // console.log('Contracts successfully re-linked to new subscription ID.'); // REMOVED
     }
     // --- END OF CRITICAL FIX ---
 
@@ -424,7 +424,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
             );
         }
     }
-    console.info(`Successfully synced subscription for customer: ${customerId}`);
+    // console.info(`Successfully synced subscription for customer: ${customerId}`); // REMOVED
   } catch (error) {
     console.error(`Failed to sync subscription for customer ${customerId}:`, error);
     throw error;
