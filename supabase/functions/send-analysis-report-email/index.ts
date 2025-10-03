@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token or mismatch.' }, 401);
     }
 
-    console.log(`Attempting to send analysis report email to ${recipientEmail}.`);
+    // console.log(`Attempting to send analysis report email to ${recipientEmail}.`); // REMOVED
 
     // Construct the URL for the new public report viewer page
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
         console.error('Error sending email via Resend:', error);
         throw new Error(`Failed to send email: ${error.message}`);
       }
-      console.log('Email sent successfully via Resend:', data);
+      // console.log('Email sent successfully via Resend:', data); // REMOVED
     } catch (emailSendError: any) {
       console.error('Caught error during email sending:', emailSendError);
       throw emailSendError;
