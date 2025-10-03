@@ -10,7 +10,7 @@ import MembersSettings from '../components/settings/MembersSettings'; // ADDED M
 import { useTranslation } from 'react-i18next'; // ADDED
 
 const SettingsPage: React.FC = () => {
-  console.log('SettingsPage component rendered'); // Added console.log
+  // console.log('SettingsPage component rendered'); // COMMENTED OUT
   const location = useLocation();
   const { t } = useTranslation(); // ADDED
 
