@@ -1,6 +1,6 @@
 export const stripeProducts = [
     {
-        id: 'prod_SuPs2GtzhJZTZi',
+        id: 'prod_T2cDZNI5VjVdp5',
         name: 'product_name_single_use', // MODIFIED to translation key
         description: 'product_desc_single_use_5_credits', // MODIFIED: New description key
         mode: 'payment',
@@ -9,14 +9,14 @@ export const stripeProducts = [
         credits: 5, // ADDED: New credits property
         pricing: {
             one_time: {
-                priceId: 'price_1Ryb2XChzNpNrJcahj0azZL0',
+                priceId: 'price_1S6WzTCgxsPALRL7PA3IsJcf',
                 price: 9.99,
                 interval: 'one_time',
             },
         },
     },
     {
-        id: 'prod_SuPkz2RKm6alku',
+        id: 'prod_T2cJ7cQzgeS3Ku',
         name: 'product_name_professional_use', // MODIFIED to translation key
         description: 'product_desc_professional_use', // MODIFIED to translation key
         mode: 'subscription',
@@ -26,19 +26,19 @@ export const stripeProducts = [
         tier: 2,
         pricing: {
             monthly: {
-                priceId: 'price_1Ryav2ChzNpNrJcaRaDaHs0c',
+                priceId: 'price_1S6X58CgxsPALRL79XzfjR5o',
                 price: 29.99,
                 interval: 'month',
             },
             yearly: {
-                priceId: 'price_1RyaxmChzNpNrJcacFHIf4Lb',
+                priceId: 'price_1S6X8fCgxsPALRL72srcz1Sj',
                 price: 299.90,
                 interval: 'year',
             },
         },
     },
     {
-        id: 'prod_SuPptFOAtUB0Ve',
+        id: 'prod_T2cLOwJZatHP03',
         name: 'product_name_enterprise_use', // MODIFIED to translation key
         description: 'product_desc_enterprise_use', // MODIFIED to translation key
         mode: 'subscription',
@@ -48,12 +48,12 @@ export const stripeProducts = [
         tier: 3,
         pricing: {
             monthly: {
-                priceId: 'price_1RyazYChzNpNrJcaR6MzfRuJ',
+                priceId: 'price_1S6X75CgxsPALRL75wVzY9tJ',
                 price: 299.99,
                 interval: 'month',
             },
             yearly: {
-                priceId: 'price_1Ryb0qChzNpNrJcaL40z6Mlc',
+                priceId: 'price_1S6X9gCgxsPALRL7c0O6Aipe',
                 price: 2999.90,
                 interval: 'year',
             },
