@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '../ui/Button';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'; // ADDED
 
 interface Column<T> {
   key: keyof T;
@@ -22,13 +22,13 @@ interface AdminDataTableProps<T> {
 const AdminDataTable = <T extends { id: string | number }>(
   { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
 ) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // ADDED
 
   if (loading) {
     return (
       <div className="text-center py-8">
         <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">{t('loading_data')}...</p>
+        <p className="text-gray-500">{t('loading_data')}...</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -36,7 +36,7 @@ const AdminDataTable = <T extends { id: string | number }>(
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">{t('error_label')}: {error}</p>
+        <p className="text-red-600">{t('error_label')}: {error}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -44,7 +44,7 @@ const AdminDataTable = <T extends { id: string | number }>(
   if (data.length === 0) {
     return (
       <div className="text-center py-8 text-gray-600">
-        <p>{t('no_data_found')}</p>
+        <p>{t('no_data_found')}</p> {/* MODIFIED */}
       </div>
     );
   }
@@ -64,7 +64,7 @@ const AdminDataTable = <T extends { id: string | number }>(
               </th>
             ))}
             <th scope="col" className="relative px-6 py-3">
-              <span className="sr-only">{t('actions_table')}</span>
+              <span className="sr-only">{t('actions_table')}</span> {/* MODIFIED */}
             </th>
           </tr>
         </thead>
@@ -93,7 +93,7 @@ const AdminDataTable = <T extends { id: string | number }>(
                         onClick={() => onEdit(item)}
                         icon={<Edit className="h-4 w-4" />}
                       >
-                        {t('edit_button')}
+                        {t('edit_button')} {/* MODIFIED */}
                       </Button>
                       <Button
                         variant="danger"
@@ -101,7 +101,7 @@ const AdminDataTable = <T extends { id: string | number }>(
                         onClick={() => onDelete(item)}
                         icon={<Trash2 className="h-4 w-4" />}
                       >
-                        {t('delete_button')}
+                        {t('delete_button')} {/* MODIFIED */}
                       </Button>
                     </>
                   )}
