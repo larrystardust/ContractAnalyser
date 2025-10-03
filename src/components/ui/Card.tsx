@@ -14,13 +14,16 @@ const Card: React.FC<CardProps> = ({
   hoverable = false
 }) => {
   // MODIFIED: Changed dark:bg-gray-800 to dark:bg-gray-400 for a slightly lighter dark theme
-  const baseStyles = 'bg-white dark:bg-gray-400 rounded-lg shadow-md dark:shadow-lg overflow-hidden';
+  const baseStyles =
+    'bg-white dark:bg-gray-400 rounded-lg shadow-md dark:shadow-lg overflow-hidden';
   // MODIFIED: Added dark:hover:shadow-xl
-  const hoverStyles = hoverable ? 'transition-transform duration-200 hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-xl cursor-pointer' : '';
+  const hoverStyles = hoverable
+    ? 'transition-transform duration-200 hover:scale-[1.02] hover:shadow-lg dark:hover:shadow-xl cursor-pointer'
+    : '';
   const clickHandler = hoverable && onClick ? onClick : undefined;
-  
+
   return (
-    <div 
+    <div
       className={`${baseStyles} ${hoverStyles} ${className}`}
       onClick={clickHandler}
     >
@@ -40,7 +43,9 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
 }) => {
   // MODIFIED: Added dark:border-gray-700 and dark:text-white
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 dark:text-white ${className}`}>
+    <div
+      className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 dark:text-white ${className}`}
+    >
       {children}
     </div>
   );
@@ -49,17 +54,21 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
 interface CardBodyProps {
   children: React.ReactNode;
   className?: string;
+  as?: keyof JSX.IntrinsicElements; // NEW: allows switching wrapper element
 }
 
 export const CardBody: React.FC<CardBodyProps> = ({
   children,
-  className = ''
+  className = '',
+  as = 'div' // default stays <div>
 }) => {
+  const Component = as as keyof JSX.IntrinsicElements;
+
   // MODIFIED: Added dark:text-gray-200 for default text color within CardBody
   return (
-    <div className={`px-6 py-4 dark:text-gray-400 ${className}`}>
+    <Component className={`px-6 py-4 dark:text-gray-400 ${className}`}>
       {children}
-    </div>
+    </Component>
   );
 };
 
@@ -74,7 +83,9 @@ export const CardFooter: React.FC<CardFooterProps> = ({
 }) => {
   // MODIFIED: Added dark:border-gray-700
   return (
-    <div className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+    <div
+      className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 ${className}`}
+    >
       {children}
     </div>
   );
