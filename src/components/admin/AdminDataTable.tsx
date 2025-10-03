@@ -19,7 +19,7 @@ interface AdminDataTableProps<T> {
   customActions?: (item: T) => React.ReactNode;
 }
 
-const AdminDataTable = <T extends {id: string | number },>(
+const AdminDataTable = <T extends {id: string | number},>(
   { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
 ) => {
   const { t } = useTranslation(); // ADDED
