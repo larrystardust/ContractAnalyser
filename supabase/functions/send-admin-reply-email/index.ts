@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers({ email: recipientEmail, page: 1, perPage: 1 });
     let recipientUserId = null;
     if (!authUserError && authUser.users.length > 0) {
-      recipientUserId = authUser.users[0].id;
+      recipientUserId = authUser.users.id;
     }
 
     if (recipientUserId) {
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     }
     // END ADDED
 
-    console.log(`Attempting to send admin reply email to ${recipientEmail} from ${adminName || user.email}.`);
+    // console.log(`Attempting to send admin reply email to ${recipientEmail} from ${adminName || user.email}.`); // REMOVED
 
     // --- START: Email Service Integration (Resend Example) ---
     try {
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
         console.error('Error sending email via Resend:', error);
         // Do not throw error here, allow database insertion to proceed
       } else {
-        console.log('Email sent successfully via Resend:', data);
+        // console.log('Email sent successfully via Resend:', data); // REMOVED
       }
     } catch (emailSendError: any) {
       console.error('Caught error during email sending:', emailSendError);
