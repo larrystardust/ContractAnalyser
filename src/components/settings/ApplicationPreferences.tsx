@@ -28,7 +28,7 @@ const ApplicationPreferences: React.FC = () => {
   const fetchPreferences = useCallback(async () => {
     if (!session?.user?.id) {
       setIsLoading(false);
-      console.log("AP: No user ID, skipping fetch.");
+      // console.log("AP: No user ID, skipping fetch."); // COMMENTED OUT
       return;
     }
     setIsLoading(true);
@@ -40,26 +40,26 @@ const ApplicationPreferences: React.FC = () => {
         .eq('id', session.user.id)
         .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
         throw fetchError;
       }
 
-      console.log("AP: Fetched profile data:", data);
+      // console.log("AP: Fetched profile data:", data); // COMMENTED OUT
 
       const dbLanguage = data?.language_preference || i18n.language;
       setSelectedLanguage(dbLanguage);
-      console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`);
+      // console.log(`AP: Initializing selectedLanguage to: ${dbLanguage}`); // COMMENTED OUT
 
       if (i18n.language !== dbLanguage) {
-        console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`);
+        // console.log(`AP: Changing i18n language from ${i18n.language} to ${dbLanguage}`); // COMMENTED OUT
         i18n.changeLanguage(dbLanguage); // This updates i18n instance and localStorage, and sets dir attribute
       } else {
-        console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`);
+        // console.log(`AP: i18n language already matches DB preference (${dbLanguage}). No change needed.`); // COMMENTED OUT
       }
 
       const dbTheme = (data?.theme_preference as 'light' | 'dark' | 'system') || 'system';
       setSelectedTheme(dbTheme);
-      console.log(`AP: Initializing selectedTheme to: ${dbTheme}`);
+      // console.log(`AP: Initializing selectedTheme to: ${dbTheme}`); // COMMENTED OUT
 
       setEmailReportsEnabled(data?.email_reports_enabled || false);
       setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
@@ -84,7 +84,7 @@ const ApplicationPreferences: React.FC = () => {
     // which reflects the language the page was initially loaded with.
     const htmlLang = document.documentElement.getAttribute('lang');
     if (htmlLang && htmlLang !== i18n.language) {
-      console.log(`AP: Detected language mismatch (HTML: ${htmlLang}, i18n: ${i18n.language}). Forcing reload.`);
+      // console.log(`AP: Detected language mismatch (HTML: ${htmlLang}, i18n: ${i18n.language}). Forcing reload.`); // COMMENTED OUT
       window.location.reload();
     }
   }, [i18n.language]); // Depend on i18n.language to trigger when it changes
@@ -132,7 +132,7 @@ const ApplicationPreferences: React.FC = () => {
     try {
       const languageChanged = i18n.language !== selectedLanguage; // Check if language actually changed
 
-      console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`);
+      // console.log(`AP: Saving preferences. Changing i18n language to: ${selectedLanguage}`); // COMMENTED OUT
       i18n.changeLanguage(selectedLanguage); // This updates the i18n instance and localStorage
 
       const { error: updateError } = await supabase
@@ -154,7 +154,7 @@ const ApplicationPreferences: React.FC = () => {
         throw updateError;
       }
       setMessage(t('notification_preferences_saved_successfully'));
-      console.log("AP: Language preference saved successfully.");
+      // console.log("AP: Language preference saved successfully."); // COMMENTED OUT
 
       await fetchPreferences(); // Call fetchPreferences to re-sync state with DB
 
