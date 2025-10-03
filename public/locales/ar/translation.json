@@ -167,6 +167,7 @@
   "manage_inquiries": "إدارة الاستفسارات",
   "view_messages_contact_form": "عرض الرسائل المرسلة عبر نموذج الاتصال.",
   "manage_support_tickets": "إدارة تذاكر الدعم",
+  "no_support_tickets_found": "لم يتم العثور على تذاكر دعم.",
   "handle_user_support_requests": "معالجة طلبات دعم المستخدم.",
   "application_settings": "إعدادات التطبيق",
   "configure_global_parameters": "تكوين معلمات التطبيق العامة.",
