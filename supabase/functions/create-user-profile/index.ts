@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
   try {
     const { userId, fullName, businessName, mobilePhoneNumber, countryCode, languagePreference } = await req.json();
-    console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode, languagePreference });
+    // console.log('create-user-profile: Received payload:', { userId, fullName, businessName, mobilePhoneNumber, countryCode, languagePreference }); // REMOVED
 
     if (!userId) {
       console.error('create-user-profile: Missing userId in payload.');
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: error.message }, 500);
     }
 
-    console.log('create-user-profile: Profile upserted successfully:', data);
+    // console.log('create-user-profile: Profile upserted successfully:', data); // REMOVED
     return corsResponse({ message: 'Profile created/updated successfully', profile: data });
 
   } catch (error: any) {
