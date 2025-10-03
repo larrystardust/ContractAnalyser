@@ -7,7 +7,7 @@ import StructuredData from '../StructuredData';
 import { useTranslation } from 'react-i18next';
 
 const PricingSection: React.FC = () => {
-  console.log('PricingSection component rendered');
+  // console.log('PricingSection component rendered'); // REMOVED
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { t } = useTranslation();
 
