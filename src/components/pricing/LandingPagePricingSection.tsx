@@ -7,7 +7,7 @@ import StructuredData from '../StructuredData';
 import { useTranslation } from 'react-i18next';
 
 const LandingPagePricingSection: React.FC = () => {
-  console.log('LandingPagePricingSection component rendered');
+  // console.log('LandingPagePricingSection component rendered'); // REMOVED
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { t } = useTranslation();
 
