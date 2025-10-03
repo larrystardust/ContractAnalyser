@@ -71,10 +71,10 @@ const EmailSentPage: React.FC = () => {
       let errorMessage = err.message || t('failed_to_resend_email');
 
       // --- START MODIFICATION ---
-      console.log('EmailSentPage: Raw error message from Supabase:', err.message); // Diagnostic log
+      // console.log('EmailSentPage: Raw error message from Supabase:', err.message); // COMMENTED OUT
       // Refined regex to be more flexible: case-insensitive, optional trailing punctuation
       const cooldownMatch = err.message.match(/for security purposes, you can only request this after (\d+) seconds/i);
-      console.log('EmailSentPage: Cooldown regex match result:', cooldownMatch); // Diagnostic log
+      // console.log('EmailSentPage: Cooldown regex match result:', cooldownMatch); // COMMENTED OUT
 
       if (cooldownMatch && cooldownMatch[1]) {
         const seconds = parseInt(cooldownMatch[1], 10);
