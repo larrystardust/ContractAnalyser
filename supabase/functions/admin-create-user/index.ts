@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       adminLanguage
     } = await req.json();
 
-    console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, default_jurisdictions, price_id, role, send_invitation_email, adminLanguage });
+    // console.log('admin-create-user: Received request body:', { email, password: '[REDACTED]', full_name, business_name, mobile_phone_number, country_code, is_admin, default_jurisdictions, price_id, role, send_invitation_email, adminLanguage }); // REMOVED
 
     if (!email || !password) {
       console.error('admin-create-user: Missing email or password in request.');
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token', details: userError?.message }, 401);
     }
-    console.log('admin-create-user: Admin user authenticated:', user.id);
+    // console.log('admin-create-user: Admin user authenticated:', user.id); // REMOVED
 
     const { data: adminProfile, error: adminProfileError } = await supabase
       .from('profiles')
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
       console.error('admin-create-user: Forbidden: User is not an administrator.', adminProfileError);
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
-    console.log('admin-create-user: Admin privileges confirmed.');
+    // console.log('admin-create-user: Admin privileges confirmed.'); // REMOVED
 
     const { data: appSettings, error: appSettingsError } = await supabase
       .from('app_settings')
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       console.warn('admin-create-user: Error fetching app settings for default theme:', appSettingsError);
     }
     const defaultTheme = appSettings?.default_theme || 'system';
-    console.log('admin-create-user: Default theme determined:', defaultTheme);
+    // console.log('admin-create-user: Default theme determined:', defaultTheme); // REMOVED
 
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
@@ -120,9 +120,9 @@ Deno.serve(async (req) => {
       console.error('admin-create-user: Error creating user in auth:', createUserError);
       return corsResponse({ error: createUserError.message }, 500);
     }
-    console.log('admin-create-user: User created in Supabase Auth. Full newUser object:', JSON.stringify(newUser, null, 2));
-    console.log('admin-create-user: newUser.user.id:', newUser.user.id);
-    console.log('admin-create-user: newUser.user.email (after createUser):', newUser.user.email);
+    // console.log('admin-create-user: User created in Supabase Auth. Full newUser object:', JSON.stringify(newUser, null, 2)); // REMOVED
+    // console.log('admin-create-user: newUser.user.id:', newUser.user.id); // REMOVED
+    // console.log('admin-create-user: newUser.user.email (after createUser):', newUser.user.email); // REMOVED
 
     const { error: insertProfileError } = await supabase
       .from('profiles')
@@ -143,11 +143,11 @@ Deno.serve(async (req) => {
       await supabase.auth.admin.deleteUser(newUser.user.id);
       return corsResponse({ error: 'Failed to create user profile.' }, 500);
     }
-    console.log('admin-create-user: User profile inserted successfully.');
+    // console.log('admin-create-user: User profile inserted successfully.'); // REMOVED
 
     // --- START: Subscription Assignment Logic ---
     if (price_id && role) {
-      console.log(`admin-create-user: Assigning subscription with price_id: ${price_id} and role: ${role}`);
+      // console.log(`admin-create-user: Assigning subscription with price_id: ${price_id} and role: ${role}`); // REMOVED
 
       // 1. Get or Create Stripe Customer for the new user
       let customerId: string | null = null;
@@ -164,9 +164,9 @@ Deno.serve(async (req) => {
 
       if (existingCustomer) {
         customerId = existingCustomer.customer_id;
-        console.log('admin-create-user: Found existing customerId for new user:', customerId);
+        // console.log('admin-create-user: Found existing customerId for new user:', customerId); // REMOVED
       } else {
-        console.log('admin-create-user: No existing customer for new user, creating new one.');
+        // console.log('admin-create-user: No existing customer for new user, creating new one.'); // REMOVED
         const Stripe = (await import('npm:stripe@17.7.0')).default;
         const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
         const stripe = new Stripe(stripeSecret, {
@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
           console.error('admin-create-user: Error inserting new Stripe customer for new user:', insertCustomerError);
           // Continue, but log the error.
         }
-        console.log('admin-create-user: Created new customerId for new user:', customerId);
+        // console.log('admin-create-user: Created new customerId for new user:', customerId); // REMOVED
       }
 
       if (customerId) {
@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
             console.error('admin-create-user: Error upserting admin-assigned subscription for new user:', upsertSubError);
             // Continue, but log the error.
           } else {
-            console.log('admin-create-user: Admin-assigned subscription upserted successfully.');
+            // console.log('admin-create-user: Admin-assigned subscription upserted successfully.'); // REMOVED
 
             // Upsert membership for the new user
             const { error: membershipUpsertError } = await supabase
@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
               console.error('admin-create-user: Error upserting membership for new user:', membershipUpsertError);
               // Continue, but log the error.
             } else {
-              console.log('admin-create-user: Membership upserted successfully for new user.');
+              // console.log('admin-create-user: Membership upserted successfully for new user.'); // REMOVED
               const translatedProductName = getTranslatedMessage(selectedProduct.name, adminLanguage);
               await insertNotification(
                 newUser.user.id,
@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
     // --- END: Subscription Assignment Logic ---
 
     if (send_invitation_email) {
-      console.log('admin-create-user: send_invitation_email is true. Invoking send-admin-created-user-invite-email...');
+      // console.log('admin-create-user: send_invitation_email is true. Invoking send-admin-created-user-invite-email...'); // REMOVED
       const emailRecipientName = String(full_name || newUser.user.email || 'User');
       const { data: emailFnResponse, error: emailFnInvokeError } = await supabase.functions.invoke('send-admin-created-user-invite-email', {
         body: {
@@ -289,10 +289,10 @@ Deno.serve(async (req) => {
       } else if (emailFnResponse && !emailFnResponse.success) {
         console.warn('admin-create-user: send-admin-created-user-invite-email Edge Function reported failure:', emailFnResponse.message);
       } else {
-        console.log('admin-create-user: send-admin-created-user-invite-email Edge Function invoked successfully.');
+        // console.log('admin-create-user: send-admin-created-user-invite-email Edge Function invoked successfully.'); // REMOVED
       }
     } else {
-      console.log('admin-create-user: send_invitation_email is false. Skipping custom invitation email.');
+      // console.log('admin-create-user: send_invitation_email is false. Skipping custom invitation email.'); // REMOVED
     }
 
     await logActivity(
@@ -302,7 +302,7 @@ Deno.serve(async (req) => {
       `Admin ${user.email} created new user: ${email}`,
       { target_user_id: newUser.user.id, target_user_email: email }
     );
-    console.log('admin-create-user: Activity logged. Returning success response.');
+    // console.log('admin-create-user: Activity logged. Returning success response.'); // REMOVED
 
     return corsResponse({ message: 'User created successfully', userId: newUser.user.id });
 
