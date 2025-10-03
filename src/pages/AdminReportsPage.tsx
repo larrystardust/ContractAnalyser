@@ -221,17 +221,17 @@ const AdminReportsPage: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('timestamp')}</th> {/* MODIFIED */}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('event_type')}</th> {/* MODIFIED */}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('description')}</th> {/* MODIFIED */}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('user')}</th> {/* MODIFIED */}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('timestamp')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('event_type')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('description')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('user')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {auditLogs.map((log) => (
                     <tr key={log.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatLogDate(log.created_at)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t('audit_event_type_' + log.event_type)}</td> {/* MODIFIED: Translate event_type */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t('audit_event_type_' + log.event_type)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{log.description}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {log.user_full_name !== 'N/A' ? log.user_full_name : log.user_email}
