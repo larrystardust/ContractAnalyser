@@ -19,9 +19,10 @@ interface AdminDataTableProps<T> {
   customActions?: (item: T) => React.ReactNode;
 }
 
-const AdminDataTable = <T extends { id: string | number },>( // ADDED: Trailing comma here
+// MODIFIED: Changed to a traditional function declaration to avoid parsing ambiguity
+function AdminDataTable<T extends { id: string | number }>(
   { data, columns, loading, error, onEdit, onDelete, customActions }: AdminDataTableProps<T>
-) => {
+) {
   const { t } = useTranslation(); // ADDED
 
   if (loading) {
@@ -104,6 +105,6 @@ const AdminDataTable = <T extends { id: string | number },>( // ADDED: Trailing 
       </table>
     </div>
   );
-};
+} // MODIFIED: Closing brace for function declaration
 
 export default AdminDataTable;
