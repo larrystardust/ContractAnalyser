@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
   try {
     const { invitation_token } = await req.json();
-    console.log('accept-invitation: Received invitation_token:', invitation_token);
+    // console.log('accept-invitation: Received invitation_token:', invitation_token); // REMOVED
 
     if (!invitation_token) {
       console.error('accept-invitation: Invitation token missing.');
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
     const invitedUserId = user.id;
     const invitedUserEmail = user.email;
-    console.log('accept-invitation: Authenticated user ID:', invitedUserId, 'Email:', invitedUserEmail);
+    // console.log('accept-invitation: Authenticated user ID:', invitedUserId, 'Email:', invitedUserEmail); // REMOVED
 
     // ADDED: Fetch accepting user's preferred language
     let acceptingUserPreferredLanguage = 'en'; // Default to English
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       console.error('accept-invitation: Membership record not found for token:', invitation_token);
       return corsResponse({ error: getTranslatedMessage('message_invalid_or_expired_invitation', acceptingUserPreferredLanguage) }, 404);
     }
-    console.log('accept-invitation: Fetched membership:', membership);
+    // console.log('accept-invitation: Fetched membership:', membership); // REMOVED
 
     // 2. Check if the invitation is for this user (if user_id is already set)
     // OR if user_id is null, check if the invited_email_address matches the current user's email
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
         console.error('accept-invitation: Error fetching inviting user profile:', inviterProfileError);
       } else {
         invitingUserBusinessName = inviterProfile?.business_name || null;
-        console.log('accept-invitation: Inviting user business name:', invitingUserBusinessName);
+        // console.log('accept-invitation: Inviting user business name:', invitingUserBusinessName); // REMOVED
       }
     }
 
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         console.error('accept-invitation: Error updating invited user profile with business name:', updateProfileError);
         // Do not return error, as the core invitation acceptance is successful
       } else {
-        console.log('accept-invitation: Successfully updated invited user profile with business name.');
+        // console.log('accept-invitation: Successfully updated invited user profile with business name.'); // REMOVED
       }
     }
 
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       { membership_id: invitation_token, invited_by: membership.invited_by }
     );
 
-    console.log('accept-invitation: Invitation accepted successfully for membership ID:', invitation_token);
+    // console.log('accept-invitation: Invitation accepted successfully for membership ID:', invitation_token); // REMOVED
     return corsResponse({ message: getTranslatedMessage('message_invitation_accepted_successfully', acceptingUserPreferredLanguage) });
 
   } catch (error: any) {
