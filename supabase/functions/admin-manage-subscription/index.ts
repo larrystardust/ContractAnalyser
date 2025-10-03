@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
   try {
     const { userId, priceId, role } = await req.json();
-    console.log('admin-manage-subscription: Received request with userId:', userId, 'priceId:', priceId, 'role:', role);
+    // console.log('admin-manage-subscription: Received request with userId:', userId, 'priceId:', priceId, 'role:', role); // REMOVED
 
     if (!userId) {
       return corsResponse({ error: getTranslatedMessage('error_missing_userid', 'en') }, 400);
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
       targetUserPreferredLanguage = targetUserProfile.language_preference;
     }
 
-    console.log('admin-manage-subscription: Admin user:', user.email, 'managing user:', targetUserEmail);
+    // console.log('admin-manage-subscription: Admin user:', user.email, 'managing user:', targetUserEmail); // REMOVED
 
     // 1. Get or Create Stripe Customer for the target user
     let customerId: string | null = null;
@@ -115,9 +115,9 @@ Deno.serve(async (req) => {
 
     if (existingCustomer) {
       customerId = existingCustomer.customer_id;
-      console.log('admin-manage-subscription: Found existing customerId:', customerId);
+      // console.log('admin-manage-subscription: Found existing customerId:', customerId); // REMOVED
     } else {
-      console.log('admin-manage-subscription: No existing customer, creating new one.');
+      // console.log('admin-manage-subscription: No existing customer, creating new one.'); // REMOVED
       const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(userId);
       if (authUserError || !authUser?.user?.email) {
         console.error('admin-manage-subscription: Could not retrieve user email to create Stripe customer.', authUserError);
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         console.error('admin-manage-subscription: Error inserting new Stripe customer:', insertCustomerError);
         return corsResponse({ error: getTranslatedMessage('error_failed_to_create_stripe_customer_record', targetUserPreferredLanguage) }, 500);
       }
-      console.log('admin-manage-subscription: Created new customerId:', customerId);
+      // console.log('admin-manage-subscription: Created new customerId:', customerId); // REMOVED
     }
 
     // Find the product associated with the priceId
@@ -160,14 +160,14 @@ Deno.serve(async (req) => {
       // Continue, but log the error.
     } else if (existingMembershipRecord) {
       existingInvitedEmail = existingMembershipRecord.invited_email_address;
-      console.log('admin-manage-subscription: Found existing invited_email_address:', existingInvitedEmail);
+      // console.log('admin-manage-subscription: Found existing invited_email_address:', existingInvitedEmail); // REMOVED
     }
     // --- END: Fetch existing invited_email_address before deletion ---
 
 
     // Handle removing user from all subscriptions
     if (priceId === null) {
-      console.log('admin-manage-subscription: priceId is null, removing user from all subscriptions.');
+      // console.log('admin-manage-subscription: priceId is null, removing user from all subscriptions.'); // REMOVED
       // Remove user from any existing subscription memberships
       const { error: deleteMembershipError } = await supabase
         .from('subscription_memberships')
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
       return corsResponse({ message: notificationMessageRemoved });
 
     } else if (selectedProduct?.mode === 'admin_assigned') {
-      console.log('admin-manage-subscription: Assigning admin-only free plan.');
+      // console.log('admin-manage-subscription: Assigning admin-only free plan.'); // REMOVED
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
         return corsResponse({ error: getTranslatedMessage('error_role_required', targetUserPreferredLanguage) }, 400);
@@ -245,10 +245,10 @@ Deno.serve(async (req) => {
       }
 
       if (existingActiveStripeSubscription && existingActiveStripeSubscription.subscription_id && !existingActiveStripeSubscription.subscription_id.startsWith('admin_assigned_')) {
-        console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`);
+        // console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`); // REMOVED
         try {
           await stripe.subscriptions.cancel(existingActiveStripeSubscription.subscription_id);
-          console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`);
+          // console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`); // REMOVED
           // The webhook will update the DB status for the old subscription.
         } catch (stripeCancelError: any) {
           console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
@@ -330,7 +330,7 @@ Deno.serve(async (req) => {
       return corsResponse({ message: notificationMessageAssigned });
 
     } else { // This is for actual Stripe subscriptions (mode === 'subscription' or 'payment')
-      console.log('admin-manage-subscription: Assigning Stripe subscription.');
+      // console.log('admin-manage-subscription: Assigning Stripe subscription.'); // REMOVED
       if (!role) {
         console.error('admin-manage-subscription: Role is required when assigning a subscription.');
         return corsResponse({ error: getTranslatedMessage('error_role_required', targetUserPreferredLanguage) }, 400);
@@ -357,7 +357,7 @@ Deno.serve(async (req) => {
       if (existingActiveSubscription) {
         // If it's an admin-assigned subscription, delete it directly
         if (existingActiveSubscription.subscription_id && existingActiveSubscription.subscription_id.startsWith('admin_assigned_')) {
-          console.log(`admin-manage-subscription: User ${userId} has an active admin-assigned subscription (${existingActiveSubscription.subscription_id}). Deleting it.`);
+          // console.log(`admin-manage-subscription: User ${userId} has an active admin-assigned subscription (${existingActiveSubscription.subscription_id}). Deleting it.`); // REMOVED
           const { error: deleteAdminAssignedSubError } = await supabase
             .from('stripe_subscriptions')
             .delete()
@@ -367,10 +367,10 @@ Deno.serve(async (req) => {
           }
         } else if (existingActiveSubscription.subscription_id) {
           // If it's a Stripe-managed subscription, cancel it via Stripe API
-          console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`);
+          // console.log(`admin-manage-subscription: User ${userId} has an active Stripe subscription (${existingActiveStripeSubscription.subscription_id}). Cancelling it.`); // REMOVED
           try {
             await stripe.subscriptions.cancel(existingActiveStripeSubscription.subscription_id);
-            console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`);
+            // console.log(`admin-manage-subscription: Old Stripe subscription ${existingActiveStripeSubscription.subscription_id} cancelled.`); // REMOVED
             // The webhook will update the DB status for the old subscription.
           } catch (stripeCancelError: any) {
             console.error('admin-manage-subscription: Error cancelling old Stripe subscription:', stripeCancelError);
@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
       }
 
       // Create a new Stripe Subscription for the user
-      console.log(`admin-manage-subscription: Creating new Stripe subscription for customer ${customerId} with price ${priceId}.`);
+      // console.log(`admin-manage-subscription: Creating new Stripe subscription for customer ${customerId} with price ${priceId}.`); // REMOVED
       const newStripeSubscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
@@ -398,7 +398,7 @@ Deno.serve(async (req) => {
         expand: ['latest_invoice.payment_intent'],
       });
       let newStripeSubscriptionId = newStripeSubscription.id;
-      console.log('admin-manage-subscription: New Stripe subscription created:', newStripeSubscriptionId);
+      // console.log('admin-manage-subscription: New Stripe subscription created:', newStripeSubscriptionId); // REMOVED
 
       await logActivity(
         supabase,
