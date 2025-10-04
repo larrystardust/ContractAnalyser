@@ -29,9 +29,9 @@ export const blogPostsEs: BlogPost[] = [
       'No se trata de reemplazar su experiencia; se trata de amplificarla. ContractAnalyser le devuelve su activo más valioso, el tiempo, lo que le permite concentrarse en la negociación, las relaciones con los clientes y el razonamiento legal complejo.',
       '**El futuro del derecho es una asociación entre la sabiduría humana y la inteligencia artificial.** Es un futuro en el que los abogados están capacitados para ser más estratégicos, más proactivos y más valiosos para sus clientes.',
       'No se limite a observar cómo se desarrolla la revolución legal desde la barrera. **Abrácela. Aprovéchela.**',
-      '**¿Listo para experimentar el impacto positivo de la IA de primera mano?** [Visite nuestro sitio web hoy mismo para comenzar su análisis instantáneo con ContractAnalyser](https://www.contractanalyser.com/signup) y transforme la forma en que maneja los contratos para siempre.'
+      '**¿Listo para experimentar el impacto positivo de la IA de primera mano?** **[Visite nuestro sitio web hoy mismo para comenzar su análisis instantáneo con ContractAnalyser](https://www.contractanalyser.com/signup)** y transforme la forma en que maneja los contratos para siempre.'
     ],
-    imageUrl: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20AI%20robots.png',
   },  
   {
     slug: 'Protege tu empresa con insights de IA para contratos',
