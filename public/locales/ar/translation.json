@@ -1383,5 +1383,13 @@
   "how_long_retained_a": "تعتمد فترة الاحتفاظ بعقودك ونتائج التحليل على خطتك. بالنسبة للمشتريات ذات الاستخدام الواحد، يتم الاحتفاظ بالملفات لمدة 30 يومًا. بالنسبة لخطط الاشتراك النشطة، يتم الاحتفاظ بالملفات طوال مدة اشتراكك النشط بالإضافة إلى فترة سماح مدتها 30 يومًا.",
   "message_recaptcha_failed": "فشل التحقق من reCAPTCHA. يرجى المحاولة مرة أخرى.",
   "sending_message": "إرسال الرسالة",
-  "otp_code": "رمز OTP"
+  "otp_code": "رمز OTP",
+  
+  "error_must_be_logged_in_to_purchase": "يجب عليك تسجيل الدخول لإجراء عملية شراء",
+  "error_failed_to_create_checkout_session": "فشل إنشاء جلسة الدفع",
+  "error_no_checkout_url_received": "لم يتم استلام رابط الدفع",
+  "alert_must_be_logged_in_to_manage_billing": "يجب عليك تسجيل الدخول لإدارة الفواتير.",
+  "error_failed_to_open_billing_portal": "فشل فتح بوابة الفواتير.",
+  "error_no_customer_portal_url_received": "لم يتم استلام رابط بوابة العملاء.",
+  "failed_to_open_billing_portal_server_error": "فشل فتح بوابة الفواتير: {{errorMessage}}"
 }
