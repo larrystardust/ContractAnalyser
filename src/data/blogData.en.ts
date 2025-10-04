@@ -1,7 +1,6 @@
 import { BlogPost } from './blogData';
 
-export const blogPostsEn: BlogPost[] = [
-  
+export const blogPostsEn: BlogPost[] = [  
   {
     slug: 'protect-your-business-with-ai-contract-insights',
     title: 'Protect Your Business: Make Smarter Decisions with AI-Powered Contract Insights',
