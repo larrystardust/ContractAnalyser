@@ -1389,5 +1389,13 @@
   "how_long_retained_a": "La période de rétention de vos contrats et résultats d'analyse dépend de votre plan. Pour les achats à usage unique, les fichiers sont conservés pendant 30 jours. Pour les plans d'abonnement actifs, les fichiers sont conservés pendant la durée de votre abonnement actif plus une période de grâce de 30 jours.",
   "message_recaptcha_failed": "La vérification reCAPTCHA a échoué. Veuillez réessayer.",
   "sending_message": "Envoi du message",
-  "otp_code": "Code OTP"
+  "otp_code": "Code OTP",
+  
+  "error_must_be_logged_in_to_purchase": "Vous devez être connecté pour effectuer un achat",
+  "error_failed_to_create_checkout_session": "Échec de la création de la session de paiement",
+  "error_no_checkout_url_received": "Aucune URL de paiement reçue",
+  "alert_must_be_logged_in_to_manage_billing": "Vous devez être connecté pour gérer la facturation.",
+  "error_failed_to_open_billing_portal": "Échec de l'ouverture du portail de facturation.",
+  "error_no_customer_portal_url_received": "Aucune URL du portail client reçue.",
+  "failed_to_open_billing_portal_server_error": "Échec de l'ouverture du portail de facturation : {{errorMessage}}"
 }
