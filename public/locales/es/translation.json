@@ -1381,5 +1381,13 @@
   "how_long_retained_a": "El período de retención de sus contratos y resultados de análisis depende de su plan. Para compras de un solo uso, los archivos se retienen durante 30 días. Para planes de suscripción activos, los archivos se retienen durante la duración de su suscripción activa más un período de gracia de 30 días.",
   "message_recaptcha_failed": "La verificación reCAPTCHA falló. Por favor, inténtelo de nuevo.",
   "sending_message": "Enviando mensaje",
-  "otp_code": "Código OTP"
+  "otp_code": "Código OTP",
+  
+  "error_must_be_logged_in_to_purchase": "Debes iniciar sesión para realizar una compra",
+  "error_failed_to_create_checkout_session": "Error al crear la sesión de pago",
+  "error_no_checkout_url_received": "No se recibió la URL de pago",
+  "alert_must_be_logged_in_to_manage_billing": "Debes iniciar sesión para gestionar la facturación.",
+  "error_failed_to_open_billing_portal": "Error al abrir el portal de facturación.",
+  "error_no_customer_portal_url_received": "No se recibió la URL del portal de clientes.",
+  "failed_to_open_billing_portal_server_error": "Error al abrir el portal de facturación: {{errorMessage}}"
 }
