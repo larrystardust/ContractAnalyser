@@ -1388,5 +1388,13 @@
   "how_long_retained_a": "The retention period for your contracts and analysis results depends on your plan. For single-use purchases, files are retained for 30 days. For active subscription plans, files are retained for the duration of your active subscription plus a 30-day grace period.",
   "message_recaptcha_failed": "reCAPTCHA verification failed. Please try again.",
   "sending_message": "Sending message",
-  "otp_code": "OTP Code"
+  "otp_code": "OTP Code",
+  
+  "error_must_be_logged_in_to_purchase": "You must be logged in to make a purchase",
+  "error_failed_to_create_checkout_session": "Failed to create checkout session",
+  "error_no_checkout_url_received": "No checkout URL received",
+  "alert_must_be_logged_in_to_manage_billing": "You must be logged in to manage billing.",
+  "error_failed_to_open_billing_portal": "Failed to open billing portal.",
+  "error_no_customer_portal_url_received": "No customer portal URL received.",
+  "failed_to_open_billing_portal_server_error": "Failed to open billing portal: {{errorMessage}}"
 }
