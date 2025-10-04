@@ -349,7 +349,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-8 bg-gray-800 text-white text-sm">
+        <footer className="py-8 bg-gray-800 text-white text-sm text-center">
           <div className="container mx-auto px-4">
             <p>{t('footer_copyright', { year: new Date().getFullYear() })}</p> {/* MODIFIED */}
             <div className="mt-4 flex justify-center space-x-4">
