@@ -7,7 +7,7 @@ export function useStripe() {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const session = useSession();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation(); // MODIFIED: Destructure t from useTranslation
 
   // ADDED: List of Stripe-supported locales
   const stripeSupportedLocales = [
@@ -35,7 +35,7 @@ export function useStripe() {
 
         if (error || !currentSession) {
           navigate('/login');
-          throw new Error('You must be logged in to make a purchase');
+          throw new Error(t('error_must_be_logged_in_to_purchase')); // MODIFIED
         }
 
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
@@ -55,13 +55,13 @@ export function useStripe() {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || 'Failed to create checkout session');
+          throw new Error(error.message || t('error_failed_to_create_checkout_session')); // MODIFIED
         }
 
         const { url } = await response.json();
 
         if (!url) {
-          throw new Error('No checkout URL received');
+          throw new Error(t('error_no_checkout_url_received')); // MODIFIED
         }
 
         window.location.href = url;
@@ -71,12 +71,12 @@ export function useStripe() {
         // e.g., using a toast notification
       }
     },
-    [supabase, navigate, getStripeLocale] // MODIFIED: Add getStripeLocale to dependencies
+    [supabase, navigate, getStripeLocale, t] // MODIFIED: Add t to dependencies
   );
 
   const createCustomerPortalSession = useCallback(async () => {
     if (!session) {
-      alert('You must be logged in to manage billing.');
+      alert(t('alert_must_be_logged_in_to_manage_billing')); // MODIFIED
       navigate('/login');
       return;
     }
@@ -94,20 +94,20 @@ export function useStripe() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to open billing portal.');
+        throw new Error(errorData.error || t('error_failed_to_open_billing_portal')); // MODIFIED
       }
 
       const { url } = await response.json();
       if (url) {
         window.location.href = url;
       } else {
-        throw new Error('No customer portal URL received.');
+        throw new Error(t('error_no_customer_portal_url_received')); // MODIFIED
       }
     } catch (error: any) {
       console.error('Error creating customer portal session:', error);
-      alert(`Failed to open billing portal: ${error.message}`);
+      alert(t('failed_to_open_billing_portal_server_error', { errorMessage: error.message })); // MODIFIED
     }
-  }, [supabase, session, navigate, getStripeLocale]); // MODIFIED: Add getStripeLocale to dependencies
+  }, [supabase, session, navigate, getStripeLocale, t]); // MODIFIED: Add t to dependencies
 
 
   return { createCheckoutSession, createCustomerPortalSession };
