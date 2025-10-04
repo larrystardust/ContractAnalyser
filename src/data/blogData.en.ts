@@ -29,7 +29,7 @@ export const blogPostsEn: BlogPost[] = [
       'It’s not about replacing your expertise; it’s about amplifying it. ContractAnalyser gives you back your most valuable asset—time—allowing you to focus on negotiation, client relationships, and complex legal reasoning.',
       '**The future of law is a partnership between human wisdom and artificial intelligence.** It’s a future where lawyers are empowered to be more strategic, more proactive, and more valuable to their clients.',
       'Don’t just watch the legal revolution unfold from the sidelines. **Embrace it. Harness it.**',
-      '**Ready to experience the positive impact of AI firsthand?** [Visit our website today to start your instant analysis with ContractAnalyser](https://www.contractanalyser.com/signup) and transform the way you handle contracts forever.'
+      '**Ready to experience the positive impact of AI firsthand?** **[Visit our website today to start your instant analysis with ContractAnalyser]**(https://www.contractanalyser.com/signup) and transform the way you handle contracts forever.'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20AI%20robots.png',
   },
