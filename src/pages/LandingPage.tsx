@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
 import TestimonialsSection from '../components/TestimonialsSection';
+import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const LandingPage: React.FC = () => {
   const { t } = useTranslation();
@@ -62,6 +63,9 @@ const LandingPage: React.FC = () => {
 
   return (
     <>
+      <Helmet> {/* ADDED: Helmet for meta description */}
+        <meta name="description" content={t('landing_page_meta_description')} />
+      </Helmet>
       <StructuredData schema={websiteSchema} /> {/* ADDED: Structured Data */}
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
         {/* Hero Section */}
