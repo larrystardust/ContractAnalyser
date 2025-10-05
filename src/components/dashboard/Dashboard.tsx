@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
 
-  const { subscription, membership, loading: loadingSubscription, error: errorSubscription } = useSubscription();
+  const { subscription, membership, loading: loadingSubscription, error: errorSubscription, totalSubscriptionFiles } = useSubscription(); // MODIFIED: Import totalSubscriptionFiles
   const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
   const { session, isLoading: isSessionLoading } = useSessionContext();
 
