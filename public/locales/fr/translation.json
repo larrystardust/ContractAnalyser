@@ -1397,5 +1397,13 @@
   "alert_must_be_logged_in_to_manage_billing": "Vous devez être connecté pour gérer la facturation.",
   "error_failed_to_open_billing_portal": "Échec de l'ouverture du portail de facturation.",
   "error_no_customer_portal_url_received": "Aucune URL du portail client reçue.",
-  "failed_to_open_billing_portal_server_error": "Échec de l'ouverture du portail de facturation : {{errorMessage}}"
+  "failed_to_open_billing_portal_server_error": "Échec de l'ouverture du portail de facturation : {{errorMessage}}",
+
+  "landing_page_meta_description": "ContractAnalyser propose une analyse de contrats juridiques basée sur l'IA pour les entreprises. Identifiez rapidement les risques, assurez la conformité et économisez du temps et des coûts juridiques grâce à notre plateforme intelligente de révision de contrats.",
+  "blog_page_meta_description": "Explorez le blog de ContractAnalyser pour des informations sur l'IA dans la technologie juridique, l'analyse de contrats, la conformité et comment protéger votre entreprise avec des solutions juridiques intelligentes.",
+  "blog_post_meta_description": "Lisez notre dernier article de blog : {{postTitle}}. Obtenez des informations d'experts sur l'IA, la technologie juridique, la gestion des contrats et la conformité commerciale de ContractAnalyser.",
+  "help_page_meta_description": "Trouvez des réponses aux questions courantes sur ContractAnalyser. Apprenez à télécharger des contrats, à comprendre les résultats d'analyse, à gérer votre compte et à obtenir de l'aide.",
+  "terms_page_meta_description": "Consultez les Conditions d'utilisation de ContractAnalyser. Comprenez vos droits et obligations lors de l'utilisation de notre plateforme d'analyse de contrats juridiques basée sur l'IA.",
+  "privacy_policy_page_meta_description": "Lisez la Politique de confidentialité de ContractAnalyser. Découvrez comment nous collectons, utilisons et protégeons vos données personnelles et les informations de contrat.",
+  "disclaimer_page_meta_description": "Lisez la clause de non-responsabilité légale de ContractAnalyser. Comprenez les limites de notre analyse de contrats basée sur l'IA et la nature des informations fournies."
 }
