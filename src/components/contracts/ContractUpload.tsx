@@ -25,7 +25,7 @@ interface ContractUploadProps {
 const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => {
   const { contracts, addContract, loadingContracts, refetchContracts } = useContracts();
   const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError, getTotalSingleUseCredits } = useUserOrders(); // MODIFIED: Get getTotalSingleUseCredits
-  const { subscription, loading: loadingSubscription } = useSubscription();
+  const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription(); // MODIFIED: Import totalSubscriptionFiles
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedJurisdictions, setSelectedJurisdictions] = useState<Jurisdiction[]>([]);
@@ -56,7 +56,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   }, [defaultJurisdictions]);
 
   // Determine current file count
-  const currentFileCount = contracts.length;
+  // REMOVED: const currentFileCount = contracts.length; // This counts files for the *current user*
   // Determine max allowed files based on subscription, default to a very high number if no quota
   const maxAllowedFiles = subscription?.max_files || Infinity;
   // ADDED: Get total single-use credits
@@ -64,8 +64,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
   // Determine if the user can upload based on available credits OR subscription quota
   const canUpload = !uploading && (
-    (creditsRemaining > 0 && !loadingOrders) || // MODIFIED: Use creditsRemaining
-    (subscription && !loadingSubscription && currentFileCount < maxAllowedFiles)
+    (creditsRemaining > 0 && !loadingOrders) ||
+    (subscription && !loadingSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles) // MODIFIED: Use totalSubscriptionFiles
   );
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -239,7 +239,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                 <>
                   <p className="font-bold">{t('active_subscription')}</p>
                   <p className="text-sm">
-                    {subscription.max_files === Infinity ? t('unlimited_files_message') : t('subscription_files_remaining', { count: maxAllowedFiles - currentFileCount, maxFiles: maxAllowedFiles })}
+                    {subscription.max_files === Infinity ? t('unlimited_files_message') : t('subscription_files_remaining', { count: (maxAllowedFiles - (totalSubscriptionFiles || 0)), maxFiles: maxAllowedFiles, totalUploaded: (totalSubscriptionFiles || 0) })} {/* MODIFIED */}
                   </p>
                 </>
               ) : creditsRemaining > 0 ? (
