@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import StructuredData from '../components/StructuredData'; // ADDED
+import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -198,6 +199,9 @@ const BlogPostPage: React.FC = () => {
 
   return (
     <>
+      <Helmet> {/* ADDED: Helmet for meta description */}
+        <meta name="description" content={t('blog_post_meta_description', { postTitle: post.title, excerpt: post.excerpt })} />
+      </Helmet>
       <StructuredData schema={blogPostSchema} /> {/* ADDED */}
       <div className="container mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
