@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBlogPosts } from '../hooks/useBlogPosts';
 import StructuredData from '../components/StructuredData'; // ADDED
+import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const BlogPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -54,6 +55,9 @@ const BlogPage: React.FC = () => {
 
   return (
     <>
+      <Helmet> {/* ADDED: Helmet for meta description */}
+        <meta name="description" content={t('blog_page_meta_description')} />
+      </Helmet>
       <StructuredData schema={blogPageSchema} /> {/* ADDED */}
       <div className="container mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
