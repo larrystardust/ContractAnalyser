@@ -10,13 +10,12 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react'; // ADDED: Import Sparkles
 
-// Import text extraction libraries
-import * as pdfjsLib from 'pdfjs-dist';
-import mammoth from 'mammoth';
-// import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'; // You can remove or comment this line
+// REMOVED: Direct imports for pdfjs-dist and mammoth
+// import * as pdfjsLib from 'pdfjs-dist';
+// import mammoth from 'mammoth';
 
-// Set the worker source for pdfjs-dist using Vite's ?url suffix
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // New update 
+// REMOVED: Direct setting of workerSrc
+// pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // New update 
 
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
@@ -142,6 +141,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     const arrayBuffer = await file.arrayBuffer();
 
     if (fileExtension === 'pdf') {
+      // Dynamically import pdfjs-dist
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // Set workerSrc here
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
       let fullText = '';
@@ -151,10 +153,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         fullText += textContent.items.map(item => item.str).join(' ') + '\n';
       }
       return fullText;
-    } else if (fileExtension === 'docx') {
-      const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-      return result.value;
-    } else if (fileExtension === 'doc') {
+    } else if (fileExtension === 'docx' || fileExtension === 'doc') {
+      // Dynamically import mammoth
+      const mammoth = await import('mammoth');
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       return result.value;
     } else {
