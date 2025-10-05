@@ -1389,5 +1389,13 @@
   "alert_must_be_logged_in_to_manage_billing": "Debes iniciar sesión para gestionar la facturación.",
   "error_failed_to_open_billing_portal": "Error al abrir el portal de facturación.",
   "error_no_customer_portal_url_received": "No se recibió la URL del portal de clientes.",
-  "failed_to_open_billing_portal_server_error": "Error al abrir el portal de facturación: {{errorMessage}}"
+  "failed_to_open_billing_portal_server_error": "Error al abrir el portal de facturación: {{errorMessage}}",
+
+  "landing_page_meta_description": "ContractAnalyser ofrece análisis de contratos legales impulsado por IA para empresas. Identifique rápidamente riesgos, asegure el cumplimiento y ahorre tiempo y costos legales con nuestra plataforma inteligente de revisión de contratos.",
+  "blog_page_meta_description": "Explore el blog de ContractAnalyser para obtener información sobre la IA en la tecnología legal, el análisis de contratos, el cumplimiento y cómo proteger su negocio con soluciones legales inteligentes.",
+  "blog_post_meta_description": "Lea nuestra última publicación de blog: {{postTitle}}. Obtenga información experta sobre IA, tecnología legal, gestión de contratos y cumplimiento empresarial de ContractAnalyser.",
+  "help_page_meta_description": "Encuentre respuestas a preguntas comunes sobre ContractAnalyser. Aprenda cómo cargar contratos, comprender los resultados del análisis, administrar su cuenta y obtener soporte.",
+  "terms_page_meta_description": "Revise los Términos de Servicio de ContractAnalyser. Comprenda sus derechos y obligaciones al utilizar nuestra plataforma de análisis de contratos legales impulsada por IA.",
+  "privacy_policy_page_meta_description": "Lea la Política de Privacidad de ContractAnalyser. Conozca cómo recopilamos, usamos y protegemos sus datos personales y la información del contrato.",
+  "disclaimer_page_meta_description": "Lea el descargo de responsabilidad legal de ContractAnalyser. Comprenda las limitaciones de nuestro análisis de contratos impulsado por IA y la naturaleza de la información proporcionada."
 }
