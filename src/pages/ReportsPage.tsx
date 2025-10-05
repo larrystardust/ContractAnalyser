@@ -15,7 +15,7 @@ const ReportsPage: React.FC = () => {
   const { contracts, loadingContracts } = useContracts();
   const { t } = useTranslation();
   
-  const { subscription, membership, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription(); // MODIFIED: Import totalSubscriptionFiles
+  const { subscription, membership, loading: loadingSubscription } = useSubscription();
   const { hasAvailableSingleUse, loading: loadingOrders } = useUserOrders();
 
   const isPayingCustomer = (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) ||
@@ -26,7 +26,7 @@ const ReportsPage: React.FC = () => {
 
   const loadingData = loadingContracts || loadingSubscription || loadingOrders;
 
-  const totalContracts = totalSubscriptionFiles !== null ? totalSubscriptionFiles : contractsToDisplay.length; // MODIFIED: Use totalSubscriptionFiles if available
+  const totalContracts = contractsToDisplay.length;
   const completedContracts = contractsToDisplay.filter(c => c.status === 'completed').length;
   const analyzingContracts = contractsToDisplay.filter(c => c.status === 'analyzing').length;
   const pendingContracts = contractsToDisplay.filter(c => c.status === 'pending').length;
