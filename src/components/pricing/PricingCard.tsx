@@ -142,7 +142,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
           {product.maxFiles && (
             <>
               <br />
-              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_at_any_time')}.
+              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_collectively')}. {/* MODIFIED: Clarify collective limit */}
             </>
           )}
         </p>
