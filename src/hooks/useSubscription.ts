@@ -12,6 +12,7 @@ export function useSubscription() {
   const [membership, setMembership] = useState<SubscriptionMembership | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [totalSubscriptionFiles, setTotalSubscriptionFiles] = useState<number | null>(null); // ADDED: New state for total subscription files
 
   useEffect(() => {
     async function getSubscriptionAndMembership() {
@@ -20,6 +21,7 @@ export function useSubscription() {
         // console.log('useSubscription: No user session. Resetting state.'); // REMOVED
         setSubscription(null);
         setMembership(null);
+        setTotalSubscriptionFiles(null); // ADDED: Reset totalSubscriptionFiles
         setLoading(false);
         return;
       }
@@ -112,11 +114,30 @@ export function useSubscription() {
             // console.log('useSubscription: No customer_id found for user.'); // REMOVED
           }
         }
+
+        // ADDED: Fetch total files for the subscription if an active subscription is found
+        if (fetchedSubscription?.subscription_id) {
+          const { count, error: countError } = await supabase
+            .from('contracts')
+            .select('id', { count: 'exact' })
+            .eq('subscription_id', fetchedSubscription.subscription_id);
+
+          if (countError) {
+            console.error('useSubscription: Error counting contracts for subscription:', countError);
+            setTotalSubscriptionFiles(null);
+          } else {
+            setTotalSubscriptionFiles(count);
+          }
+        } else {
+          setTotalSubscriptionFiles(null);
+        }
+
       } catch (err: any) {
         console.error('useSubscription: Overall error fetching subscription or membership:', err);
         setError(err);
         setSubscription(null);
         setMembership(null);
+        setTotalSubscriptionFiles(null); // ADDED: Reset totalSubscriptionFiles on error
       } finally {
         // console.log('useSubscription: Finished fetching. Loading set to false.'); // REMOVED
         setLoading(false);
@@ -126,5 +147,5 @@ export function useSubscription() {
     getSubscriptionAndMembership();
   }, [supabase, session?.user?.id]);
 
-  return { subscription, membership, loading, error };
+  return { subscription, membership, loading, error, totalSubscriptionFiles }; // MODIFIED: Return totalSubscriptionFiles
 }
