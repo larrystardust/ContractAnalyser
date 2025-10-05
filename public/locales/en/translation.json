@@ -1396,5 +1396,13 @@
   "alert_must_be_logged_in_to_manage_billing": "You must be logged in to manage billing.",
   "error_failed_to_open_billing_portal": "Failed to open billing portal.",
   "error_no_customer_portal_url_received": "No customer portal URL received.",
-  "failed_to_open_billing_portal_server_error": "Failed to open billing portal: {{errorMessage}}"
+  "failed_to_open_billing_portal_server_error": "Failed to open billing portal: {{errorMessage}}",
+
+  "landing_page_meta_description": "ContractAnalyser offers AI-powered legal contract analysis for businesses. Quickly identify risks, ensure compliance, and save time and legal costs with our smart contract review platform.",
+  "blog_page_meta_description": "Explore the ContractAnalyser blog for insights on AI in legal tech, contract analysis, compliance, and how to protect your business with smart legal solutions.",
+  "blog_post_meta_description": "Read our latest blog post: {{postTitle}}. Get expert insights on AI, legal tech, contract management, and business compliance from ContractAnalyser.",
+  "help_page_meta_description": "Find answers to common questions about ContractAnalyser. Learn how to upload contracts, understand analysis results, manage your account, and get support.",
+  "terms_page_meta_description": "Review the Terms of Service for ContractAnalyser. Understand your rights and obligations when using our AI-powered legal contract analysis platform.",
+  "privacy_policy_page_meta_description": "Read the Privacy Policy for ContractAnalyser. Learn how we collect, use, and protect your personal data and contract information.",
+  "disclaimer_page_meta_description": "Read the legal disclaimer for ContractAnalyser. Understand the limitations of our AI-powered contract analysis and the nature of the information provided."
 }
