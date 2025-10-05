@@ -6,6 +6,7 @@ import ContactForm from '../components/forms/ContactForm';
 import { ArrowLeft } from 'lucide-react';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const HelpPage: React.FC = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -61,6 +62,9 @@ const HelpPage: React.FC = () => {
 
   return (
     <>
+      <Helmet> {/* ADDED: Helmet for meta description */}
+        <meta name="description" content={t('help_page_meta_description')} />
+      </Helmet>
       <StructuredData schema={faqSchema} />
       <StructuredData schema={contactPointSchema} />
       <div className="container mx-auto px-4 py-6 mt-16">
