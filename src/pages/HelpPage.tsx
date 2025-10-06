@@ -57,7 +57,7 @@ const HelpPage: React.FC = () => {
     // "telephone": "+44-7405016688",
     "contactType": "customer service",
     // "email": "support@contractanalyser.com",
-    "url": "https://www.contractanalyser.com/help"
+    "url": "https://contractanalyser.com/help"
   };
 
   return (
