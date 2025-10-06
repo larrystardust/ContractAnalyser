@@ -1399,6 +1399,12 @@
   "error_no_customer_portal_url_received": "No customer portal URL received.",
   "failed_to_open_billing_portal_server_error": "Failed to open billing portal: {{errorMessage}}",
 
+  "landing_page_title": "ContractAnalyser - AI Legal Contract Analysis",
+  "blog_page_title": "ContractAnalyser Blog - AI in Legal Tech",
+  "help_center_title": "Help Center - ContractAnalyser Support",
+  "terms_of_service_title": "Terms of Service - ContractAnalyser",
+  "privacy_policy_title": "Privacy Policy - ContractAnalyser",
+  "disclaimer_title": "Disclaimer - ContractAnalyser",
   "landing_page_meta_description": "ContractAnalyser offers AI-powered legal contract analysis for businesses. Quickly identify risks, ensure compliance, and save time and legal costs with our smart contract review platform.",
   "blog_page_meta_description": "Explore the ContractAnalyser blog for insights on AI in legal tech, contract analysis, compliance, and how to protect your business with smart legal solutions.",
   "blog_post_meta_description": "Read our latest blog post: {{postTitle}}. Get expert insights on AI, legal tech, contract management, and business compliance from ContractAnalyser.",
