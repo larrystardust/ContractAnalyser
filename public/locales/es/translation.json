@@ -1392,6 +1392,12 @@
   "error_no_customer_portal_url_received": "No se recibió la URL del portal de clientes.",
   "failed_to_open_billing_portal_server_error": "Error al abrir el portal de facturación: {{errorMessage}}",
 
+  "landing_page_title": "ContractAnalyser - Análisis de Contratos Legales con IA",
+  "blog_page_title": "Blog de ContractAnalyser - IA en Tecnología Legal",
+  "help_center_title": "Centro de Ayuda - Soporte de ContractAnalyser",
+  "terms_of_service_title": "Términos de Servicio - ContractAnalyser",
+  "privacy_policy_title": "Política de Privacidad - ContractAnalyser",
+  "disclaimer_title": "Descargo de Responsabilidad - ContractAnalyser",
   "landing_page_meta_description": "ContractAnalyser ofrece análisis de contratos legales impulsado por IA para empresas. Identifique rápidamente riesgos, asegure el cumplimiento y ahorre tiempo y costos legales con nuestra plataforma inteligente de revisión de contratos.",
   "blog_page_meta_description": "Explore el blog de ContractAnalyser para obtener información sobre la IA en la tecnología legal, el análisis de contratos, el cumplimiento y cómo proteger su negocio con soluciones legales inteligentes.",
   "blog_post_meta_description": "Lea nuestra última publicación de blog: {{postTitle}}. Obtenga información experta sobre IA, tecnología legal, gestión de contratos y cumplimiento empresarial de ContractAnalyser.",
