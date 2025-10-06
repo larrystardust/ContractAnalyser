@@ -173,7 +173,7 @@ const BlogPostPage: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "url": `https://www.contractanalyser.com/blog/${post.slug}`,
+    "url": `https://contractanalyser.com/blog/${post.slug}`,
     "image": post.imageUrl ? [post.imageUrl] : undefined, // Image as an array
     "datePublished": post.date,
     "dateModified": post.date, // Assuming datePublished is also dateModified if not separate
@@ -184,16 +184,16 @@ const BlogPostPage: React.FC = () => {
     "publisher": {
       "@type": "Organization",
       "name": "ContractAnalyser",
-      "url": "https://www.contractanalyser.com/",
+      "url": "https://contractanalyser.com/",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.contractanalyser.com/favicon.ico"
+        "url": "https://contractanalyser.com/favicon.ico"
       }
     },
     "description": post.excerpt,
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://www.contractanalyser.com/blog/${post.slug}`
+      "@id": `https://contractanalyser.com/blog/${post.slug}`
     }
   };
 
