@@ -15,28 +15,28 @@ const LandingPage: React.FC = () => {
     "@graph": [
       {
         "@type": "WebSite",
-        "@id": "https://www.contractanalyser.com/#website",
-        "url": "https://www.contractanalyser.com/",
+        "@id": "https://contractanalyser.com/#website",
+        "url": "https://contractanalyser.com/",
         "name": "ContractAnalyser",
         "description": "AI-powered legal contract analysis platform for risk identification and compliance.",
         "publisher": {
-          "@id": "https://www.contractanalyser.com/#organization"
+          "@id": "https://contractanalyser.com/#organization"
         },
         "potentialAction": {
           "@type": "SearchAction",
           "target": {
             "@type": "EntryPoint",
-            "urlTemplate": "https://www.contractanalyser.com/search?q={search_term_string}"
+            "urlTemplate": "https://contractanalyser.com/search?q={search_term_string}"
           },
           "query-input": "required name=search_term_string"
         }
       },
       {
         "@type": "Organization",
-        "@id": "https://www.contractanalyser.com/#organization",
+        "@id": "https://contractanalyser.com/#organization",
         "name": "ContractAnalyser",
-        "url": "https://www.contractanalyser.com/",
-        "logo": "https://www.contractanalyser.com/favicon.ico", // Assuming favicon is your logo
+        "url": "https://contractanalyser.com/",
+        "logo": "https://contractanalyser.com/favicon.ico", // Assuming favicon is your logo
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer service",
@@ -50,12 +50,12 @@ const LandingPage: React.FC = () => {
       // ADDED: Schema for the Blog Page
       {
         "@type": "WebPage",
-        "@id": "https://www.contractanalyser.com/blog",
-        "url": "https://www.contractanalyser.com/blog",
+        "@id": "https://contractanalyser.com/blog",
+        "url": "https://contractanalyser.com/blog",
         "name": t('our_blog_title'),
         "description": t('our_blog_description'),
         "isPartOf": {
-          "@id": "https://www.contractanalyser.com/#website"
+          "@id": "https://contractanalyser.com/#website"
         }
       }
     ]
