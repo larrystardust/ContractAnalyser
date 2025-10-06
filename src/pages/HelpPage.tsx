@@ -10,7 +10,7 @@ import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const HelpPage: React.FC = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -63,6 +63,8 @@ const HelpPage: React.FC = () => {
   return (
     <>
       <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{t('help_center_title')}</title> {/* ADDED: Dynamic title */}
         <meta name="description" content={t('help_page_meta_description')} />
       </Helmet>
       <StructuredData schema={faqSchema} />
