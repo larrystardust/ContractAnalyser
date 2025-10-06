@@ -8,7 +8,7 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const LandingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -64,6 +64,8 @@ const LandingPage: React.FC = () => {
   return (
     <>
       <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{t('landing_page_title')}</title> {/* ADDED: Dynamic title */}
         <meta name="description" content={t('landing_page_meta_description')} />
       </Helmet>
       <StructuredData schema={websiteSchema} /> {/* ADDED: Structured Data */}
