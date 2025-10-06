@@ -29,7 +29,7 @@ export const blogPostsEs: BlogPost[] = [
       'No se trata de reemplazar su experiencia; se trata de amplificarla. ContractAnalyser le devuelve su activo más valioso, el tiempo, lo que le permite concentrarse en la negociación, las relaciones con los clientes y el razonamiento legal complejo.',
       '**El futuro del derecho es una asociación entre la sabiduría humana y la inteligencia artificial.** Es un futuro en el que los abogados están capacitados para ser más estratégicos, más proactivos y más valiosos para sus clientes.',
       'No se limite a observar cómo se desarrolla la revolución legal desde la barrera. **Abrácela. Aprovéchela.**',
-      '**¿Listo para experimentar el impacto positivo de la IA de primera mano?** **[Visite nuestro sitio web hoy mismo para comenzar su análisis instantáneo con ContractAnalyser](https://www.contractanalyser.com/signup)** y transforme la forma en que maneja los contratos para siempre.'
+      '**¿Listo para experimentar el impacto positivo de la IA de primera mano?** **[Visite nuestro sitio web hoy mismo para comenzar su análisis instantáneo con ContractAnalyser](https://contractanalyser.com/signup)** y transforme la forma en que maneja los contratos para siempre.'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20AI%20robots.png',
   },  
@@ -60,7 +60,7 @@ export const blogPostsEs: BlogPost[] = [
       '5.  **Estandarice su proceso de revisión**: Asegure la coherencia en todos sus contratos, reduciendo la variabilidad y mejorando su postura contractual general.',
       'Con ContractAnalyser, obtiene un poderoso aliado que le ayuda a comprender la letra pequeña, mitigar riesgos y tomar decisiones estratégicas que impulsan su negocio hacia adelante, de forma segura y con confianza.',
       '**¿Listo para obtener una visión inigualable de sus contratos y proteger su negocio?**',
-      '**[Explore un informe de análisis de muestra](https://www.contractanalyser.com/sample-dashboard)** | **[Vea lo asequible que puede ser la protección](https://www.contractanalyser.com/landing-pricing)**'
+      '**[Explore un informe de análisis de muestra](https://contractanalyser.com/sample-dashboard)** | **[Vea lo asequible que puede ser la protección](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
@@ -94,7 +94,7 @@ export const blogPostsEs: BlogPost[] = [
       '*   **Soporte multijurisdiccional**: Ya sea que opere a nivel local o global, nuestra IA comprende los matices de varios sistemas legales.',
       'Deje de permitir que los contratos agoten su tiempo y presupuesto. Potencie su negocio con la eficiencia y la información de ContractAnalyser.',
       '**¿Listo para recuperar su tiempo y presupuesto?**',
-      '**[Comience su análisis instantáneo hoy mismo!](https://www.contractanalyser.com/signup)**'
+      '**[Comience su análisis instantáneo hoy mismo!](https://contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },  
@@ -140,9 +140,9 @@ export const blogPostsEs: BlogPost[] = [
       'Nuestros usuarios ya están experimentando el poder transformador de la IA en sus operaciones diarias. Elogian a ContractAnalyser por su velocidad, precisión y la tranquilidad que aporta a la gestión de sus contratos.',
       '### ¿Listo para transformar su análisis de contratos?',
       'Deje de permitir que los contratos complejos lo ralenticen o lo expongan a riesgos innecesarios. Adopte el futuro de la tecnología legal hoy mismo.',
-      '**[¡Regístrese gratis y comience su primer análisis!](https://www.contractanalyser.com/signup)**',
+      '**[¡Regístrese gratis y comience su primer análisis!](https://contractanalyser.com/signup)**',
       '¿Quiere verlo en acción primero?',
-      '**[Ver un panel de muestra](https://www.contractanalyser.com/sample-dashboard)** | **[Explore nuestros precios transparentes](https://www.contractanalyser.com/landing-pricing)**'
+      '**[Ver un panel de muestra](https://contractanalyser.com/sample-dashboard)** | **[Explore nuestros precios transparentes](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog-photo-1000445.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
