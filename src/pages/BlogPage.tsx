@@ -16,16 +16,16 @@ const BlogPage: React.FC = () => {
     "@type": "CollectionPage",
     "name": t('our_blog_title'),
     "description": t('our_blog_description'),
-    "url": "https://www.contractanalyser.com/blog",
+    "url": "https://contractanalyser.com/blog",
     "publisher": {
       "@type": "Organization",
       "name": "ContractAnalyser",
-      "url": "https://www.contractanalyser.com/"
+      "url": "https://contractanalyser.com/"
     },
     "mainEntity": blogPosts.map(post => ({
       "@type": "BlogPosting",
       "headline": post.title,
-      "url": `https://www.contractanalyser.com/blog/${post.slug}`,
+      "url": `https://contractanalyser.com/blog/${post.slug}`,
       "image": post.imageUrl ? [post.imageUrl] : undefined, // Image as an array
       "datePublished": post.date,
       "dateModified": post.date, // Assuming datePublished is also dateModified if not separate
