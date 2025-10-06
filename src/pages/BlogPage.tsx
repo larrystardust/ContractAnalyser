@@ -7,7 +7,7 @@ import StructuredData from '../components/StructuredData'; // ADDED
 import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const BlogPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const { blogPosts, loading, error } = useBlogPosts();
 
   // ADDED: Structured Data for BlogPage
@@ -56,6 +56,8 @@ const BlogPage: React.FC = () => {
   return (
     <>
       <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{t('blog_page_title')}</title> {/* ADDED: Dynamic title */}
         <meta name="description" content={t('blog_page_meta_description')} />
       </Helmet>
       <StructuredData schema={blogPageSchema} /> {/* ADDED */}
