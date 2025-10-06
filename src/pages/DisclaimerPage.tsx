@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'; // ADDED
 import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const DisclaimerPage: React.FC = () => {
-  const { t } = useTranslation(); // ADDED
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const webPageSchema = {
     "@context": "https://schema.org",
@@ -24,6 +24,8 @@ const DisclaimerPage: React.FC = () => {
   return (
     <>
       <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{t('disclaimer_title')}</title> {/* ADDED: Dynamic title */}
         <meta name="description" content={t('disclaimer_page_meta_description')} />
       </Helmet>
       <StructuredData schema={webPageSchema} />
