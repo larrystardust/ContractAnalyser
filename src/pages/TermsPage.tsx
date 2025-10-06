@@ -12,12 +12,12 @@ const TermsPage: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": t('terms_of_service_title'), // MODIFIED
-    "url": "https://www.contractanalyser.com/terms",
+    "url": "https://contractanalyser.com/terms",
     "description": t('terms_of_service_description'), // MODIFIED
     "publisher": {
       "@type": "Organization",
       "name": "ContractAnalyser",
-      "url": "https://www.contractanalyser.com/"
+      "url": "https://contractanalyser.com/"
     }
   };
 
