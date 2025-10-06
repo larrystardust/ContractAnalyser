@@ -200,6 +200,8 @@ const BlogPostPage: React.FC = () => {
   return (
     <>
       <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{post.title} - {t('app_name')}</title> {/* ADDED: Dynamic title */}
         <meta name="description" content={t('blog_post_meta_description', { postTitle: post.title, excerpt: post.excerpt })} />
       </Helmet>
       <StructuredData schema={blogPostSchema} /> {/* ADDED */}
