@@ -29,7 +29,7 @@ export const blogPostsEn: BlogPost[] = [
       'It’s not about replacing your expertise; it’s about amplifying it. ContractAnalyser gives you back your most valuable asset—time—allowing you to focus on negotiation, client relationships, and complex legal reasoning.',
       '**The future of law is a partnership between human wisdom and artificial intelligence.** It’s a future where lawyers are empowered to be more strategic, more proactive, and more valuable to their clients.',
       'Don’t just watch the legal revolution unfold from the sidelines. **Embrace it. Harness it.**',
-      '**Ready to experience the positive impact of AI firsthand?** **[Visit our website today to start your instant analysis with ContractAnalyser](https://www.contractanalyser.com/signup)** and transform the way you handle contracts forever.'
+      '**Ready to experience the positive impact of AI firsthand?** **[Visit our website today to start your instant analysis with ContractAnalyser](https://contractanalyser.com/signup)** and transform the way you handle contracts forever.'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20AI%20robots.png',
   },
@@ -60,7 +60,7 @@ export const blogPostsEn: BlogPost[] = [
       '5.  **Standardize Your Review Process**: Ensure consistency across all your contracts, reducing variability and improving your overall contractual posture.',
       'With ContractAnalyser, you gain a powerful ally that helps you understand the fine print, mitigate risks, and make strategic decisions that drive your business forward, securely and confidently.',
       '**Ready to gain unparalleled insight into your contracts and protect your business?**',
-      '**[Explore a Sample Analysis Report](https://www.contractanalyser.com/sample-dashboard)** | **[See How Affordable Protection Can Be](https://www.contractanalyser.com/landing-pricing)**'
+      '**[Explore a Sample Analysis Report](https://contractanalyser.com/sample-dashboard)** | **[See How Affordable Protection Can Be](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
@@ -94,7 +94,7 @@ export const blogPostsEn: BlogPost[] = [
       '*   **Multi-Jurisdictional Support**: Whether you operate locally or globally, our AI understands the nuances of various legal systems.',
       'Stop letting contracts be a drain on your time and budget. Empower your business with the efficiency and insight of ContractAnalyser.',
       '**Ready to reclaim your time and budget?**',
-      '**[Start Your Instant Analysis Today!](https://www.contractanalyser.com/signup)**'
+      '**[Start Your Instant Analysis Today!](https://contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
@@ -140,9 +140,9 @@ export const blogPostsEn: BlogPost[] = [
       'Our users are already experiencing the transformative power of AI in their daily operations. They praise ContractAnalyser for its speed, accuracy, and the peace of mind it brings to their contract management.',
       '### Ready to Transform Your Contract Analysis?',
       'Stop letting complex contracts slow you down or expose you to unnecessary risk. Embrace the future of legal technology today.',
-      '**[Sign Up for Free and Start Your First Analysis!](https://www.contractanalyser.com/signup)**',
+      '**[Sign Up for Free and Start Your First Analysis!](https://contractanalyser.com/signup)**',
       'Want to see it in action first?',
-      '**[View a Sample Dashboard](https://www.contractanalyser.com/sample-dashboard)** | **[Explore Our Transparent Pricing](https://www.contractanalyser.com/landing-pricing)**'
+      '**[View a Sample Dashboard](https://contractanalyser.com/sample-dashboard)** | **[Explore Our Transparent Pricing](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog-photo-1000445.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
