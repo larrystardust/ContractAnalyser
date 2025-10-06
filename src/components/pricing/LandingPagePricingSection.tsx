@@ -26,7 +26,7 @@ const LandingPagePricingSection: React.FC = () => {
         "price": product.pricing.monthly.price.toFixed(2),
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
-        "url": "https://www.contractanalyser.com/landing-pricing",
+        "url": "https://contractanalyser.com/landing-pricing",
         "name": `${t(product.name)} (${t('monthly')})` // MODIFIED: Translate product name
       });
     }
@@ -37,7 +37,7 @@ const LandingPagePricingSection: React.FC = () => {
         "price": product.pricing.yearly.price.toFixed(2),
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
-        "url": "https://www.contractanalyser.com/landing-pricing",
+        "url": "https://contractanalyser.com/landing-pricing",
         "name": `${t(product.name)} (${t('yearly')})` // MODIFIED: Translate product name
       });
     }
