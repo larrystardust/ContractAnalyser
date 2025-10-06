@@ -1394,6 +1394,12 @@
   "error_no_customer_portal_url_received": "لم يتم استلام رابط بوابة العملاء.",
   "failed_to_open_billing_portal_server_error": "فشل فتح بوابة الفواتير: {{errorMessage}}",
 
+  "landing_page_title": "ContractAnalyser - تحليل عقود قانونية بالذكاء الاصطناعي",
+  "blog_page_title": "مدونة ContractAnalyser - الذكاء الاصطناعي في التكنولوجيا القانونية",
+  "help_center_title": "مركز المساعدة - دعم ContractAnalyser",
+  "terms_of_service_title": "شروط الخدمة - ContractAnalyser",
+  "privacy_policy_title": "سياسة الخصوصية - ContractAnalyser",
+  "disclaimer_title": "إخلاء المسؤولية - ContractAnalyser",
   "landing_page_meta_description": "تقدم ContractAnalyser تحليلًا قانونيًا للعقود مدعومًا بالذكاء الاصطناعي للشركات. حدد المخاطر بسرعة، وتأكد من الامتثال، ووفر الوقت والتكاليف القانونية من خلال منصة مراجعة العقود الذكية لدينا.",
   "blog_page_meta_description": "استكشف مدونة ContractAnalyser للحصول على رؤى حول الذكاء الاصطناعي في التكنولوجيا القانونية، وتحليل العقود، والامتثال، وكيفية حماية عملك باستخدام الحلول القانونية الذكية.",
   "blog_post_meta_description": "اقرأ أحدث منشورات مدونتنا: {{postTitle}}. احصل على رؤى الخبراء حول الذكاء الاصطناعي، والتكنولوجيا القانونية، وإدارة العقود، والامتثال التجاري من ContractAnalyser.",
