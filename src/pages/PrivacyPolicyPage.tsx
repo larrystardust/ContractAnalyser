@@ -12,12 +12,12 @@ const PrivacyPolicyPage: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": t('privacy_policy_title'), // MODIFIED
-    "url": "https://www.contractanalyser.com/privacy-policy",
+    "url": "https://contractanalyser.com/privacy-policy",
     "description": t('privacy_policy_description'), // MODIFIED
     "publisher": {
       "@type": "Organization",
       "name": "ContractAnalyser",
-      "url": "https://www.contractanalyser.com/"
+      "url": "https://contractanalyser.com/"
     }
   };
 
