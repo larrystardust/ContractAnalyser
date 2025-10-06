@@ -29,7 +29,7 @@ export const blogPostsAr: BlogPost[] = [
       'لا يتعلق الأمر باستبدال خبرتك؛ بل بتضخيمها. يمنحك ContractAnalyser أثمن أصولك - الوقت - مما يتيح لك التركيز على التفاوض، وعلاقات العملاء، والتفكير القانوني المعقد.',
       '**مستقبل القانون هو شراكة بين الحكمة البشرية والذكاء الاصطناعي.** إنه مستقبل يتم فيه تمكين المحامين ليكونوا أكثر استراتيجية، وأكثر استباقية، وأكثر قيمة لعملائهم.',
       'لا تكتفِ بمشاهدة الثورة القانونية تتكشف من الهامش. **احتضنها. سخرها.**',
-      '**هل أنت مستعد لتجربة التأثير الإيجابي للذكاء الاصطناعي بشكل مباشر؟** **[قم بزيارة موقعنا اليوم لبدء تحليلك الفوري باستخدام ContractAnalyser](https://www.contractanalyser.com/signup)** وقم بتحويل طريقة تعاملك مع العقود إلى الأبد.'
+      '**هل أنت مستعد لتجربة التأثير الإيجابي للذكاء الاصطناعي بشكل مباشر؟** **[قم بزيارة موقعنا اليوم لبدء تحليلك الفوري باستخدام ContractAnalyser](https://contractanalyser.com/signup)** وقم بتحويل طريقة تعاملك مع العقود إلى الأبد.'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20AI%20robots.png',
   },
@@ -60,7 +60,7 @@ export const blogPostsAr: BlogPost[] = [
       '5.  **توحيد عملية المراجعة الخاصة بك**: تأكد من الاتساق عبر جميع عقودك، مما يقلل من التباين ويحسن وضعك التعاقدي العام.',
       'مع ContractAnalyser، تحصل على حليف قوي يساعدك على فهم التفاصيل الدقيقة، وتخفيف المخاطر، واتخاذ قرارات استراتيجية تدفع عملك إلى الأمام، بأمان وثقة.',
       '**هل أنت مستعد لاكتساب رؤى لا مثيل لها في عقودك وحماية عملك؟**',
-      '**[استكشف تقرير تحليل نموذجي](https://www.contractanalyser.com/sample-dashboard)** | **[اطلع على مدى سهولة الحصول على حماية ميسورة التكلفة](https://www.contractanalyser.com/landing-pricing)**'
+      '**[استكشف تقرير تحليل نموذجي](https://contractanalyser.com/sample-dashboard)** | **[اطلع على مدى سهولة الحصول على حماية ميسورة التكلفة](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
@@ -94,7 +94,7 @@ export const blogPostsAr: BlogPost[] = [
       '*   **دعم متعدد الولايات القضائية**: سواء كنت تعمل محليًا أو عالميًا، فإن الذكاء الاصطناعي لدينا يفهم الفروق الدقيقة في الأنظمة القانونية المختلفة.',
       'توقف عن السماح للعقود بأن تستنزف وقتك وميزانيتك. قم بتمكين عملك بكفاءة ورؤية ContractAnalyser.',
       '**هل أنت مستعد لاستعادة وقتك وميزانيتك؟**',
-      '**[ابدأ تحليلك الفوري اليوم!](https://www.contractanalyser.com/signup)**'
+      '**[ابدأ تحليلك الفوري اليوم!](https://contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
@@ -140,9 +140,9 @@ export const blogPostsAr: BlogPost[] = [
       'يختبر مستخدمونا بالفعل القوة التحويلية للذكاء الاصطناعي في عملياتهم اليومية. إنهم يثنون على ContractAnalyser لسرعته ودقته وراحة البال التي يجلبها لإدارة عقودهم.',
       '### هل أنت مستعد لإحداث ثورة في تحليل العقود؟',
       'توقف عن السماح للعقود المعقدة بإبطائك أو تعريضك لمخاطر غير ضرورية. احتضن مستقبل التكنولوجيا القانونية اليوم.',
-      '**[اشترك مجانًا وابدأ تحليلك الأول!](https://www.contractanalyser.com/signup)**',
+      '**[اشترك مجانًا وابدأ تحليلك الأول!](https://contractanalyser.com/signup)**',
       'هل تريد رؤيته عمليًا أولاً؟',
-      '**[عرض لوحة تحكم نموذجية](https://www.contractanalyser.com/sample-dashboard)** | **[استكشف أسعارنا الشفافة](https://www.contractanalyser.com/landing-pricing)**'
+      '**[عرض لوحة تحكم نموذجية](https://contractanalyser.com/sample-dashboard)** | **[استكشف أسعارنا الشفافة](https://contractanalyser.com/landing-pricing)**'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog-photo-1000445.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   },
