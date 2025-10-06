@@ -28,7 +28,7 @@ const PricingSection: React.FC = () => {
         "price": product.pricing.monthly.price.toFixed(2),
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
-        "url": "https://www.contractanalyser.com/pricing",
+        "url": "https://contractanalyser.com/pricing",
         "name": `${t(product.name)} (${t('monthly')})` // MODIFIED: Translate product name
       });
     }
@@ -39,7 +39,7 @@ const PricingSection: React.FC = () => {
         "price": product.pricing.yearly.price.toFixed(2),
         "itemCondition": "https://schema.org/NewCondition",
         "availability": "https://schema.org/InStock",
-        "url": "https://www.contractanalyser.com/pricing",
+        "url": "https://contractanalyser.com/pricing",
         "name": `${t(product.name)} (${t('yearly')})` // MODIFIED: Translate product name
       });
     }
