@@ -12,12 +12,12 @@ const DisclaimerPage: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": t('disclaimer_title'), // MODIFIED
-    "url": "https://www.contractanalyser.com/disclaimer",
+    "url": "https://contractanalyser.com/disclaimer",
     "description": t('disclaimer_description'), // MODIFIED
     "publisher": {
       "@type": "Organization",
       "name": "ContractAnalyser",
-      "url": "https://www.contractanalyser.com/"
+      "url": "https://contractanalyser.com/"
     }
   };
 
