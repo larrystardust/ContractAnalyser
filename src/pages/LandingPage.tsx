@@ -5,10 +5,27 @@ import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
 import TestimonialsSection from '../components/TestimonialsSection';
-import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
+import { Helmet } from 'react-helmet-async';
+import i18n from '../i18n'; // Import i18n instance directly to get supported languages
 
 const LandingPage: React.FC = () => {
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const { t } = useTranslation(); // MODIFIED: Removed i18n from destructuring as we import it directly
+
+  // Static content for all languages that search engines need to see immediately
+  const staticContent = {
+    h1: {
+      en: "ContractAnalyser - AI-Powered Legal Contract Analysis & Risk Assessment",
+      fr: "ContractAnalyser - Analyse de Contrats Juridiques par IA et Évaluation des Risques",
+      es: "ContractAnalyser - Análisis de Contratos Legales con IA y Evaluación de Riesgos",
+      ar: "ContractAnalyser - تحليل العقود القانونية بالذكاء الاصطناعي وتقييم المخاطر"
+    },
+    metaDescription: {
+      en: "ContractAnalyser uses advanced AI to instantly analyze legal contracts, identify risks, ensure compliance, and provide actionable insights. Save time and reduce legal costs.",
+      fr: "ContractAnalyser utilise l'IA avancée pour analyser instantanément les contrats juridiques, identifier les risques et assurer la conformité. Économisez du temps et réduisez les coûts juridiques.",
+      es: "ContractAnalyser utiliza IA avanzada para analizar instantáneamente contratos legales, identificar riesgos, garantizar el cumplimiento y proporcionar información práctica. Ahorre tiempo y reduzca costos legales",
+      ar: "يستخدم ContractAnalyser الذكاء الاصطناعي المتقدم لتحليل العقود القانونية على الفور، وتحديد المخاطر، وضمان الامتثال، وتقديم رؤى قابلة للتنفيذ. وفر الوقت وقلل التكاليف القانونية."
+    }
+  };
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -61,14 +78,35 @@ const LandingPage: React.FC = () => {
     ]
   };
 
+  // Get current language content
+  const currentLang = i18n.language as keyof typeof staticContent.h1;
+  const currentH1 = staticContent.h1[currentLang] || staticContent.h1.en;
+  const currentMetaDescription = staticContent.metaDescription[currentLang] || staticContent.metaDescription.en;
+
+  // Get all supported languages from i18n instance for hreflang tags
+  const supportedLanguages = i18n.options.supportedLngs?.filter(lng => lng !== 'cimode' && lng !== 'dev') || [];
+
   return (
     <>
-      <Helmet> {/* ADDED: Helmet for meta description */}
-        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
-        <title>{t('landing_page_title')}</title> {/* ADDED: Dynamic title */}
-        <meta name="description" content={t('landing_page_meta_description')} />
+      <Helmet>
+        <html lang={i18n.language} />
+        <title>{t('landing_page_title') || currentH1}</title>
+        <meta
+          name="description"
+          content={t('landing_page_meta_description') || currentMetaDescription}
+        />
+        {/* Add hreflang tags for internationalization */}
+        {supportedLanguages.map(lang => (
+          <link
+            key={lang}
+            rel="alternate"
+            hrefLang={lang}
+            href={`https://contractanalyser.com/?lng=${lang}`}
+          />
+        ))}
+        <link rel="alternate" hrefLang="x-default" href="https://contractanalyser.com/" />
       </Helmet>
-      <StructuredData schema={websiteSchema} /> {/* ADDED: Structured Data */}
+      <StructuredData schema={websiteSchema} />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
         {/* Hero Section */}
         <section
@@ -78,9 +116,14 @@ const LandingPage: React.FC = () => {
           <div className="absolute inset-0 bg-blue-900 opacity-80"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
             <Scale className="h-24 w-24 mx-auto mb-6 text-blue-200 drop-shadow-lg" />
+            
+            {/* Primary H1 - Always visible to search engines with proper language content */}
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 drop-shadow-lg">
-              {t('landing_hero_title')} {/* MODIFIED */}
+              {currentH1}
             </h1>
+            
+            {/* REMOVED: Redundant hidden H2 tags. Hreflang handles this better. */}
+            
             <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-4xl mx-auto">
               {t('landing_hero_description')} {/* MODIFIED */}
             </p>
