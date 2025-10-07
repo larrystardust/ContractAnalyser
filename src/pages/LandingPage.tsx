@@ -90,7 +90,7 @@ const LandingPage: React.FC = () => {
     <>
       <Helmet>
         <html lang={i18n.language} />
-        <title>{t('landing_page_title') || currentH1}</title>
+        <title>{t('landing_page_title') || "ContractAnalyser - AI Legal Contract Analysis"}</title>
         <meta
           name="description"
           content={t('landing_page_meta_description') || currentMetaDescription}
