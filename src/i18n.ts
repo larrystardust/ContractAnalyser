@@ -9,6 +9,7 @@ i18n
   .use(initReactI18next) // Pass i18n instance to react-i18next
   .init({
     fallbackLng: 'en', // Use 'en' if a translation is not found for the current language
+    supportedLngs: ['en', 'fr', 'es', 'ar'], // ADDED: Explicitly define supported languages
     // lng: localStorage.getItem('i18nextLng') || 'en', // REMOVED: LanguageDetector handles this
     debug: false, // <--- MODIFIED: Set to false for production
     interpolation: {
