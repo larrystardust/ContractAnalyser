@@ -119,7 +119,7 @@ const LandingPage: React.FC = () => {
             
             {/* Primary H1 - Always visible to search engines with proper language content */}
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 drop-shadow-lg">
-              {currentH1}
+              {t('landing_hero_title') || currentH1} {/* MODIFIED */}
             </h1>
             
             {/* REMOVED: Redundant hidden H2 tags. Hreflang handles this better. */}
