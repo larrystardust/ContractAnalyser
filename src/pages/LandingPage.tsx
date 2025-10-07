@@ -5,11 +5,10 @@ import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
 import TestimonialsSection from '../components/TestimonialsSection';
-import { Helmet } from 'react-helmet-async';
-import i18n from '../i18n'; // Import i18n instance directly to get supported languages
+import { Helmet } from 'react-helmet-async'; // ADDED: Import Helmet
 
 const LandingPage: React.FC = () => {
-  const { t } = useTranslation(); // MODIFIED: Removed i18n from destructuring as we import it directly
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   // Static content for all languages that search engines need to see immediately
   const staticContent = {
@@ -83,32 +82,19 @@ const LandingPage: React.FC = () => {
   const currentH1 = staticContent.h1[currentLang] || staticContent.h1.en;
   const currentMetaDescription = staticContent.metaDescription[currentLang] || staticContent.metaDescription.en;
 
-  // Get all supported languages from i18n instance for hreflang tags
-  const supportedLanguages = i18n.options.supportedLngs?.filter(lng => lng !== 'cimode' && lng !== 'dev') || [];
-
   return (
     <>
-      <Helmet>
-        <html lang={i18n.language} />
-        <title>{t('landing_page_title') || currentH1}</title>
-        <meta
-          name="description"
-          content={t('landing_page_meta_description') || currentMetaDescription}
+      <Helmet> {/* ADDED: Helmet for meta description */}
+        <html lang={i18n.language} /> {/* ADDED: lang attribute */}
+        <title>{t('landing_page_title') || "ContractAnalyser - AI Legal Contract Analysis"}</title> {/* ADDED: Dynamic title */}
+        <meta 
+          name="description" 
+          content={t('landing_page_meta_description') || currentMetaDescription} 
         />
-        {/* Add hreflang tags for internationalization */}
-        {supportedLanguages.map(lang => (
-          <link
-            key={lang}
-            rel="alternate"
-            hrefLang={lang}
-            href={`https://contractanalyser.com/?lng=${lang}`}
-          />
-        ))}
-        <link rel="alternate" hrefLang="x-default" href="https://contractanalyser.com/" />
       </Helmet>
-      <StructuredData schema={websiteSchema} />
+      <StructuredData schema={websiteSchema} /> {/* ADDED: Structured Data */}
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-        {/* Hero Section */}
+        {/* Hero Section with Multi-Language SEO Support */}
         <section
           className="relative bg-cover bg-center py-24 md:py-32 text-white"
           style={{ backgroundImage: 'url(https://images.pexels.com/photos/6238104/pexels-photo-6238104.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)' }}
@@ -119,10 +105,16 @@ const LandingPage: React.FC = () => {
             
             {/* Primary H1 - Always visible to search engines with proper language content */}
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 drop-shadow-lg">
-              {currentH1}
+              {t('landing_hero_title') || currentH1} {/* MODIFIED */}
             </h1>
             
-            {/* REMOVED: Redundant hidden H2 tags. Hreflang handles this better. */}
+            {/* Additional H1 tags for other languages - hidden but accessible to search engines */}
+            <div className="sr-only" aria-hidden="true">
+              <h2 lang="en">{staticContent.h1.en}</h2>
+              <h2 lang="fr">{staticContent.h1.fr}</h2>
+              <h2 lang="es">{staticContent.h1.es}</h2>
+              <h2 lang="ar">{staticContent.h1.ar}</h2>
+            </div>
             
             <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-4xl mx-auto">
               {t('landing_hero_description')} {/* MODIFIED */}
