@@ -1059,7 +1059,7 @@
   "single_use_purchases_desc_credits": "Pour les achats à usage unique, votre contrat et ses résultats d'analyse sont conservés pendant 30 jours à compter de la date d'analyse. Chaque achat accorde 5 crédits pour 5 analyses.",
   "single_use_purchases_terms_desc_credits": "Pour les achats à usage unique, votre contrat et ses résultats d'analyse sont conservés pendant 30 jours à compter de la date d'analyse. Chaque achat accorde 5 crédits pour 5 analyses.",
   "subscription_retention_policy": "Pour les plans d'abonnement actifs, vos données seront conservées pendant la durée de votre abonnement plus une période de grâce de 30 jours. ",
-  "max_files_storage_limit_policy": "Le nombre maximal de fichiers que vous pouvez stocker à tout moment est de {{maxProfessional}} pour 'Usage Professionnel' et de {{maxEnterprise}} pour 'Usage Entreprise'. Pour ajouter plus de fichiers après avoir atteint votre limite, veuillez supprimer les anciens de votre ",
+  "max_files_storage_limit_policy": "Le nombre maximal de fichiers que vous pouvez stocker collectivement à tout moment est de {{maxProfessional}} pour 'Usage Professionnel' et {{maxEnterprise}} pour 'Usage Entreprise'. Pour ajouter plus de fichiers après avoir atteint votre limite, veuillez supprimer les anciens fichiers de votre ",
   "drag_and_drop_file_here": "Faites glisser et déposez votre fichier de contrat ici",
   "supports_pdf_docx_doc_formats": "Prend en charge les formats PDF, DOCX, DOC",
   "document_language_hint": "La langue originale du document du contrat.",
