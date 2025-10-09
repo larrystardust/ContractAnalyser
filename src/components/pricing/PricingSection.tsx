@@ -119,7 +119,7 @@ const PricingSection: React.FC = () => {
                 type="button"
                 onClick={() => setBillingPeriod('yearly')}
                 className={`px-4 py-2 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'}`} 
+                  ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-black-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'}`} 
               >
                 {t('yearly_billing')}
               </button>
