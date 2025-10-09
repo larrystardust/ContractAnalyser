@@ -5,8 +5,21 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types'; // MODIFIED: Import AnalysisLanguage
 
 interface ContractContextType {
-  // MODIFIED: Update addContract signature to include sourceLanguage and outputLanguage
-  addContract: (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => Promise<string>;
+  // MODIFIED: Update addContract signature to include imageData, performOcr, performAnalysis, creditCost
+  addContract: (newContractData: {
+    file?: File;
+    imageData?: string; // Base664 image data
+    fileName: string;
+    fileSize: string;
+    fileType: string;
+    jurisdictions: Jurisdiction[];
+    contractText: string;
+    sourceLanguage: AnalysisLanguage;
+    outputLanguage: AnalysisLanguage;
+    performOcr: boolean; // Whether OCR should be performed on backend
+    performAnalysis: boolean; // Whether analysis should be performed on backend
+    creditCost: number; // Total credits to deduct for this operation
+  }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
   reanalyzeContract: (contractId: string) => Promise<void>;
@@ -52,7 +65,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
         const sortedAnalysisResults = dbContract.analysis_results
-          ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created.getTime() - new Date(a.created_at).getTime()))
+          ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           : [];
         
         const analysisResultData = sortedAnalysisResults.length > 0
@@ -65,7 +78,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           name: dbContract.name,
           translated_name: dbContract.translated_name, // ADDED
           file_path: dbContract.file_path,
-          size: `${(dbContract.size / (1024 * 1024)).toFixed(2)} MB`,
+          size: dbContract.size, // Keep as string
           jurisdictions: dbContract.jurisdictions,
           status: dbContract.status,
           processing_progress: dbContract.processing_progress,
@@ -125,8 +138,21 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [fetchContracts]);
 
-  // MODIFIED: Update addContract function to accept sourceLanguage and outputLanguage
-  const addContract = useCallback(async (newContractData: { file: File; jurisdictions: Jurisdiction[]; contractText: string; sourceLanguage: AnalysisLanguage; outputLanguage: AnalysisLanguage; }) => {
+  // MODIFIED: Update addContract function to accept imageData, performOcr, performAnalysis, creditCost
+  const addContract = useCallback(async (newContractData: {
+    file?: File;
+    imageData?: string;
+    fileName: string;
+    fileSize: string;
+    fileType: string;
+    jurisdictions: Jurisdiction[];
+    contractText: string;
+    sourceLanguage: AnalysisLanguage;
+    outputLanguage: AnalysisLanguage;
+    performOcr: boolean;
+    performAnalysis: boolean;
+    creditCost: number;
+  }) => {
     if (!session?.user?.id) {
       throw new Error('User not authenticated.');
     }
@@ -135,37 +161,61 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setErrorContracts(null);
 
     try {
-      const file = newContractData.file;
-      const filePath = `${session.user.id}/${Date.now()}-${file.name}`;
+      let filePath = '';
+      let fileContentBase64: string | undefined;
 
-      const { error: uploadError } = await supabase.storage
-        .from('contracts')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+      if (newContractData.file) {
+        filePath = `${session.user.id}/${Date.now()}-${newContractData.file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('contracts')
+          .upload(filePath, newContractData.file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
 
-      if (uploadError) {
-        throw uploadError;
+        if (uploadError) {
+          throw uploadError;
+        }
+      } else if (newContractData.imageData) {
+        // For captured image, create a placeholder file path in storage
+        filePath = `${session.user.id}/${Date.now()}-scanned_document.jpeg`;
+        fileContentBase64 = newContractData.imageData.split(',')[1]; // Extract Base64 part
+        
+        // Optionally upload the image to storage for record-keeping, but not strictly necessary for OCR
+        const imageBlob = await fetch(newContractData.imageData).then(res => res.blob());
+        const { error: uploadError } = await supabase.storage
+          .from('contracts')
+          .upload(filePath, imageBlob, {
+            contentType: newContractData.fileType,
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.warn('Error uploading captured image to storage:', uploadError);
+          // Don't throw, continue with OCR if possible
+        }
+      } else {
+        throw new Error('No file or image data provided for upload.');
       }
 
       const { data, error: insertError } = await supabase
         .from('contracts')
         .insert({
           user_id: session.user.id,
-          name: file.name,
+          name: newContractData.fileName,
           file_path: filePath,
-          size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+          size: newContractData.fileSize,
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
           processing_progress: 0,
-          contract_content: newContractData.contractText,
-          output_language: newContractData.outputLanguage, // ADDED
+          contract_content: newContractData.contractText, // Will be empty if OCR is performed on backend
+          output_language: newContractData.outputLanguage,
         })
         .select()
         .single();
 
-      if (insertError) { // MOVED: This block was moved to its correct position
+      if (insertError) {
         throw insertError;
       }
 
@@ -177,14 +227,18 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prevContracts,
       ]);
 
-      // MODIFIED: Pass original filename for translation
+      // MODIFIED: Pass imageData, performOcr, performAnalysis, creditCost to Edge Function
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
-          contract_text: newContractData.contractText,
+          contract_text: newContractData.contractText, // Will be empty if OCR is performed on backend
+          image_data: fileContentBase64, // Pass Base64 image data if available
           source_language: newContractData.sourceLanguage,
           output_language: newContractData.outputLanguage,
-          original_contract_name: file.name, // ADDED: Pass original contract name
+          original_contract_name: newContractData.fileName,
+          perform_ocr: newContractData.performOcr, // Indicate if OCR is needed
+          perform_analysis: newContractData.performAnalysis, // Indicate if analysis is needed
+          credit_cost: newContractData.creditCost, // Pass credit cost
         },
       });
 
@@ -192,8 +246,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error('Error invoking Edge Function:', edgeFunctionError);
         await supabase.from('contracts').update({ status: 'failed' }).eq('id', data.id);
       } else {
-        // console.log('Edge Function invoked successfully:', edgeFunctionData); // REMOVED
-        // ADDED: Update the contract with the translated name received from the Edge Function
         if (edgeFunctionData?.translated_contract_name) {
           await supabase.from('contracts').update({ translated_name: edgeFunctionData.translated_contract_name }).eq('id', data.id);
         }
