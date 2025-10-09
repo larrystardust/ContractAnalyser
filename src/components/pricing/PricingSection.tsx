@@ -93,7 +93,7 @@ const PricingSection: React.FC = () => {
       {productSchema.map((schema, index) => (
         <StructuredData key={index} schema={schema} />
       ))}
-      <div className="py-12 bg-gray-50 mt-16 dark:bg-gray-900 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
+      <div className="py-12 bg-gray-50 mt-16"> 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl"> {/* MODIFIED */}
@@ -106,7 +106,7 @@ const PricingSection: React.FC = () => {
           
           <div className="flex justify-center mt-8 mb-12">
             <div className="inline-flex rounded-md shadow-sm" role="group">
-              {/* MODIFIED: Added dark mode styles */}
+              {/* MODIFIED: Text for dark mode */}
               <button
                 type="button"
                 onClick={() => setBillingPeriod('monthly')}
