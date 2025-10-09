@@ -29,7 +29,7 @@ const DisclaimerPage: React.FC = () => {
         <meta name="description" content={t('disclaimer_page_meta_description')} />
       </Helmet>
       <StructuredData schema={webPageSchema} />
-      <div className="container mx-auto px-4 py-6 mt-16">
+      <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -37,29 +37,29 @@ const DisclaimerPage: React.FC = () => {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('disclaimer_section')}</h1> {/* MODIFIED */}
-        <p className="text-sm text-gray-500 mb-8">{t('last_updated')}: August 12, 2025</p> {/* MODIFIED */}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">{t('disclaimer_section')}</h1> {/* MODIFIED */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">{t('last_updated')}: August 12, 2025</p> {/* MODIFIED */}
 
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('disclaimer_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('disclaimer_p2')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('professional_disclaimer')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('professional_disclaimer')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('professional_disclaimer_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('professional_disclaimer_p2')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('external_links_disclaimer')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('external_links_disclaimer')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('external_links_disclaimer_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('external_links_disclaimer_p2')} {/* MODIFIED */}
         </p>
       </div>
