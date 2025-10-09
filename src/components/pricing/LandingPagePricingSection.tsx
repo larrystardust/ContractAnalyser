@@ -71,7 +71,7 @@ const LandingPagePricingSection: React.FC = () => {
       {productSchema.map((schema, index) => (
         <StructuredData key={index} schema={schema} />
       ))}
-      <div className="py-12 bg-gray-50 mt-16">
+      <div className="py-12 bg-gray-50 mt-16 dark:bg-gray-900 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
@@ -81,10 +81,10 @@ const LandingPagePricingSection: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl"> {/* MODIFIED */}
               {t('simple_transparent_pricing_landing')}
             </h2>
-            <p className="mt-4 text-xl text-gray-600">
+            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300"> {/* MODIFIED */}
               {t('choose_best_plan_landing')}
             </p>
           </div>
@@ -95,7 +95,7 @@ const LandingPagePricingSection: React.FC = () => {
                 type="button"
                 onClick={() => setBillingPeriod('monthly')}
                 className={`px-4 py-2 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${billingPeriod === 'monthly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
+                  ${billingPeriod === 'monthly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'}`} {/* MODIFIED */}
               >
                 {t('monthly_billing_landing')}
               </button>
@@ -103,7 +103,7 @@ const LandingPagePricingSection: React.FC = () => {
                 type="button"
                 onClick={() => setBillingPeriod('yearly')}
                 className={`px-4 py-2 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'}`}
+                  ${billingPeriod === 'yearly' ? 'bg-blue-900 text-white' : 'bg-white text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'}`} {/* MODIFIED */}
               >
                 {t('yearly_billing_landing')}
               </button>
