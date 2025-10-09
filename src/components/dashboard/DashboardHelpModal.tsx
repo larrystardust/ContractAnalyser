@@ -78,8 +78,8 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
     return (
       <div className="space-y-6 text-center py-8">
         <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('access_restricted_modal')}</h2>
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('access_restricted_modal')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4"> {/* MODIFIED */}
           {t('help_unavailable_during_reset_modal')}
         </p>
         <Button 
@@ -97,7 +97,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
 
   return (
     // ADDED: Main container div for page styling
-    <div className="container mx-auto px-4 py-6 mt-16">
+    <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
       <div className="space-y-6">
         <div className="text-center mb-6">
           <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
@@ -105,13 +105,13 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
           </Button>
         </div>
 
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center mb-3"> {/* MODIFIED */}
           <BookOpen className="h-5 w-5 mr-2 text-blue-600" /> {t('dashboard_overview_modal')}
         </h3>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4"> {/* MODIFIED */}
           {t('dashboard_overview_desc_modal')}
         </p>
-        <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 mb-6"> {/* MODIFIED */}
           <li>
             **{t('contract_list_modal')}**: {t('contract_list_desc_modal')}
           </li>
@@ -123,13 +123,13 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
           </li>
         </ul>
 
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center mb-3"> {/* MODIFIED */}
           <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" /> {t('understanding_analysis_results_modal')}
         </h3>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4"> {/* MODIFIED */}
           {t('analysis_results_desc_modal')}
         </p>
-        <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 mb-6"> {/* MODIFIED */}
           <li>
             **{t('executive_summary_modal')}**: {t('executive_summary_desc_modal')}
           </li>
@@ -144,10 +144,10 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
           </li>
         </ul>
 
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center mb-3"> {/* MODIFIED */}
           <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')}
         </h3>
-        <p className="text-gray-700">
+        <p className="text-gray-700 dark:text-gray-200"> {/* MODIFIED */}
           <Trans i18nKey="further_questions_contact_support_modal"
             components={{
               helpCenterLink: <Link to="/help" className="text-blue-600 hover:underline" />
