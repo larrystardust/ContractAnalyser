@@ -888,7 +888,7 @@
 
   "upload_new_contract": "Téléverser un Nouveau Contrat",
   "important_document_format": "Important : Format du Document",
-  "ocr_limitation_message": "ContractAnalyser traite le texte directement à partir de vos documents. Nous **ne prenons pas en charge la ROC** pour les documents scannés ou les images. Veuillez vous assurer que vos fichiers téléversés contiennent du **texte sélectionnable (clair)**. Si votre document est un scan ou une image, vous devez effectuer une ROC manuellement avant de le téléverser.",
+  "ocr_limitation_message": "Pour les documents numérisés ou les images, l'OCR (reconnaissance optique de caractères) sera effectuée pour extraire le texte. Ce processus peut prendre plus de temps et consommer des crédits supplémentaires.",
 
   "search_your_contracts": "Rechercher dans Vos Contrats",
   "search_by_contract_name": "Rechercher par nom de contrat...",
@@ -1046,7 +1046,7 @@
   "no_single_use_credit_alert": "Vous n'avez pas de crédit à usage unique disponible. Veuillez en acheter un pour télécharger un contrat.",
   "contract_uploaded_analysis_initiated": "Contrat téléchargé et analyse initiée !",
   "failed_to_upload_contract_or_extract_text": "Échec du téléchargement du contrat ou de l'extraction du texte : {{message}}",
-  "select_file_and_jurisdiction_alert": "Veuillez sélectionner un fichier et au moins une juridiction.",
+  "select_file_and_jurisdiction_alert": "Veuillez sélectionner un fichier/capturer une image et au moins une juridiction.",
   "checking_credits_subscription_status": "Vérification des crédits disponibles et du statut de l'abonnement...",
   "file_storage_limit_reached_message": "Vous avez atteint votre limite de stockage de fichiers de {{maxFiles}} fichiers. Pour ajouter plus de fichiers, veuillez supprimer les anciens de votre ",
   "contracts_page": "page Contrats",
@@ -1062,8 +1062,8 @@
   "max_files_storage_limit_policy": "Le nombre maximal de fichiers que vous pouvez stocker collectivement à tout moment est de {{maxProfessional}} pour 'Usage Professionnel' et {{maxEnterprise}} pour 'Usage Entreprise'. Pour ajouter plus de fichiers après avoir atteint votre limite, veuillez supprimer les anciens fichiers de votre ",
   "drag_and_drop_file_here": "Faites glisser et déposez votre fichier de contrat ici",
   "supports_pdf_docx_doc_formats": "Prend en charge les formats PDF, DOCX, DOC",
-  "document_language_hint": "La langue originale du document du contrat.",
-  "analysis_output_language_hint": "La langue dans laquelle les résultats de l'analyse seront fournis.",
+  "document_language_hint": "Sélectionnez la langue du document pour une meilleure précision de l'OCR et de l'analyse.",
+  "analysis_output_language_hint": "Sélectionnez la langue pour les résultats de l'analyse et le rapport.",
   "upload_contract_button": "Télécharger le contrat",
 
   "settings_updated_successfully": "Paramètres mis à jour avec succès !",
@@ -1412,5 +1412,27 @@
   "help_page_meta_description": "Trouvez des réponses aux questions courantes sur ContractAnalyser. Apprenez à télécharger des contrats, à comprendre les résultats d'analyse, à gérer votre compte et à obtenir de l'aide.",
   "terms_page_meta_description": "Consultez les Conditions d'utilisation de ContractAnalyser. Comprenez vos droits et obligations lors de l'utilisation de notre plateforme d'analyse de contrats juridiques basée sur l'IA.",
   "privacy_policy_page_meta_description": "Lisez la Politique de confidentialité de ContractAnalyser. Découvrez comment nous collectons, utilisons et protégeons vos données personnelles et les informations de contrat.",
-  "disclaimer_page_meta_description": "Lisez la clause de non-responsabilité légale de ContractAnalyser. Comprenez les limites de notre analyse de contrats basée sur l'IA et la nature des informations fournies."
+  "disclaimer_page_meta_description": "Lisez la clause de non-responsabilité légale de ContractAnalyser. Comprenez les limites de notre analyse de contrats basée sur l'IA et la nature des informations fournies.",
+
+  "camera_access_denied_or_unavailable": "Accès à la caméra refusé ou indisponible. Veuillez vérifier les paramètres de votre navigateur.",
+  "capturing": "Capture en cours...",
+  "capture_image": "Capturer l'image",
+  "captured_document": "Document capturé",
+  "retake": "Reprendre",
+  "use_image": "Utiliser l'image",
+  "not_enough_credits_for_ocr_analysis": "Crédits insuffisants pour l'OCR et l'analyse ({{cost}} crédits requis).",
+  "upload_file": "Télécharger un fichier",
+  "scan_document": "Scanner un document",
+  "supports_pdf_docx_doc_image_formats": "Prend en charge les formats PDF, DOCX, DOC et image (JPG, PNG)",
+  "captured_image": "Image capturée",
+  "captured_document_preview": "Aperçu du document capturé",
+  "processing_options": "Options de traitement",
+  "perform_ocr": "Effectuer l'OCR",
+  "credits": "crédits",
+  "not_enough_credits_for_ocr": "Crédits insuffisants pour l'OCR ({{cost}} crédits requis).",
+  "ocr_not_needed_for_documents": "L'OCR n'est pas nécessaire pour ce type de document.",
+  "perform_analysis": "Effectuer l'analyse",
+  "not_enough_credits_for_analysis": "Crédits insuffisants pour l'analyse ({{cost}} crédits requis).",
+  "select_ocr_or_analysis": "Veuillez sélectionner au moins une option de traitement (OCR ou Analyse).",
+  "error_pdf_processing_failed": "Le traitement du PDF a échoué. Cela peut être dû à un fichier corrompu ou à une structure PDF non prise en charge. Actualisez cette page et réessayez. Si cela échoue, veuillez essayer de convertir votre PDF en image ou dans un autre format, ou utilisez l'option de numérisation par caméra."
 }
