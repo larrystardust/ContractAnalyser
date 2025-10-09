@@ -123,21 +123,21 @@ const PricingCard: React.FC<PricingCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8">
-      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t(product.name)}</h3>
-      <p className="text-gray-600 mb-6">{t(product.description)}</p>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 dark:text-gray-200">
+      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t(product.name)}</h3>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">{t(product.description)}</p>
       
       <div className="mb-6">
-        <span className="text-4xl font-extrabold text-gray-900">
+        <span className="text-4xl font-extrabold text-gray-900 dark:text-white">
           ${currentPricingOption.price.toFixed(2)}
         </span>
-        {currentPricingOption.interval === 'month' && <span className="text-gray-600">/{t('month')}</span>}
-        {currentPricingOption.interval === 'year' && <span className="text-gray-600">/{t('year')}</span>}
-        {currentPricingOption.interval === 'one_time' && product.credits && <span className="text-gray-600"> {t('for_credits', { count: product.credits })}</span>}
+        {currentPricingOption.interval === 'month' && <span className="text-gray-600 dark:text-gray-300">/{t('month')}</span>}
+        {currentPricingOption.interval === 'year' && <span className="text-gray-600 dark:text-gray-300">/{t('year')}</span>}
+        {currentPricingOption.interval === 'one_time' && product.credits && <span className="text-gray-600 dark:text-gray-300">/{t('for_credits', { count: product.credits })}</span>}
       </div>
 
       {product.fileRetentionPolicy && (
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           <span className="font-semibold">{t('data_retention')}:</span> {t(product.fileRetentionPolicy)}
           {product.maxFiles && (
             <>
@@ -158,32 +158,32 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {buttonText}
       </Button>
       {isDisabledForSubscribers && product.mode === 'payment' && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('already_covered_by_subscription')}
         </p>
       )}
       {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('no_payment_needed_admin_assigned')}
         </p>
       )}
       {isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('only_owner_manage_downgrades')}
         </p>
       )}
       {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('only_owner_upgrade_enterprise')}
         </p>
       )}
       {product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // ADDED: Specific message for Professional Use yearly
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('invited_members_cannot_purchase_yearly_message')}
         </p>
       )}
       {billingPeriod === 'yearly' && userMembership?.status === 'invited' && ( // MODIFIED
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('invited_members_cannot_purchase_yearly_message')}
         </p>
       )}
