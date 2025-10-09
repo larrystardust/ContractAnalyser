@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import Button from '../ui/Button';
+import Button from './ui/Button';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
