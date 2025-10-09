@@ -69,7 +69,7 @@ const HelpPage: React.FC = () => {
       </Helmet>
       <StructuredData schema={faqSchema} />
       <StructuredData schema={contactPointSchema} />
-      <div className="container mx-auto px-4 py-6 mt-16">
+      <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -77,15 +77,15 @@ const HelpPage: React.FC = () => {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('help_center')}</h1>
-        <p className="text-sm text-gray-500 mb-8">{t('last_updated')}: August 12, 2025</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">{t('help_center')}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">{t('last_updated')}: August 12, 2025</p>
 
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('welcome_help_center')}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('getting_started')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('getting_started')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('what_is_contractanalyser_q')}</strong>
             <p className="ml-4">{t('what_is_contractanalyser_a')}</p>
@@ -100,8 +100,8 @@ const HelpPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('uploading_contracts')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('uploading_contracts')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('how_to_upload_contract_q')}</strong>
             <p className="ml-4">{t('how_to_upload_contract_a')}</p>
@@ -116,8 +116,8 @@ const HelpPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('understanding_analysis_results')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('understanding_analysis_results')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('what_is_executive_summary_q')}</strong>
             <p className="ml-4">{t('what_is_executive_summary_a')}</p>
@@ -129,7 +129,7 @@ const HelpPage: React.FC = () => {
           <li>
             <strong>{t('what_risk_levels_mean_q')}</strong>
             <p className="ml-4">{t('what_risk_levels_mean_a')}</p>
-            <ul className="list-circle list-inside text-gray-700 ml-8 mt-1">
+            <ul className="list-circle list-inside text-gray-700 dark:text-gray-200 ml-8 mt-1">
               <li><strong>{t('high_risk_label')}:</strong> {t('high_risk_desc')}.</li>
               <li><strong>{t('medium_risk_label')}:</strong> {t('medium_risk_desc')}.</li>
               <li><strong>{t('low_risk_label')}:</strong> {t('low_risk_desc')}.</li>
@@ -147,14 +147,14 @@ const HelpPage: React.FC = () => {
         </ul>
 
         {/* MODIFIED: Data Retention Policy Section */}
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('data_retention_policy_title')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('data_retention_policy_title')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('how_long_retained_q')}</strong>
             <p className="ml-4">
               {t('retention_period_depends')}
             </p>
-            <ul className="list-circle list-inside text-gray-700 ml-8 mt-1">
+            <ul className="list-circle list-inside text-gray-700 dark:text-gray-200 ml-8 mt-1">
               <li>
                 {/* MODIFIED: Updated description for single-use purchases */}
                 <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_desc_credits')}
@@ -172,8 +172,8 @@ const HelpPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('account_billing')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('account_billing')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('update_profile_q')}</strong>
             <p className="ml-4">{t('update_profile_a')}</p>
@@ -192,8 +192,8 @@ const HelpPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('troubleshooting')}</h2>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('troubleshooting')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('upload_failed_q')}</strong>
             <p className="ml-4">{t('upload_failed_a')}</p>
@@ -212,14 +212,14 @@ const HelpPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('contact_support')}</h2>
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('contact_support')}</h2>
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('cant_find_answer')}
         </p>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li><strong>{t('click_contact_us')}:</strong> {t('contact_us_below')}</li>
         </ul>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('support_team_hours')}
         </p>
 
