@@ -1432,5 +1432,5 @@
   "ocr_not_needed_for_documents": "OCR not needed for this document type.",
   "perform_analysis": "Perform Analysis",
   "not_enough_credits_for_analysis": "Not enough credits for Analysis ({{cost}} credits required).",
-  "select_ocr_or_analysis": "Please select at least one processing option (OCR or Analysis).",
+  "select_ocr_or_analysis": "Please select at least one processing option (OCR or Analysis)."
 }
