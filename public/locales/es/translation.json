@@ -880,7 +880,7 @@
 
   "upload_new_contract": "Cargar Nuevo Contrato",
   "important_document_format": "Importante: Formato del Documento",
-  "ocr_limitation_message": "ContractAnalyser procesa texto directamente de sus documentos. **No admitimos OCR** para documentos escaneados o imágenes. Asegúrese de que sus archivos cargados contengan **texto seleccionable (nítido)**. Si su documento es un escaneo o una imagen, debe realizar el OCR manualmente antes de cargarlo.",
+  "ocr_limitation_message": "Para documentos escaneados o imágenes, se realizará OCR (reconocimiento óptico de caracteres) para extraer texto. Este proceso puede tardar más y consumir créditos adicionales.",
 
   "search_your_contracts": "Buscar en Sus Contratos",
   "search_by_contract_name": "Buscar por nombre de contrato...",
@@ -1038,7 +1038,7 @@
   "no_single_use_credit_alert": "No tiene un crédito de un solo uso disponible. Por favor, adquiera uno para subir un contrato.",
   "contract_uploaded_analysis_initiated": "¡Contrato subido y análisis iniciado!",
   "failed_to_upload_contract_or_extract_text": "Error al subir el contrato o extraer el texto: {{message}}",
-  "select_file_and_jurisdiction_alert": "Por favor, seleccione un archivo y al menos una jurisdicción.",
+  "select_file_and_jurisdiction_alert": "Por favor, seleccione un archivo/capture una imagen y al menos una jurisdicción.",
   "checking_credits_subscription_status": "Comprobando créditos disponibles y estado de la suscripción...",
   "file_storage_limit_reached_message": "Ha alcanzado su límite de almacenamiento de archivos de {{maxFiles}} archivos. Para añadir más archivos, elimine los antiguos de su ",
   "contracts_page": "página de Contratos",
@@ -1054,8 +1054,8 @@
   "max_files_storage_limit_policy": "El número máximo de archivos que puede almacenar colectivamente en un momento dado es de {{maxProfessional}} para 'Uso Profesional' y {{maxEnterprise}} para 'Uso Empresarial'. Para añadir más archivos después de alcanzar su límite, elimine los archivos antiguos de su ",
   "drag_and_drop_file_here": "Arrastre y suelte su archivo de contrato aquí",
   "supports_pdf_docx_doc_formats": "Soporta formatos PDF, DOCX, DOC",
-  "document_language_hint": "El idioma original del documento del contrato.",
-  "analysis_output_language_hint": "El idioma en el que se proporcionarán los resultados del análisis.",
+  "document_language_hint": "Seleccione el idioma del documento para una mejor precisión de OCR y análisis.",
+  "analysis_output_language_hint": "Seleccione el idioma para los resultados del análisis y el informe.",
   "upload_contract_button": "Subir Contrato",
 
   "settings_updated_successfully": "¡Configuración actualizada correctamente!",
@@ -1404,5 +1404,27 @@
   "help_page_meta_description": "Encuentre respuestas a preguntas comunes sobre ContractAnalyser. Aprenda cómo cargar contratos, comprender los resultados del análisis, administrar su cuenta y obtener soporte.",
   "terms_page_meta_description": "Revise los Términos de Servicio de ContractAnalyser. Comprenda sus derechos y obligaciones al utilizar nuestra plataforma de análisis de contratos legales impulsada por IA.",
   "privacy_policy_page_meta_description": "Lea la Política de Privacidad de ContractAnalyser. Conozca cómo recopilamos, usamos y protegemos sus datos personales y la información del contrato.",
-  "disclaimer_page_meta_description": "Lea el descargo de responsabilidad legal de ContractAnalyser. Comprenda las limitaciones de nuestro análisis de contratos impulsado por IA y la naturaleza de la información proporcionada."
+  "disclaimer_page_meta_description": "Lea el descargo de responsabilidad legal de ContractAnalyser. Comprenda las limitaciones de nuestro análisis de contratos impulsado por IA y la naturaleza de la información proporcionada.",
+
+  "camera_access_denied_or_unavailable": "Acceso a la cámara denegado o no disponible. Por favor, revise la configuración de su navegador.",
+  "capturing": "Capturando...",
+  "capture_image": "Capturar imagen",
+  "captured_document": "Documento capturado",
+  "retake": "Volver a tomar",
+  "use_image": "Usar imagen",
+  "not_enough_credits_for_ocr_analysis": "Créditos insuficientes para OCR y análisis ({{cost}} créditos requeridos).",
+  "upload_file": "Subir archivo",
+  "scan_document": "Escanear documento",
+  "supports_pdf_docx_doc_image_formats": "Soporta formatos PDF, DOCX, DOC e imagen (JPG, PNG)",
+  "captured_image": "Imagen capturada",
+  "captured_document_preview": "Vista previa del documento capturado",
+  "processing_options": "Opciones de procesamiento",
+  "perform_ocr": "Realizar OCR",
+  "credits": "créditos",
+  "not_enough_credits_for_ocr": "Créditos insuficientes para OCR ({{cost}} créditos requeridos).",
+  "ocr_not_needed_for_documents": "OCR no necesario para este tipo de documento.",
+  "perform_analysis": "Realizar análisis",
+  "not_enough_credits_for_analysis": "Créditos insuficientes para análisis ({{cost}} créditos requeridos).",
+  "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis).",
+  "error_pdf_processing_failed": "El procesamiento del PDF falló. Esto podría deberse a un archivo corrupto o a una estructura PDF no compatible. Actualice esta página y vuelva a intentarlo. Si falla, intente convertir su PDF a una imagen u otro formato, o use la opción de escaneo con cámara."
 }
