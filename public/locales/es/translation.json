@@ -1304,7 +1304,7 @@
   "link_expired_invalid": "Enlace caducado o inválido.",
   "loading_report": "Cargando informe...",
   "error_loading_report": "Error al Cargar el Informe",
-  "error_pdf_processing_failed": "El procesamiento del PDF falló. El documento podría estar corrupto o su formato no es totalmente compatible. Actualice esta página e inténtelo de nuevo.",
+  "error_pdf_processing_failed": "El procesamiento del PDF falló. Esto podría deberse a un archivo corrupto o a una estructura PDF no compatible. Actualice esta página y vuelva a intentarlo. Si falla, intente convertir su PDF a una imagen u otro formato, o use la opción de escaneo con cámara.",
 
   "maintenance_page_title": "Sitio en Mantenimiento",
   "maintenance_hero_title": "Estamos en Mantenimiento",
@@ -1425,6 +1425,5 @@
   "ocr_not_needed_for_documents": "OCR no necesario para este tipo de documento.",
   "perform_analysis": "Realizar análisis",
   "not_enough_credits_for_analysis": "Créditos insuficientes para análisis ({{cost}} créditos requeridos).",
-  "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis).",
-  "error_pdf_processing_failed": "El procesamiento del PDF falló. Esto podría deberse a un archivo corrupto o a una estructura PDF no compatible. Actualice esta página y vuelva a intentarlo. Si falla, intente convertir su PDF a una imagen u otro formato, o use la opción de escaneo con cámara."
+  "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis)."  
 }
