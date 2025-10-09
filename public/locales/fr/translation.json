@@ -1312,7 +1312,7 @@
   "link_expired_invalid": "Lien expiré ou invalide.",
   "loading_report": "Chargement du rapport...",
   "error_loading_report": "Erreur de Chargement du Rapport",
-  "error_pdf_processing_failed": "Le traitement du PDF a échoué. Le document pourrait être corrompu ou son format n'est pas entièrement pris en charge. Actualisez cette page et réessayez.",
+  "error_pdf_processing_failed": "Le traitement du PDF a échoué. Cela peut être dû à un fichier corrompu ou à une structure PDF non prise en charge. Actualisez cette page et réessayez. Si cela échoue, veuillez essayer de convertir votre PDF en image ou dans un autre format, ou utilisez l'option de numérisation par caméra.",
 
   "maintenance_page_title": "Site en Maintenance",
   "maintenance_hero_title": "Nous sommes en Maintenance",
@@ -1433,6 +1433,5 @@
   "ocr_not_needed_for_documents": "L'OCR n'est pas nécessaire pour ce type de document.",
   "perform_analysis": "Effectuer l'analyse",
   "not_enough_credits_for_analysis": "Crédits insuffisants pour l'analyse ({{cost}} crédits requis).",
-  "select_ocr_or_analysis": "Veuillez sélectionner au moins une option de traitement (OCR ou Analyse).",
-  "error_pdf_processing_failed": "Le traitement du PDF a échoué. Cela peut être dû à un fichier corrompu ou à une structure PDF non prise en charge. Actualisez cette page et réessayez. Si cela échoue, veuillez essayer de convertir votre PDF en image ou dans un autre format, ou utilisez l'option de numérisation par caméra."
+  "select_ocr_or_analysis": "Veuillez sélectionner au moins une option de traitement (OCR ou Analyse)."  
 }
