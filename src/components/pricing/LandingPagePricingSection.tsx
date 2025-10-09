@@ -71,7 +71,7 @@ const LandingPagePricingSection: React.FC = () => {
       {productSchema.map((schema, index) => (
         <StructuredData key={index} schema={schema} />
       ))}
-      <div className="py-12 bg-gray-50 mt-16"> 
+      <div className="py-12 bg-gray-50 mt-16 dark:bg-gray-700 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */} 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
