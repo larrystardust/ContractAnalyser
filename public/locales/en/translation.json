@@ -1311,7 +1311,7 @@
   "link_expired_invalid": "Link expired or invalid.",
   "loading_report": "Loading report...",
   "error_loading_report": "Error Loading Report",
-  "error_pdf_processing_failed": "PDF processing failed. The document might be corrupted or its format is not fully supported. Refresh this page and try again.",
+  "error_pdf_processing_failed": "PDF processing failed. This might be due to a corrupted file or an unsupported PDF structure. Refresh this page and try again. If it fails, please try converting your PDF to an image or another format, or use the camera scan option.",
 
   "maintenance_page_title": "Site Under Maintenance",
   "maintenance_hero_title": "We're Under Maintenance",
