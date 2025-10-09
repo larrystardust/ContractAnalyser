@@ -29,7 +29,7 @@ const TermsPage: React.FC = () => {
         <meta name="description" content={t('terms_page_meta_description')} />
       </Helmet>
       <StructuredData schema={webPageSchema} />
-      <div className="container mx-auto px-4 py-6 mt-16">
+      <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -37,36 +37,36 @@ const TermsPage: React.FC = () => {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('terms_of_service')}</h1> {/* MODIFIED */}
-        <p className="text-sm text-gray-500 mb-8">{t('last_updated')}: August 12, 2025</p> {/* MODIFIED */}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">{t('terms_of_service')}</h1> {/* MODIFIED */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">{t('last_updated')}: August 12, 2025</p> {/* MODIFIED */}
 
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('terms_intro_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('terms_intro_p2')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('terms_intro_p3')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('accounts')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('accounts')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('accounts_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('accounts_p2')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('accounts_p3')} {/* MODIFIED */}
         </p>
 
         {/* MODIFIED: Data Retention Policy Section */}
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('data_retention_policy_title')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('data_retention_policy_title')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('data_retention_policy_intro')} {/* MODIFIED */}
         </p>
-        <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             {/* MODIFIED: Updated description for single-use purchases */}
             <strong>{t('single_use_purchases_label')}:</strong> {t('single_use_purchases_terms_desc_credits')}
@@ -79,72 +79,72 @@ const TermsPage: React.FC = () => {
           </li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('intellectual_property')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('intellectual_property')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('intellectual_property_desc')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('links_to_other_websites')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('links_to_other_websites')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('links_to_other_websites_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('links_to_other_websites_p2')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('links_to_other_websites_p3')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('links_to_other_websites_p4')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('termination')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('termination')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('termination_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('termination_p2')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('termination_p3')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('indemnification')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('indemnification')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('indemnification_desc')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('limitation_of_liability')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('limitation_of_liability')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('limitation_of_liability_desc')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('disclaimer_section')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('disclaimer_section')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('disclaimer_section_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('disclaimer_section_p2')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('governing_law')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('governing_law')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('governing_law_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-6">
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('governing_law_p2')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('changes')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('changes')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('changes_p1')} {/* MODIFIED */}
         </p>
-        <p className="text-gray-700 mb-4">
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
           {t('changes_p2')} {/* MODIFIED */}
         </p>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('contact_us')}</h2> {/* MODIFIED */}
-        <p className="text-gray-700 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('contact_us')}</h2> {/* MODIFIED */}
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
           {t('contact_us_terms_desc')} {/* MODIFIED */}
         </p>
       </div>
