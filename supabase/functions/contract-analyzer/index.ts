@@ -2,7 +2,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0';
 import { logActivity } from '../_shared/logActivity.ts';
-import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
+import { GoogleAuth } from 'npm:google-auth-library@9.10.0'; // ADDED: For Google Cloud Auth
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -13,6 +14,15 @@ const supabase = createClient(
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: Deno.env.get('OPENAI_API_KEY')!,
+});
+
+// ADDED: Initialize Google Cloud Auth
+const auth = new GoogleAuth({
+  credentials: {
+    client_email: Deno.env.get('GOOGLE_CLIENT_EMAIL'),
+    private_key: Deno.env.get('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n'), // Handle private key newlines
+  },
+  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
 });
 
 // Helper for CORS responses
@@ -91,6 +101,61 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
   }
 }
 
+// ADDED: OCR function using Google Cloud Vision API
+async function performOcr(imageData: string, userPreferredLanguage: string): Promise<string> {
+  if (!Deno.env.get('GOOGLE_VISION_API_KEY')) {
+    throw new Error(getTranslatedMessage('error_missing_ocr_api_key', userPreferredLanguage));
+  }
+
+  const requestBody = {
+    requests: [
+      {
+        image: {
+          content: imageData,
+        },
+        features: [
+          {
+            type: 'DOCUMENT_TEXT_DETECTION', // Use DOCUMENT_TEXT_DETECTION for better OCR on documents
+          },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const accessToken = await auth.getAccessToken(); // Get access token for Google Cloud
+    const response = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${Deno.env.get('GOOGLE_VISION_API_KEY')}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken.token}`, // Use access token for auth
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.json();
+      console.error('Google Vision API error:', errorBody);
+      throw new Error(getTranslatedMessage('error_google_vision_api_failed', userPreferredLanguage, { message: errorBody.error?.message || 'Unknown error' }));
+    }
+
+    const result = await response.json();
+    const extractedText = result.responses[0]?.fullTextAnnotation?.text;
+
+    if (!extractedText) {
+      throw new Error(getTranslatedMessage('error_no_text_extracted_from_image', userPreferredLanguage));
+    }
+
+    return extractedText;
+  } catch (error) {
+    console.error('Error performing OCR:', error);
+    throw error;
+  }
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -105,29 +170,46 @@ Deno.serve(async (req) => {
   let contractText: string;
   let sourceLanguage: string;
   let outputLanguage: string;
-  let originalContractName: string; // ADDED: Declare originalContractName
+  let originalContractName: string;
   let userId: string;
   let userEmail: string;
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
   let token: string;
-  let userPreferredLanguage: string = 'en'; // ADDED: Default user language
+  let userPreferredLanguage: string = 'en';
+
+  // ADDED: New variables from request body
+  let imageData: string | undefined;
+  let performOcr: boolean;
+  let performAnalysis: boolean;
+  let creditCost: number;
 
   try {
-    // Original line: const { contract_id, contract_text, source_language, output_language } = await req.json();
-    // MODIFIED: Added original_contract_name to destructuring
-    const { contract_id, contract_text, source_language, output_language, original_contract_name } = await req.json();
+    const {
+      contract_id,
+      contract_text,
+      source_language,
+      output_language,
+      original_contract_name,
+      image_data, // ADDED
+      perform_ocr, // ADDED
+      perform_analysis, // ADDED
+      credit_cost, // ADDED
+    } = await req.json();
+
     contractId = contract_id;
     contractText = contract_text;
     sourceLanguage = source_language || 'auto';
     outputLanguage = output_language || 'en';
-    originalContractName = original_contract_name; // ADDED: Assign original contract name from request body
+    originalContractName = original_contract_name;
+    imageData = image_data; // ADDED
+    performOcr = perform_ocr || false; // ADDED
+    performAnalysis = perform_analysis || false; // ADDED
+    creditCost = credit_cost || 0; // ADDED
 
-    // console.log(`contract-analyzer: Starting analysis for contract ${contractId}. Output language: ${outputLanguage}. Original name: ${originalContractName}`); // REMOVED
-
-    if (!contractId || !contractText) {
-      return corsResponse({ error: 'Missing contract_id or contract_text' }, 400);
+    if (!contractId || (!contractText && !imageData)) { // MODIFIED: contractText is optional if imageData is present
+      return corsResponse({ error: 'Missing contract_id and either contract_text or image_data' }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -151,12 +233,11 @@ Deno.serve(async (req) => {
     const { data: profileData, error: profileError } = await retry(async () => {
       return await supabase
         .from('profiles')
-        .select('full_name, notification_settings, theme_preference') // MODIFIED: Fetch theme_preference
+        .select('full_name, notification_settings, theme_preference')
         .eq('id', userId)
         .maybeSingle();
     }, 5, 500);
 
-    // Define a comprehensive set of default notification settings
     const defaultNotificationSettings = {
       'analysis-complete': { email: true, inApp: true },
       'high-risk-findings': { email: true, inApp: true },
@@ -166,17 +247,15 @@ Deno.serve(async (req) => {
 
     if (profileError) {
       console.warn(`contract-analyzer: Could not fetch profile for user ${userId}:`, profileError.message);
-      userNotificationSettings = defaultNotificationSettings; // Use full defaults on error
+      userNotificationSettings = defaultNotificationSettings;
     } else {
       if (profileData?.full_name) {
         userName = profileData.full_name;
       }
-      // Merge fetched settings with defaults, ensuring all keys are present and user preferences override
       userNotificationSettings = {
         ...defaultNotificationSettings,
         ...(profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {}),
       };
-      // For notifications, we'll use the outputLanguage as the preferred language, as it's explicitly chosen by the user.
       userPreferredLanguage = outputLanguage;
     }
 
@@ -202,10 +281,8 @@ Deno.serve(async (req) => {
 
   let consumedOrderId: number | null = null;
 
-  // --- START: Authorization Logic ---
-  if (userSubscriptionId) {
-    // User is authorized via active subscription.
-  } else {
+  // --- START: Authorization Logic & Credit Deduction ---
+  if (!userSubscriptionId) { // Only check credits if no active subscription
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
       .select('customer_id')
@@ -214,35 +291,55 @@ Deno.serve(async (req) => {
 
     if (customerError || !customerData?.customer_id) {
       console.error(`contract-analyzer: User ${userId} has no Stripe customer ID or error fetching:`, customerError);
-      return corsResponse({ error: 'No associated payment account found. Please ensure you have purchased a plan.' }, 403);
+      return corsResponse({ error: getTranslatedMessage('message_no_associated_payment_account', userPreferredLanguage) }, 403);
     }
 
     const customerId = customerData.customer_id;
 
-    // MODIFIED: Check for credits_remaining > 0 instead of is_consumed = false
     const { data: unconsumedOrders, error: ordersError } = await supabase
       .from('stripe_orders')
       .select('id, credits_remaining')
       .eq('customer_id', customerId)
       .eq('payment_status', 'paid')
       .eq('status', 'completed')
-      .gt('credits_remaining', 0) // MODIFIED: Check for credits_remaining > 0
-      .limit(1);
+      .gt('credits_remaining', 0)
+      .order('created_at', { ascending: true }); // Order by creation to consume oldest first
 
     if (ordersError) {
       console.error('contract-analyzer: Error fetching unconsumed orders:', ordersError);
-      return corsResponse({ error: 'Failed to check available credits.' }, 500);
+      return corsResponse({ error: getTranslatedMessage('error_failed_to_check_available_credits', userPreferredLanguage) }, 500);
     }
 
-    if (!unconsumedOrders || unconsumedOrders.length === 0) {
-      return corsResponse({ error: 'No active subscription or available single-use credits. Please purchase a plan to analyze more contracts.' }, 403);
-    } else {
-      consumedOrderId = unconsumedOrders[0].id;
+    let totalAvailableCredits = unconsumedOrders.reduce((sum, order) => sum + (order.credits_remaining || 0), 0);
+
+    if (totalAvailableCredits < creditCost) {
+      return corsResponse({ error: getTranslatedMessage('error_insufficient_credits_for_operation', userPreferredLanguage, { requiredCredits: creditCost, availableCredits: totalAvailableCredits }) }, 403);
+    }
+
+    // Deduct credits from orders, starting with the oldest
+    let remainingCost = creditCost;
+    for (const order of unconsumedOrders) {
+      if (remainingCost <= 0) break;
+
+      const creditsInOrder = order.credits_remaining || 0;
+      const deduction = Math.min(remainingCost, creditsInOrder);
+
+      const { error: deductError } = await supabase
+        .from('stripe_orders')
+        .update({ credits_remaining: creditsInOrder - deduction })
+        .eq('id', order.id);
+
+      if (deductError) {
+        console.error(`contract-analyzer: Error deducting credits from order ${order.id}:`, deductError);
+        throw new Error(getTranslatedMessage('error_failed_to_deduct_credits', userPreferredLanguage));
+      }
+      remainingCost -= deduction;
+      consumedOrderId = order.id; // Keep track of the last order credits were consumed from
     }
   }
-  // --- END: Authorization Logic ---
+  // --- END: Authorization Logic & Credit Deduction ---
 
-  let translatedContractName: string = originalContractName; // ADDED: Declare and initialize translatedContractName
+  let translatedContractName: string = originalContractName;
 
   try {
     await logActivity(
@@ -250,7 +347,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_ANALYSIS_STARTED',
       `User ${userEmail} started analysis for contract ID: ${contractId}`,
-      { contract_id: contractId }
+      { contract_id: contractId, perform_ocr: performOcr, perform_analysis: performAnalysis, credit_cost: creditCost }
     );
 
     await supabase
@@ -258,28 +355,112 @@ Deno.serve(async (req) => {
       .update({ status: 'analyzing', processing_progress: 10 })
       .eq('id', contractId);
 
-    // Fetch the contract details, including contract_content and jurisdictions
+    // Fetch the contract details, including file_path if OCR is needed for a document
     const { data: contractDetails, error: fetchContractError } = await supabase
       .from('contracts')
-      .select('contract_content, user_id, jurisdictions, name') // ADDED 'name'
+      .select('contract_content, user_id, jurisdictions, name, file_path') // MODIFIED: Added file_path
       .eq('id', contractId)
       .single();
 
     if (fetchContractError) {
       console.error('contract-analyzer: Error fetching contract details:', fetchContractError);
-      throw new Error('Failed to fetch contract details for analysis.');
+      throw new Error(getTranslatedMessage('error_failed_to_fetch_contract_details', userPreferredLanguage));
     }
 
-    const userSelectedJurisdictions = contractDetails.jurisdictions.join(', '); // Format for prompt
-    const fetchedContractName = contractDetails.name; // ADDED
+    const userSelectedJurisdictions = contractDetails.jurisdictions.join(', ');
+    const fetchedContractName = contractDetails.name;
 
-    // ADDED: Translate the original contract name
-    translatedContractName = await translateText(originalContractName, outputLanguage);
-    // console.log(`contract-analyzer: Translated contract name: "${originalContractName}" to "${translatedContractName}"`); // REMOVED
+    // ADDED: OCR Processing Step
+    let processedContractText = contractText; // Start with text from frontend (if any)
 
+    if (performOcr) {
+      await supabase.from('contracts').update({ processing_progress: 20 }).eq('id', contractId);
+      let ocrImageData: string | undefined = imageData;
+
+      if (!ocrImageData && contractDetails.file_path) {
+        // If no imageData from frontend, but OCR is requested for a file already in storage
+        const { data: fileBlob, error: downloadError } = await supabase.storage
+          .from('contracts')
+          .download(contractDetails.file_path);
+
+        if (downloadError) {
+          console.error('contract-analyzer: Error downloading file from storage for OCR:', downloadError);
+          throw new Error(getTranslatedMessage('error_failed_to_fetch_file_from_storage', userPreferredLanguage));
+        }
+
+        // Convert Blob to Base64
+        const arrayBuffer = await fileBlob.arrayBuffer();
+        ocrImageData = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      }
+
+      if (ocrImageData) {
+        try {
+          processedContractText = await performOcr(ocrImageData, userPreferredLanguage);
+          // Update contract_content in DB with OCR'd text
+          await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
+          await logActivity(
+            supabase,
+            userId,
+            'CONTRACT_OCR_COMPLETED',
+            `User ${userEmail} performed OCR for contract ID: ${contractId}`,
+            { contract_id: contractId }
+          );
+          // Send notification for OCR completion
+          await supabase.from('notifications').insert({
+            user_id: userId,
+            title: 'notification_title_ocr_completed',
+            message: getTranslatedMessage('notification_message_ocr_completed', userPreferredLanguage, { contractName: originalContractName }),
+            type: 'success',
+          });
+        } catch (ocrError: any) {
+          console.error('contract-analyzer: OCR failed:', ocrError);
+          await supabase.from('contracts').update({ status: 'ocr_failed' }).eq('id', contractId); // New status for OCR failure
+          await logActivity(
+            supabase,
+            userId,
+            'CONTRACT_OCR_FAILED',
+            `User ${userEmail} failed OCR for contract ID: ${contractId}. Error: ${ocrError.message}`,
+            { contract_id: contractId, error: ocrError.message }
+          );
+          // Send notification for OCR failure
+          await supabase.from('notifications').insert({
+            user_id: userId,
+            title: 'notification_title_ocr_failed',
+            message: getTranslatedMessage('notification_message_ocr_failed', userPreferredLanguage, { contractName: originalContractName, errorMessage: ocrError.message }),
+            type: 'error',
+          });
+          throw ocrError; // Re-throw to stop further processing if OCR is critical
+        }
+      } else {
+        throw new Error(getTranslatedMessage('error_no_image_data_for_ocr', userPreferredLanguage));
+      }
+    }
+
+    // If only OCR was requested, and not analysis, we can mark as completed and return
+    if (performOcr && !performAnalysis) {
+      await supabase
+        .from('contracts')
+        .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName })
+        .eq('id', contractId);
+      return corsResponse({ message: getTranslatedMessage('message_ocr_completed_only', userPreferredLanguage), translated_contract_name: translatedContractName });
+    }
+
+    // If analysis is not requested, or if OCR failed, we should not proceed with analysis
+    if (!performAnalysis || !processedContractText) {
+      // If OCR was performed but no analysis, the above block handles it.
+      // If no OCR and no analysis, this is an invalid state, or just a text upload without analysis.
+      // For now, we assume if performAnalysis is false, we stop here.
+      // If processedContractText is empty here, it means no text was available for analysis.
+      if (!processedContractText) {
+        throw new Error(getTranslatedMessage('error_no_text_for_analysis', userPreferredLanguage));
+      }
+    }
+
+    // Proceed with AI Analysis if performAnalysis is true
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
-    // MODIFIED: Moved systemPromptContent definition here
+    translatedContractName = await translateText(originalContractName, outputLanguage);
+
     const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
@@ -361,7 +542,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         },
         {
           role: "user",
-          content: `Contract Text:\n\n${contractText}`,
+          content: `Contract Text:\n\n${processedContractText}`, // MODIFIED: Use processedContractText
         },
       ],
       response_format: { type: "json_object" },
@@ -369,88 +550,50 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const aiResponseContent = completion.choices[0].message?.content;
     if (!aiResponseContent) {
-      throw new Error('No content received from OpenAI API.');
+      throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
     }
 
     let analysisData: any;
     try {
       analysisData = JSON.parse(aiResponseContent);
-      // console.log('contract-analyzer: Raw AI analysis data (before post-processing translation):', JSON.stringify(analysisData, null, 2)); // REMOVED
     } catch (parseError) {
       console.error('contract-analyzer: Error parsing OpenAI response JSON:', parseError);
-      throw new Error('Failed to parse AI analysis response.');
+      throw new Error(getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage));
     }
 
-    // ADDED: Post-processing translation step
-    // console.log(`contract-analyzer: Translating AI output to ${outputLanguage}...`); // REMOVED
-    
-    // Translate Executive Summary
-    // console.log(`contract-analyzer: Translating executiveSummary...`); // REMOVED
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
-    // Translate Data Protection Impact
     if (analysisData.dataProtectionImpact) {
-      // console.log(`contract-analyzer: Translating dataProtectionImpact...`); // REMOVED
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
-    // Translate Findings
     for (const finding of analysisData.findings) {
-      // console.log(`contract-analyzer: Translating finding title: "${finding.title}"`); // REMOVED
       finding.title = await translateText(finding.title, outputLanguage);
-      // console.log(`contract-analyzer: Translating finding description: "${finding.description}"`); // REMOVED
       finding.description = await translateText(finding.description, outputLanguage);
-      // console.log(`contract-analyzer: Translating finding recommendations...`); // REMOVED
       finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
       if (finding.clauseReference) {
-        // console.log(`contract-analyzer: Translating finding clauseReference: "${finding.clauseReference}"`); // REMOVED
         finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
       }
     }
 
-    // Translate Jurisdiction Summaries
     for (const key in analysisData.jurisdictionSummaries) {
       const summary = analysisData.jurisdictionSummaries[key];
-      // console.log(`contract-analyzer: Translating jurisdiction summary for ${key} applicableLaws...`); // REMOVED
       summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
-      // console.log(`contract-analyzer: Translating jurisdiction summary for ${key} keyFindings...`); // REMOVED
       summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
     }
-    // console.log('contract-analyzer: Post-processing translation complete.'); // REMOVED
-    // console.log('contract-analyzer: Final AI analysis data (after post-processing translation):', JSON.stringify(analysisData, null, 2)); // REMOVED
-    // END ADDED: Post-processing translation step
 
-
-    const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage); // MODIFIED
+    const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
-    const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0; // MODIFIED: Fixed typo
+    const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
     const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
     const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
-    // Original line: const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
-    // Original line:   body: {
-    // Original line:     contractId: contractId,
-    // Original line:     contractName: fetchedContractName, // MODIFIED: Use fetchedContractName
-    // Original line:     analysisResult: {
-    // Original line:       executive_summary: executiveSummary,
-    // Original line:       data_protection_impact: dataProtectionImpact,
-    // Original line:       compliance_score: complianceScore,
-    // Original line:       jurisdiction_summaries: jurisdictionSummaries,
-    // Original line:       findings: findings,
-    // Original line:     },
-    // Original line:     outputLanguage: outputLanguage, // ADDED
-    // Original line:   },
-    // Original line:   headers: {
-    // Original line:     'Authorization': `Bearer ${token}`,
-    // Original line:   },
-    // Original line: });
-    // ADDED: New invocation using translatedContractName
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
-        contractName: translatedContractName, // MODIFIED: Use translatedContractName for the report
+        contractName: translatedContractName,
         analysisResult: {
           executive_summary: executiveSummary,
           data_protection_impact: dataProtectionImpact,
@@ -491,8 +634,8 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const findingsToInsert = findings.map((finding: any) => ({
       analysis_result_id: analysisResult.id,
-      title: typeof finding.title === 'string' ? finding.title : getTranslatedMessage('no_title_provided', outputLanguage), // MODIFIED
-      description: typeof finding.description === 'string' ? finding.description : getTranslatedMessage('no_description_provided', outputLanguage), // MODIFIED
+      title: typeof finding.title === 'string' ? finding.title : getTranslatedMessage('no_title_provided', outputLanguage),
+      description: typeof finding.description === 'string' ? finding.description : getTranslatedMessage('no_description_provided', outputLanguage),
       risk_level: typeof finding.riskLevel === 'string' ? finding.riskLevel : 'none',
       jurisdiction: typeof finding.jurisdiction === 'string' ? finding.jurisdiction : 'EU',
       category: typeof finding.category === 'string' ? finding.category : 'risk',
@@ -512,7 +655,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     
     const { error: updateContractError } = await supabase
       .from('contracts')
-      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName }) // MODIFIED: Save translated_name
+      .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName })
       .eq('id', contractId);
 
     if (updateContractError) {
@@ -524,46 +667,6 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       throw new Error(`Failed to finalize contract status: ${updateContractError.message}`);
     }
 
-    // MODIFIED: Decrement credits_remaining for single-use orders
-    if (consumedOrderId !== null) {
-      // Fetch the current credits_remaining for the specific order
-      const { data: orderData, error: fetchOrderError } = await supabase
-        .from('stripe_orders')
-        .select('credits_remaining')
-        .eq('id', consumedOrderId)
-        .single(); // Use .single() as we expect one specific order
-
-      if (fetchOrderError) {
-        console.error(`contract-analyzer: Error fetching order ${consumedOrderId} for decrement:`, fetchOrderError);
-      } else if (orderData) {
-        const { error: decrementError } = await supabase
-          .from('stripe_orders')
-          .update({ credits_remaining: (orderData.credits_remaining || 0) - 1 }) // Decrement by 1
-          .eq('id', consumedOrderId);
-
-        if (decrementError) {
-          console.error(`contract-analyzer: Error decrementing credits_remaining for order ${consumedOrderId}:`, decrementError);
-        } else {
-          // console.log(`contract-analyzer: Successfully decremented credits_remaining for order ${consumedOrderId}.`); // REMOVED
-        }
-      }
-    }
-
-    // Original line: const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
-    // Original line:   body: {
-    // Original line:     userId: userId,
-    // Original line:     contractId: contractId,
-    // Original line:     reportSummary: executiveSummary,
-    // Original line:     reportLink: reportLink,
-    // Original line:     reportHtmlContent: reportHtmlContent,
-    // Original line:     userPreferredLanguage: userPreferredLanguage,
-    // Original line:     contractName: fetchedContractName, // ADDED: Pass contractName
-    // Original line:   },
-    // Original line:   headers: {
-    // Original line:     'Authorization': `Bearer ${token}`,
-    // Original line:   },
-    // Original line: });
-    // ADDED: New invocation using translatedContractName
     const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
       body: {
         userId: userId,
@@ -572,7 +675,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         reportLink: reportLink,
         reportHtmlContent: reportHtmlContent,
         userPreferredLanguage: userPreferredLanguage,
-        contractName: translatedContractName, // MODIFIED: Pass translatedContractName
+        contractName: translatedContractName,
       },
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -585,14 +688,10 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       // trigger-report-email Edge Function invoked successfully.
     }
 
-    // --- START: Notification Generation ---
-    // Original line: const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
-    // Original line: const contractName = contractData.data?.name || 'Unknown Contract';
-    // ADDED: Use translatedContractName directly for notifications
-    const notificationContractName = translatedContractName; // MODIFIED: Use translatedContractName for notifications
+    const notificationContractName = translatedContractName;
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: notificationContractName }); // MODIFIED: Pass notificationContractName in interpolation
+      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: notificationContractName });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_complete',
@@ -606,7 +705,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: notificationContractName, count: highRiskFindings.length }); // MODIFIED: Pass notificationContractName and count in interpolation
+      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: notificationContractName, count: highRiskFindings.length });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_high_risk_findings',
@@ -617,7 +716,6 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         console.error('contract-analyzer: Error inserting "High Risk Findings" notification:', notificationError);
       }
     }
-    // --- END: Notification Generation ---
 
     await logActivity(
       supabase,
@@ -627,8 +725,6 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       { contract_id: contractId, compliance_score: complianceScore }
     );
 
-    // Original line: return corsResponse({ message: 'Analysis completed successfully' });
-    // ADDED: Return translated_contract_name in the response
     return corsResponse({ message: 'Analysis completed successfully', translated_contract_name: translatedContractName });
 
   } catch (error: any) {
@@ -646,13 +742,10 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       { contract_id: contractId, error: error.message }
     );
 
-    // Original line: const contractData = await supabase.from('contracts').select('name').eq('id', contractId).single();
-    // Original line: const contractName = contractData.data?.name || 'Unknown Contract';
-    // ADDED: Use translatedContractName directly for notifications
-    const notificationContractName = translatedContractName; // MODIFIED: Use translatedContractName for notifications
+    const notificationContractName = translatedContractName;
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: notificationContractName }); // MODIFIED: Pass notificationContractName in interpolation
+      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: notificationContractName });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_failed',
