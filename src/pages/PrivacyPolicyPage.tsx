@@ -29,7 +29,7 @@ const PrivacyPolicyPage: React.FC = () => {
         <meta name="description" content={t('privacy_policy_page_meta_description')} />
       </Helmet>
       <StructuredData schema={webPageSchema} />
-      <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
+      <div className="container mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
