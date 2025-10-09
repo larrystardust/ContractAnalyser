@@ -6,7 +6,7 @@ export interface Contract {
   file_path: string; // Added for Supabase Storage path
   size: string;
   jurisdictions: Jurisdiction[];
-  status: 'pending' | 'analyzing' | 'completed' | 'failed'; // Added 'failed'
+  status: 'pending' | 'analyzing' | 'completed' | 'failed' | 'ocr_failed'; // ADDED 'ocr_failed'
   processing_progress?: number;
   analysisResult?: AnalysisResult;
   created_at: string; // Changed from uploadDate
