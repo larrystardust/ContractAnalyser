@@ -173,6 +173,11 @@ export function useUserOrders() {
     }, 0);
   };
 
+  // ADDED: New function to check if user has enough credits for a specific amount
+  const hasEnoughCredits = useCallback((requiredCredits: number): boolean => {
+    return getTotalSingleUseCredits() >= requiredCredits;
+  }, [getTotalSingleUseCredits]);
 
-  return { orders, loading, error, hasAvailableSingleUse, getAvailableSingleUseOrderId, getTotalSingleUseCredits }; // MODIFIED: Export new function
+
+  return { orders, loading, error, hasAvailableSingleUse, getAvailableSingleUseOrderId, getTotalSingleUseCredits, hasEnoughCredits }; // MODIFIED: Export new function
 }
