@@ -1,31 +1,47 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, AlertTriangle } from 'lucide-react'; // ADDED: AlertTriangle
+import { Upload, X, AlertTriangle, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
 import { useContracts } from '../../context/ContractContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { useUserOrders } from '../../hooks/useUserOrders';
-import { useSubscription } from '../../hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
-import { Sparkles } from 'lucide-react'; // ADDED: Import Sparkles
 
-// REMOVED: Direct imports for pdfjs-dist and mammoth
-// import * as pdfjsLib from 'pdfjs-dist';
-// import mammoth from 'mammoth';
+// Dynamically import pdfjs-dist and mammoth
+const loadPdfjs = async () => {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  return pdfjsLib;
+};
 
-// REMOVED: Direct setting of workerSrc
-// pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // New update 
+const loadMammoth = async () => {
+  return await import('mammoth');
+};
 
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
+  capturedImageData: string | null; // ADDED: Prop for captured image data
+  setCapturedImageData: (data: string | null) => void; // ADDED: Prop to clear captured image
+  canPerformOcrAndAnalysis: boolean; // ADDED: Credit status
+  canPerformOcr: boolean; // ADDED: Credit status
+  canPerformAnalysis: boolean; // ADDED: Credit status
+  ocrCost: number; // ADDED: OCR credit cost
+  analysisCost: number; // ADDED: Analysis credit cost
 }
 
-const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, defaultJurisdictions }) => {
-  const { contracts, addContract, loadingContracts, refetchContracts } = useContracts();
-  const { hasAvailableSingleUse, loading: loadingOrders, error: ordersError, getTotalSingleUseCredits } = useUserOrders(); // MODIFIED: Get getTotalSingleUseCredits
-  const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription(); // MODIFIED: Import totalSubscriptionFiles
+const ContractUpload: React.FC<ContractUploadProps> = ({
+  onUploadStatusChange,
+  defaultJurisdictions,
+  capturedImageData, // Destructure new prop
+  setCapturedImageData, // Destructure new prop
+  canPerformOcrAndAnalysis,
+  canPerformOcr,
+  canPerformAnalysis,
+  ocrCost,
+  analysisCost,
+}) => {
+  const { addContract, refetchContracts } = useContracts();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedJurisdictions, setSelectedJurisdictions] = useState<Jurisdiction[]>([]);
@@ -34,11 +50,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // ADDED: State variables for language selection
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
+  const [performOcr, setPerformOcr] = useState(false); // ADDED: State to control OCR
+  const [performAnalysis, setPerformAnalysis] = useState(true); // ADDED: State to control Analysis
 
-  // ADDED: Language options array
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
     { value: 'en', label: t('english') },
@@ -55,18 +71,22 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     }
   }, [defaultJurisdictions]);
 
-  // Determine current file count
-  // REMOVED: const currentFileCount = contracts.length; // This counts files for the *current user*
-  // Determine max allowed files based on subscription, default to a very high number if no quota
-  const maxAllowedFiles = subscription?.max_files || Infinity;
-  // ADDED: Get total single-use credits
-  const creditsRemaining = getTotalSingleUseCredits();
-
-  // Determine if the user can upload based on available credits OR subscription quota
-  const canUpload = !uploading && (
-    (creditsRemaining > 0 && !loadingOrders) ||
-    (subscription && !loadingSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles) // MODIFIED: Use totalSubscriptionFiles
-  );
+  // Effect to handle captured image data
+  useEffect(() => {
+    if (capturedImageData) {
+      // If image data is present, automatically select OCR option
+      setPerformOcr(true);
+      // If enough credits, also select analysis
+      if (canPerformOcrAndAnalysis) {
+        setPerformAnalysis(true);
+      } else {
+        setPerformAnalysis(false); // Disable analysis if not enough credits for both
+      }
+    } else {
+      setPerformOcr(false);
+      setPerformAnalysis(true); // Default to analysis for file uploads
+    }
+  }, [capturedImageData, canPerformOcrAndAnalysis]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -94,8 +114,22 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile.type === 'application/pdf' ||
           droppedFile.name.endsWith('.docx') ||
-          droppedFile.name.endsWith('.doc')) {
+          droppedFile.name.endsWith('.doc') ||
+          droppedFile.type.startsWith('image/')) { // MODIFIED: Allow image files
         setFile(droppedFile);
+        setCapturedImageData(null); // Clear captured image if a file is dropped
+        // If an image file is dropped, enable OCR by default
+        if (droppedFile.type.startsWith('image/')) {
+          setPerformOcr(true);
+          if (canPerformOcrAndAnalysis) {
+            setPerformAnalysis(true);
+          } else {
+            setPerformAnalysis(false);
+          }
+        } else {
+          setPerformOcr(false);
+          setPerformAnalysis(true);
+        }
       } else {
         alert(t('unsupported_file_type_alert'));
       }
@@ -107,8 +141,22 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       const selectedFile = e.target.files[0];
       if (selectedFile.type === 'application/pdf' ||
           selectedFile.name.endsWith('.docx') ||
-          selectedFile.name.endsWith('.doc')) {
+          selectedFile.name.endsWith('.doc') ||
+          selectedFile.type.startsWith('image/')) { // MODIFIED: Allow image files
         setFile(selectedFile);
+        setCapturedImageData(null); // Clear captured image if a file is selected
+        // If an image file is selected, enable OCR by default
+        if (selectedFile.type.startsWith('image/')) {
+          setPerformOcr(true);
+          if (canPerformOcrAndAnalysis) {
+            setPerformAnalysis(true);
+          } else {
+            setPerformAnalysis(false);
+          }
+        } else {
+          setPerformOcr(false);
+          setPerformAnalysis(true);
+        }
       } else {
         alert(t('unsupported_file_type_alert'));
         e.target.value = '';
@@ -122,6 +170,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
   const removeFile = () => {
     setFile(null);
+    setCapturedImageData(null); // Clear captured image
+    setPerformOcr(false); // Reset OCR state
+    setPerformAnalysis(true); // Reset Analysis state
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -141,9 +192,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     const arrayBuffer = await file.arrayBuffer();
 
     if (fileExtension === 'pdf') {
-      // Dynamically import pdfjs-dist
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'; // Set workerSrc here
+      const pdfjsLib = await loadPdfjs();
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       const pdf = await loadingTask.promise;
       let fullText = '';
@@ -154,8 +203,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
       }
       return fullText;
     } else if (fileExtension === 'docx' || fileExtension === 'doc') {
-      // Dynamically import mammoth
-      const mammoth = await import('mammoth');
+      const mammoth = await loadMammoth();
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       return result.value;
     } else {
@@ -165,23 +213,68 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canUpload) {
-      // MODIFIED: Removed specific alerts here as the blue box will show status
-      alert(t('cannot_upload_no_credits_or_subscription'));
+
+    let currentCreditCost = 0;
+    if (performOcr) currentCreditCost += ocrCost;
+    if (performAnalysis) currentCreditCost += analysisCost;
+
+    // Frontend credit check
+    if (!canPerformOcrAndAnalysis && performOcr && performAnalysis) {
+      alert(t('not_enough_credits_for_ocr_analysis', { cost: ocrCost + analysisCost }));
       return;
     }
-    if (file && selectedJurisdictions.length > 0) {
+    if (!canPerformOcr && performOcr && !performAnalysis) {
+      alert(t('not_enough_credits_for_ocr', { cost: ocrCost }));
+      return;
+    }
+    if (!canPerformAnalysis && !performOcr && performAnalysis) {
+      alert(t('not_enough_credits_for_analysis', { cost: analysisCost }));
+      return;
+    }
+    if (currentCreditCost === 0) {
+      alert(t('select_ocr_or_analysis'));
+      return;
+    }
+
+    if ((file || capturedImageData) && selectedJurisdictions.length > 0) {
       setUploading(true);
       onUploadStatusChange(true);
       try {
-        const contractText = await extractTextFromFile(file);
-        
+        let contractText = '';
+        let fileName = '';
+        let fileSize = '';
+        let fileType = '';
+
+        if (capturedImageData) {
+          // For captured image, no local text extraction needed, OCR will happen on backend
+          fileName = `scanned_document_${Date.now()}.jpeg`;
+          fileSize = 'N/A'; // Size is not easily determined from Base64 without decoding
+          fileType = 'image/jpeg';
+        } else if (file) {
+          fileName = file.name;
+          fileSize = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+          fileType = file.type;
+
+          // If it's a document file (PDF/DOCX) and OCR is NOT selected, extract text locally
+          if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
+            contractText = await extractTextFromFile(file);
+          }
+          // If it's an image file, or OCR is selected for a document, text extraction will happen on backend
+        }
+
         const newContractId = await addContract({
-          file,
+          file: file || undefined, // Pass file if available
+          imageData: capturedImageData || undefined, // Pass image data if available
+          fileName,
+          fileSize,
+          fileType,
           jurisdictions: selectedJurisdictions,
-          contractText,
+          contractText, // This will be empty if OCR is performed on backend
           sourceLanguage,
           outputLanguage,
+          performOcr, // Pass OCR flag
+          performAnalysis, // Pass Analysis flag
+          creditCost: currentCreditCost, // Pass calculated credit cost
         });
         
         alert(t('contract_uploaded_analysis_initiated'));
@@ -192,14 +285,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         }
 
         setFile(null);
+        setCapturedImageData(null); // Clear captured image after successful upload
         setSelectedJurisdictions([]);
         setSourceLanguage('auto');
         setOutputLanguage('en');
+        setPerformOcr(false); // Reset OCR state
+        setPerformAnalysis(true); // Reset Analysis state
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
       } catch (error: any) {
-        // MODIFIED: Check for specific PDF.js worker error and provide a generic translated message
         let errorMessage = error.message || t('failed_to_upload_contract_or_extract_text', { message: error.message });
         if (errorMessage.includes('Setting up fake worker failed') || errorMessage.includes('Failed to fetch dynamically imported module')) {
           errorMessage = t('error_pdf_processing_failed');
@@ -215,51 +310,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
     }
   };
 
+  const isImageFileSelected = file && file.type.startsWith('image/');
+  const isDocumentFileSelected = file && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'));
+  const isAnyInputSelected = file || capturedImageData;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('upload_new_contract')}</h2>
       
-      {/* ADDED: Blue Alert Box for Credits/Subscription Status */}
-      {(loadingOrders || loadingSubscription) ? (
-        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
-          <div className="flex items-center">
-            <Sparkles className="h-5 w-5 mr-3 flex-shrink-0" />
-            <div>
-              <p className="font-bold">{t('checking_status')}</p>
-              <p className="text-sm">{t('checking_credits_subscription_status')}</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
-          <div className="flex items-center">
-            <Sparkles className="h-5 w-5 mr-3 flex-shrink-0" />
-            <div>
-              {subscription && (subscription.status === 'active' || subscription.status === 'trialing') ? (
-                <>
-                  <p className="font-bold">{t('active_subscription')}</p>
-                  <p className="text-sm">
-                    {subscription.max_files === Infinity ? t('unlimited_files_message') : t('subscription_files_remaining', { count: (maxAllowedFiles - (totalSubscriptionFiles || 0)), maxFiles: maxAllowedFiles, totalUploaded: (totalSubscriptionFiles || 0) })} {/* MODIFIED */}
-                  </p>
-                </>
-              ) : creditsRemaining > 0 ? (
-                <>
-                  <p className="font-bold">{t('single_use_credits_available')}</p>
-                  <p className="text-sm">{t('credits_remaining_message', { count: creditsRemaining })}</p>
-                </>
-              ) : (
-                <>
-                  <p className="font-bold">{t('no_active_plan')}</p>
-                  <p className="text-sm">
-                    {t('no_active_plan_message')} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* File Retention Policy Message */}
      <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
         <p className="font-bold">{t('important_data_retention_policy')}</p>
@@ -275,18 +333,18 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
         <div
           className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center
             ${isDragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-gray-50'}
-            ${file ? 'bg-gray-100' : ''}
+            ${isAnyInputSelected ? 'bg-gray-100' : ''}
             transition-colors duration-200`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          {!file ? (
+          {!isAnyInputSelected ? (
             <>
               <Upload className="h-12 w-12 text-gray-400 mb-3" />
               <p className="text-sm text-gray-700 font-medium">{t('drag_and_drop_file_here')}</p>
-              <p className="text-xs text-gray-500 mt-1">{t('supports_pdf_docx_doc_formats')}</p>
+              <p className="text-xs text-gray-500 mt-1">{t('supports_pdf_docx_doc_image_formats')}</p> {/* MODIFIED */}
 
               <div className="mt-4">
                 <label htmlFor="file-upload" className="cursor-pointer">
@@ -295,7 +353,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                     variant="outline"
                     size="sm"
                     onClick={handleBrowseFilesClick}
-                    disabled={!canUpload}
+                    disabled={uploading}
                   >
                     {t('browse_files')}
                   </Button>
@@ -304,10 +362,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                     name="file-upload"
                     type="file"
                     className="sr-only"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf,.doc,.docx,image/*" // MODIFIED: Accept image files
                     onChange={handleFileInput}
                     ref={fileInputRef}
-                    disabled={!canUpload}
+                    disabled={uploading}
                   />
                 </label>
               </div>
@@ -317,25 +375,79 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Upload className="h-5 w-5 text-blue-900" />
+                    {capturedImageData ? <Camera className="h-5 w-5 text-blue-900" /> : <Upload className="h-5 w-5 text-blue-900" />}
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700">{file.name}</p>
-                    <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    <p className="text-sm font-medium text-gray-700">{file?.name || t('captured_image')}</p> {/* MODIFIED */}
+                    <p className="text-xs text-gray-500">{file?.size ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</p> {/* MODIFIED */}
                   </div>
                 </div>
                 <button
                   type="button"
                   className="text-gray-400 hover:text-gray-500"
                   onClick={removeFile}
-                  disabled={!canUpload}
+                  disabled={uploading}
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
+              {capturedImageData && (
+                <div className="mt-4">
+                  <img src={capturedImageData} alt={t('captured_document_preview')} className="max-w-full h-auto rounded-lg" />
+                </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* OCR and Analysis Options */}
+        {isAnyInputSelected && (
+          <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
+            <div className="space-y-3">
+              {/* Perform OCR Checkbox */}
+              <div>
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={performOcr}
+                    onChange={(e) => setPerformOcr(e.target.checked)}
+                    disabled={uploading || !canPerformOcr || isDocumentFileSelected} // Disable if not enough credits or if it's a document file (OCR is implicit for images)
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {t('perform_ocr')} ({ocrCost} {t('credits')})
+                  </span>
+                </label>
+                {!canPerformOcr && (
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
+                )}
+                {isDocumentFileSelected && (
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_not_needed_for_documents')}</p>
+                )}
+              </div>
+
+              {/* Perform Analysis Checkbox */}
+              <div>
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={performAnalysis}
+                    onChange={(e) => setPerformAnalysis(e.target.checked)}
+                    disabled={uploading || !canPerformAnalysis} // Disable if not enough credits
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {t('perform_analysis')} ({analysisCost} {t('credits')})
+                  </span>
+                </label>
+                {!canPerformAnalysis && (
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis', { cost: analysisCost })}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -352,7 +464,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
                     ? 'bg-blue-100 text-blue-800 border border-blue-300'
                     : 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
                   }`}
-                disabled={!canUpload}
+                disabled={uploading}
               >
                 {t(getJurisdictionLabel(jurisdiction))}
               </button>
@@ -371,7 +483,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             value={sourceLanguage}
             onChange={(e) => setSourceLanguage(e.target.value as AnalysisLanguage)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            disabled={!canUpload}
+            disabled={uploading}
           >
             {languageOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -393,7 +505,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
             value={outputLanguage}
             onChange={(e) => setOutputLanguage(e.target.value as AnalysisLanguage)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            disabled={!canUpload}
+            disabled={uploading}
           >
             {languageOptions.filter(opt => opt.value !== 'auto').map((option) => (
               <option key={option.value} value={option.value}>
@@ -408,7 +520,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({ onUploadStatusChange, d
           <Button
             type="submit"
             variant="primary"
-            disabled={!file || selectedJurisdictions.length === 0 || uploading || !canUpload}
+            disabled={!isAnyInputSelected || selectedJurisdictions.length === 0 || uploading || (!performOcr && !performAnalysis)}
             icon={<Upload className="w-4 h-4" />}
           >
             {uploading ? t('uploading') : t('upload_contract_button')}
