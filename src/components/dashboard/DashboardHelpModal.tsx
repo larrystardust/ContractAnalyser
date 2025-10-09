@@ -97,7 +97,7 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
 
   return (
     // ADDED: Main container div for page styling
-    <div className="container mx-auto px-4 py-6 mt-16 dark:bg-gray-800 dark:text-gray-200"> {/* MODIFIED: Added dark mode styles */}
+    <div className="container mx-auto px-4 py-6 mt-16">
       <div className="space-y-6">
         <div className="text-center mb-6">
           <Button variant="primary" onClick={handleReportIssueClick} className="w-full">
