@@ -20,6 +20,11 @@ const UploadPage: React.FC = () => {
   const { getTotalSingleUseCredits, loading: loadingOrders } = useUserOrders(); // ADDED
   const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription(); // ADDED
 
+  // DEBUG: Log isUploading state changes
+  useEffect(() => {
+    console.log('UploadPage: isUploading state changed to:', isUploading);
+  }, [isUploading]);
+
   const OCR_COST = 3;
   const ANALYSIS_COST = 1;
   const OCR_AND_ANALYSIS_COST = OCR_COST + ANALYSIS_COST;
@@ -37,6 +42,8 @@ const UploadPage: React.FC = () => {
   const canPerformOcrAndAnalysis = hasSubscription || availableCredits >= OCR_AND_ANALYSIS_COST;
 
   const handleUploadStatusChange = (status: boolean) => {
+    // DEBUG: Log when handleUploadStatusChange is called
+    console.log('UploadPage: handleUploadStatusChange called with:', status);
     setIsUploading(status);
   };
 
@@ -122,16 +129,9 @@ const UploadPage: React.FC = () => {
 
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
+        {/* Removed the "Upload File" button */}
         <Button
-          variant={!isCameraMode ? 'primary' : 'secondary'}
-          onClick={() => { setIsCameraMode(false); setCapturedImageData(null); }}
-          icon={<FileText className="w-4 h-4" />}
-          disabled={isUploading}
-        >
-          {t('upload_file')}
-        </Button>
-        <Button
-          variant={isCameraMode ? 'primary' : 'secondary'}
+          variant={'primary'} // Changed to primary
           onClick={() => setIsCameraMode(true)}
           icon={<Camera className="w-4 h-4" />}
           disabled={isUploading || !canPerformOcr} // Disable camera if not enough credits for OCR
