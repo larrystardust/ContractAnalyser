@@ -179,7 +179,14 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } else if (newContractData.imageData) {
         // For captured image, create a placeholder file path in storage
         filePath = `${session.user.id}/${Date.now()}-scanned_document.jpeg`;
-        fileContentBase64 = newContractData.imageData.split(',')[1]; // Extract Base64 part
+        
+        // CRITICAL: Check if newContractData.imageData has the expected format
+        if (newContractData.imageData.startsWith('data:')) {
+          fileContentBase64 = newContractData.imageData.split(',')[1]; // Extract Base64 part
+        } else {
+          console.error("addContract: imageData does not start with 'data:', possibly malformed.");
+          fileContentBase64 = newContractData.imageData; // Use as is, but it might be wrong
+        }
         
         // Optionally upload the image to storage for record-keeping, but not strictly necessary for OCR
         const imageBlob = await fetch(newContractData.imageData).then(res => res.blob());
@@ -227,6 +234,16 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prevContracts,
       ]);
 
+      // DEBUG: Log the payload before invoking the Edge Function
+      console.log('Invoking contract-analyzer with payload:');
+      console.log('  contract_id:', data.id);
+      console.log('  contract_text (length):', newContractData.contractText.length);
+      console.log('  image_data (present):', !!fileContentBase64);
+      console.log('  image_data (first 50 chars):', fileContentBase64 ? fileContentBase64.substring(0, 50) : 'N/A');
+      console.log('  perform_ocr:', newContractData.performOcr);
+      console.log('  perform_analysis:', newContractData.performAnalysis);
+      console.log('  credit_cost:', newContractData.creditCost);
+
       // MODIFIED: Pass imageData, performOcr, performAnalysis, creditCost to Edge Function
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
@@ -238,7 +255,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           original_contract_name: newContractData.fileName,
           perform_ocr: newContractData.performOcr, // Indicate if OCR is needed
           perform_analysis: newContractData.performAnalysis, // Indicate if analysis is needed
-          credit_cost: newContractData.creditCost, // Pass credit cost
+          credit_cost: newContractData.creditCost, // Pass calculated credit cost
         },
       });
 
