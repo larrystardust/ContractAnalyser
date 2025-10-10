@@ -103,7 +103,9 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
 
 // ADDED: OCR function using Google Cloud Vision API
 async function performOcr(imageData: string, userPreferredLanguage: string): Promise<string> {
-  // REMOVED: if (!Deno.env.get('GOOGLE_VISION_API_KEY')) check
+  if (!Deno.env.get('GOOGLE_VISION_API_KEY')) {
+    throw new Error(getTranslatedMessage('error_missing_ocr_api_key', userPreferredLanguage));
+  }
 
   const requestBody = {
     requests: [
@@ -123,7 +125,7 @@ async function performOcr(imageData: string, userPreferredLanguage: string): Pro
   try {
     const accessToken = await auth.getAccessToken(); // Get access token for Google Cloud
     const response = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate`, // MODIFIED: Removed ?key= parameter
+      `https://vision.googleapis.com/v1/images:annotate?key=${Deno.env.get('GOOGLE_VISION_API_KEY')}`,
       {
         method: 'POST',
         headers: {
