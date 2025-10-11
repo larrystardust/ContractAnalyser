@@ -102,7 +102,7 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
 }
 
 // ADDED: OCR function using Google Cloud Vision API
-async function performOcr(imageData: string, userPreferredLanguage: string): Promise<string> {
+async function executeOcr(imageData: string, userPreferredLanguage: string): Promise<string> { // MODIFIED: Renamed function
   // REMOVED: if (!Deno.env.get('GOOGLE_VISION_API_KEY')) check
 
   const requestBody = {
@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
       output_language,
       original_contract_name,
       image_data, // ADDED
-      perform_ocr: perform_ocr_flag, // MODIFIED: Renamed to avoid shadowing
+      perform_ocr_flag, // MODIFIED: Renamed to avoid shadowing
       perform_analysis, // ADDED
       credit_cost, // ADDED
     } = await req.json();
@@ -393,7 +393,7 @@ Deno.serve(async (req) => {
 
       if (ocrImageData) {
         try {
-          processedContractText = await performOcr(ocrImageData, userPreferredLanguage);
+          processedContractText = await executeOcr(ocrImageData, userPreferredLanguage); // MODIFIED: Call executeOcr
           // Update contract_content in DB with OCR'd text
           await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
           await logActivity(
