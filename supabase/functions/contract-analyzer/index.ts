@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
       output_language,
       original_contract_name,
       image_data, // ADDED
-      perform_ocr, // MODIFIED: Renamed from perform_ocr
+      perform_ocr: perform_ocr_flag, // MODIFIED: Renamed to avoid shadowing
       perform_analysis, // ADDED
       credit_cost, // ADDED
     } = await req.json();
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     outputLanguage = output_language || 'en';
     originalContractName = original_contract_name;
     imageData = image_data; // ADDED
-    shouldPerformOcr = perform_ocr || false; // MODIFIED: Renamed from performOcr
+    shouldPerformOcr = perform_ocr_flag || false; // MODIFIED: Use perform_ocr_flag
     performAnalysis = perform_analysis || false; // ADDED
     creditCost = credit_cost || 0; // ADDED
 
