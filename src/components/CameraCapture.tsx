@@ -15,11 +15,22 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false); // ADDED: State to track if video is playing
   const { t } = useTranslation();
+
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+      setIsPlaying(false); // ADDED: Reset isPlaying state
+    }
+  }, [stream]);
 
   const startCamera = useCallback(async () => {
     setCameraError(null);
     setCapturedImage(null);
+    stopCamera(); // Ensure any existing stream is stopped before starting a new one
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }, // Prefer rear camera
@@ -27,20 +38,26 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
+        // ADDED: Handle play() promise to catch AbortError
+        try {
+          await videoRef.current.play();
+          setIsPlaying(true); // Set playing state on successful play
+        } catch (err: any) {
+          // AbortError is common if play() is interrupted, often not critical
+          if (err.name === 'AbortError') {
+            console.warn('Video play() was aborted, likely due to rapid component changes or unmount. This is often non-critical.', err);
+          } else {
+            console.error('Error playing video stream:', err);
+            setCameraError(t('camera_access_denied_or_unavailable'));
+            stopCamera(); // Stop camera on other play errors
+          }
+        }
       }
     } catch (err: any) {
       console.error('Error accessing camera:', err);
       setCameraError(t('camera_access_denied_or_unavailable'));
     }
-  }, [t]);
-
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-  }, [stream]);
+  }, [t, stopCamera]); // ADDED stopCamera to dependencies
 
   useEffect(() => {
     startCamera();
@@ -66,7 +83,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
         // Get image data as Base64
         const imageData = canvas.toDataURL('image/jpeg', 0.9); // JPEG format, 90% quality
         setCapturedImage(imageData);
-        stopCamera(); // Stop camera after capture
+        stopCamera(); // Stop camera immediately after capture
         onCapture(imageData); // Pass captured image data to parent
       }
     }
@@ -97,7 +114,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
                   type="button"
                   variant="primary"
                   onClick={handleCapture}
-                  disabled={!stream || isLoading}
+                  disabled={!stream || isLoading || !isPlaying} // Disable if not playing
                   icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
                 >
                   {isLoading ? t('capturing') : t('capture_image')}
