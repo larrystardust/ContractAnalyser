@@ -8,7 +8,7 @@ interface ContractContextType {
   // MODIFIED: Update addContract signature to include imageData, performOcr, performAnalysis, creditCost
   addContract: (newContractData: {
     file?: File;
-    imageData?: string; // Base664 image data
+    imageData?: string; // Base64 image data
     fileName: string;
     fileSize: string;
     fileType: string;
@@ -162,8 +162,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       let filePath = '';
-      let fileContentBase64: string | undefined;
+      let fileContentBase64: string | undefined; // This will hold the Base64 data for OCR if needed
 
+      // Handle file upload to storage first
       if (newContractData.file) {
         filePath = `${session.user.id}/${Date.now()}-${newContractData.file.name}`;
         const { error: uploadError } = await supabase.storage
@@ -176,19 +177,36 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (uploadError) {
           throw uploadError;
         }
+
+        // CRITICAL FIX: If OCR is requested for a file, convert the file to Base64
+        if (newContractData.performOcr) {
+          const reader = new FileReader();
+          const fileReadPromise = new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => {
+              if (typeof reader.result === 'string') {
+                resolve(reader.result.split(',')[1]); // Extract Base64 part
+              } else {
+                reject(new Error('Failed to read file as Base64.'));
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(newContractData.file);
+          });
+          fileContentBase64 = await fileReadPromise;
+        }
       } else if (newContractData.imageData) {
-        // For captured image, create a placeholder file path in storage
+        // This branch is for capturedImageData (from camera)
         filePath = `${session.user.id}/${Date.now()}-scanned_document.jpeg`;
         
-        // CRITICAL: Check if newContractData.imageData has the expected format
+        // Ensure imageData is correctly formatted Base64
         if (newContractData.imageData.startsWith('data:')) {
-          fileContentBase64 = newContractData.imageData.split(',')[1]; // Extract Base64 part
+          fileContentBase64 = newContractData.imageData.split(',')[1];
         } else {
           console.error("addContract: imageData does not start with 'data:', possibly malformed.");
           fileContentBase64 = newContractData.imageData; // Use as is, but it might be wrong
         }
         
-        // Optionally upload the image to storage for record-keeping, but not strictly necessary for OCR
+        // Optionally upload the image to storage for record-keeping
         const imageBlob = await fetch(newContractData.imageData).then(res => res.blob());
         const { error: uploadError } = await supabase.storage
           .from('contracts')
@@ -203,7 +221,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Don't throw, continue with OCR if possible
         }
       } else {
-        throw new Error('No file or image data provided for upload.');
+        // If no file and no capturedImageData, then contractText must be present for processing
+        if (!newContractData.contractText) {
+          throw new Error('No file, image, or contract text provided for upload.');
+        }
       }
 
       const { data, error: insertError } = await supabase
@@ -338,7 +359,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (reportStorageError) {
           console.error('Error deleting report file from storage:', reportStorageError);
         } else {
-          // console.log(`Successfully deleted report file: ${reportFilePath}`); // REMOVED
+          // console.log(`Successfully deleted report file: ${filePath}`); // REMOVED
         }
       }
 
