@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, AlertTriangle, Sparkles } from 'lucide-react';
+import { Upload, X, AlertTriangle, Sparkles, Camera } from 'lucide-react'; // MODIFIED: Added Camera import
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
