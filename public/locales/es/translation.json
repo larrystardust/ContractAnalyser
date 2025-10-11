@@ -1428,5 +1428,7 @@
   "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis).",
   "scanned_document_prefix": "documento_escaneado",
   "not_applicable": "N/A",
-  "megabytes_unit": "MB"
+  "megabytes_unit": "MB",
+  "notification_title_ocr_completed": "OCR completado",
+  "notification_title_ocr_failed": "Fallo de OCR"
 }
