@@ -12,44 +12,42 @@ interface CameraCaptureProps {
 const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLoading }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null); // Use a ref for the MediaStream
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false); // ADDED: State to track if video is playing
+  const [isPlaying, setIsPlaying] = useState(false);
   const { t } = useTranslation();
 
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-      setIsPlaying(false); // ADDED: Reset isPlaying state
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null; // Clear the ref
+      setIsPlaying(false);
     }
-  }, [stream]);
+  }, []); // No dependencies, so this function is stable
 
   const startCamera = useCallback(async () => {
     setCameraError(null);
     setCapturedImage(null);
-    stopCamera(); // Ensure any existing stream is stopped before starting a new one
+    stopCamera(); // Stop any existing camera before starting a new one
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }, // Prefer rear camera
       });
-      setStream(mediaStream);
+      mediaStreamRef.current = mediaStream; // Store stream in ref
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        // ADDED: Handle play() promise to catch AbortError
         try {
           await videoRef.current.play();
-          setIsPlaying(true); // Set playing state on successful play
+          setIsPlaying(true);
         } catch (err: any) {
-          // AbortError is common if play() is interrupted, often not critical
           if (err.name === 'AbortError') {
             console.warn('Video play() was aborted, likely due to rapid component changes or unmount. This is often non-critical.', err);
           } else {
             console.error('Error playing video stream:', err);
             setCameraError(t('camera_access_denied_or_unavailable'));
-            stopCamera(); // Stop camera on other play errors
+            stopCamera();
           }
         }
       }
@@ -57,14 +55,14 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
       console.error('Error accessing camera:', err);
       setCameraError(t('camera_access_denied_or_unavailable'));
     }
-  }, [t, stopCamera]); // ADDED stopCamera to dependencies
+  }, [t, stopCamera]); // Depends on stopCamera, but stopCamera is now stable
 
   useEffect(() => {
     startCamera();
     return () => {
       stopCamera();
     };
-  }, [startCamera, stopCamera]);
+  }, [startCamera]); // Now depends only on startCamera, which is stable
 
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -73,26 +71,21 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
       const context = canvas.getContext('2d');
 
       if (context) {
-        // Set canvas dimensions to match video stream
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
-        // Draw the current video frame onto the canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Get image data as Base64
-        const imageData = canvas.toDataURL('image/jpeg', 0.9); // JPEG format, 90% quality
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
         setCapturedImage(imageData);
         stopCamera(); // Stop camera immediately after capture
-        onCapture(imageData); // Pass captured image data to parent
+        onCapture(imageData);
       }
     }
   };
 
   const handleRetake = () => {
     setCapturedImage(null);
-    onCapture(null); // Clear captured image in parent
-    startCamera(); // Restart camera
+    onCapture(null);
+    startCamera();
   };
 
   return (
@@ -108,13 +101,13 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
           {!capturedImage ? (
             <div className="relative w-full bg-gray-200 rounded-lg overflow-hidden">
               <video ref={videoRef} className="w-full h-auto rounded-lg" playsInline autoPlay muted />
-              <canvas ref={canvasRef} className="hidden" /> {/* Hidden canvas for capture */}
+              <canvas ref={canvasRef} className="hidden" />
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                 <Button
                   type="button"
                   variant="primary"
                   onClick={handleCapture}
-                  disabled={!stream || isLoading || !isPlaying} // Disable if not playing
+                  disabled={!mediaStreamRef.current || isLoading || !isPlaying} // Check ref for stream
                   icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
                 >
                   {isLoading ? t('capturing') : t('capture_image')}
@@ -136,7 +129,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel, isLo
                 <Button
                   type="button"
                   variant="primary"
-                  onClick={() => onCapture(capturedImage)} // Re-confirm capture to parent if needed
+                  onClick={() => onCapture(capturedImage)}
                   disabled={isLoading}
                   icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : undefined}
                 >
