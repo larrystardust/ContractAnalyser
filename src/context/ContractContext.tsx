@@ -240,7 +240,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('  contract_text (length):', newContractData.contractText.length);
       console.log('  image_data (present):', !!fileContentBase64);
       console.log('  image_data (first 50 chars):', fileContentBase64 ? fileContentBase64.substring(0, 50) : 'N/A');
-      console.log('  perform_ocr:', newContractData.performOcr);
+      console.log('  perform_ocr_flag:', newContractData.performOcr); // MODIFIED: Log with new name
       console.log('  perform_analysis:', newContractData.performAnalysis);
       console.log('  credit_cost:', newContractData.creditCost);
 
@@ -253,7 +253,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           source_language: newContractData.sourceLanguage,
           output_language: newContractData.outputLanguage,
           original_contract_name: newContractData.fileName,
-          perform_ocr: newContractData.performOcr, // Indicate if OCR is needed
+          perform_ocr_flag: newContractData.performOcr, // MODIFIED: Changed key to perform_ocr_flag
           perform_analysis: newContractData.performAnalysis, // Indicate if analysis is needed
           credit_cost: newContractData.creditCost, // Pass calculated credit cost
         },
