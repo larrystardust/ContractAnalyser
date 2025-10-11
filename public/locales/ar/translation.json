@@ -1427,5 +1427,8 @@
   "ocr_not_needed_for_documents": "التعرف الضوئي على الحروف غير مطلوب لهذا النوع من المستندات.",
   "perform_analysis": "إجراء التحليل",
   "not_enough_credits_for_analysis": "أرصدة غير كافية للتحليل (مطلوب {{cost}} أرصدة).",
-  "select_ocr_or_analysis": "الرجاء تحديد خيار معالجة واحد على الأقل (OCR أو تحليل)."
+  "select_ocr_or_analysis": "الرجاء تحديد خيار معالجة واحد على الأقل (OCR أو تحليل).",
+  "scanned_document_prefix": "مستند_ممسوح_ضوئياً",
+  "not_applicable": "غير_متوفر",
+  "megabytes_unit": "م.ب"
 }
