@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, AlertTriangle, Sparkles, Camera } from 'lucide-react'; // MODIFIED: Added Camera import
+import { Upload, X, AlertTriangle, Sparkles, Camera } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
@@ -247,12 +247,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
         if (capturedImageData) {
           // For captured image, no local text extraction needed, OCR will happen on backend
-          fileName = `scanned_document_${Date.now()}.jpeg`;
-          fileSize = 'N/A'; // Size is not easily determined from Base64 without decoding
+          fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`; // MODIFIED
+          fileSize = t('not_applicable'); // MODIFIED
           fileType = 'image/jpeg';
         } else if (file) {
           fileName = file.name;
-          fileSize = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+          fileSize = `${(file.size / (1024 * 1024)).toFixed(2)} ${t('megabytes_unit')}`; // MODIFIED
           fileType = file.type;
 
           // If it's a document file (PDF/DOCX) and OCR is NOT selected, extract text locally
@@ -344,7 +344,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             <>
               <Upload className="h-12 w-12 text-gray-400 mb-3" />
               <p className="text-sm text-gray-700 font-medium">{t('drag_and_drop_file_here')}</p>
-              <p className="text-xs text-gray-500 mt-1">{t('supports_pdf_docx_doc_image_formats')}</p> {/* MODIFIED */}
+              <p className="text-xs text-gray-500 mt-1">{t('supports_pdf_docx_doc_image_formats')}</p>
 
               <div className="mt-4">
                 <label htmlFor="file-upload" className="cursor-pointer">
@@ -362,7 +362,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     name="file-upload"
                     type="file"
                     className="sr-only"
-                    accept=".pdf,.doc,.docx,image/*" // MODIFIED: Accept image files
+                    accept=".pdf,.doc,.docx,image/*"
                     onChange={handleFileInput}
                     ref={fileInputRef}
                     disabled={uploading}
@@ -378,8 +378,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     {capturedImageData ? <Camera className="h-5 w-5 text-blue-900" /> : <Upload className="h-5 w-5 text-blue-900" />}
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700">{file?.name || t('captured_image')}</p> {/* MODIFIED */}
-                    <p className="text-xs text-gray-500">{file?.size ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</p> {/* MODIFIED */}
+                    <p className="text-sm font-medium text-gray-700">{file?.name || t('captured_image')}</p>
+                    <p className="text-xs text-gray-500">{file?.size ? `${(file.size / (1024 * 1024)).toFixed(2)} ${t('megabytes_unit')}` : t('not_applicable')}</p>
                   </div>
                 </div>
                 <button
@@ -413,7 +413,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || isDocumentFileSelected} // Disable if not enough credits or if it's a document file (OCR is implicit for images)
+                    disabled={uploading || !canPerformOcr || isDocumentFileSelected}
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr')} ({ocrCost} {t('credits')})
@@ -435,7 +435,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performAnalysis}
                     onChange={(e) => setPerformAnalysis(e.target.checked)}
-                    disabled={uploading || !canPerformAnalysis} // Disable if not enough credits
+                    disabled={uploading || !canPerformAnalysis}
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_analysis')} ({analysisCost} {t('credits')})
