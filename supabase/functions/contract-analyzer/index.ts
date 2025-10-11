@@ -76,7 +76,7 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
         {
           role: "system",
           // CRITICAL MODIFICATION: Instruct the LLM to only translate if necessary
-          content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage}, return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.`,
+          content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage, 'return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.'}`,
         },
         {
           role: "user",
@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
 
   // ADDED: New variables from request body
   let imageData: string | undefined;
-  let performOcr: boolean;
+  let shouldPerformOcr: boolean; // MODIFIED: Renamed from performOcr
   let performAnalysis: boolean;
   let creditCost: number;
 
@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
       output_language,
       original_contract_name,
       image_data, // ADDED
-      perform_ocr, // ADDED
+      perform_ocr, // MODIFIED: Renamed from perform_ocr
       perform_analysis, // ADDED
       credit_cost, // ADDED
     } = await req.json();
@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     outputLanguage = output_language || 'en';
     originalContractName = original_contract_name;
     imageData = image_data; // ADDED
-    performOcr = perform_ocr || false; // ADDED
+    shouldPerformOcr = perform_ocr || false; // MODIFIED: Renamed from performOcr
     performAnalysis = perform_analysis || false; // ADDED
     creditCost = credit_cost || 0; // ADDED
 
@@ -345,7 +345,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_ANALYSIS_STARTED',
       `User ${userEmail} started analysis for contract ID: ${contractId}`,
-      { contract_id: contractId, perform_ocr: performOcr, perform_analysis: performAnalysis, credit_cost: creditCost }
+      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, credit_cost: creditCost } // MODIFIED: Use shouldPerformOcr
     );
 
     await supabase
@@ -371,7 +371,7 @@ Deno.serve(async (req) => {
     // ADDED: OCR Processing Step
     let processedContractText = contractText; // Start with text from frontend (if any)
 
-    if (performOcr) {
+    if (shouldPerformOcr) { // MODIFIED: Use shouldPerformOcr
       await supabase.from('contracts').update({ processing_progress: 20 }).eq('id', contractId);
       let ocrImageData: string | undefined = imageData;
 
@@ -435,7 +435,7 @@ Deno.serve(async (req) => {
     }
 
     // If only OCR was requested, and not analysis, we can mark as completed and return
-    if (performOcr && !performAnalysis) {
+    if (shouldPerformOcr && !performAnalysis) { // MODIFIED: Use shouldPerformOcr
       await supabase
         .from('contracts')
         .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName })
