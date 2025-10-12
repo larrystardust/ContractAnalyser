@@ -50,6 +50,8 @@ Deno.serve(async (req) => {
       accessToken = await auth.getAccessToken();
     } catch (authError: any) {
       console.error("ERROR: Failed to obtain access token from GoogleAuth library:", authError);
+      console.error("ERROR DETAILS: Message:", authError.message);
+      console.error("ERROR DETAILS: Stack:", authError.stack);
       return corsResponse({ error: `GoogleAuth.getAccessToken() failed: ${authError.message}` }, 500);
     }
 
