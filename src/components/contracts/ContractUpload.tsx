@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, AlertTriangle, Sparkles, Camera } from 'lucide-react';
+import { Upload, X, AlertTriangle, Sparkles, Camera, FileText } from 'lucide-react'; // MODIFIED: Added FileText
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
@@ -56,7 +56,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
   const [performOcr, setPerformOcr] = useState(false);
-  const [performAnalysis, setPerformAnalysis] = useState(true);
+  const [performAnalysis, setPerformAnalysis] = true;
 
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
