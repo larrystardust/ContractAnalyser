@@ -5,10 +5,10 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types'; // MODIFIED: Import AnalysisLanguage
 
 interface ContractContextType {
-  // MODIFIED: Update addContract signature to include imageData, performOcr, performAnalysis, creditCost
+  // MODIFIED: Update addContract signature to include files (array) and imageDatas (array)
   addContract: (newContractData: {
-    file?: File;
-    imageData?: string; // Base64 image data
+    files?: File[]; // MODIFIED: Array of files
+    imageDatas?: string[]; // MODIFIED: Array of Base64 image data
     fileName: string;
     fileSize: string;
     fileType: string;
@@ -138,10 +138,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [fetchContracts]);
 
-  // MODIFIED: Update addContract function to accept imageData, performOcr, performAnalysis, creditCost
+  // MODIFIED: Update addContract function to accept files (array) and imageDatas (array)
   const addContract = useCallback(async (newContractData: {
-    file?: File;
-    imageData?: string;
+    files?: File[]; // MODIFIED
+    imageDatas?: string[]; // MODIFIED
     fileName: string;
     fileSize: string;
     fileType: string;
@@ -162,64 +162,55 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       let filePath = '';
+      let filePaths: string[] = []; // ADDED: To store multiple file paths
       let fileContentBase64: string | undefined; // This will hold the Base64 data for OCR if needed
 
       // Handle file upload to storage first
-      if (newContractData.file) {
-        filePath = `${session.user.id}/${Date.now()}-${newContractData.file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('contracts')
-          .upload(filePath, newContractData.file, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+      if (newContractData.files && newContractData.files.length > 0) {
+        for (const file of newContractData.files) {
+          const currentFilePath = `${session.user.id}/${Date.now()}-${file.name}`;
+          const { error: uploadError } = await supabase.storage
+            .from('contracts')
+            .upload(currentFilePath, file, {
+              cacheControl: '3600',
+              upsert: false,
+            });
 
-        if (uploadError) {
-          throw uploadError;
+          if (uploadError) {
+            throw uploadError;
+          }
+          filePaths.push(currentFilePath);
         }
-
-        // CRITICAL FIX: If OCR is requested for a file, convert the file to Base64
-        if (newContractData.performOcr) {
-          const reader = new FileReader();
-          const fileReadPromise = new Promise<string>((resolve, reject) => {
-            reader.onloadend = () => {
-              if (typeof reader.result === 'string') {
-                resolve(reader.result.split(',')[1]); // Extract Base64 part
-              } else {
-                reject(new Error('Failed to read file as Base64.'));
-              }
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(newContractData.file);
-          });
-          fileContentBase64 = await fileReadPromise;
-        }
-      } else if (newContractData.imageData) {
+        filePath = filePaths[0]; // Store the first file path as the main one for the contract record
+      } else if (newContractData.imageDatas && newContractData.imageDatas.length > 0) {
         // This branch is for capturedImageData (from camera)
-        filePath = `${session.user.id}/${Date.now()}-scanned_document.jpeg`;
-        
-        // Ensure imageData is correctly formatted Base64
-        if (newContractData.imageData.startsWith('data:')) {
-          fileContentBase64 = newContractData.imageData.split(',')[1];
-        } else {
-          console.error("addContract: imageData does not start with 'data:', possibly malformed.");
-          fileContentBase64 = newContractData.imageData; // Use as is, but it might be wrong
-        }
-        
-        // Optionally upload the image to storage for record-keeping
-        const imageBlob = await fetch(newContractData.imageData).then(res => res.blob());
-        const { error: uploadError } = await supabase.storage
-          .from('contracts')
-          .upload(filePath, imageBlob, {
-            contentType: newContractData.fileType,
-            cacheControl: '3600',
-            upsert: false,
-          });
+        // Upload each image to storage
+        for (let i = 0; i < newContractData.imageDatas.length; i++) {
+          const imageData = newContractData.imageDatas[i];
+          const currentFilePath = `${session.user.id}/${Date.now()}-scanned_document_${i + 1}.jpeg`;
+          
+          // Ensure imageData is correctly formatted Base64
+          let base64Data = imageData;
+          if (imageData.startsWith('data:')) {
+            base64Data = imageData.split(',')[1];
+          }
+          
+          const imageBlob = await fetch(imageData).then(res => res.blob());
+          const { error: uploadError } = await supabase.storage
+            .from('contracts')
+            .upload(currentFilePath, imageBlob, {
+              contentType: 'image/jpeg',
+              cacheControl: '3600',
+              upsert: false,
+            });
 
-        if (uploadError) {
-          console.warn('Error uploading captured image to storage:', uploadError);
-          // Don't throw, continue with OCR if possible
+          if (uploadError) {
+            console.warn('Error uploading captured image to storage:', uploadError);
+            // Don't throw, continue with OCR if possible
+          }
+          filePaths.push(currentFilePath);
         }
+        filePath = filePaths[0]; // Store the first image path as the main one for the contract record
       } else {
         // If no file and no capturedImageData, then contractText must be present for processing
         if (!newContractData.contractText) {
@@ -232,7 +223,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .insert({
           user_id: session.user.id,
           name: newContractData.fileName,
-          file_path: filePath,
+          file_path: filePath, // Store the first file path
           size: newContractData.fileSize,
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
@@ -259,24 +250,24 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('Invoking contract-analyzer with payload:');
       console.log('  contract_id:', data.id);
       console.log('  contract_text (length):', newContractData.contractText.length);
-      console.log('  image_data (present):', !!fileContentBase64);
-      console.log('  image_data (first 50 chars):', fileContentBase64 ? fileContentBase64.substring(0, 50) : 'N/A');
-      console.log('  perform_ocr_flag:', newContractData.performOcr); // MODIFIED: Log with new name
+      console.log('  image_datas (present):', newContractData.imageDatas && newContractData.imageDatas.length > 0); // MODIFIED
+      console.log('  image_datas (count):', newContractData.imageDatas?.length); // MODIFIED
+      console.log('  perform_ocr_flag:', newContractData.performOcr);
       console.log('  perform_analysis:', newContractData.performAnalysis);
       console.log('  credit_cost:', newContractData.creditCost);
 
-      // MODIFIED: Pass imageData, performOcr, performAnalysis, creditCost to Edge Function
+      // MODIFIED: Pass imageDatas (array), performOcr, performAnalysis, creditCost to Edge Function
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
           contract_text: newContractData.contractText, // Will be empty if OCR is performed on backend
-          image_data: fileContentBase64, // Pass Base64 image data if available
+          image_datas: newContractData.imageDatas, // MODIFIED: Pass array of Base64 image data
           source_language: newContractData.sourceLanguage,
           output_language: newContractData.outputLanguage,
           original_contract_name: newContractData.fileName,
-          perform_ocr_flag: newContractData.performOcr, // MODIFIED: Changed key to perform_ocr_flag
-          perform_analysis: newContractData.performAnalysis, // Indicate if analysis is needed
-          credit_cost: newContractData.creditCost, // Pass calculated credit cost
+          perform_ocr_flag: newContractData.performOcr,
+          perform_analysis: newContractData.performAnalysis,
+          credit_cost: newContractData.creditCost,
         },
       });
 
