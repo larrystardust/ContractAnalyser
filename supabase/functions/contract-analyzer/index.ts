@@ -189,8 +189,8 @@ Deno.serve(async (req) => {
   let userPreferredLanguage: string = 'en';
 
   // ADDED: New variables from request body
-  let imageData: string | undefined;
-  let shouldPerformOcr: boolean; // MODIFIED: Renamed from performOcr
+  let imageDatas: string[] | undefined; // MODIFIED: Array of image data
+  let shouldPerformOcr: boolean;
   let performAnalysis: boolean;
   let creditCost: number;
 
@@ -201,10 +201,10 @@ Deno.serve(async (req) => {
       source_language,
       output_language,
       original_contract_name,
-      image_data, // ADDED
-      perform_ocr_flag, // MODIFIED: Renamed to avoid shadowing
-      perform_analysis, // ADDED
-      credit_cost, // ADDED
+      image_datas, // MODIFIED: Array of image data
+      perform_ocr_flag,
+      perform_analysis,
+      credit_cost,
     } = await req.json();
 
     contractId = contract_id;
@@ -212,13 +212,13 @@ Deno.serve(async (req) => {
     sourceLanguage = source_language || 'auto';
     outputLanguage = output_language || 'en';
     originalContractName = original_contract_name;
-    imageData = image_data; // ADDED
-    shouldPerformOcr = perform_ocr_flag || false; // MODIFIED: Use perform_ocr_flag
-    performAnalysis = perform_analysis || false; // ADDED
-    creditCost = credit_cost || 0; // ADDED
+    imageDatas = image_datas; // MODIFIED: Array of image data
+    shouldPerformOcr = perform_ocr_flag || false;
+    performAnalysis = perform_analysis || false;
+    creditCost = credit_cost || 0;
 
-    if (!contractId || (!contractText && !imageData)) { // MODIFIED: contractText is optional if imageData is present
-      return corsResponse({ error: 'Missing contract_id and either contract_text or image_data' }, 400);
+    if (!contractId || (!contractText && (!imageDatas || imageDatas.length === 0))) { // MODIFIED: Check for imageDatas array
+      return corsResponse({ error: 'Missing contract_id and either contract_text or image_datas' }, 400);
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -356,7 +356,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_ANALYSIS_STARTED',
       `User ${userEmail} started analysis for contract ID: ${contractId}`,
-      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, credit_cost: creditCost } // MODIFIED: Use shouldPerformOcr
+      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, credit_cost: creditCost }
     );
 
     await supabase
@@ -367,7 +367,7 @@ Deno.serve(async (req) => {
     // Fetch the contract details, including file_path if OCR is needed for a document
     const { data: contractDetails, error: fetchContractError } = await supabase
       .from('contracts')
-      .select('contract_content, user_id, jurisdictions, name, file_path') // MODIFIED: Added file_path
+      .select('contract_content, user_id, jurisdictions, name, file_path')
       .eq('id', contractId)
       .single();
 
@@ -382,11 +382,13 @@ Deno.serve(async (req) => {
     // ADDED: OCR Processing Step
     let processedContractText = contractText; // Start with text from frontend (if any)
 
-    if (shouldPerformOcr) { // MODIFIED: Use shouldPerformOcr
+    if (shouldPerformOcr) {
       await supabase.from('contracts').update({ processing_progress: 20 }).eq('id', contractId);
-      let ocrImageData: string | undefined = imageData;
+      let ocrImageDatas: string[] = []; // MODIFIED: Array for OCR image data
 
-      if (!ocrImageData && contractDetails.file_path) {
+      if (imageDatas && imageDatas.length > 0) {
+        ocrImageDatas = imageDatas;
+      } else if (contractDetails.file_path) {
         // If no imageData from frontend, but OCR is requested for a file already in storage
         const { data: fileBlob, error: downloadError } = await supabase.storage
           .from('contracts')
@@ -399,54 +401,44 @@ Deno.serve(async (req) => {
 
         // Convert Blob to Base64
         const arrayBuffer = await fileBlob.arrayBuffer();
-        ocrImageData = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        ocrImageDatas.push(btoa(String.fromCharCode(...new Uint8Array(arrayBuffer))));
       }
 
-      if (ocrImageData) {
-        try {
-          processedContractText = await executeOcr(ocrImageData, userPreferredLanguage); // MODIFIED: Call executeOcr
-          // Update contract_content in DB with OCR'd text
-          await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
-          await logActivity(
-            supabase,
-            userId,
-            'CONTRACT_OCR_COMPLETED',
-            `User ${userEmail} performed OCR for contract ID: ${contractId}`,
-            { contract_id: contractId }
-          );
-          // Send notification for OCR completion
-          await supabase.from('notifications').insert({
-            user_id: userId,
-            title: 'notification_title_ocr_completed',
-            message: getTranslatedMessage('notification_message_ocr_completed', userPreferredLanguage, { contractName: originalContractName }),
-            type: 'success',
-          });
-        } catch (ocrError: any) {
-          console.error('contract-analyzer: OCR failed:', ocrError);
-          await supabase.from('contracts').update({ status: 'ocr_failed' }).eq('id', contractId); // New status for OCR failure
-          await logActivity(
-            supabase,
-            userId,
-            'CONTRACT_OCR_FAILED',
-            `User ${userEmail} failed OCR for contract ID: ${contractId}. Error: ${ocrError.message}`,
-            { contract_id: contractId, error: ocrError.message }
-          );
-          // Send notification for OCR failure
-          await supabase.from('notifications').insert({
-            user_id: userId,
-            title: 'notification_title_ocr_failed',
-            message: getTranslatedMessage('notification_message_ocr_failed', userPreferredLanguage, { contractName: originalContractName, errorMessage: ocrError.message }),
-            type: 'error',
-          });
-          throw ocrError; // Re-throw to stop further processing if OCR is critical
+      if (ocrImageDatas.length > 0) { // MODIFIED: Check length of ocrImageDatas
+        let ocrResults: string[] = [];
+        for (const imgData of ocrImageDatas) { // MODIFIED: Iterate through image data array
+          try {
+            ocrResults.push(await executeOcr(imgData, userPreferredLanguage));
+          } catch (ocrError: any) {
+            console.error('contract-analyzer: OCR failed for one image:', ocrError);
+            // Continue processing other images, but log the error
+          }
         }
+        processedContractText = ocrResults.join('\n\n'); // Concatenate OCR results
+        
+        // Update contract_content in DB with OCR'd text
+        await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
+        await logActivity(
+          supabase,
+          userId,
+          'CONTRACT_OCR_COMPLETED',
+          `User ${userEmail} performed OCR for contract ID: ${contractId}`,
+          { contract_id: contractId }
+        );
+        // Send notification for OCR completion
+        await supabase.from('notifications').insert({
+          user_id: userId,
+          title: 'notification_title_ocr_completed',
+          message: getTranslatedMessage('notification_message_ocr_completed', userPreferredLanguage, { contractName: originalContractName }),
+          type: 'success',
+        });
       } else {
         throw new Error(getTranslatedMessage('error_no_image_data_for_ocr', userPreferredLanguage));
       }
     }
 
     // If only OCR was requested, and not analysis, we can mark as completed and return
-    if (shouldPerformOcr && !performAnalysis) { // MODIFIED: Use shouldPerformOcr
+    if (shouldPerformOcr && !performAnalysis) {
       await supabase
         .from('contracts')
         .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName })
@@ -456,10 +448,6 @@ Deno.serve(async (req) => {
 
     // If analysis is not requested, or if OCR failed, we should not proceed with analysis
     if (!performAnalysis || !processedContractText) {
-      // If OCR was performed but no analysis, the above block handles it.
-      // If no OCR and no analysis, this is an invalid state, or just a text upload without analysis.
-      // For now, we assume if performAnalysis is false, we stop here.
-      // If processedContractText is empty here, it means no text was available for analysis.
       if (!processedContractText) {
         throw new Error(getTranslatedMessage('error_no_text_for_analysis', userPreferredLanguage));
       }
@@ -551,7 +539,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         },
         {
           role: "user",
-          content: `Contract Text:\n\n${processedContractText}`, // MODIFIED: Use processedContractText
+          content: `Contract Text:\n\n${processedContractText}`,
         },
       ],
       response_format: { type: "json_object" },
