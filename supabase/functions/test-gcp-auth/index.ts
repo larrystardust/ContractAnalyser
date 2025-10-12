@@ -29,6 +29,14 @@ Deno.serve(async (req) => {
       return corsResponse({ error: "Missing Google Cloud credentials in environment variables." }, 500);
     }
 
+    // ADDED: Log the environment variables to verify they are read correctly
+    console.log("DEBUG: GOOGLE_CLIENT_EMAIL read:", GOOGLE_CLIENT_EMAIL);
+    console.log("DEBUG: GOOGLE_PRIVATE_KEY (truncated) read:", GOOGLE_PRIVATE_KEY.substring(0, 50) + "...");
+    console.log("DEBUG: GOOGLE_PRIVATE_KEY length:", GOOGLE_PRIVATE_KEY.length);
+    // You can also check for the presence of newlines if you suspect an issue:
+    console.log("DEBUG: GOOGLE_PRIVATE_KEY contains \\n:", GOOGLE_PRIVATE_KEY.includes('\n'));
+
+
     const auth = new GoogleAuth({
       credentials: {
         client_email: GOOGLE_CLIENT_EMAIL,
@@ -37,7 +45,13 @@ Deno.serve(async (req) => {
       scopes: ['https://www.googleapis.com/auth/cloud-platform'], // Or 'https://www.googleapis.com/auth/cloud-vision'
     });
 
-    const accessToken = await auth.getAccessToken();
+    let accessToken;
+    try {
+      accessToken = await auth.getAccessToken();
+    } catch (authError: any) {
+      console.error("ERROR: Failed to obtain access token from GoogleAuth library:", authError);
+      return corsResponse({ error: `GoogleAuth.getAccessToken() failed: ${authError.message}` }, 500);
+    }
 
     if (accessToken.token) {
       console.log("Successfully obtained Google Cloud access token in Edge Function!");
