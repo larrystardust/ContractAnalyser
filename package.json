@@ -15,6 +15,7 @@
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.56.0",
     "dotenv": "^16.4.5",
+    "google-auth-library": "^10.4.0",
     "i18next": "^23.11.5",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^2.5.2",
