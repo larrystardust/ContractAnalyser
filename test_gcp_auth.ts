@@ -1,4 +1,4 @@
-import { GoogleAuth } from 'npm:google-auth-library@9.10.0';
+import { GoogleAuth } from 'google-auth-library';
 
 // Replace with your actual values from Supabase environment variables
 const GOOGLE_CLIENT_EMAIL = "image-invoker@analyser-474911.iam.gserviceaccount.com";
