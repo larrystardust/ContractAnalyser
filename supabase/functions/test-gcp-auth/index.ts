@@ -29,11 +29,9 @@ Deno.serve(async (req) => {
       return corsResponse({ error: "Missing Google Cloud credentials in environment variables." }, 500);
     }
 
-    // ADDED: Log the environment variables to verify they are read correctly
     console.log("DEBUG: GOOGLE_CLIENT_EMAIL read:", GOOGLE_CLIENT_EMAIL);
     console.log("DEBUG: GOOGLE_PRIVATE_KEY (truncated) read:", GOOGLE_PRIVATE_KEY.substring(0, 50) + "...");
     console.log("DEBUG: GOOGLE_PRIVATE_KEY length:", GOOGLE_PRIVATE_KEY.length);
-    // You can also check for the presence of newlines if you suspect an issue:
     console.log("DEBUG: GOOGLE_PRIVATE_KEY contains \\n:", GOOGLE_PRIVATE_KEY.includes('\n'));
 
 
@@ -45,9 +43,9 @@ Deno.serve(async (req) => {
       scopes: ['https://www.googleapis.com/auth/cloud-platform'], // Or 'https://www.googleapis.com/auth/cloud-vision'
     });
 
-    let accessToken;
+    let accessTokenResult; // Renamed to avoid confusion with the token string itself
     try {
-      accessToken = await auth.getAccessToken();
+      accessTokenResult = await auth.getAccessToken();
     } catch (authError: any) {
       console.error("ERROR: Failed to obtain access token from GoogleAuth library:", authError);
       console.error("ERROR DETAILS: Message:", authError.message);
@@ -55,15 +53,32 @@ Deno.serve(async (req) => {
       return corsResponse({ error: `GoogleAuth.getAccessToken() failed: ${authError.message}` }, 500);
     }
 
-    if (accessToken.token) {
+    // MODIFIED: Extract the token string and expiration correctly
+    let tokenString: string | undefined;
+    let expiresIn: number | undefined;
+
+    if (typeof accessTokenResult === 'string') {
+      // If getAccessToken returns the token directly as a string
+      tokenString = accessTokenResult;
+      // We don't get expires_in directly in this case, so it remains undefined
+    } else if (accessTokenResult && typeof accessTokenResult === 'object' && accessTokenResult.token) {
+      // If getAccessToken returns an AccessTokenResponse object
+      tokenString = accessTokenResult.token;
+      expiresIn = accessTokenResult.res?.data.expires_in;
+    }
+
+    if (tokenString) {
       console.log("Successfully obtained Google Cloud access token in Edge Function!");
-      console.log("Access Token (first 20 chars):", accessToken.token.substring(0, 20) + "...");
-      console.log("Expires in:", accessToken.res?.data.expires_in, "seconds");
-      return corsResponse({ message: "Google Cloud authentication successful!", accessToken: accessToken.token.substring(0, 20) + "...", expiresIn: accessToken.res?.data.expires_in });
+      console.log("Access Token (first 20 chars):", tokenString.substring(0, 20) + "...");
+      if (expiresIn) {
+        console.log("Expires in:", expiresIn, "seconds");
+      } else {
+        console.log("Expires in: (not available directly from string token)");
+      }
+      return corsResponse({ message: "Google Cloud authentication successful!", accessToken: tokenString.substring(0, 20) + "...", expiresIn: expiresIn });
     } else {
       console.error("Failed to obtain Google Cloud access token: Token is null or undefined.");
-      // ADDED: Log the full accessToken object here
-      console.error("DEBUG: Full accessToken object:", accessToken);
+      console.error("DEBUG: Full accessTokenResult object received:", accessTokenResult); // Log the full object for further debugging if needed
       return corsResponse({ error: "Failed to obtain Google Cloud access token." }, 500);
     }
   } catch (error: any) {
