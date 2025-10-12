@@ -21,20 +21,24 @@ const loadMammoth = async () => {
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
-  capturedImageData: string | null; // ADDED: Prop for captured image data
-  setCapturedImageData: (data: string | null) => void; // ADDED: Prop to clear captured image
-  canPerformOcrAndAnalysis: boolean; // ADDED: Credit status
-  canPerformOcr: boolean; // ADDED: Credit status
-  canPerformAnalysis: boolean; // ADDED: Credit status
-  ocrCost: number; // ADDED: OCR credit cost
-  analysisCost: number; // ADDED: Analysis credit cost
+  capturedImages: string[]; // MODIFIED: Array of captured images
+  setCapturedImages: (data: string[]) => void; // MODIFIED: To clear captured images
+  selectedFiles: File[]; // ADDED: Array of selected files
+  setSelectedFiles: (files: File[]) => void; // ADDED: To clear selected files
+  canPerformOcrAndAnalysis: boolean;
+  canPerformOcr: boolean;
+  canPerformAnalysis: boolean;
+  ocrCost: number;
+  analysisCost: number;
 }
 
 const ContractUpload: React.FC<ContractUploadProps> = ({
   onUploadStatusChange,
   defaultJurisdictions,
-  capturedImageData, // Destructure new prop
-  setCapturedImageData, // Destructure new prop
+  capturedImages, // Destructure new prop
+  setCapturedImages, // Destructure new prop
+  selectedFiles, // Destructure new prop
+  setSelectedFiles, // Destructure new prop
   canPerformOcrAndAnalysis,
   canPerformOcr,
   canPerformAnalysis,
@@ -42,7 +46,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   analysisCost,
 }) => {
   const { addContract, refetchContracts } = useContracts();
-  const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedJurisdictions, setSelectedJurisdictions] = useState<Jurisdiction[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,8 +55,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
-  const [performOcr, setPerformOcr] = useState(false); // ADDED: State to control OCR
-  const [performAnalysis, setPerformAnalysis] = useState(true); // ADDED: State to control Analysis
+  const [performOcr, setPerformOcr] = useState(false);
+  const [performAnalysis, setPerformAnalysis] = useState(true);
 
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
@@ -71,10 +74,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   }, [defaultJurisdictions]);
 
-  // Effect to handle captured image data
+  // Effect to handle captured image data or selected files
   useEffect(() => {
-    if (capturedImageData) {
-      // If image data is present, automatically select OCR option
+    const hasImageInput = capturedImages.length > 0;
+    const hasDocumentInput = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+    const hasImageFileInput = selectedFiles.some(f => f.type.startsWith('image/'));
+
+    // If there are any image inputs (captured or uploaded image files), OCR is needed
+    if (hasImageInput || hasImageFileInput) {
       setPerformOcr(true);
       // If enough credits, also select analysis
       if (canPerformOcrAndAnalysis) {
@@ -82,11 +89,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       } else {
         setPerformAnalysis(false); // Disable analysis if not enough credits for both
       }
-    } else {
+    } else if (hasDocumentInput) {
+      // If only document files are selected, OCR is not needed by default
       setPerformOcr(false);
-      setPerformAnalysis(true); // Default to analysis for file uploads
+      setPerformAnalysis(true); // Default to analysis for document files
+    } else {
+      // No input, reset to default
+      setPerformOcr(false);
+      setPerformAnalysis(true);
     }
-  }, [capturedImageData, canPerformOcrAndAnalysis]);
+  }, [capturedImages, selectedFiles, canPerformOcrAndAnalysis]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -111,25 +123,15 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === 'application/pdf' ||
-          droppedFile.name.endsWith('.docx') ||
-          droppedFile.name.endsWith('.doc') ||
-          droppedFile.type.startsWith('image/')) { // MODIFIED: Allow image files
-        setFile(droppedFile);
-        setCapturedImageData(null); // Clear captured image if a file is dropped
-        // If an image file is dropped, enable OCR by default
-        if (droppedFile.type.startsWith('image/')) {
-          setPerformOcr(true);
-          if (canPerformOcrAndAnalysis) {
-            setPerformAnalysis(true);
-          } else {
-            setPerformAnalysis(false);
-          }
-        } else {
-          setPerformOcr(false);
-          setPerformAnalysis(true);
-        }
+      const newFiles = Array.from(e.dataTransfer.files).filter(file =>
+        file.type === 'application/pdf' ||
+        file.name.endsWith('.docx') ||
+        file.name.endsWith('.doc') ||
+        file.type.startsWith('image/')
+      );
+      if (newFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setCapturedImages([]); // Clear captured images if files are dropped
       } else {
         alert(t('unsupported_file_type_alert'));
       }
@@ -138,29 +140,19 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0];
-      if (selectedFile.type === 'application/pdf' ||
-          selectedFile.name.endsWith('.docx') ||
-          selectedFile.name.endsWith('.doc') ||
-          selectedFile.type.startsWith('image/')) { // MODIFIED: Allow image files
-        setFile(selectedFile);
-        setCapturedImageData(null); // Clear captured image if a file is selected
-        // If an image file is selected, enable OCR by default
-        if (selectedFile.type.startsWith('image/')) {
-          setPerformOcr(true);
-          if (canPerformOcrAndAnalysis) {
-            setPerformAnalysis(true);
-          } else {
-            setPerformAnalysis(false);
-          }
-        } else {
-          setPerformOcr(false);
-          setPerformAnalysis(true);
-        }
+      const newFiles = Array.from(e.target.files).filter(file =>
+        file.type === 'application/pdf' ||
+        file.name.endsWith('.docx') ||
+        file.name.endsWith('.doc') ||
+        file.type.startsWith('image/')
+      );
+      if (newFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setCapturedImages([]); // Clear captured images if files are selected
       } else {
         alert(t('unsupported_file_type_alert'));
-        e.target.value = '';
       }
+      e.target.value = ''; // Clear input to allow re-selection of same files
     }
   };
 
@@ -168,13 +160,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  const removeFile = () => {
-    setFile(null);
-    setCapturedImageData(null); // Clear captured image
-    setPerformOcr(false); // Reset OCR state
-    setPerformAnalysis(true); // Reset Analysis state
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  // MODIFIED: removeFile now takes an index and type
+  const removeInput = (indexToRemove: number, type: 'file' | 'image') => {
+    if (type === 'file') {
+      setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    } else {
+      setCapturedImages(prev => prev.filter((_, index) => index !== indexToRemove));
     }
   };
 
@@ -218,7 +209,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (performOcr) currentCreditCost += ocrCost;
     if (performAnalysis) currentCreditCost += analysisCost;
 
-    // Frontend credit check
     if (!canPerformOcrAndAnalysis && performOcr && performAnalysis) {
       alert(t('not_enough_credits_for_ocr_analysis', { cost: ocrCost + analysisCost }));
       return;
@@ -236,83 +226,110 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       return;
     }
 
-    if ((file || capturedImageData) && selectedJurisdictions.length > 0) {
-      setUploading(true);
-      onUploadStatusChange(true);
-      try {
-        let contractText = '';
-        let fileName = '';
-        let fileSize = '';
-        let fileType = '';
-
-        if (capturedImageData) {
-          // For captured image, no local text extraction needed, OCR will happen on backend
-          fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`; // MODIFIED
-          fileSize = t('not_applicable'); // MODIFIED
-          fileType = 'image/jpeg';
-        } else if (file) {
-          fileName = file.name;
-          fileSize = `${(file.size / (1024 * 1024)).toFixed(2)} ${t('megabytes_unit')}`; // MODIFIED
-          fileType = file.type;
-
-          // If it's a document file (PDF/DOCX) and OCR is NOT selected, extract text locally
-          if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
-            contractText = await extractTextFromFile(file);
-          }
-          // If it's an image file, or OCR is selected for a document, text extraction will happen on backend
-        }
-
-        const newContractId = await addContract({
-          file: file || undefined, // Pass file if available
-          imageData: capturedImageData || undefined, // Pass image data if available
-          fileName,
-          fileSize,
-          fileType,
-          jurisdictions: selectedJurisdictions,
-          contractText, // This will be empty if OCR is performed on backend
-          sourceLanguage,
-          outputLanguage,
-          performOcr, // Pass OCR flag
-          performAnalysis, // Pass Analysis flag
-          creditCost: currentCreditCost, // Pass calculated credit cost
-        });
-        
-        alert(t('contract_uploaded_analysis_initiated'));
-        refetchContracts();
-        
-        if (newContractId) {
-          navigate(`/dashboard?contractId=${newContractId}`);
-        }
-
-        setFile(null);
-        setCapturedImageData(null); // Clear captured image after successful upload
-        setSelectedJurisdictions([]);
-        setSourceLanguage('auto');
-        setOutputLanguage('en');
-        setPerformOcr(false); // Reset OCR state
-        setPerformAnalysis(true); // Reset Analysis state
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } catch (error: any) {
-        let errorMessage = error.message || t('failed_to_upload_contract_or_extract_text', { message: error.message });
-        if (errorMessage.includes('Setting up fake worker failed') || errorMessage.includes('Failed to fetch dynamically imported module')) {
-          errorMessage = t('error_pdf_processing_failed');
-        }
-        alert(errorMessage);
-        console.error('Upload failed:', error);
-      } finally {
-        setUploading(false);
-        onUploadStatusChange(false);
-      }
-    } else {
+    const allInputs = [...selectedFiles, ...capturedImages]; // Combine all inputs
+    if (allInputs.length === 0 || selectedJurisdictions.length === 0) {
       alert(t('select_file_and_jurisdiction_alert'));
+      return;
+    }
+
+    setUploading(true);
+    onUploadStatusChange(true);
+    try {
+      let contractText = '';
+      let fileName = '';
+      let fileSize = '';
+      let fileType = '';
+      let filesToUpload: File[] = [];
+      let imageDatasToProcess: string[] = [];
+
+      if (capturedImages.length > 0) {
+        // For captured images, OCR will happen on backend
+        fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
+        fileSize = t('not_applicable');
+        fileType = 'image/jpeg';
+        imageDatasToProcess = capturedImages;
+      } else if (selectedFiles.length > 0) {
+        // For uploaded files
+        // If multiple files, name them as "Multi-page Contract"
+        fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
+        fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
+        fileType = selectedFiles[0].type; // Take type of first file, or generalize
+
+        // Separate files into those needing OCR and those providing text directly
+        for (const file of selectedFiles) {
+          if (file.type.startsWith('image/')) {
+            imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                  resolve(reader.result.split(',')[1]); // Extract Base64 part
+                } else {
+                  reject(new Error('Failed to read file as Base64.'));
+                }
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            }));
+            filesToUpload.push(file); // Still upload image files to storage
+          } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
+            // If it's a document and OCR is NOT selected, extract text locally
+            contractText += await extractTextFromFile(file) + '\n\n';
+            filesToUpload.push(file);
+          } else {
+            // If it's a document and OCR IS selected, or other file types, upload it
+            filesToUpload.push(file);
+          }
+        }
+      }
+
+      const newContractId = await addContract({
+        files: filesToUpload.length > 0 ? filesToUpload : undefined, // Pass files if available
+        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined, // Pass image data if available
+        fileName,
+        fileSize,
+        fileType,
+        jurisdictions: selectedJurisdictions,
+        contractText, // This will be empty if OCR is performed on backend
+        sourceLanguage,
+        outputLanguage,
+        performOcr, // Pass OCR flag
+        performAnalysis, // Pass Analysis flag
+        creditCost: currentCreditCost, // Pass calculated credit cost
+      });
+      
+      alert(t('contract_uploaded_analysis_initiated'));
+      refetchContracts();
+      
+      if (newContractId) {
+        navigate(`/dashboard?contractId=${newContractId}`);
+      }
+
+      setSelectedFiles([]); // Clear selected files
+      setCapturedImages([]); // Clear captured images
+      setSelectedJurisdictions([]);
+      setSourceLanguage('auto');
+      setOutputLanguage('en');
+      setPerformOcr(false); // Reset OCR state
+      setPerformAnalysis(true); // Reset Analysis state
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error: any) {
+      let errorMessage = error.message || t('failed_to_upload_contract_or_extract_text', { message: error.message });
+      if (errorMessage.includes('Setting up fake worker failed') || errorMessage.includes('Failed to fetch dynamically imported module')) {
+        errorMessage = t('error_pdf_processing_failed');
+      }
+      alert(errorMessage);
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+      onUploadStatusChange(false);
     }
   };
 
-  const isImageFileSelected = file && file.type.startsWith('image/');
-  const isDocumentFileSelected = file && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'));
-  const isAnyInputSelected = file || capturedImageData;
+  const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
+  const hasImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+  const hasDocumentInput = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -361,6 +378,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     id="file-upload"
                     name="file-upload"
                     type="file"
+                    multiple // ADDED: Allow multiple file selection
                     className="sr-only"
                     accept=".pdf,.doc,.docx,image/*"
                     onChange={handleFileInput}
@@ -372,30 +390,39 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             </>
           ) : (
             <div className="w-full">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    {capturedImageData ? <Camera className="h-5 w-5 text-blue-900" /> : <Upload className="h-5 w-5 text-blue-900" />}
+              <p className="text-sm text-gray-700 font-medium mb-3">{t('selected_files_for_upload')}:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {selectedFiles.map((file, index) => (
+                  <div key={`file-${index}`} className="relative group flex items-center p-2 border border-gray-300 rounded-md bg-white">
+                    <FileText className="h-5 w-5 text-blue-900 mr-2 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeInput(index, 'file')}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title={t('remove_file')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700">{file?.name || t('captured_image')}</p>
-                    <p className="text-xs text-gray-500">{file?.size ? `${(file.size / (1024 * 1024)).toFixed(2)} ${t('megabytes_unit')}` : t('not_applicable')}</p>
+                ))}
+                {capturedImages.map((image, index) => (
+                  <div key={`image-${index}`} className="relative group">
+                    <img src={image} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
+                    <button
+                      type="button"
+                      onClick={() => removeInput(index, 'image')}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title={t('remove_image')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  className="text-gray-400 hover:text-gray-500"
-                  onClick={removeFile}
-                  disabled={uploading}
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                ))}
               </div>
-              {capturedImageData && (
-                <div className="mt-4">
-                  <img src={capturedImageData} alt={t('captured_document_preview')} className="max-w-full h-auto rounded-lg" />
-                </div>
-              )}
+              <p className="text-sm text-gray-500 mt-4">
+                {t('ensure_all_pages_scanned_uploaded')}
+              </p>
             </div>
           )}
         </div>
@@ -413,7 +440,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || isDocumentFileSelected}
+                    disabled={uploading || !canPerformOcr || !hasImageInput} // MODIFIED: Disable if no image input
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr')} ({ocrCost} {t('credits')})
@@ -422,8 +449,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 {!canPerformOcr && (
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
                 )}
-                {isDocumentFileSelected && (
-                  <p className="text-xs text-gray-500 ml-7">{t('ocr_not_needed_for_documents')}</p>
+                {!hasImageInput && (
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p> // ADDED: Hint for OCR
                 )}
               </div>
 
