@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import ContractUpload from '../components/contracts/ContractUpload';
-import CameraCapture from '../components/CameraCapture'; // ADDED
-import { Loader2, AlertTriangle, Camera, FileText } from 'lucide-react'; // MODIFIED: Added Camera, FileText
+import CameraCapture from '../components/CameraCapture';
+import { Loader2, AlertTriangle, Camera, FileText, Upload as UploadIcon, X } from 'lucide-react'; // MODIFIED: Added UploadIcon, X
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
-import { useUserOrders } from '../hooks/useUserOrders'; // ADDED
-import { useSubscription } from '../hooks/useSubscription'; // ADDED
-import { Link } from 'react-router-dom'; // ADDED
-import Button from '../components/ui/Button'; // ADDED
+import { useUserOrders } from '../hooks/useUserOrders';
+import { useSubscription } from '../hooks/useSubscription';
+import { Link } from 'react-router-dom';
+import Button from '../components/ui/Button';
 
 const UploadPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const [isCameraMode, setIsCameraMode] = useState(false); // ADDED: State to toggle camera mode
-  const [capturedImageData, setCapturedImageData] = useState<string | null>(null); // ADDED: State for captured image
+  const [isCameraMode, setIsCameraMode] = useState(false);
+  const [capturedImages, setCapturedImages] = useState<string[]>([]); // MODIFIED: Array of captured images
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // ADDED: State for selected files
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { settings: appSettings, loading: loadingAppSettings, error: appSettingsError } = useAppSettings();
   const { t } = useTranslation();
-  const { getTotalSingleUseCredits, loading: loadingOrders } = useUserOrders(); // ADDED
-  const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription(); // ADDED
+  const { getTotalSingleUseCredits, loading: loadingOrders } = useUserOrders();
+  const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription();
 
-  // DEBUG: Log isUploading state changes
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
   }, [isUploading]);
@@ -34,30 +34,37 @@ const UploadPage: React.FC = () => {
   const maxAllowedFiles = subscription?.max_files || Infinity;
   const hasSubscriptionFileCapacity = hasSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles;
 
-  // Determine if OCR is possible (either via subscription or enough single-use credits)
   const canPerformOcr = hasSubscription || availableCredits >= OCR_COST;
-  // Determine if analysis is possible (either via subscription or enough single-use credits)
   const canPerformAnalysis = hasSubscription || availableCredits >= ANALYSIS_COST;
-  // Determine if OCR + Analysis is possible
   const canPerformOcrAndAnalysis = hasSubscription || availableCredits >= OCR_AND_ANALYSIS_COST;
 
   const handleUploadStatusChange = (status: boolean) => {
-    // DEBUG: Log when handleUploadStatusChange is called
-    console.log('UploadPage: handleUploadStatusChange called with:', status);
     setIsUploading(status);
   };
 
-  const handleCapturedImage = (imageData: string | null) => {
-    setCapturedImageData(imageData);
-    if (imageData) {
-      // If image is captured, switch back to file upload view to proceed with upload form
-      setIsCameraMode(false);
-    }
+  // MODIFIED: handleAddCapturedImage now adds a single image to the array
+  const handleAddCapturedImage = (imageData: string) => {
+    setCapturedImages(prev => [...prev, imageData]);
+  };
+
+  // MODIFIED: handleDoneCapturing passes all captured images to ContractUpload
+  const handleDoneCapturing = () => {
+    setIsCameraMode(false);
   };
 
   const handleCancelCamera = () => {
     setIsCameraMode(false);
-    setCapturedImageData(null);
+    setCapturedImages([]); // Clear captured images on cancel
+  };
+
+  // ADDED: Function to remove a captured image
+  const removeCapturedImage = (indexToRemove: number) => {
+    setCapturedImages(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // ADDED: Function to remove a selected file
+  const removeSelectedFile = (indexToRemove: number) => {
+    setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription) {
@@ -83,6 +90,8 @@ const UploadPage: React.FC = () => {
       </div>
     );
   }
+
+  const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-6 mt-16">
@@ -129,10 +138,17 @@ const UploadPage: React.FC = () => {
 
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
-        {/* Removed the "Upload File" button */}
         <Button
-          variant={'primary'} // Changed to primary
-          onClick={() => setIsCameraMode(true)}
+          variant={!isCameraMode ? 'primary' : 'secondary'}
+          onClick={() => { setIsCameraMode(false); setCapturedImages([]); }} // Clear captured images when switching to file upload
+          icon={<UploadIcon className="w-4 h-4" />}
+          disabled={isUploading}
+        >
+          {t('upload_files')}
+        </Button>
+        <Button
+          variant={isCameraMode ? 'primary' : 'secondary'}
+          onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }} // Clear selected files when switching to camera
           icon={<Camera className="w-4 h-4" />}
           disabled={isUploading || !canPerformOcr} // Disable camera if not enough credits for OCR
         >
@@ -142,21 +158,26 @@ const UploadPage: React.FC = () => {
 
       {isCameraMode ? (
         <CameraCapture
-          onCapture={handleCapturedImage}
+          onAddImage={handleAddCapturedImage} // MODIFIED
+          onDoneCapturing={handleDoneCapturing} // MODIFIED
           onCancel={handleCancelCamera}
           isLoading={isUploading}
+          capturedImages={capturedImages} // Pass current captured images
+          removeCapturedImage={removeCapturedImage} // Pass function to remove individual image
         />
       ) : (
         <ContractUpload
           onUploadStatusChange={handleUploadStatusChange}
           defaultJurisdictions={defaultJurisdictions}
-          capturedImageData={capturedImageData} // Pass captured image data
-          setCapturedImageData={setCapturedImageData} // Allow ContractUpload to clear it
-          canPerformOcrAndAnalysis={canPerformOcrAndAnalysis} // Pass credit status
-          canPerformOcr={canPerformOcr} // Pass credit status
-          canPerformAnalysis={canPerformAnalysis} // Pass credit status
-          ocrCost={OCR_COST} // Pass costs
-          analysisCost={ANALYSIS_COST} // Pass costs
+          capturedImages={capturedImages} // Pass captured image data
+          setCapturedImages={setCapturedImages} // Allow ContractUpload to clear it
+          selectedFiles={selectedFiles} // Pass selected files
+          setSelectedFiles={setSelectedFiles} // Allow ContractUpload to clear it
+          canPerformOcrAndAnalysis={canPerformOcrAndAnalysis}
+          canPerformOcr={canPerformOcr}
+          canPerformAnalysis={canPerformAnalysis}
+          ocrCost={OCR_COST}
+          analysisCost={ANALYSIS_COST}
         />
       )}
 
