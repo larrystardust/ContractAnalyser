@@ -62,6 +62,8 @@ Deno.serve(async (req) => {
       return corsResponse({ message: "Google Cloud authentication successful!", accessToken: accessToken.token.substring(0, 20) + "...", expiresIn: accessToken.res?.data.expires_in });
     } else {
       console.error("Failed to obtain Google Cloud access token: Token is null or undefined.");
+      // ADDED: Log the full accessToken object here
+      console.error("DEBUG: Full accessToken object:", accessToken);
       return corsResponse({ error: "Failed to obtain Google Cloud access token." }, 500);
     }
   } catch (error: any) {
