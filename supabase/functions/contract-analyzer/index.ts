@@ -121,14 +121,26 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
   };
 
   try {
-    const accessToken = await auth.getAccessToken(); // Get access token for Google Cloud
+    const accessTokenResult = await auth.getAccessToken(); // Get access token for Google Cloud
+
+    let tokenString: string | undefined;
+    if (typeof accessTokenResult === 'string') {
+      tokenString = accessTokenResult;
+    } else if (accessTokenResult && typeof accessTokenResult === 'object' && accessTokenResult.token) {
+      tokenString = accessTokenResult.token;
+    }
+
+    if (!tokenString) {
+      throw new Error(getTranslatedMessage('error_failed_to_obtain_gcp_access_token', userPreferredLanguage));
+    }
+
     const response = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate`, // MODIFIED: Removed ?key= parameter
+      `https://vision.googleapis.com/v1/images:annotate`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken.token}`, // Use access token for auth
+          'Authorization': `Bearer ${tokenString}`, // Use the extracted token string
         },
         body: JSON.stringify(requestBody),
       }
@@ -153,7 +165,6 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
     throw error;
   }
 }
-
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
