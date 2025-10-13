@@ -1450,5 +1450,6 @@
   "selected_files_for_upload": "Fichiers sélectionnés pour le téléchargement",
   "capture_page": "Capturer la page",
   "done_capturing": "Terminé la capture",
-  "remove_file": "Supprimer le fichier"
+  "remove_file": "Supprimer le fichier",
+  "reorder_pages_message": "Assurez-vous que les pages sont dans le bon ordre. Vous pouvez déplacer les fichiers pour réorganiser les pages."
 }
