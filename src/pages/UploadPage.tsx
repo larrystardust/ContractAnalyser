@@ -47,7 +47,7 @@ const UploadPage: React.FC = () => {
     setCapturedImages(prev => [...prev, imageData]);
   };
 
-  // MODIFIED: handleDoneCapturing passes all captured images to ContractUpload
+  // MODIFIED: handleDoneCapturing now switches to file upload mode and retains captured images
   const handleDoneCapturing = () => {
     setIsCameraMode(false);
   };
@@ -138,16 +138,9 @@ const UploadPage: React.FC = () => {
 
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
+        {/* REMOVED: "Upload Files" button */}
         <Button
-          variant={!isCameraMode ? 'primary' : 'secondary'}
-          onClick={() => { setIsCameraMode(false); setCapturedImages([]); }} // Clear captured images when switching to file upload
-          icon={<UploadIcon className="w-4 h-4" />}
-          disabled={isUploading}
-        >
-          {t('upload_files')}
-        </Button>
-        <Button
-          variant={isCameraMode ? 'primary' : 'secondary'}
+          variant={isCameraMode ? 'primary' : 'secondary'} // MODIFIED: Always show Scan Document, make prominent when active
           onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }} // Clear selected files when switching to camera
           icon={<Camera className="w-4 h-4" />}
           disabled={isUploading || !canPerformOcr} // Disable camera if not enough credits for OCR
