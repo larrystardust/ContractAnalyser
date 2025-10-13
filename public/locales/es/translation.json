@@ -1440,5 +1440,7 @@
   "document_selected_for_upload": "Documento seleccionado para cargar.",
   "only_one_document_at_a_time": "Solo se puede procesar un archivo PDF/DOCX/DOC a la vez. Elimine el documento actual para cargar otro.",
   "selected_files_for_upload": "Archivos seleccionados para cargar",
+  "capture_page": "Capturar página",
+  "done_capturing": "Terminar captura",
   "remove_file": "Eliminar archivo"
 }
