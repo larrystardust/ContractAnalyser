@@ -55,8 +55,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         contract_content,
         output_language,
         translated_name,
+        original_file_type, // ADDED: Select new column
         analysis_results (*, findings(*))
-      `) // REMOVED: original_file_paths from select
+      `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
 
@@ -79,7 +80,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           name: dbContract.name,
           translated_name: dbContract.translated_name,
           file_path: dbContract.file_path,
-          // REMOVED: original_file_paths: dbContract.original_file_paths,
+          original_file_type: dbContract.original_file_type, // ADDED: Map new column
           size: dbContract.size,
           jurisdictions: dbContract.jurisdictions,
           status: dbContract.status,
@@ -219,7 +220,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           user_id: session.user.id,
           name: newContractData.fileName,
           file_path: primaryFilePath,
-          // REMOVED: original_file_paths: allFilePaths, 
+          original_file_type: newContractData.fileType, // ADDED: Store original file type
           size: newContractData.fileSize,
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
