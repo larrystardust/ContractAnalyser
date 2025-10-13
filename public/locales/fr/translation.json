@@ -1451,5 +1451,9 @@
   "capture_page": "Capturer la page",
   "done_capturing": "Terminé la capture",
   "remove_file": "Supprimer le fichier",
-  "reorder_pages_message": "Assurez-vous que les pages sont dans le bon ordre. Vous pouvez déplacer les fichiers pour réorganiser les pages."
+  "reorder_pages_message": "Assurez-vous que les pages sont dans le bon ordre. Vous pouvez déplacer les fichiers pour réorganiser les pages.",
+  "no_text_content_available_for_download": "Aucun contenu textuel disponible en téléchargement pour ce contrat.",
+  "failed_to_download_text_file": "Échec du téléchargement du fichier texte : {{message}}",
+  "download_contract_text": "Télécharger le texte du contrat",
+  "download_text": "Télécharger le texte"
 }
