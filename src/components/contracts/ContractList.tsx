@@ -73,30 +73,30 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
     }
   };
 
-  const handleDownload = async (filePath: string, fileName: string, event: React.MouseEvent) => {
+  // MODIFIED: handleDownload to download contract_content as a text file
+  const handleDownload = async (contract: Contract, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+
+    if (!contract.contract_content) {
+      alert(t('no_text_content_available_for_download'));
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.storage
-        .from('contracts')
-        .createSignedUrl(filePath, 60);
-
-      if (error) {
-        throw error;
-      }
-
+      const blob = new Blob([contract.contract_content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = data.signedUrl;
-      link.download = fileName;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
+      link.href = url;
+      link.download = `${contract.name}.txt`; // Download as a text file
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url); // Clean up the object URL
 
     } catch (error: any) {
-      console.error('Error generating signed URL or downloading file:', error);
-      alert(t('failed_to_download_file', { message: error.message }));
+      console.error('Error generating text file for download:', error);
+      alert(t('failed_to_download_text_file', { message: error.message }));
     }
   };
 
@@ -179,11 +179,11 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={(e) => handleDownload(contract.file_path, contract.name, e)}
+                        onClick={(e) => handleDownload(contract, e)} // MODIFIED: Pass entire contract object
                         icon={<Download className="h-4 w-4" />}
-                        title={t('download_contract')} 
+                        title={t('download_contract_text')} // MODIFIED: New translation key
                       >
-                        {t('download')}
+                        {t('download_text')} {/* MODIFIED: New translation key */}
                       </Button>
                     )}
                   </div>
