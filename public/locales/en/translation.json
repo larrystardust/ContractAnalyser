@@ -1464,5 +1464,14 @@
   "contracts_error": "Contracts error:",
   "check_supabase_rls": "Please check your Supabase RLS policies or contact support if the issue persists.",
   "cannot_mix_image_document_files": "Cannot mix image and document files. Please upload either all images or all documents.",
-  "only_one_document_allowed": "Only one document file (PDF, DOCX, DOC) can be uploaded at a time. Please remove existing document files or upload a single document."
+  "only_one_document_allowed": "Only one document file (PDF, DOCX, DOC) can be uploaded at a time. Please remove existing document files or upload a single document.",
+
+  "landing_intro_universal_compatibility_description_ocr": "Handles PDFs, DOCX, and DOC files, and extracts text from image-based documents using advanced OCR.",
+  "landing_benefits_ocr_title": "Advanced OCR Capabilities",
+  "landing_benefits_ocr_description": "Automatically extract text from scanned documents and image files, ensuring no contract is left unanalyzed.",
+  "what_file_types_a_ocr": "ContractAnalyser supports PDF, DOCX, and DOC files. Additionally, it can process image-based documents (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR).",
+  "how_does_ocr_work_q": "How does OCR work?",
+  "how_does_ocr_work_a": "Our advanced OCR technology automatically detects and extracts text from image-based documents, allowing them to be analyzed just like native text documents. This is particularly useful for scanned contracts.",
+  "ocr_for_scanned_documents_modal": "OCR for Scanned Documents",
+  "ocr_for_scanned_documents_desc_modal": "Our system can process image-based contracts (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR), making them ready for analysis."
 }
