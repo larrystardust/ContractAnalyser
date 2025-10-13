@@ -1447,5 +1447,6 @@
   "upload_files": "Télécharger des fichiers",
   "document_selected_for_upload": "Document sélectionné pour le téléchargement.",
   "only_one_document_at_a_time": "Un seul fichier PDF/DOCX/DOC peut être traité à la fois. Veuillez supprimer le document actuel pour en télécharger un autre.",
-  "selected_files_for_upload": "Fichiers sélectionnés pour le téléchargement"
+  "selected_files_for_upload": "Fichiers sélectionnés pour le téléchargement",
+  "remove_file": "Supprimer le fichier"
 }
