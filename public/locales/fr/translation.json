@@ -1464,5 +1464,6 @@
   "problem_fetching_data": "Un problème est survenu lors de la récupération de vos données. Cela peut être dû à des problèmes de réseau ou à des autorisations incorrectes.",
   "contracts_error": "Erreur des contrats :",
   "check_supabase_rls": "Veuillez vérifier vos politiques RLS Supabase ou contacter le support si le problème persiste.",
-  "cannot_mix_image_document_files": "Impossible de mélanger les fichiers image et document. Veuillez télécharger soit toutes les images, soit tous les documents."
+  "cannot_mix_image_document_files": "Impossible de mélanger les fichiers image et document. Veuillez télécharger soit toutes les images, soit tous les documents.",
+  "only_one_document_allowed": "Un seul fichier document (PDF, DOCX, DOC) peut être téléchargé à la fois. Veuillez supprimer les fichiers document existants ou télécharger un seul document."
 }
