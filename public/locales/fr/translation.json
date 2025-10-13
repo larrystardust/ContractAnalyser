@@ -1457,5 +1457,6 @@
   "download_contract_text": "Télécharger le texte du contrat",
   "download_text": "Télécharger le texte",
   "download_original_file": "Télécharger le fichier original",
-  "download_original": "Original"
+  "download_original": "Original",
+  "failed_to_create_signed_url": "Échec de la création de l'URL signée pour le téléchargement : {{message}}"
 }
