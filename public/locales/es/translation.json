@@ -1450,5 +1450,9 @@
   "download_text": "Descargar texto",
   "download_original_file": "Descargar archivo original",
   "download_original": "Original",
-  "failed_to_create_signed_url": "Error al crear la URL firmada para la descarga: {{message}}"
+  "failed_to_create_signed_url": "Error al crear la URL firmada para la descarga: {{message}}",
+  "error_loading_dashboard": "Error al cargar el panel de control",
+  "problem_fetching_data": "Hubo un problema al recuperar sus datos. Esto podría deberse a problemas de red o permisos incorrectos.",
+  "contracts_error": "Error de contratos:",
+  "check_supabase_rls": "Por favor, revise sus políticas RLS de Supabase o contacte con soporte si el problema persiste."
 }
