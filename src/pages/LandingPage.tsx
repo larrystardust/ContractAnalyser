@@ -191,7 +191,7 @@ const LandingPage: React.FC = () => {
                 </p>
                 <ul className="list-disc list-inside space-y-3 text-lg">
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_instant_deployment_title')}**: {t('landing_intro_instant_deployment_description')}</li> {/* MODIFIED */}
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description_ocr')}</li> {/* MODIFIED */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_global_expertise_title')}**: {t('landing_intro_global_expertise_description')}</li> {/* MODIFIED */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_actionable_output_title')}**: {t('landing_intro_actionable_output_description')}</li> {/* MODIFIED */}
                 </ul>
