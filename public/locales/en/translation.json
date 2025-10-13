@@ -1456,5 +1456,6 @@
   "download_contract_text": "Download contract text",
   "download_text": "Download Text",
   "download_original_file": "Download original file",
-  "download_original": "Original"
+  "download_original": "Original",
+  "failed_to_create_signed_url": "Failed to create signed URL for download: {{message}}"
 }
