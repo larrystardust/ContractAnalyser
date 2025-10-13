@@ -119,9 +119,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setIsDragging(false);
   };
 
+  // This handleDragOver is now used for both the main drop zone and reordering
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); // Necessary to allow dropping
+    e.stopPropagation(); // Prevent propagation to parent elements
+    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -350,11 +352,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setDraggedItemType(type);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', index.toString()); // Required for Firefox
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // Necessary to allow dropping
-    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDropReorder = (e: React.DragEvent, dropIndex: number, dropType: 'file' | 'image') => {
