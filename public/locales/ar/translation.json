@@ -1451,5 +1451,6 @@
   "download_contract_text": "تنزيل نص العقد",
   "download_text": "تنزيل النص",
   "download_original_file": "تنزيل الملف الأصلي",
-  "download_original": "الأصلي"
+  "download_original": "الأصلي",
+  "failed_to_create_signed_url": "فشل إنشاء عنوان URL موقع للتنزيل: {{message}}"
 }
