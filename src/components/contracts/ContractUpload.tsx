@@ -36,6 +36,7 @@ interface ContractUploadProps {
   canPerformAnalysis: boolean;
   ocrCost: number;
   analysisCost: number;
+  showProcessingOptions: boolean; // ADDED: New prop for visibility
 }
 
 const ContractUpload: React.FC<ContractUploadProps> = ({
@@ -50,6 +51,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   canPerformAnalysis,
   ocrCost,
   analysisCost,
+  showProcessingOptions, // ADDED: Destructure new prop
 }) => {
   const { addContract, refetchContracts } = useContracts();
   const [isDragging, setIsDragging] = useState(false);
@@ -65,7 +67,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [performAnalysis, setPerformAnalysis] = useState(true);
 
   // ADDED: State for managing drag and drop reordering
-  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [draggedItemIndex, setDraggedItemIndex, ] = useState<number | null>(null);
   const [draggedItemType, setDraggedItemType] = useState<'file' | 'image' | null>(null);
 
   // ADDED: State to track if any document files (pdf, docx, doc) are selected
@@ -524,8 +526,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           )}
         </div>
 
-        {/* OCR and Analysis Options */}
-        {isAnyInputSelected && (
+        {/* Processing Options */}
+        {showProcessingOptions && isAnyInputSelected && ( // MODIFIED: Conditionally render based on showProcessingOptions
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
