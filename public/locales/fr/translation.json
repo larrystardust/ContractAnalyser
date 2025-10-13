@@ -1458,6 +1458,7 @@
   "download_text": "Télécharger le texte",
   "download_original_file": "Télécharger le fichier original",
   "download_original": "Original",
+  "captured_images_preview": "Aperçu des images capturées",
   "failed_to_create_signed_url": "Échec de la création de l'URL signée pour le téléchargement : {{message}}",
   "error_loading_dashboard": "Erreur lors du chargement du tableau de bord",
   "problem_fetching_data": "Un problème est survenu lors de la récupération de vos données. Cela peut être dû à des problèmes de réseau ou à des autorisations incorrectes.",
