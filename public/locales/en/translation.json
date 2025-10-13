@@ -1433,9 +1433,15 @@
   "perform_analysis": "Perform Analysis",
   "not_enough_credits_for_analysis": "Not enough credits for Analysis ({{cost}} credits required).",
   "select_ocr_or_analysis": "Please select at least one processing option (OCR or Analysis).",
-  "scanned_document_prefix": "scanned_document",
+  "scanned_document_prefix": "Scanned Document",
   "not_applicable": "N/A",
   "megabytes_unit": "MB",
   "notification_title_ocr_completed": "OCR Completed",
-  "notification_title_ocr_failed": "OCR Failed"
+  "notification_title_ocr_failed": "OCR Failed",
+  "multi_page_contract_prefix": "Multi-page Contract",
+  "ensure_all_pages_scanned_uploaded": "Please ensure all pages of your document have been scanned or uploaded.",
+  "ocr_only_for_images": "OCR is only applicable for image files (JPG, PNG) or scanned documents.",
+  "no_input_provided_for_upload": "No file, image, or contract text provided for upload.",
+  "error_no_image_data_for_ocr": "No image data provided for OCR processing.",
+  "upload_files": "Upload Files"
 }
