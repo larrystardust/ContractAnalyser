@@ -1473,5 +1473,7 @@
   "how_does_ocr_work_q": "How does OCR work?",
   "how_does_ocr_work_a": "Our advanced OCR technology automatically detects and extracts text from image-based documents, allowing them to be analyzed just like native text documents. This is particularly useful for scanned contracts.",
   "ocr_for_scanned_documents_modal": "OCR for Scanned Documents",
-  "ocr_for_scanned_documents_desc_modal": "Our system can process image-based contracts (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR), making them ready for analysis."
+  "ocr_for_scanned_documents_desc_modal": "Our system can process image-based contracts (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR), making them ready for analysis.",
+  "upload_failed_a_ocr": "Ensure your file is in a supported format (PDF, DOCX, DOC, or image files like JPG, PNG). If you're uploading an image-based document, ensure you've selected the 'Perform OCR' option. If the issue persists, please contact support with details of the error.",
+  "analysis_failed_a_ocr": "If your analysis failed or is incomplete, especially for scanned documents or images, ensure you selected the 'Perform OCR' option during upload. If the document is a native text file (PDF, DOCX, DOC) and the issue persists, please contact support."
 }
