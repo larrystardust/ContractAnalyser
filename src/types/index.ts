@@ -4,7 +4,7 @@ export interface Contract {
   name: string;
   translated_name?: string; // ADDED: New field for translated contract name
   file_path: string; // Added for Supabase Storage path
-  // REMOVED: original_file_paths?: string[]; 
+  original_file_type?: string; // ADDED: New field to store original file type
   size: string;
   jurisdictions: Jurisdiction[];
   status: 'pending' | 'analyzing' | 'completed' | 'failed' | 'ocr_failed'; // ADDED 'ocr_failed'
