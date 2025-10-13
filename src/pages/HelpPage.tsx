@@ -208,7 +208,7 @@ const HelpPage: React.FC = () => {
         <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
           <li>
             <strong>{t('upload_failed_q')}</strong>
-            <p className="ml-4">{t('upload_failed_a')}</p>
+            <p className="ml-4">{t('upload_failed_a_ocr')}</p> {/* MODIFIED: Use new translation key */}
           </li>
           <li>
             <strong>{t('contract_stuck_q')}</strong>
@@ -216,7 +216,7 @@ const HelpPage: React.FC = () => {
           </li>
           <li>
             <strong>{t('analysis_failed_q')}</strong>
-            <p className="ml-4">{t('analysis_failed_a')}</p>
+            <p className="ml-4">{t('analysis_failed_a_ocr')}</p> {/* MODIFIED: Use new translation key */}
           </li>
           <li>
             <strong>{t('forgot_password_q_troubleshoot')}</strong>
