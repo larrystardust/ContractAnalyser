@@ -73,14 +73,14 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
 
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
-      const video = video.current;
-      const canvas = canvas.current;
+      const videoElement = videoRef.current; // CORRECTED: Access video element from ref
+      const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
       if (context) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
         const uniqueId = crypto.randomUUID(); // Generate a unique ID
         onAddImage({ id: uniqueId, data: imageData }); // MODIFIED: Pass CapturedImage object
