@@ -2,13 +2,13 @@ import React, { createContext, useState, useContext, useEffect, useRef, ReactNod
 import { supabase } from '../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types'; // MODIFIED: Import AnalysisLanguage
+import { Contract, AnalysisResult, Jurisdiction, AnalysisLanguage } from '../types';
+import { useTranslation } from 'react-i18next'; // ADDED: Import useTranslation
 
 interface ContractContextType {
-  // MODIFIED: Update addContract signature to include files (array) and imageDatas (array)
   addContract: (newContractData: {
-    files?: File[]; // MODIFIED: Array of files
-    imageDatas?: string[]; // MODIFIED: Array of Base64 image data
+    files?: File[];
+    imageDatas?: string[];
     fileName: string;
     fileSize: string;
     fileType: string;
@@ -16,9 +16,9 @@ interface ContractContextType {
     contractText: string;
     sourceLanguage: AnalysisLanguage;
     outputLanguage: AnalysisLanguage;
-    performOcr: boolean; // Whether OCR should be performed on backend
-    performAnalysis: boolean; // Whether analysis should be performed on backend
-    creditCost: number; // Total credits to deduct for this operation
+    performOcr: boolean;
+    performAnalysis: boolean;
+    creditCost: number;
   }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
   deleteContract: (contractId: string, filePath: string) => Promise<void>;
@@ -36,6 +36,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [errorContracts, setErrorContracts] = useState<Error | null>(null);
   const session = useSession();
   const contractSubscriptionRef = useRef<RealtimeChannel | null>(null);
+  const { t } = useTranslation(); // ADDED: Initialize useTranslation
 
   const fetchContracts = useCallback(async () => {
     setLoadingContracts(true);
@@ -76,9 +77,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           id: dbContract.id,
           user_id: dbContract.user_id,
           name: dbContract.name,
-          translated_name: dbContract.translated_name, // ADDED
+          translated_name: dbContract.translated_name,
           file_path: dbContract.file_path,
-          size: dbContract.size, // Keep as string
+          size: dbContract.size,
           jurisdictions: dbContract.jurisdictions,
           status: dbContract.status,
           processing_progress: dbContract.processing_progress,
@@ -86,7 +87,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           updated_at: dbContract.updated_at,
           subscription_id: dbContract.subscription_id,
           contract_content: dbContract.contract_content,
-          output_language: dbContract.output_language, // ADDED
+          output_language: dbContract.output_language,
           analysisResult: analysisResultData ? {
             id: analysisResultData.id,
             contract_id: analysisResultData.contract_id,
@@ -138,10 +139,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [fetchContracts]);
 
-  // MODIFIED: Update addContract function to accept files (array) and imageDatas (array)
   const addContract = useCallback(async (newContractData: {
-    files?: File[]; // MODIFIED
-    imageDatas?: string[]; // MODIFIED
+    files?: File[];
+    imageDatas?: string[];
     fileName: string;
     fileSize: string;
     fileType: string;
@@ -162,10 +162,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       let filePath = '';
-      let filePaths: string[] = []; // ADDED: To store multiple file paths
-      let fileContentBase64: string | undefined; // This will hold the Base64 data for OCR if needed
+      let filePaths: string[] = [];
+      let fileContentBase64: string | undefined;
 
-      // Handle file upload to storage first
       if (newContractData.files && newContractData.files.length > 0) {
         for (const file of newContractData.files) {
           const currentFilePath = `${session.user.id}/${Date.now()}-${file.name}`;
@@ -181,15 +180,12 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
           filePaths.push(currentFilePath);
         }
-        filePath = filePaths[0]; // Store the first file path as the main one for the contract record
+        filePath = filePaths[0];
       } else if (newContractData.imageDatas && newContractData.imageDatas.length > 0) {
-        // This branch is for capturedImageData (from camera)
-        // Upload each image to storage
         for (let i = 0; i < newContractData.imageDatas.length; i++) {
           const imageData = newContractData.imageDatas[i];
           const currentFilePath = `${session.user.id}/${Date.now()}-scanned_document_${i + 1}.jpeg`;
           
-          // Ensure imageData is correctly formatted Base64
           let base64Data = imageData;
           if (imageData.startsWith('data:')) {
             base64Data = imageData.split(',')[1];
@@ -206,15 +202,13 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           if (uploadError) {
             console.warn('Error uploading captured image to storage:', uploadError);
-            // Don't throw, continue with OCR if possible
           }
           filePaths.push(currentFilePath);
         }
-        filePath = filePaths[0]; // Store the first image path as the main one for the contract record
+        filePath = filePaths[0];
       } else {
-        // If no file and no capturedImageData, then contractText must be present for processing
         if (!newContractData.contractText) {
-          throw new Error('No file, image, or contract text provided for upload.');
+          throw new Error(t('no_input_provided_for_upload')); // MODIFIED: Use translation key
         }
       }
 
@@ -223,12 +217,12 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .insert({
           user_id: session.user.id,
           name: newContractData.fileName,
-          file_path: filePath, // Store the first file path
+          file_path: filePath,
           size: newContractData.fileSize,
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
           processing_progress: 0,
-          contract_content: newContractData.contractText, // Will be empty if OCR is performed on backend
+          contract_content: newContractData.contractText,
           output_language: newContractData.outputLanguage,
         })
         .select()
@@ -246,22 +240,20 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prevContracts,
       ]);
 
-      // DEBUG: Log the payload before invoking the Edge Function
       console.log('Invoking contract-analyzer with payload:');
       console.log('  contract_id:', data.id);
       console.log('  contract_text (length):', newContractData.contractText.length);
-      console.log('  image_datas (present):', newContractData.imageDatas && newContractData.imageDatas.length > 0); // MODIFIED
-      console.log('  image_datas (count):', newContractData.imageDatas?.length); // MODIFIED
+      console.log('  image_datas (present):', newContractData.imageDatas && newContractData.imageDatas.length > 0);
+      console.log('  image_datas (count):', newContractData.imageDatas?.length);
       console.log('  perform_ocr_flag:', newContractData.performOcr);
       console.log('  perform_analysis:', newContractData.performAnalysis);
       console.log('  credit_cost:', newContractData.creditCost);
 
-      // MODIFIED: Pass imageDatas (array), performOcr, performAnalysis, creditCost to Edge Function
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
           contract_id: data.id,
-          contract_text: newContractData.contractText, // Will be empty if OCR is performed on backend
-          image_datas: newContractData.imageDatas, // MODIFIED: Pass array of Base64 image data
+          contract_text: newContractData.contractText,
+          image_datas: newContractData.imageDatas,
           source_language: newContractData.sourceLanguage,
           output_language: newContractData.outputLanguage,
           original_contract_name: newContractData.fileName,
@@ -287,7 +279,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setLoadingContracts(false);
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, t]); // ADDED: t to dependency array
 
   const updateContract = useCallback(async (contractId: string, updates: Partial<Contract>) => {
     setLoadingContracts(true);
@@ -314,7 +306,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLoadingContracts(true);
     setErrorContracts(null);
     try {
-      // 1. Fetch analysis result to get report_file_path
       const { data: analysisResultData, error: fetchAnalysisError } = await supabase
         .from('analysis_results')
         .select('report_file_path')
@@ -327,7 +318,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const reportFilePath = analysisResultData?.report_file_path;
 
-      // 2. Delete original contract file from Supabase Storage
       if (filePath) {
         const { error: storageError } = await supabase.storage
           .from('contracts')
@@ -335,13 +325,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         if (storageError) {
           console.error('Error deleting original contract file from storage:', storageError);
-          // Don't throw, try to delete the DB record anyway
-        } else {
-          // console.log(`Successfully deleted original contract file: ${filePath}`); // REMOVED
         }
       }
 
-      // 3. Delete report file from Supabase Storage if it exists
       if (reportFilePath) {
         const { error: reportStorageError } = await supabase.storage
           .from('reports')
@@ -349,13 +335,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         if (reportStorageError) {
           console.error('Error deleting report file from storage:', reportStorageError);
-        } else {
-          // console.log(`Successfully deleted report file: ${filePath}`); // REMOVED
         }
       }
 
-      // 4. Delete contract record from 'contracts' table
-      // This should cascade delete analysis_results and findings due to foreign key constraints
       const { error: dbError } = await supabase
         .from('contracts')
         .delete()
@@ -367,7 +349,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       setContracts(prevContracts => prevContracts.filter(contract => contract.id !== contractId));
-      // console.log(`Contract ${contractId} and its associated files deleted successfully.`); // REMOVED
     } catch (error: any) {
       console.error('Error deleting contract:', error);
       setErrorContracts(error);
@@ -411,7 +392,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             userFacingMessage = 'You do not have credits to re-analyze this contract. Please purchase a single-use or subscription plan.';
             try {
               const errorBody = await error.context.json();
-              // console.log('ContractContext: Parsed 403 error body for logging:', errorBody); // REMOVED
             } catch (parseError) {
               console.warn('ContractContext: Could not parse 403 error response body for logging:', parseError);
             }
@@ -420,7 +400,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             userFacingMessage = 'An unexpected error occurred during contract re-analysis. Please try again or contact support.';
             try {
               const errorBody = await error.context.json();
-              // console.log('ContractContext: Parsed non-403 FunctionsHttpError body for logging:', errorBody); // REMOVED
             } catch (parseError) {
               console.warn('ContractContext: Could not parse non-403 FunctionsHttpError response body for logging:', parseError);
             }
@@ -435,8 +414,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         throw new Error(userFacingMessage);
       }
-
-      // console.log('Re-analysis initiated:', data); // REMOVED
     } catch (error: any) {
       console.error('Error re-analyzing contract:', error);
       setContracts(prevContracts =>
