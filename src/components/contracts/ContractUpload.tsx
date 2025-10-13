@@ -18,11 +18,17 @@ const loadMammoth = async () => {
   return await import('mammoth');
 };
 
+// Define the structure for a captured image (must match UploadPage.tsx)
+interface CapturedImage {
+  id: string;
+  data: string; // Base64 string
+}
+
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
-  capturedImages: string[];
-  setCapturedImages: (data: string[]) => void;
+  capturedImages: CapturedImage[]; // MODIFIED: Array of CapturedImage objects
+  setCapturedImages: (data: CapturedImage[]) => void; // MODIFIED: Accepts array of CapturedImage objects
   selectedFiles: File[];
   setSelectedFiles: (files: File[]) => void;
   canPerformOcrAndAnalysis: boolean;
@@ -168,11 +174,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  const removeInput = (indexToRemove: number, type: 'file' | 'image') => {
+  const removeInput = (idToRemove: string, type: 'file' | 'image') => { // MODIFIED: Accepts idToRemove for images
     if (type === 'file') {
-      setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((_, index) => index !== indexToRemove) : [])); // Defensive filter
+      setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => file.name + file.size !== idToRemove) : [])); // Filter by unique file identifier
     } else {
-      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((_, index) => index !== indexToRemove) : [])); // Defensive filter
+      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.id !== idToRemove) : [])); // MODIFIED: Filter by image.id
     }
   };
 
@@ -254,7 +260,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
-        imageDatasToProcess = capturedImages;
+        imageDatasToProcess = capturedImages.map(img => img.data); // MODIFIED: Map to data strings
       } else if (selectedFiles.length > 0) {
         // For uploaded files
         // If multiple files, name them as "Multi-page Contract"
@@ -350,21 +356,27 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setDraggedItemIndex(index);
     setDraggedItemType(type);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', index.toString()); // Required for Firefox
+    e.dataTransfer.setData('text/plain', JSON.stringify({ index, type })); // MODIFIED: Store index and type
   };
 
   const handleDropReorder = (e: React.DragEvent, dropIndex: number, dropType: 'file' | 'image') => {
     e.preventDefault();
+    e.stopPropagation(); // Ensure event doesn't bubble to parent drop zone
 
-    if (draggedItemIndex === null || draggedItemType === null || draggedItemType !== dropType) {
+    const data = e.dataTransfer.getData('text/plain');
+    if (!data) return; // No data means it's not our draggable item
+
+    const { index: draggedIndex, type: draggedType } = JSON.parse(data); // MODIFIED: Parse data
+
+    if (draggedIndex === null || draggedType === null || draggedType !== dropType) {
       return; // Only reorder items of the same type
     }
 
-    if (draggedItemType === 'file') {
-      const reorderedFiles = reorder(selectedFiles, draggedItemIndex, dropIndex);
+    if (draggedType === 'file') { // MODIFIED: Use draggedType
+      const reorderedFiles = reorder(selectedFiles, draggedIndex, dropIndex); // MODIFIED: Use draggedIndex
       setSelectedFiles(reorderedFiles);
-    } else if (draggedItemType === 'image') {
-      const reorderedImages = reorder(capturedImages, draggedItemIndex, dropIndex);
+    } else if (draggedType === 'image') { // MODIFIED: Use draggedType
+      const reorderedImages = reorder(capturedImages, draggedIndex, dropIndex); // MODIFIED: Use draggedIndex
       setCapturedImages(reorderedImages);
     }
 
@@ -454,7 +466,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedFiles.map((file, index) => (
                   <div
-                    key={`file-${file.name}-${file.size}`} // MODIFIED: Use file name and size for a more stable key
+                    key={`file-${file.name}-${file.size}`} // Use file name and size for a more stable key
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'file')}
                     onDragOver={handleDragOver}
@@ -469,7 +481,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     <span className="text-sm text-gray-700 truncate">{file.name}</span>
                     <button
                       type="button"
-                      onClick={() => removeInput(index, 'file')}
+                      onClick={() => removeInput(`${file.name}-${file.size}`, 'file')} // MODIFIED: Pass unique ID
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_file')}
                     >
@@ -479,7 +491,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 ))}
                 {capturedImages.map((image, index) => (
                   <div
-                    key={image} // MODIFIED: Use image data (base64 string) as key for stability
+                    key={image.id} // MODIFIED: Use image.id as key
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'image')}
                     onDragOver={handleDragOver}
@@ -490,10 +502,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       cursor-grab
                     `}
                   >
-                    <img src={image} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
+                    <img src={image.data} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Use image.data as src */}
                     <button
                       type="button"
-                      onClick={() => removeInput(index, 'image')}
+                      onClick={() => removeInput(image.id, 'image')} // MODIFIED: Pass image.id
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
