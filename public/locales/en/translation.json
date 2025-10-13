@@ -1446,5 +1446,6 @@
   "upload_files": "Upload Files",
   "document_selected_for_upload": "Document selected for upload.",
   "only_one_document_at_a_time": "Only one PDF/DOCX/DOC file can be processed at a time. Please remove the current document to upload another.",
-  "selected_files_for_upload": "Selected files for upload"
+  "selected_files_for_upload": "Selected files for upload",
+  "remove_file": "Remove file"
 }
