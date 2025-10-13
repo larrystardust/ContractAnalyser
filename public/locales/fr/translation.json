@@ -1474,5 +1474,7 @@
   "how_does_ocr_work_q": "Comment fonctionne l'OCR ?",
   "how_does_ocr_work_a": "Notre technologie OCR avancée détecte et extrait automatiquement le texte des documents basés sur des images, leur permettant d'être analysés comme des documents texte natifs. Ceci est particulièrement utile pour les contrats numérisés.",
   "ocr_for_scanned_documents_modal": "OCR pour les documents numérisés",
-  "ocr_for_scanned_documents_desc_modal": "Notre système peut traiter les contrats basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR), les rendant prêts pour l'analyse."
+  "ocr_for_scanned_documents_desc_modal": "Notre système peut traiter les contrats basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR), les rendant prêts pour l'analyse.",
+  "upload_failed_a_ocr": "Assurez-vous que votre fichier est dans un format pris en charge (PDF, DOCX, DOC, ou fichiers image comme JPG, PNG) et réessayez. Si vous téléchargez un document basé sur une image, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR'. Si le problème persiste, veuillez contacter le support avec les détails de l'erreur.",
+  "analysis_failed_a_ocr": "Si votre analyse a échoué ou est incomplète, en particulier pour les documents numérisés ou les images, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR' lors du téléchargement. Si le document est un fichier texte natif (PDF, DOCX, DOC) et que le problème persiste, veuillez contacter le support."
 }
