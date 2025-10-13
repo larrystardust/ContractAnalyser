@@ -176,11 +176,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  const removeInput = (idToRemove: string, type: 'file' | 'image') => { // MODIFIED: Accepts idToRemove for images
+  const removeInput = (idToRemove: string, type: 'file' | 'image') => {
     if (type === 'file') {
-      setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => file.name + file.size !== idToRemove) : [])); // Filter by unique file identifier
+      // FIX: Correctly compare the file identifier with idToRemove
+      setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => `${file.name}-${file.size}` !== idToRemove) : []));
     } else {
-      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.id !== idToRemove) : [])); // MODIFIED: Filter by image.id
+      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.id !== idToRemove) : []));
     }
   };
 
