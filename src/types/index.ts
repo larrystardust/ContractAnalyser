@@ -4,6 +4,7 @@ export interface Contract {
   name: string;
   translated_name?: string; // ADDED: New field for translated contract name
   file_path: string; // Added for Supabase Storage path
+  // REMOVED: original_file_paths?: string[]; 
   size: string;
   jurisdictions: Jurisdiction[];
   status: 'pending' | 'analyzing' | 'completed' | 'failed' | 'ocr_failed'; // ADDED 'ocr_failed'
@@ -12,6 +13,7 @@ export interface Contract {
   created_at: string; // Changed from uploadDate
   updated_at: string; // Added
   output_language?: AnalysisLanguage; // ADDED: New column for output language
+  contract_content?: string; // ADDED: Ensure contract_content is part of the Contract interface
 }
 
 export type Jurisdiction = 'UK' | 'EU' | 'Ireland' | 'US' | 'Canada' | 'Australia' | 'Islamic Law' | 'Others'; // MODIFIED: Added 'Islamic Law'
