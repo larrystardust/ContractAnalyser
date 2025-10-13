@@ -1457,5 +1457,14 @@
   "contracts_error": "Error de contratos:",
   "check_supabase_rls": "Por favor, revise sus políticas RLS de Supabase o contacte con soporte si el problema persiste.",
   "cannot_mix_image_document_files": "No se pueden mezclar archivos de imagen y documentos. Por favor, suba todas las imágenes o todos los documentos.",
-  "only_one_document_allowed": "Solo se puede subir un archivo de documento (PDF, DOCX, DOC) a la vez. Elimine los archivos de documento existentes o suba un solo documento."
+  "only_one_document_allowed": "Solo se puede subir un archivo de documento (PDF, DOCX, DOC) a la vez. Elimine los archivos de documento existentes o suba un solo documento.",
+
+  "landing_intro_universal_compatibility_description_ocr": "Maneja archivos PDF, DOCX y DOC, y extrae texto de documentos basados en imágenes utilizando OCR avanzado.",
+  "landing_benefits_ocr_title": "Capacidades OCR Avanzadas",
+  "landing_benefits_ocr_description": "Extraiga automáticamente texto de documentos escaneados y archivos de imagen, asegurando que ningún contrato quede sin analizar.",
+  "what_file_types_a_ocr": "ContractAnalyser admite archivos PDF, DOCX y DOC. Además, puede procesar documentos basados en imágenes (por ejemplo, PDF escaneados, JPG, PNG) extrayendo texto mediante Reconocimiento Óptico de Caracteres (OCR).",
+  "how_does_ocr_work_q": "¿Cómo funciona el OCR?",
+  "how_does_ocr_work_a": "Nuestra tecnología OCR avanzada detecta y extrae automáticamente texto de documentos basados en imágenes, lo que permite analizarlos como documentos de texto nativos. Esto es particularmente útil para contratos escaneados.",
+  "ocr_for_scanned_documents_modal": "OCR para documentos escaneados",
+  "ocr_for_scanned_documents_desc_modal": "Nuestro sistema puede procesar contratos basados en imágenes (por ejemplo, PDF escaneados, JPG, PNG) extrayendo texto mediante Reconocimiento Óptico de Caracteres (OCR), dejándolos listos para el análisis."
 }
