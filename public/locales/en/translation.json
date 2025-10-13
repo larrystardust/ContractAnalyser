@@ -1449,5 +1449,6 @@
   "selected_files_for_upload": "Selected files for upload",
   "capture_page": "Capture Page",
   "done_capturing": "Done Capturing",
-  "remove_file": "Remove file"
+  "remove_file": "Remove file",
+  "reorder_pages_message": "Make sure pages are in correct order. You can move files to re-order pages."
 }
