@@ -1463,5 +1463,6 @@
   "error_loading_dashboard": "Erreur lors du chargement du tableau de bord",
   "problem_fetching_data": "Un problème est survenu lors de la récupération de vos données. Cela peut être dû à des problèmes de réseau ou à des autorisations incorrectes.",
   "contracts_error": "Erreur des contrats :",
-  "check_supabase_rls": "Veuillez vérifier vos politiques RLS Supabase ou contacter le support si le problème persiste."
+  "check_supabase_rls": "Veuillez vérifier vos politiques RLS Supabase ou contacter le support si le problème persiste.",
+  "cannot_mix_image_document_files": "Impossible de mélanger les fichiers image et document. Veuillez télécharger soit toutes les images, soit tous les documents."
 }
