@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle } from 'lucide-react';
+import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle, Camera } from 'lucide-react'; // MODIFIED: Added Camera icon
 import Modal from '../ui/Modal';
 import SupportTicketForm from '../forms/SupportTicketForm';
 import { Link, useNavigate } from 'react-router-dom';
@@ -120,6 +120,9 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
           </li>
           <li>
             **{t('selecting_contracts_modal')}**: {t('selecting_contracts_desc_modal')}
+          </li>
+          <li> {/* ADDED: New point for OCR */}
+            **{t('ocr_for_scanned_documents_modal')}**: {t('ocr_for_scanned_documents_desc_modal')}
           </li>
         </ul>
 
