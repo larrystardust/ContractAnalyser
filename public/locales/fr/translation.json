@@ -1444,5 +1444,8 @@
   "ocr_only_for_images": "L'OCR n'est applicable que pour les fichiers image (JPG, PNG) ou les documents scannés.",
   "no_input_provided_for_upload": "Aucun fichier, image ou texte de contrat fourni pour le téléchargement.",
   "error_no_image_data_for_ocr": "Aucune donnée d'image fournie pour le traitement OCR.",
-  "upload_files": "Télécharger des fichiers"
+  "upload_files": "Télécharger des fichiers",
+  "document_selected_for_upload": "Document sélectionné pour le téléchargement.",
+  "only_one_document_at_a_time": "Un seul fichier PDF/DOCX/DOC peut être traité à la fois. Veuillez supprimer le document actuel pour en télécharger un autre.",
+  "selected_files_for_upload": "Fichiers sélectionnés pour le téléchargement"
 }
