@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
     const { data: profileData, error: profileError } = await retry(async () => {
       return await supabase
         .from('profiles')
-        .select('full_name, notification_settings, theme_preference')
+        .select('full_name, notification_settings, language_preference') // MODIFIED: Select language_preference
         .eq('id', userId)
         .maybeSingle();
     }, 5, 500);
@@ -265,7 +265,7 @@ Deno.serve(async (req) => {
         ...defaultNotificationSettings,
         ...(profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {}),
       };
-      userPreferredLanguage = outputLanguage;
+      userPreferredLanguage = profileData?.language_preference || outputLanguage; // MODIFIED: Use profileData.language_preference
     }
 
     const { data: membershipData, error: membershipError } = await supabase
@@ -558,25 +558,51 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       throw new Error(getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage));
     }
 
+    // Defensive checks before processing analysisData properties
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
     if (analysisData.dataProtectionImpact) {
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
-    for (const finding of analysisData.findings) {
-      finding.title = await translateText(finding.title, outputLanguage);
-      finding.description = await translateText(finding.description, outputLanguage);
-      finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
-      if (finding.clauseReference) {
-        finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
+    // MODIFIED: Add defensive checks for findings
+    if (Array.isArray(analysisData.findings)) {
+      for (const finding of analysisData.findings) {
+        if (finding && typeof finding === 'object') { // Ensure finding is an object
+          finding.title = await translateText(finding.title, outputLanguage);
+          finding.description = await translateText(finding.description, outputLanguage);
+          // Ensure recommendations is an array before mapping
+          if (Array.isArray(finding.recommendations)) {
+            finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
+          } else {
+            finding.recommendations = []; // Default to empty array if not an array
+          }
+          if (finding.clauseReference) {
+            finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
+          }
+        }
       }
     }
 
-    for (const key in analysisData.jurisdictionSummaries) {
-      const summary = analysisData.jurisdictionSummaries[key];
-      summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
-      summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
+    // MODIFIED: Add defensive checks for jurisdictionSummaries
+    if (analysisData.jurisdictionSummaries && typeof analysisData.jurisdictionSummaries === 'object') {
+      for (const key in analysisData.jurisdictionSummaries) {
+        const summary = analysisData.jurisdictionSummaries[key];
+        if (summary && typeof summary === 'object') { // Ensure summary is an object
+          // Ensure applicableLaws is an array before mapping
+          if (Array.isArray(summary.applicableLaws)) {
+            summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
+          } else {
+            summary.applicableLaws = [];
+          }
+          // Ensure keyFindings is an array before mapping
+          if (Array.isArray(summary.keyFindings)) {
+            summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
+          } else {
+            summary.keyFindings = [];
+          }
+        }
+      }
     }
 
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
