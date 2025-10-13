@@ -1457,6 +1457,7 @@
   "download_text": "Download Text",
   "download_original_file": "Download original file",
   "download_original": "Original",
+  "captured_images_preview": "Captured Images Preview",
   "failed_to_create_signed_url": "Failed to create signed URL for download: {{message}}",
   "error_loading_dashboard": "Error loading dashboard",
   "problem_fetching_data": "There was a problem fetching your data. This might be due to network issues or incorrect permissions.",
