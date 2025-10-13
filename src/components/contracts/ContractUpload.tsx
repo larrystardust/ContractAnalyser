@@ -58,6 +58,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [performOcr, setPerformOcr] = useState(false);
   const [performAnalysis, setPerformAnalysis] = useState(true);
 
+  // ADDED: State for managing drag and drop reordering
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [draggedItemType, setDraggedItemType] = useState<'file' | 'image' | null>(null);
+
+  // ADDED: State to track if any document files (pdf, docx, doc) are selected
+  const [hasDocumentFiles, setHasDocumentFiles] = useState(false);
+
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
     { value: 'en', label: t('english') },
@@ -74,35 +81,31 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   }, [defaultJurisdictions]);
 
-  // Effect to handle captured image data or selected files
+  // Effect to determine processing options and document type
   useEffect(() => {
-    // Ensure selectedFiles and capturedImages are arrays before using them
     const currentSelectedFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
     const currentCapturedImages = Array.isArray(capturedImages) ? capturedImages : [];
 
-    const hasImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
-    const hasDocumentInput = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-    // const hasImageFileInput = currentSelectedFiles.some(f => f.type.startsWith('image/')); // This is redundant with hasImageInput
+    const anyImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
+    const anyDocumentFile = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
 
-    // If there are any image inputs (captured or uploaded image files), OCR is needed
-    if (hasImageInput) { // Simplified condition
+    setHasDocumentFiles(anyDocumentFile); // Set the new state
+
+    if (anyImageInput) {
       setPerformOcr(true);
-      // If enough credits, also select analysis
       if (canPerformOcrAndAnalysis) {
         setPerformAnalysis(true);
       } else {
-        setPerformAnalysis(false); // Disable analysis if not enough credits for both
+        setPerformAnalysis(false);
       }
-    } else if (hasDocumentInput) {
-      // If only document files are selected, OCR is not needed by default
+    } else if (anyDocumentFile) {
       setPerformOcr(false);
-      setPerformAnalysis(true); // Default to analysis for document files
+      setPerformAnalysis(true);
     } else {
-      // No input, reset to default
       setPerformOcr(false);
       setPerformAnalysis(true);
     }
-  }, [capturedImages, selectedFiles, canPerformOcrAndAnalysis]); // Dependencies remain the same
+  }, [capturedImages, selectedFiles, canPerformOcrAndAnalysis]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -180,6 +183,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
+  // Helper function to extract text from file
   const extractTextFromFile = async (file: File): Promise<string> => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const arrayBuffer = await file.arrayBuffer();
@@ -228,8 +232,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       return;
     }
 
-    // Defensive check for array types before spreading
-    const allInputs = [...(Array.isArray(selectedFiles) ? selectedFiles : []), ...(Array.isArray(capturedImages) ? capturedImages : [])];
+    const allInputs = [...(Array.isArray(selectedFiles) ? selectedFiles : []), ...(Array.isArray(capturedImages) ? capturedImages : [])]; // Defensive spread
     if (allInputs.length === 0 || selectedJurisdictions.length === 0) {
       alert(t('select_file_and_jurisdiction_alert'));
       return;
@@ -246,22 +249,26 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let imageDatasToProcess: string[] = [];
 
       if (capturedImages.length > 0) {
+        // For captured images, OCR will happen on backend
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
         imageDatasToProcess = capturedImages;
       } else if (selectedFiles.length > 0) {
+        // For uploaded files
+        // If multiple files, name them as "Multi-page Contract"
         fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type;
+        fileType = selectedFiles[0].type; // Take type of first file, or generalize
 
+        // Separate files into those needing OCR and those providing text directly
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                  resolve(reader.result.split(',')[1]);
+                  resolve(reader.result.split(',')[1]); // Extract Base64 part
                 } else {
                   reject(new Error('Failed to read file as Base64.'));
                 }
@@ -269,29 +276,31 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               reader.onerror = reject;
               reader.readAsDataURL(file);
             }));
-            filesToUpload.push(file);
+            filesToUpload.push(file); // Still upload image files to storage
           } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
+            // If it's a document and OCR is NOT selected, extract text locally
             contractText += await extractTextFromFile(file) + '\n\n';
             filesToUpload.push(file);
           } else {
+            // If it's a document and OCR IS selected, or other file types, upload it
             filesToUpload.push(file);
           }
         }
       }
 
       const newContractId = await addContract({
-        files: filesToUpload.length > 0 ? filesToUpload : undefined,
-        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined,
+        files: filesToUpload.length > 0 ? filesToUpload : undefined, // Pass files if available
+        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined, // Pass image data if available
         fileName,
         fileSize,
         fileType,
         jurisdictions: selectedJurisdictions,
-        contractText,
+        contractText, // This will be empty if OCR is performed on backend
         sourceLanguage,
         outputLanguage,
-        performOcr,
-        performAnalysis,
-        creditCost: currentCreditCost,
+        performOcr, // Pass OCR flag
+        performAnalysis, // Pass Analysis flag
+        creditCost: currentCreditCost, // Pass calculated credit cost
       });
       
       alert(t('contract_uploaded_analysis_initiated'));
@@ -301,13 +310,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         navigate(`/dashboard?contractId=${newContractId}`);
       }
 
-      setSelectedFiles([]);
-      setCapturedImages([]);
+      setSelectedFiles([]); // Clear selected files
+      setCapturedImages([]); // Clear captured images
       setSelectedJurisdictions([]);
       setSourceLanguage('auto');
       setOutputLanguage('en');
-      setPerformOcr(false);
-      setPerformAnalysis(true);
+      setPerformOcr(false); // Reset OCR state
+      setPerformAnalysis(true); // Reset Analysis state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -326,7 +335,52 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
   const hasImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
-  const hasDocumentInput = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+  // hasDocumentFiles is already calculated in useEffect
+
+  // Drag and Drop functions
+  const reorder = (list: any[], startIndex: number, endIndex: number) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number, type: 'file' | 'image') => {
+    setDraggedItemIndex(index);
+    setDraggedItemType(type);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString()); // Required for Firefox
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropReorder = (e: React.DragEvent, dropIndex: number, dropType: 'file' | 'image') => {
+    e.preventDefault();
+
+    if (draggedItemIndex === null || draggedItemType === null || draggedItemType !== dropType) {
+      return; // Only reorder items of the same type
+    }
+
+    if (draggedItemType === 'file') {
+      const reorderedFiles = reorder(selectedFiles, draggedItemIndex, dropIndex);
+      setSelectedFiles(reorderedFiles);
+    } else if (draggedItemType === 'image') {
+      const reorderedImages = reorder(capturedImages, draggedItemIndex, dropIndex);
+      setCapturedImages(reorderedImages);
+    }
+
+    setDraggedItemIndex(null);
+    setDraggedItemType(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemIndex(null);
+    setDraggedItemType(null);
+  };
+
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -354,7 +408,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          {!isAnyInputSelected ? (
+          {/* MODIFIED: Condition for showing browse files button */}
+          {!hasDocumentFiles ? (
             <>
               <Upload className="h-12 w-12 text-gray-400 mb-3" />
               <p className="text-sm text-gray-700 font-medium">{t('drag_and_drop_file_here')}</p>
@@ -375,7 +430,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     id="file-upload"
                     name="file-upload"
                     type="file"
-                    multiple // ADDED: Allow multiple file selection
+                    multiple
                     className="sr-only"
                     accept=".pdf,.doc,.docx,image/*"
                     onChange={handleFileInput}
@@ -386,11 +441,32 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               </div>
             </>
           ) : (
-            <div className="w-full">
+            // This block is shown if a document file is selected, hiding the browse button
+            <div className="w-full text-center">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-sm text-gray-700 font-medium">{t('document_selected_for_upload')}</p>
+              <p className="text-xs text-gray-500 mt-1">{t('only_one_document_at_a_time')}</p>
+            </div>
+          )}
+
+          {/* Display selected files and captured images for reordering */}
+          {isAnyInputSelected && (
+            <div className="w-full mt-6">
               <p className="text-sm text-gray-700 font-medium mb-3">{t('selected_files_for_upload')}:</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedFiles.map((file, index) => (
-                  <div key={`file-${index}`} className="relative group flex items-center p-2 border border-gray-300 rounded-md bg-white">
+                  <div
+                    key={`file-${index}`}
+                    draggable="true"
+                    onDragStart={(e) => handleDragStart(e, index, 'file')}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDropReorder(e, index, 'file')}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group flex items-center p-2 border border-gray-300 rounded-md bg-white
+                      ${draggedItemIndex === index && draggedItemType === 'file' ? 'opacity-50 border-blue-500' : ''}
+                      ${hasDocumentFiles ? 'cursor-not-allowed' : 'cursor-grab'}
+                    `}
+                  >
                     <FileText className="h-5 w-5 text-blue-900 mr-2 flex-shrink-0" />
                     <span className="text-sm text-gray-700 truncate">{file.name}</span>
                     <button
@@ -404,7 +480,18 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   </div>
                 ))}
                 {capturedImages.map((image, index) => (
-                  <div key={`image-${index}`} className="relative group">
+                  <div
+                    key={`image-${index}`}
+                    draggable="true"
+                    onDragStart={(e) => handleDragStart(e, index, 'image')}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDropReorder(e, index, 'image')}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group
+                      ${draggedItemIndex === index && draggedItemType === 'image' ? 'opacity-50 border-blue-500' : ''}
+                      cursor-grab
+                    `}
+                  >
                     <img src={image} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
                     <button
                       type="button"
@@ -417,9 +504,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-gray-500 mt-4">
-                {t('ensure_all_pages_scanned_uploaded')}
-              </p>
+              {/* Only show this prompt if there are image inputs */}
+              {(capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'))) && (
+                <p className="text-sm text-gray-500 mt-4">
+                  {t('ensure_all_pages_scanned_uploaded')}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -437,7 +527,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || !hasImageInput} // MODIFIED: Disable if no image input
+                    disabled={uploading || !canPerformOcr || !hasImageInput}
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr')} ({ocrCost} {t('credits')})
@@ -447,7 +537,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
                 )}
                 {!hasImageInput && (
-                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p> // ADDED: Hint for OCR
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
                 )}
               </div>
 
@@ -496,7 +586,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           </div>
         </div>
 
-        {/* ADDED: Document Language Selection */}
+        {/* Document Language Selection */}
         <div className="mt-4">
           <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
             {t('document_language')}
@@ -518,7 +608,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           <p className="text-xs text-gray-500 mt-1">{t('document_language_hint')}</p>
         </div>
 
-        {/* ADDED: Analysis Output Language Selection */}
+        {/* Analysis Output Language Selection */}
         <div className="mt-4">
           <label htmlFor="outputLanguage" className="block text-sm font-medium text-gray-700 mb-2">
             {t('analysis_output_language')}
