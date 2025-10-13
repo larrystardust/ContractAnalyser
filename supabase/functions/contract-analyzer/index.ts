@@ -17,10 +17,17 @@ const openai = new OpenAI({
 });
 
 // ADDED: Initialize Google Cloud Auth
+const googleClientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL');
+const googlePrivateKey = Deno.env.get('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
+
+if (!googleClientEmail || !googlePrivateKey) {
+  console.warn('GOOGLE_CLIENT_EMAIL or GOOGLE_PRIVATE_KEY environment variables are not fully set. OCR functionality may be limited or fail.');
+}
+
 const auth = new GoogleAuth({
   credentials: {
-    client_email: Deno.env.get('GOOGLE_CLIENT_EMAIL'),
-    private_key: Deno.env.get('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n'), // Handle private key newlines
+    client_email: googleClientEmail,
+    private_key: googlePrivateKey,
   },
   scopes: ['https://www.googleapis.com/auth/cloud-platform'],
 });
@@ -64,9 +71,9 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
 }
 
 // MODIFIED: New helper function for translation with improved prompt
-async function translateText(text: string, targetLanguage: string): Promise<string> {
+async function translateText(text: string | null | undefined, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
-    return text;
+    return text || ''; // Ensure a string is always returned
   }
 
   try {
@@ -76,7 +83,7 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
         {
           role: "system",
           // CRITICAL MODIFICATION: Instruct the LLM to only translate if necessary
-          content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage, 'return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.'}`,
+          content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage}, return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.`,
         },
         {
           role: "user",
@@ -92,7 +99,7 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
     // If the translation is empty, return the original text as a fallback
     if (!translatedContent) {
       console.warn(`translateText: Empty translation received for "${text}". Returning original.`);
-      return text;
+      return text; // Return original text on error
     }
     return translatedContent;
   } catch (error) {
@@ -552,25 +559,48 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     let analysisData: any;
     try {
-      analysisData = JSON.parse(aiResponseContent);
+      const parsedContent = JSON.parse(aiResponseContent);
+      // Ensure parsedContent is an object, otherwise default to an empty object
+      analysisData = (typeof parsedContent === 'object' && parsedContent !== null) ? { ...parsedContent } : {}; // Shallow copy to ensure mutability
+
+      // Ensure top-level properties are initialized as expected types if missing or invalid
+      if (!Array.isArray(analysisData.findings)) {
+        analysisData.findings = [];
+      }
+      if (typeof analysisData.jurisdictionSummaries !== 'object' || analysisData.jurisdictionSummaries === null) {
+        analysisData.jurisdictionSummaries = {};
+      }
     } catch (parseError) {
       console.error('contract-analyzer: Error parsing OpenAI response JSON:', parseError);
       throw new Error(getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage));
     }
 
     // Defensive checks before processing analysisData properties
+    analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string'
+      ? analysisData.executiveSummary
+      : '';
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
+    analysisData.dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string'
+      ? analysisData.dataProtectionImpact
+      : null;
     if (analysisData.dataProtectionImpact) {
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
     // MODIFIED: Add defensive checks for findings
     if (Array.isArray(analysisData.findings)) {
-      for (const finding of analysisData.findings) {
+      for (let i = 0; i < analysisData.findings.length; i++) { // Use index-based loop for safer modification
+        let finding = analysisData.findings[i];
         if (finding && typeof finding === 'object') { // Ensure finding is an object
+          // Create a shallow copy of finding to ensure mutability if it was frozen/sealed
+          finding = { ...finding };
+          finding.title = typeof finding.title === 'string' ? finding.title : '';
           finding.title = await translateText(finding.title, outputLanguage);
+          
+          finding.description = typeof finding.description === 'string' ? finding.description : '';
           finding.description = await translateText(finding.description, outputLanguage);
+          
           // Ensure recommendations is an array before mapping
           if (Array.isArray(finding.recommendations)) {
             finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
@@ -578,17 +608,24 @@ The user has specified the following jurisdictions for this analysis: ${userSele
             finding.recommendations = []; // Default to empty array if not an array
           }
           if (finding.clauseReference) {
+            finding.clauseReference = typeof finding.clauseReference === 'string' ? finding.clauseReference : '';
             finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
           }
+          analysisData.findings[i] = finding; // Assign the potentially new/modified finding back
+        } else {
+          analysisData.findings[i] = {}; // Replace invalid finding with an empty object
         }
       }
     }
 
     // MODIFIED: Add defensive checks for jurisdictionSummaries
     if (analysisData.jurisdictionSummaries && typeof analysisData.jurisdictionSummaries === 'object') {
+      const newJurisdictionSummaries: Record<string, any> = {}; // Create a new object for summaries
       for (const key in analysisData.jurisdictionSummaries) {
-        const summary = analysisData.jurisdictionSummaries[key];
+        let summary = analysisData.jurisdictionSummaries[key];
         if (summary && typeof summary === 'object') { // Ensure summary is an object
+          // Create a shallow copy of summary to ensure mutability
+          summary = { ...summary };
           // Ensure applicableLaws is an array before mapping
           if (Array.isArray(summary.applicableLaws)) {
             summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
@@ -601,8 +638,12 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           } else {
             summary.keyFindings = [];
           }
+          newJurisdictionSummaries[key] = summary; // Assign the potentially new/modified summary back
+        } else {
+          newJurisdictionSummaries[key] = {}; // Replace invalid summary with an empty object
         }
       }
+      analysisData.jurisdictionSummaries = newJurisdictionSummaries; // Assign the new summaries object
     }
 
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
