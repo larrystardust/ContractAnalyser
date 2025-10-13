@@ -1454,5 +1454,7 @@
   "no_text_content_available_for_download": "No text content available for download for this contract.",
   "failed_to_download_text_file": "Failed to download text file: {{message}}",
   "download_contract_text": "Download contract text",
-  "download_text": "Download Text"
+  "download_text": "Download Text",
+  "download_original_file": "Download original file",
+  "download_original": "Original"
 }
