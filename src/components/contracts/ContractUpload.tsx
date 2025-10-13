@@ -119,7 +119,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setIsDragging(false);
   };
 
-  // This handleDragOver is now used for both the main drop zone and reordering
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault(); // Necessary to allow dropping
     e.stopPropagation(); // Prevent propagation to parent elements
@@ -193,7 +192,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (fileExtension === 'pdf') {
       const pdfjsLib = await loadPdfjs();
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
+      const pdf = await pdf.promise;
       let fullText = '';
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
