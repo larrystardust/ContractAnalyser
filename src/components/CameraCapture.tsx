@@ -1,15 +1,21 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Button from './ui/Button';
-import { Camera, X, Loader2, CheckCircle } from 'lucide-react'; // MODIFIED: Added CheckCircle
+import { Camera, X, Loader2, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+// Define the structure for a captured image
+interface CapturedImage {
+  id: string;
+  data: string; // Base64 string
+}
+
 interface CameraCaptureProps {
-  onAddImage: (imageData: string) => void; // MODIFIED: To add a single image
-  onDoneCapturing: () => void; // MODIFIED: To signal completion
+  onAddImage: (imageData: CapturedImage) => void; // MODIFIED: Accepts CapturedImage object
+  onDoneCapturing: () => void;
   onCancel: () => void;
   isLoading: boolean;
-  capturedImages: string[]; // ADDED: To display current captured images
-  removeCapturedImage: (index: number) => void; // ADDED: To remove individual image
+  capturedImages: CapturedImage[]; // MODIFIED: Array of CapturedImage objects
+  removeCapturedImage: (id: string) => void; // MODIFIED: Accepts id to remove
 }
 
 const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturing, onCancel, isLoading, capturedImages, removeCapturedImage }) => {
@@ -67,8 +73,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
 
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
+      const video = video.current;
+      const canvas = canvas.current;
       const context = canvas.getContext('2d');
 
       if (context) {
@@ -76,8 +82,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        onAddImage(imageData); // Pass single captured image
-        // Keep camera running for next capture
+        const uniqueId = crypto.randomUUID(); // Generate a unique ID
+        onAddImage({ id: uniqueId, data: imageData }); // MODIFIED: Pass CapturedImage object
       }
     }
   };
@@ -121,12 +127,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
             <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
               <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {capturedImages.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img src={image} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
+                {capturedImages.map((image) => ( // MODIFIED: Removed index from map
+                  <div key={image.id} className="relative group"> {/* MODIFIED: Use image.id as key */}
+                    <img src={image.data} alt={`${t('captured_page')} ${image.id}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Use image.data as src */}
                     <button
                       type="button"
-                      onClick={() => removeCapturedImage(index)}
+                      onClick={() => removeCapturedImage(image.id)} // MODIFIED: Pass image.id
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
