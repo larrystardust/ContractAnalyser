@@ -1442,5 +1442,7 @@
   "document_selected_for_upload": "تم تحديد المستند للتحميل.",
   "only_one_document_at_a_time": "يمكن معالجة ملف PDF/DOCX/DOC واحد فقط في كل مرة. يرجى إزالة المستند الحالي لتحميل آخر.",
   "selected_files_for_upload": "الملفات المحددة للتحميل",
+  "capture_page": "التقاط الصفحة",
+  "done_capturing": "تم الانتهاء من الالتقاط",
   "remove_file": "إزالة الملف"
 }
