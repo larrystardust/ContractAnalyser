@@ -1450,5 +1450,9 @@
   "capture_page": "Capture Page",
   "done_capturing": "Done Capturing",
   "remove_file": "Remove file",
-  "reorder_pages_message": "Make sure pages are in correct order. You can move files to re-order pages."
+  "reorder_pages_message": "Make sure pages are in correct order. You can move files to re-order pages.",
+  "no_text_content_available_for_download": "No text content available for download for this contract.",
+  "failed_to_download_text_file": "Failed to download text file: {{message}}",
+  "download_contract_text": "Download contract text",
+  "download_text": "Download Text"
 }
