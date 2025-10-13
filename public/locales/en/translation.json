@@ -1463,5 +1463,6 @@
   "problem_fetching_data": "There was a problem fetching your data. This might be due to network issues or incorrect permissions.",
   "contracts_error": "Contracts error:",
   "check_supabase_rls": "Please check your Supabase RLS policies or contact support if the issue persists.",
-  "cannot_mix_image_document_files": "Cannot mix image and document files. Please upload either all images or all documents."
+  "cannot_mix_image_document_files": "Cannot mix image and document files. Please upload either all images or all documents.",
+  "only_one_document_allowed": "Only one document file (PDF, DOCX, DOC) can be uploaded at a time. Please remove existing document files or upload a single document."
 }
