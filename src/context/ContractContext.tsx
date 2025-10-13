@@ -55,7 +55,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         contract_content,
         output_language,
         translated_name,
-        original_file_type, // ADDED: Select new column
+        original_file_type,
         analysis_results (*, findings(*))
       `)
       .eq('user_id', session.user.id)
