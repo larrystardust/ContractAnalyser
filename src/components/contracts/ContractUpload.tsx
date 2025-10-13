@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, AlertTriangle, Sparkles, Camera, FileText } from 'lucide-react'; // MODIFIED: Added FileText
+import { Upload, X, AlertTriangle, Sparkles, Camera, FileText } from 'lucide-react';
 import Button from '../ui/Button';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { Jurisdiction, AnalysisLanguage } from '../../types';
@@ -21,10 +21,10 @@ const loadMammoth = async () => {
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
-  capturedImages: string[]; // MODIFIED: Array of captured images
-  setCapturedImages: (data: string[]) => void; // MODIFIED: To clear captured images
-  selectedFiles: File[]; // ADDED: Array of selected files
-  setSelectedFiles: (files: File[]) => void; // ADDED: To clear selected files
+  capturedImages: string[];
+  setCapturedImages: (data: string[]) => void;
+  selectedFiles: File[];
+  setSelectedFiles: (files: File[]) => void;
   canPerformOcrAndAnalysis: boolean;
   canPerformOcr: boolean;
   canPerformAnalysis: boolean;
@@ -35,10 +35,10 @@ interface ContractUploadProps {
 const ContractUpload: React.FC<ContractUploadProps> = ({
   onUploadStatusChange,
   defaultJurisdictions,
-  capturedImages, // Destructure new prop
-  setCapturedImages, // Destructure new prop
-  selectedFiles, // Destructure new prop
-  setSelectedFiles, // Destructure new prop
+  capturedImages,
+  setCapturedImages,
+  selectedFiles,
+  setSelectedFiles,
   canPerformOcrAndAnalysis,
   canPerformOcr,
   canPerformAnalysis,
@@ -56,7 +56,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
   const [performOcr, setPerformOcr] = useState(false);
-  const [performAnalysis, setPerformAnalysis] = true;
+  const [performAnalysis, setPerformAnalysis] = useState(true);
 
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
@@ -76,12 +76,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   // Effect to handle captured image data or selected files
   useEffect(() => {
-    const hasImageInput = capturedImages.length > 0;
-    const hasDocumentInput = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-    const hasImageFileInput = selectedFiles.some(f => f.type.startsWith('image/'));
+    // Ensure selectedFiles and capturedImages are arrays before using them
+    const currentSelectedFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
+    const currentCapturedImages = Array.isArray(capturedImages) ? capturedImages : [];
+
+    const hasImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
+    const hasDocumentInput = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+    // const hasImageFileInput = currentSelectedFiles.some(f => f.type.startsWith('image/')); // This is redundant with hasImageInput
 
     // If there are any image inputs (captured or uploaded image files), OCR is needed
-    if (hasImageInput || hasImageFileInput) {
+    if (hasImageInput) { // Simplified condition
       setPerformOcr(true);
       // If enough credits, also select analysis
       if (canPerformOcrAndAnalysis) {
@@ -98,7 +102,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       setPerformOcr(false);
       setPerformAnalysis(true);
     }
-  }, [capturedImages, selectedFiles, canPerformOcrAndAnalysis]);
+  }, [capturedImages, selectedFiles, canPerformOcrAndAnalysis]); // Dependencies remain the same
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -130,7 +134,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         file.type.startsWith('image/')
       );
       if (newFiles.length > 0) {
-        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]); // Defensive spread
         setCapturedImages([]); // Clear captured images if files are dropped
       } else {
         alert(t('unsupported_file_type_alert'));
@@ -147,7 +151,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         file.type.startsWith('image/')
       );
       if (newFiles.length > 0) {
-        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]); // Defensive spread
         setCapturedImages([]); // Clear captured images if files are selected
       } else {
         alert(t('unsupported_file_type_alert'));
@@ -160,12 +164,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  // MODIFIED: removeFile now takes an index and type
   const removeInput = (indexToRemove: number, type: 'file' | 'image') => {
     if (type === 'file') {
-      setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+      setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((_, index) => index !== indexToRemove) : [])); // Defensive filter
     } else {
-      setCapturedImages(prev => prev.filter((_, index) => index !== indexToRemove));
+      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((_, index) => index !== indexToRemove) : [])); // Defensive filter
     }
   };
 
@@ -177,7 +180,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
-  // Helper function to extract text from file
   const extractTextFromFile = async (file: File): Promise<string> => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const arrayBuffer = await file.arrayBuffer();
@@ -226,7 +228,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       return;
     }
 
-    const allInputs = [...selectedFiles, ...capturedImages]; // Combine all inputs
+    // Defensive check for array types before spreading
+    const allInputs = [...(Array.isArray(selectedFiles) ? selectedFiles : []), ...(Array.isArray(capturedImages) ? capturedImages : [])];
     if (allInputs.length === 0 || selectedJurisdictions.length === 0) {
       alert(t('select_file_and_jurisdiction_alert'));
       return;
@@ -243,26 +246,22 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let imageDatasToProcess: string[] = [];
 
       if (capturedImages.length > 0) {
-        // For captured images, OCR will happen on backend
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
         imageDatasToProcess = capturedImages;
       } else if (selectedFiles.length > 0) {
-        // For uploaded files
-        // If multiple files, name them as "Multi-page Contract"
         fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type; // Take type of first file, or generalize
+        fileType = selectedFiles[0].type;
 
-        // Separate files into those needing OCR and those providing text directly
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                  resolve(reader.result.split(',')[1]); // Extract Base64 part
+                  resolve(reader.result.split(',')[1]);
                 } else {
                   reject(new Error('Failed to read file as Base64.'));
                 }
@@ -270,31 +269,29 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               reader.onerror = reject;
               reader.readAsDataURL(file);
             }));
-            filesToUpload.push(file); // Still upload image files to storage
+            filesToUpload.push(file);
           } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
-            // If it's a document and OCR is NOT selected, extract text locally
             contractText += await extractTextFromFile(file) + '\n\n';
             filesToUpload.push(file);
           } else {
-            // If it's a document and OCR IS selected, or other file types, upload it
             filesToUpload.push(file);
           }
         }
       }
 
       const newContractId = await addContract({
-        files: filesToUpload.length > 0 ? filesToUpload : undefined, // Pass files if available
-        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined, // Pass image data if available
+        files: filesToUpload.length > 0 ? filesToUpload : undefined,
+        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined,
         fileName,
         fileSize,
         fileType,
         jurisdictions: selectedJurisdictions,
-        contractText, // This will be empty if OCR is performed on backend
+        contractText,
         sourceLanguage,
         outputLanguage,
-        performOcr, // Pass OCR flag
-        performAnalysis, // Pass Analysis flag
-        creditCost: currentCreditCost, // Pass calculated credit cost
+        performOcr,
+        performAnalysis,
+        creditCost: currentCreditCost,
       });
       
       alert(t('contract_uploaded_analysis_initiated'));
@@ -304,13 +301,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         navigate(`/dashboard?contractId=${newContractId}`);
       }
 
-      setSelectedFiles([]); // Clear selected files
-      setCapturedImages([]); // Clear captured images
+      setSelectedFiles([]);
+      setCapturedImages([]);
       setSelectedJurisdictions([]);
       setSourceLanguage('auto');
       setOutputLanguage('en');
-      setPerformOcr(false); // Reset OCR state
-      setPerformAnalysis(true); // Reset Analysis state
+      setPerformOcr(false);
+      setPerformAnalysis(true);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
