@@ -73,30 +73,48 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
     }
   };
 
-  // MODIFIED: handleDownload to download contract_content as a text file
+  // MODIFIED: handleDownload to download contract_content as a text file or original file
   const handleDownload = async (contract: Contract, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (!contract.contract_content) {
-      alert(t('no_text_content_available_for_download'));
-      return;
-    }
-
     try {
-      const blob = new Blob([contract.contract_content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${contract.name}.txt`; // Download as a text file
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url); // Clean up the object URL
+      if (contract.contract_content) {
+        // Download as TXT if contract_content is available
+        const blob = new Blob([contract.contract_content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${contract.name}.txt`; // Download as a text file
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url); // Clean up the object URL
+      } else if (contract.file_path) {
+        // Download original file from storage if contract_content is not available
+        const { data, error } = await supabase.storage
+          .from('contracts')
+          .createSignedUrl(contract.file_path, 60); // URL valid for 60 seconds
+
+        if (error) {
+          throw error;
+        }
+
+        const link = document.createElement('a');
+        link.href = data.signedUrl;
+        link.download = contract.name; // Use original contract name for download
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert(t('no_downloadable_file_found'));
+      }
 
     } catch (error: any) {
-      console.error('Error generating text file for download:', error);
-      alert(t('failed_to_download_text_file', { message: error.message }));
+      console.error('Error generating signed URL or downloading file:', error);
+      alert(t('failed_to_download_file', { message: error.message }));
     }
   };
 
@@ -181,9 +199,9 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                         size="sm"
                         onClick={(e) => handleDownload(contract, e)} // MODIFIED: Pass entire contract object
                         icon={<Download className="h-4 w-4" />}
-                        title={t('download_contract_text')} // MODIFIED: New translation key
+                        title={contract.contract_content ? t('download_contract_text') : t('download_original_file')} // MODIFIED: Dynamic title
                       >
-                        {t('download_text')} {/* MODIFIED: New translation key */}
+                        {contract.contract_content ? t('download_text') : t('download_original')} {/* MODIFIED: Dynamic text */}
                       </Button>
                     )}
                   </div>
