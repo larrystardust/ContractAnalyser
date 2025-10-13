@@ -146,7 +146,18 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         file.type.startsWith('image/')
       );
       if (newFiles.length > 0) {
-        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]); // Defensive spread
+        const newImages = newFiles.filter(f => f.type.startsWith('image/'));
+        const newDocuments = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+
+        const currentHasImages = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+        const currentHasDocuments = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+
+        if ((newImages.length > 0 && currentHasDocuments) || (newDocuments.length > 0 && currentHasImages) || (newImages.length > 0 && newDocuments.length > 0)) {
+          alert(t('cannot_mix_image_document_files'));
+          return;
+        }
+
+        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]);
         setCapturedImages([]); // Clear captured images if files are dropped
       } else {
         alert(t('unsupported_file_type_alert'));
@@ -163,7 +174,19 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         file.type.startsWith('image/')
       );
       if (newFiles.length > 0) {
-        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]); // Defensive spread
+        const newImages = newFiles.filter(f => f.type.startsWith('image/'));
+        const newDocuments = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+
+        const currentHasImages = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+        const currentHasDocuments = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+
+        if ((newImages.length > 0 && currentHasDocuments) || (newDocuments.length > 0 && currentHasImages) || (newImages.length > 0 && newDocuments.length > 0)) {
+          alert(t('cannot_mix_image_document_files'));
+          e.target.value = ''; // Clear input to allow re-selection
+          return;
+        }
+
+        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]);
         setCapturedImages([]); // Clear captured images if files are selected
       } else {
         alert(t('unsupported_file_type_alert'));
