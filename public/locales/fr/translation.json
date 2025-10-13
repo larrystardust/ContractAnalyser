@@ -1455,5 +1455,7 @@
   "no_text_content_available_for_download": "Aucun contenu textuel disponible en téléchargement pour ce contrat.",
   "failed_to_download_text_file": "Échec du téléchargement du fichier texte : {{message}}",
   "download_contract_text": "Télécharger le texte du contrat",
-  "download_text": "Télécharger le texte"
+  "download_text": "Télécharger le texte",
+  "download_original_file": "Télécharger le fichier original",
+  "download_original": "Original"
 }
