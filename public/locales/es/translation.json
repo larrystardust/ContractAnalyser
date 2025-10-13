@@ -1436,5 +1436,8 @@
   "ocr_only_for_images": "El OCR solo es aplicable para archivos de imagen (JPG, PNG) o documentos escaneados.",
   "no_input_provided_for_upload": "No se proporcionó ningún archivo, imagen o texto de contrato para cargar.",
   "error_no_image_data_for_ocr": "No se proporcionaron datos de imagen para el procesamiento OCR.",
-  "upload_files": "Subir archivos"
+  "upload_files": "Subir archivos",
+  "document_selected_for_upload": "Documento seleccionado para cargar.",
+  "only_one_document_at_a_time": "Solo se puede procesar un archivo PDF/DOCX/DOC a la vez. Elimine el documento actual para cargar otro.",
+  "selected_files_for_upload": "Archivos seleccionados para cargar"
 }
