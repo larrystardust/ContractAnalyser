@@ -73,48 +73,46 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
     }
   };
 
-  // MODIFIED: handleDownload to download contract_content as a text file or original file
+  // MODIFIED: handleDownload to conditionally download OCR'd text or original file
   const handleDownload = async (contract: Contract, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
 
-    try {
-      if (contract.contract_content) {
-        // Download as TXT if contract_content is available
-        const blob = new Blob([contract.contract_content], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${contract.name}.txt`; // Download as a text file
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url); // Clean up the object URL
-      } else if (contract.file_path) {
-        // Download original file from storage if contract_content is not available
-        const { data, error } = await supabase.storage
-          .from('contracts')
-          .createSignedUrl(contract.file_path, 60); // URL valid for 60 seconds
+    // Determine if the contract originated from an image or was OCR'd from a PDF
+    const isOCRdContract = contract.original_file_type?.startsWith('image/') || 
+                           (contract.original_file_type === 'application/pdf' && contract.contract_content);
 
-        if (error) {
-          throw error;
-        }
+    if (isOCRdContract && contract.contract_content) {
+      // Download OCR'd text as TXT
+      const blob = new Blob([contract.contract_content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${contract.name}.txt`; // Download as a text file
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url); // Clean up the object URL
+    } else if (contract.file_path) {
+      // Download original file from storage
+      const { data, error } = await supabase.storage
+        .from('contracts')
+        .createSignedUrl(contract.file_path, 60); // URL valid for 60 seconds
 
-        const link = document.createElement('a');
-        link.href = data.signedUrl;
-        link.download = contract.name; // Use original contract name for download
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        alert(t('no_downloadable_file_found'));
+      if (error) {
+        throw error;
       }
 
-    } catch (error: any) {
-      console.error('Error generating signed URL or downloading file:', error);
-      alert(t('failed_to_download_file', { message: error.message }));
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.download = contract.name; // Use original contract name for download
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert(t('no_downloadable_file_found'));
     }
   };
 
