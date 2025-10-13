@@ -1452,5 +1452,9 @@
   "download_text": "تنزيل النص",
   "download_original_file": "تنزيل الملف الأصلي",
   "download_original": "الأصلي",
-  "failed_to_create_signed_url": "فشل إنشاء عنوان URL موقع للتنزيل: {{message}}"
+  "failed_to_create_signed_url": "فشل إنشاء عنوان URL موقع للتنزيل: {{message}}",
+  "error_loading_dashboard": "خطأ في تحميل لوحة التحكم",
+  "problem_fetching_data": "حدثت مشكلة أثناء جلب بياناتك. قد يكون هذا بسبب مشاكل في الشبكة أو أذونات غير صحيحة.",
+  "contracts_error": "خطأ في العقود:",
+  "check_supabase_rls": "يرجى التحقق من سياسات RLS في Supabase أو الاتصال بالدعم إذا استمرت المشكلة."
 }
