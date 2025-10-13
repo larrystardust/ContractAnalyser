@@ -1428,9 +1428,15 @@
   "perform_analysis": "إجراء التحليل",
   "not_enough_credits_for_analysis": "أرصدة غير كافية للتحليل (مطلوب {{cost}} أرصدة).",
   "select_ocr_or_analysis": "الرجاء تحديد خيار معالجة واحد على الأقل (OCR أو تحليل).",
-  "scanned_document_prefix": "مستند_ممسوح_ضوئياً",
+  "scanned_document_prefix": "مستند ممسوح ضوئيًا",
   "not_applicable": "غير_متوفر",
   "megabytes_unit": "م.ب",
   "notification_title_ocr_completed": "اكتمل التعرف الضوئي على الحروف",
-  "notification_title_ocr_failed": "فشل التعرف الضوئي على الحروف"
+  "notification_title_ocr_failed": "فشل التعرف الضوئي على الحروف",
+  "multi_page_contract_prefix": "عقد متعدد الصفحات",
+  "ensure_all_pages_scanned_uploaded": "يرجى التأكد من مسح جميع صفحات المستند ضوئيًا أو تحميلها.",
+  "ocr_only_for_images": "التعرف الضوئي على الحروف (OCR) ينطبق فقط على ملفات الصور (JPG، PNG) أو المستندات الممسوحة ضوئيًا.",
+  "no_input_provided_for_upload": "لم يتم توفير ملف أو صورة أو نص عقد للتحميل.",
+  "error_no_image_data_for_ocr": "لم يتم توفير بيانات الصورة لمعالجة التعرف الضوئي على الحروف (OCR).",
+  "upload_files": "تحميل الملفات"
 }
