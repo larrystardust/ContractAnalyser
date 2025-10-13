@@ -192,7 +192,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (fileExtension === 'pdf') {
       const pdfjsLib = await loadPdfjs();
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await pdf.promise;
+      const pdf = await loadingTask.promise;
       let fullText = '';
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -449,10 +449,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           {isAnyInputSelected && (
             <div className="w-full mt-6">
               <p className="text-sm text-gray-700 font-medium mb-3">{t('selected_files_for_upload')}:</p>
+              {/* ADDED: Re-ordering instruction message */}
+              <p className="text-xs text-gray-500 mb-3">{t('reorder_pages_message')}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedFiles.map((file, index) => (
                   <div
-                    key={`file-${index}`}
+                    key={`file-${file.name}-${file.size}`} // MODIFIED: Use file name and size for a more stable key
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'file')}
                     onDragOver={handleDragOver}
@@ -477,7 +479,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 ))}
                 {capturedImages.map((image, index) => (
                   <div
-                    key={`image-${index}`}
+                    key={image} // MODIFIED: Use image data (base64 string) as key for stability
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'image')}
                     onDragOver={handleDragOver}
