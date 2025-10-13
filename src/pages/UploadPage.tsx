@@ -140,7 +140,7 @@ const UploadPage: React.FC = () => {
       <div className="flex space-x-4 mb-6">
         {/* REMOVED: "Upload Files" button */}
         <Button
-          variant={isCameraMode ? 'primary' : 'secondary'} // MODIFIED: Always show Scan Document, make prominent when active
+          variant={isCameraMode ? 'secondary' : 'primary'} // MODIFIED: Always show Scan Document, make prominent when active
           onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }} // Clear selected files when switching to camera
           icon={<Camera className="w-4 h-4" />}
           disabled={isUploading || !canPerformOcr} // Disable camera if not enough credits for OCR
