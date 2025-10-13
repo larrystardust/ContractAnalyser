@@ -1455,5 +1455,6 @@
   "error_loading_dashboard": "Error al cargar el panel de control",
   "problem_fetching_data": "Hubo un problema al recuperar sus datos. Esto podría deberse a problemas de red o permisos incorrectos.",
   "contracts_error": "Error de contratos:",
-  "check_supabase_rls": "Por favor, revise sus políticas RLS de Supabase o contacte con soporte si el problema persiste."
+  "check_supabase_rls": "Por favor, revise sus políticas RLS de Supabase o contacte con soporte si el problema persiste.",
+  "cannot_mix_image_document_files": "No se pueden mezclar archivos de imagen y documentos. Por favor, suba todas las imágenes o todos los documentos."
 }
