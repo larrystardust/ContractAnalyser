@@ -1452,6 +1452,7 @@
   "download_text": "تنزيل النص",
   "download_original_file": "تنزيل الملف الأصلي",
   "download_original": "الأصلي",
+  "captured_images_preview": "معاينة الصور الملتقطة",
   "failed_to_create_signed_url": "فشل إنشاء عنوان URL موقع للتنزيل: {{message}}",
   "error_loading_dashboard": "خطأ في تحميل لوحة التحكم",
   "problem_fetching_data": "حدثت مشكلة أثناء جلب بياناتك. قد يكون هذا بسبب مشاكل في الشبكة أو أذونات غير صحيحة.",
