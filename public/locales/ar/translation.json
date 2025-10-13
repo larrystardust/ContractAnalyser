@@ -1445,5 +1445,9 @@
   "capture_page": "التقاط الصفحة",
   "done_capturing": "تم الانتهاء من الالتقاط",
   "remove_file": "إزالة الملف",
-  "reorder_pages_message": "تأكد من أن الصفحات بالترتيب الصحيح. يمكنك نقل الملفات لإعادة ترتيب الصفحات."
+  "reorder_pages_message": "تأكد من أن الصفحات بالترتيب الصحيح. يمكنك نقل الملفات لإعادة ترتيب الصفحات.",
+  "no_text_content_available_for_download": "لا يوجد محتوى نصي متاح للتنزيل لهذا العقد.",
+  "failed_to_download_text_file": "فشل تنزيل الملف النصي: {{message}}",
+  "download_contract_text": "تنزيل نص العقد",
+  "download_text": "تنزيل النص"
 }
