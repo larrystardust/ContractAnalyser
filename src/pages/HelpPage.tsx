@@ -37,7 +37,15 @@ const HelpPage: React.FC = () => {
         "name": t('what_file_types_q'),
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": t('what_file_types_a')
+          "text": t('what_file_types_a_ocr') // MODIFIED: Use new translation key
+        }
+      },
+      {
+        "@type": "Question",
+        "name": t('how_does_ocr_work_q'), // ADDED: New FAQ question
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": t('how_does_ocr_work_a') // ADDED: New FAQ answer
         }
       },
       {
@@ -96,7 +104,11 @@ const HelpPage: React.FC = () => {
           </li>
           <li>
             <strong>{t('what_file_types_q')}</strong>
-            <p className="ml-4">{t('what_file_types_a')}</p>
+            <p className="ml-4">{t('what_file_types_a_ocr')}</p> {/* MODIFIED: Use new translation key */}
+          </li>
+          <li> {/* ADDED: New FAQ entry for OCR */}
+            <strong>{t('how_does_ocr_work_q')}</strong>
+            <p className="ml-4">{t('how_does_ocr_work_a')}</p>
           </li>
         </ul>
 
