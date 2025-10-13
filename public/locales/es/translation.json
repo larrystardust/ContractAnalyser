@@ -1426,9 +1426,15 @@
   "perform_analysis": "Realizar análisis",
   "not_enough_credits_for_analysis": "Créditos insuficientes para análisis ({{cost}} créditos requeridos).",
   "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis).",
-  "scanned_document_prefix": "documento_escaneado",
+  "scanned_document_prefix": "Documento Escaneado",
   "not_applicable": "N/A",
   "megabytes_unit": "MB",
   "notification_title_ocr_completed": "OCR completado",
-  "notification_title_ocr_failed": "Fallo de OCR"
+  "notification_title_ocr_failed": "Fallo de OCR",
+  "multi_page_contract_prefix": "Contrato de Varias Páginas",
+  "ensure_all_pages_scanned_uploaded": "Por favor, asegúrese de que todas las páginas de su documento han sido escaneadas o cargadas.",
+  "ocr_only_for_images": "El OCR solo es aplicable para archivos de imagen (JPG, PNG) o documentos escaneados.",
+  "no_input_provided_for_upload": "No se proporcionó ningún archivo, imagen o texto de contrato para cargar.",
+  "error_no_image_data_for_ocr": "No se proporcionaron datos de imagen para el procesamiento OCR.",
+  "upload_files": "Subir archivos"
 }
