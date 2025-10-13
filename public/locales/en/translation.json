@@ -1457,5 +1457,9 @@
   "download_text": "Download Text",
   "download_original_file": "Download original file",
   "download_original": "Original",
-  "failed_to_create_signed_url": "Failed to create signed URL for download: {{message}}"
+  "failed_to_create_signed_url": "Failed to create signed URL for download: {{message}}",
+  "error_loading_dashboard": "Error loading dashboard",
+  "problem_fetching_data": "There was a problem fetching your data. This might be due to network issues or incorrect permissions.",
+  "contracts_error": "Contracts error:",
+  "check_supabase_rls": "Please check your Supabase RLS policies or contact support if the issue persists."
 }
