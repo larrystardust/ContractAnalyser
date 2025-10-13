@@ -1465,5 +1465,14 @@
   "contracts_error": "Erreur des contrats :",
   "check_supabase_rls": "Veuillez vérifier vos politiques RLS Supabase ou contacter le support si le problème persiste.",
   "cannot_mix_image_document_files": "Impossible de mélanger les fichiers image et document. Veuillez télécharger soit toutes les images, soit tous les documents.",
-  "only_one_document_allowed": "Un seul fichier document (PDF, DOCX, DOC) peut être téléchargé à la fois. Veuillez supprimer les fichiers document existants ou télécharger un seul document."
+  "only_one_document_allowed": "Un seul fichier document (PDF, DOCX, DOC) peut être téléchargé à la fois. Veuillez supprimer les fichiers document existants ou télécharger un seul document.",
+
+  "landing_intro_universal_compatibility_description_ocr": "Gère les fichiers PDF, DOCX et DOC, et extrait le texte des documents basés sur des images à l'aide d'une OCR avancée.",
+  "landing_benefits_ocr_title": "Capacités OCR Avancées",
+  "landing_benefits_ocr_description": "Extrayez automatiquement le texte des documents numérisés et des fichiers image, garantissant qu'aucun contrat n'est laissé sans analyse.",
+  "what_file_types_a_ocr": "ContractAnalyser prend en charge les fichiers PDF, DOCX et DOC. De plus, il peut traiter les documents basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR).",
+  "how_does_ocr_work_q": "Comment fonctionne l'OCR ?",
+  "how_does_ocr_work_a": "Notre technologie OCR avancée détecte et extrait automatiquement le texte des documents basés sur des images, leur permettant d'être analysés comme des documents texte natifs. Ceci est particulièrement utile pour les contrats numérisés.",
+  "ocr_for_scanned_documents_modal": "OCR pour les documents numérisés",
+  "ocr_for_scanned_documents_desc_modal": "Notre système peut traiter les contrats basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR), les rendant prêts pour l'analyse."
 }
