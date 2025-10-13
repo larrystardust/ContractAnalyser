@@ -44,6 +44,9 @@ const UploadPage: React.FC = () => {
   const canPerformAnalysis = hasSubscription || availableCredits >= ANALYSIS_COST;
   const canPerformOcrAndAnalysis = hasSubscription || availableCredits >= OCR_AND_ANALYSIS_COST;
 
+  // ADDED: Determine if processing options should be shown
+  const showProcessingOptions = !hasSubscription;
+
   const handleUploadStatusChange = (status: boolean) => {
     setIsUploading(status);
   };
@@ -172,6 +175,7 @@ const UploadPage: React.FC = () => {
           canPerformAnalysis={canPerformAnalysis}
           ocrCost={OCR_COST}
           analysisCost={ANALYSIS_COST}
+          showProcessingOptions={showProcessingOptions} // ADDED: Pass the new prop
         />
       )}
 
