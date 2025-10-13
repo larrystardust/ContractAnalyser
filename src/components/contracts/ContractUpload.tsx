@@ -133,64 +133,92 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const processNewFiles = (incomingFiles: File[]) => {
+    const supportedFiles = incomingFiles.filter(file =>
+      file.type === 'application/pdf' ||
+      file.name.endsWith('.docx') ||
+      file.name.endsWith('.doc') ||
+      file.type.startsWith('image/')
+    );
+
+    if (supportedFiles.length === 0) {
+      alert(t('unsupported_file_type_alert'));
+      return;
+    }
+
+    const newImageFiles = supportedFiles.filter(f => f.type.startsWith('image/'));
+    const newDocumentFiles = supportedFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+
+    const currentSelectedImageFiles = selectedFiles.filter(f => f.type.startsWith('image/'));
+    const currentSelectedDocumentFiles = selectedFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+    const currentCapturedImages = capturedImages; // These are always images
+
+    // Determine if there are any existing image or document inputs
+    const hasExistingImageInput = currentSelectedImageFiles.length > 0 || currentCapturedImages.length > 0;
+    const hasExistingDocumentInput = currentSelectedDocumentFiles.length > 0;
+
+    // --- Validation Logic ---
+
+    // Scenario 1: New files contain both images and documents
+    if (newImageFiles.length > 0 && newDocumentFiles.length > 0) {
+      alert(t('cannot_mix_image_document_files'));
+      return;
+    }
+
+    // Scenario 2: New files are images, but existing inputs are documents
+    if (newImageFiles.length > 0 && hasExistingDocumentInput) {
+      alert(t('cannot_mix_image_document_files'));
+      return;
+    }
+
+    // Scenario 3: New files are documents, but existing inputs are images
+    if (newDocumentFiles.length > 0 && hasExistingImageInput) {
+      alert(t('cannot_mix_image_document_files'));
+      return;
+    }
+
+    // Scenario 4: Multiple document files in the new batch
+    if (newDocumentFiles.length > 1) {
+      alert(t('only_one_document_allowed'));
+      return;
+    }
+
+    // Scenario 5: A single document file is being added, but a document file already exists
+    if (newDocumentFiles.length === 1 && hasExistingDocumentInput) {
+      alert(t('only_one_document_allowed'));
+      return;
+    }
+
+    // --- Update State Based on Validated Input ---
+
+    if (newDocumentFiles.length === 1) {
+      // If a single document is valid, it replaces everything else
+      setSelectedFiles([newDocumentFiles[0]]);
+      setCapturedImages([]); // Clear any captured images
+    } else if (newImageFiles.length > 0) {
+      // If new images are valid, add them to existing selected images (if any)
+      setSelectedFiles(prev => [...currentSelectedImageFiles, ...newImageFiles]);
+      setCapturedImages([]); // Clear captured images if files are selected via input/drop
+    } else if (supportedFiles.length > 0 && !hasExistingDocumentInput && !hasExistingImageInput) {
+      // This case handles adding images when no files were previously selected
+      setSelectedFiles(supportedFiles);
+      setCapturedImages([]);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files).filter(file =>
-        file.type === 'application/pdf' ||
-        file.name.endsWith('.docx') ||
-        file.name.endsWith('.doc') ||
-        file.type.startsWith('image/')
-      );
-      if (newFiles.length > 0) {
-        const newImages = newFiles.filter(f => f.type.startsWith('image/'));
-        const newDocuments = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-
-        const currentHasImages = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
-        const currentHasDocuments = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-
-        if ((newImages.length > 0 && currentHasDocuments) || (newDocuments.length > 0 && currentHasImages) || (newImages.length > 0 && newDocuments.length > 0)) {
-          alert(t('cannot_mix_image_document_files'));
-          return;
-        }
-
-        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]);
-        setCapturedImages([]); // Clear captured images if files are dropped
-      } else {
-        alert(t('unsupported_file_type_alert'));
-      }
+      processNewFiles(Array.from(e.dataTransfer.files));
     }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).filter(file =>
-        file.type === 'application/pdf' ||
-        file.name.endsWith('.docx') ||
-        file.name.endsWith('.doc') ||
-        file.type.startsWith('image/')
-      );
-      if (newFiles.length > 0) {
-        const newImages = newFiles.filter(f => f.type.startsWith('image/'));
-        const newDocuments = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-
-        const currentHasImages = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
-        const currentHasDocuments = selectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-
-        if ((newImages.length > 0 && currentHasDocuments) || (newDocuments.length > 0 && currentHasImages) || (newImages.length > 0 && newDocuments.length > 0)) {
-          alert(t('cannot_mix_image_document_files'));
-          e.target.value = ''; // Clear input to allow re-selection
-          return;
-        }
-
-        setSelectedFiles(prev => [...(Array.isArray(prev) ? prev : []), ...newFiles]);
-        setCapturedImages([]); // Clear captured images if files are selected
-      } else {
-        alert(t('unsupported_file_type_alert'));
-      }
+      processNewFiles(Array.from(e.target.files));
       e.target.value = ''; // Clear input to allow re-selection of same files
     }
   };
@@ -201,7 +229,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const removeInput = (idToRemove: string, type: 'file' | 'image') => {
     if (type === 'file') {
-      // FIX: Correctly compare the file identifier with idToRemove
       setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => `${file.name}-${file.size}` !== idToRemove) : []));
     } else {
       setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.id !== idToRemove) : []));
