@@ -56,7 +56,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         output_language,
         translated_name,
         analysis_results (*, findings(*))
-      `)
+      `) // REMOVED: original_file_paths from select
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
 
@@ -79,6 +79,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           name: dbContract.name,
           translated_name: dbContract.translated_name,
           file_path: dbContract.file_path,
+          // REMOVED: original_file_paths: dbContract.original_file_paths,
           size: dbContract.size,
           jurisdictions: dbContract.jurisdictions,
           status: dbContract.status,
@@ -161,8 +162,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setErrorContracts(null);
 
     try {
-      let filePath = '';
-      let filePaths: string[] = [];
+      let primaryFilePath = '';
+      // REMOVED: let allFilePaths: string[] = []; 
       let fileContentBase64: string | undefined;
 
       if (newContractData.files && newContractData.files.length > 0) {
@@ -178,9 +179,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (uploadError) {
             throw uploadError;
           }
-          filePaths.push(currentFilePath);
+          // REMOVED: allFilePaths.push(currentFilePath); 
+          if (!primaryFilePath) primaryFilePath = currentFilePath; // Set primary file path
         }
-        filePath = filePaths[0];
       } else if (newContractData.imageDatas && newContractData.imageDatas.length > 0) {
         for (let i = 0; i < newContractData.imageDatas.length; i++) {
           const imageData = newContractData.imageDatas[i];
@@ -203,9 +204,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (uploadError) {
             console.warn('Error uploading captured image to storage:', uploadError);
           }
-          filePaths.push(currentFilePath);
+          // REMOVED: allFilePaths.push(currentFilePath); 
+          if (!primaryFilePath) primaryFilePath = currentFilePath; // Set primary file path
         }
-        filePath = filePaths[0];
       } else {
         if (!newContractData.contractText) {
           throw new Error(t('no_input_provided_for_upload')); // MODIFIED: Use translation key
@@ -217,7 +218,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .insert({
           user_id: session.user.id,
           name: newContractData.fileName,
-          file_path: filePath,
+          file_path: primaryFilePath,
+          // REMOVED: original_file_paths: allFilePaths, 
           size: newContractData.fileSize,
           jurisdictions: newContractData.jurisdictions,
           status: 'pending',
