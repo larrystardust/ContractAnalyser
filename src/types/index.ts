@@ -54,6 +54,15 @@ export interface JurisdictionSummary {
   riskLevel: RiskLevel;
 }
 
+// ADDED: New interface for simplified demo analysis result
+export interface DemoAnalysisResult {
+  executiveSummary: string;
+  overallRiskLevel: RiskLevel;
+  keyFindingTitle?: string;
+  keyFindingDescription?: string;
+  complianceScore: number;
+}
+
 // StripeProduct interface moved to supabase/functions/_shared/stripe_product_types.ts
 // This is the correct place for the StripeProduct interface definition
 export interface StripeProduct {
