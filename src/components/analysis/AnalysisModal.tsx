@@ -21,7 +21,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  if (!contract || !contract.analysisResult) {
+  // MODIFIED: Allow modal to open if contract exists, even if analysisResult is null/undefined
+  if (!contract) {
     return null; // Should not happen if called correctly
   }
 
@@ -34,20 +35,23 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
     >
       <div className="space-y-6">
         <AnalysisResults
-          analysisResult={contract.analysisResult}
+          analysisResult={contract.analysisResult} // Pass analysisResult, which might be undefined
           isSample={false}
           onReanalyzeInitiated={onReanalyzeInitiated}
           contractName={contract.translated_name || contract.name}
         />
 
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.values(contract.analysisResult.jurisdictionSummaries).map((summary) => (
-              <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
-            ))}
+        {/* MODIFIED: Conditionally render Jurisdiction Summaries only if analysisResult and summaries exist */}
+        {contract.analysisResult && contract.analysisResult.jurisdictionSummaries && Object.keys(contract.analysisResult.jurisdictionSummaries).length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.values(contract.analysisResult.jurisdictionSummaries).map((summary) => (
+                <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Modal>
   );
