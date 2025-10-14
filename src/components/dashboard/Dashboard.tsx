@@ -246,13 +246,14 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ADDED: Main Analysis Modal */}
+        {/* ADDED: Main Analysis Modal (for real contracts on mobile) */}
         {isMobile && contractForModal && (
           <AnalysisModal
             isOpen={isAnalysisModalOpen}
             onClose={() => setIsAnalysisModalOpen(false)}
             contract={contractForModal}
             onReanalyzeInitiated={handleReanalyzeInitiated}
+            isSampleContract={false} // ADDED: This is a real contract
           />
         )}
 
