@@ -1502,5 +1502,6 @@
 
   "select_contract_to_view_analysis": "Select a contract to view its analysis",
   "click_contract_list_to_open_analysis": "Click on a contract from the list to open its analysis.",
-  "no_analysis_results_available": "No analysis results available"
+  "no_analysis_results_available": "No analysis results available",
+  "cannot_email_report_incomplete_data": "Cannot email report: incomplete data."
 }
