@@ -13,6 +13,7 @@ import Modal from '../ui/Modal';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
+import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -20,6 +21,7 @@ const Dashboard: React.FC = () => {
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
+  const isMobile = useIsMobile(); // ADDED: Use the hook
 
   const { subscription, membership, loading: loadingSubscription, error: errorSubscription, totalSubscriptionFiles } = useSubscription(); // MODIFIED: Import totalSubscriptionFiles
   const { hasAvailableSingleUse, loading: loadingOrders, orders, error: errorOrders } = useUserOrders();
@@ -75,15 +77,31 @@ const Dashboard: React.FC = () => {
     if (selectedContractId) {
       const contract = contracts.find(c => c.id === selectedContractId);
       setSelectedContract(contract || null);
+      // If on mobile, also set contractForModal to open the modal
+      if (isMobile) {
+        setContractForModal(contract || null);
+        setIsAnalysisModalOpen(true);
+      }
     } else {
       setSelectedContract(null);
+      if (isMobile) {
+        setContractForModal(null);
+        setIsAnalysisModalOpen(false);
+      }
     }
-  }, [selectedContractId, contracts]);
+  }, [selectedContractId, contracts, isMobile]);
 
-  // ADDED: Handle viewing analysis in modal
+  // ADDED: Handle viewing analysis (for both mobile and desktop)
   const handleViewAnalysis = (contract: Contract) => {
-    setContractForModal(contract);
-    setIsAnalysisModalOpen(true);
+    setSelectedContractId(contract.id); // Keep selectedContractId updated
+    if (isMobile) {
+      setContractForModal(contract);
+      setIsAnalysisModalOpen(true);
+    } else {
+      // For desktop, analysis is shown directly, no modal needed
+      setContractForModal(null); // Clear modal state
+      setIsAnalysisModalOpen(false);
+    }
   };
 
   // Callback to be passed to AnalysisResults when re-analysis is initiated
@@ -92,6 +110,8 @@ const Dashboard: React.FC = () => {
     setReanalyzingContractName(contractName);
     if (contractForModal) { // Use contractForModal for re-analysis context
       setContractIdBeingAnalyzed(contractForModal.id);
+    } else if (selectedContract) { // Fallback to selectedContract if modal context is missing
+      setContractIdBeingAnalyzed(selectedContract.id);
     }
   };
 
@@ -120,6 +140,8 @@ const Dashboard: React.FC = () => {
         // If the re-analyzed contract is the one in the modal, update the modal's content
         if (contractForModal && contractForModal.id === currentContractState.id) {
           setContractForModal(currentContractState);
+        } else if (selectedContract && selectedContract.id === currentContractState.id) {
+          setSelectedContract(currentContractState);
         }
       } else if (currentContractState && currentContractState.status === 'failed') {
         // Also close modal if analysis fails
@@ -128,7 +150,7 @@ const Dashboard: React.FC = () => {
         setContractIdBeingAnalyzed(null);
       }
     }
-  }, [contracts, contractIdBeingAnalyzed, contractForModal]);
+  }, [contracts, contractIdBeingAnalyzed, contractForModal, selectedContract]);
 
 
   // Determine if the user is a paying customer based on subscription/orders
@@ -184,9 +206,29 @@ const Dashboard: React.FC = () => {
             <ContractList isSample={false} onViewAnalysis={handleViewAnalysis} /> {/* MODIFIED: Pass onViewAnalysis */}
           </div>
           
-          {/* Main Content - Placeholder when modal is closed */}
+          {/* Main Content Area */}
           <div className="lg:col-span-2">
-            {!isAnalysisModalOpen && (
+            {/* MODIFIED: Conditional rendering based on isMobile */}
+            {!isMobile && selectedContract && (selectedContract.status === 'completed' || selectedContract.status === 'failed') ? (
+              <>
+                <AnalysisResults
+                  analysisResult={selectedContract.analysisResult}
+                  isSample={false}
+                  onReanalyzeInitiated={handleReanalyzeInitiated}
+                  contractName={selectedContract.translated_name || selectedContract.name}
+                />
+                {selectedContract.analysisResult && selectedContract.analysisResult.jurisdictionSummaries && Object.keys(selectedContract.analysisResult.jurisdictionSummaries).length > 0 && (
+                  <div className="mt-8">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
+                        <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -205,7 +247,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* ADDED: Main Analysis Modal */}
-        {contractForModal && (
+        {isMobile && contractForModal && (
           <AnalysisModal
             isOpen={isAnalysisModalOpen}
             onClose={() => setIsAnalysisModalOpen(false)}
