@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera } from 'lucide-react'; // MODIFIED: Added Camera icon
-import Button from '../ui/Button';
+import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
 import TestimonialsSection from '../components/TestimonialsSection';
