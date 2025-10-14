@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera } from 'lucide-react'; // MODIFIED: Added Camera icon
+import Button from '../ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
 import TestimonialsSection from '../components/TestimonialsSection';
 import { Helmet } from 'react-helmet-async';
 import i18n from '../i18n'; // Import i18n instance directly to get supported languages
+import DemoAnalysisSection from '../components/DemoAnalysisSection'; // ADDED: Import DemoAnalysisSection
 
 const LandingPage: React.FC = () => {
   const { t } = useTranslation(); // MODIFIED: Removed i18n from destructuring as we import it directly
@@ -191,7 +192,7 @@ const LandingPage: React.FC = () => {
                 </p>
                 <ul className="list-disc list-inside space-y-3 text-lg">
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_instant_deployment_title')}**: {t('landing_intro_instant_deployment_description')}</li> {/* MODIFIED */}
-                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description_ocr')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description_ocr')}</li> {/* MODIFIED: Updated description */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_global_expertise_title')}**: {t('landing_intro_global_expertise_description')}</li> {/* MODIFIED */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_actionable_output_title')}**: {t('landing_intro_actionable_output_description')}</li> {/* MODIFIED */}
                 </ul>
@@ -232,6 +233,9 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* ADDED: Demo Analysis Section */}
+        <DemoAnalysisSection />
 
         {/* Key Benefits Section */}
         <section className="py-16 bg-gray-100 dark:bg-gray-700">
@@ -274,10 +278,10 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
-                <Users className="h-8 w-8 text-teal-600 flex-shrink-0" />
+                <Camera className="h-8 w-8 text-teal-600 flex-shrink-0" /> {/* MODIFIED: Changed icon to Camera */}
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_empower_team_title')}</h3> {/* MODIFIED */}
-                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_empower_team_description')}</p> {/* MODIFIED */}
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_ocr_title')}</h3> {/* MODIFIED: New OCR title */}
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_ocr_description')}</p> {/* MODIFIED: New OCR description */}
                 </div>
               </div>
             </div>
