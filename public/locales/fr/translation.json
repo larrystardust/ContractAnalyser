@@ -1502,5 +1502,6 @@
   "demo_disclaimer_message": "Ceci est uniquement à des fins de démonstration. Votre fichier téléchargé et son analyse ne sont pas enregistrés.",
 
   "select_contract_to_view_analysis": "Sélectionnez un contrat pour voir son analyse",
-  "click_contract_list_to_open_analysis": "Cliquez sur un contrat de la liste pour ouvrir son analyse."
+  "click_contract_list_to_open_analysis": "Cliquez sur un contrat de la liste pour ouvrir son analyse.",
+  "no_analysis_results_available": "Aucun résultat d'analyse disponible"
 }
