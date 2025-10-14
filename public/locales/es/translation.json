@@ -1494,5 +1494,6 @@
   "demo_disclaimer_message": "Esto es solo para fines de demostración. Su archivo cargado y su análisis no se guardan.",
 
   "select_contract_to_view_analysis": "Seleccione un contrato para ver su análisis",
-  "click_contract_list_to_open_analysis": "Haga clic en un contrato de la lista para abrir su análisis."
+  "click_contract_list_to_open_analysis": "Haga clic en un contrato de la lista para abrir su análisis.",
+  "no_analysis_results_available": "No hay resultados de análisis disponibles"
 }
