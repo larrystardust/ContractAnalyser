@@ -1493,5 +1493,8 @@
   "demo_sign_up_for_full_analysis": "اشترك للحصول على تحليل كامل",
   "demo_unsupported_file_type_for_text_extraction": "نوع الملف غير مدعوم لاستخراج النص. يتم دعم PDF و DOCX و DOC فقط للتحليل التجريبي.",
   "demo_disclaimer_title": "الوضع التجريبي نشط",
-  "demo_disclaimer_message": "هذا لأغراض العرض التوضيحي فقط. لا يتم حفظ ملفك الذي تم تحميله وتحليله."
+  "demo_disclaimer_message": "هذا لأغراض العرض التوضيحي فقط. لا يتم حفظ ملفك الذي تم تحميله وتحليله.",
+
+  "select_contract_to_view_analysis": "حدد عقدًا لعرض تحليله",
+  "click_contract_list_to_open_analysis": "انقر على عقد من القائمة لفتح تحليله."
 }
