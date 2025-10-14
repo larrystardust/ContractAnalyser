@@ -27,8 +27,8 @@ interface CapturedImage {
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
-  capturedImages: CapturedImage[]; // MODIFIED: Array of CapturedImage objects
-  setCapturedImages: (data: CapturedImage[]) => void; // MODIFIED: Accepts array of CapturedImage objects
+  capturedImages: File[]; // MODIFIED: Array of File objects
+  setCapturedImages: (data: File[]) => void; // MODIFIED: Accepts array of File objects
   selectedFiles: File[];
   setSelectedFiles: (files: File[]) => void;
   canPerformOcrAndAnalysis: boolean;
@@ -231,7 +231,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (type === 'file') {
       setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => `${file.name}-${file.size}` !== idToRemove) : []));
     } else {
-      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.id !== idToRemove) : []));
+      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.name !== idToRemove) : [])); // MODIFIED: Filter by image.name
     }
   };
 
@@ -313,7 +313,23 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
-        imageDatasToProcess = capturedImages.map(img => img.data); // MODIFIED: Map to data strings
+        
+        // Convert captured image files to Base64 for the Edge Function
+        for (const imageFile of capturedImages) {
+          imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (typeof reader.result === 'string') {
+                resolve(reader.result.split(',')[1]); // Extract Base64 part
+              } else {
+                reject(new Error('Failed to read file as Base64.'));
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(imageFile);
+          }));
+          filesToUpload.push(imageFile); // Add the actual File object to filesToUpload
+        }
       } else if (selectedFiles.length > 0) {
         // For uploaded files
         // If multiple files, name them as "Multi-page Contract"
@@ -544,7 +560,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 ))}
                 {capturedImages.map((image, index) => (
                   <div
-                    key={image.id} // MODIFIED: Use image.id as key
+                    key={image.name} // MODIFIED: Use image.name as key
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'image')}
                     onDragOver={handleDragOver}
@@ -555,10 +571,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       cursor-grab
                     `}
                   >
-                    <img src={image.data} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Use image.data as src */}
+                    <img src={URL.createObjectURL(image)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Create object URL */}
                     <button
                       type="button"
-                      onClick={() => removeInput(image.id, 'image')} // MODIFIED: Pass image.id
+                      onClick={() => removeInput(image.name, 'image')} // MODIFIED: Pass image.name
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
