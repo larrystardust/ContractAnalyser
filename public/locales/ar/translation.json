@@ -1498,5 +1498,7 @@
   "select_contract_to_view_analysis": "حدد عقدًا لعرض تحليله",
   "click_contract_list_to_open_analysis": "انقر على عقد من القائمة لفتح تحليله.",
   "no_analysis_results_available": "لا توجد نتائج تحليل متاحة",
-  "cannot_email_report_incomplete_data": "لا يمكن إرسال التقرير بالبريد الإلكتروني: بيانات غير مكتملة."
+  "cannot_email_report_incomplete_data": "لا يمكن إرسال التقرير بالبريد الإلكتروني: بيانات غير مكتملة.",
+  "audit_event_type_CONTRACT_OCR_FAILED": "فشل التعرف الضوئي على أحرف العقد",
+  "audit_event_type_CONTRACT_OCR_COMPLETED": "اكتمل التعرف الضوئي على أحرف العقد"
 }
