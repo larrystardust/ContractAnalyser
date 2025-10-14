@@ -105,6 +105,7 @@ const LandingPageSampleDashboard: React.FC = () => {
             onClose={() => setIsAnalysisModalOpen(false)}
             contract={contractForModal}
             onReanalyzeInitiated={handleReanalyzeInitiated} // Pass placeholder function
+            isSampleContract={true} // ADDED: This is a sample contract
           />
         )}
       </div>
