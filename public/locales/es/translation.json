@@ -1496,5 +1496,7 @@
   "select_contract_to_view_analysis": "Seleccione un contrato para ver su análisis",
   "click_contract_list_to_open_analysis": "Haga clic en un contrato de la lista para abrir su análisis.",
   "no_analysis_results_available": "No hay resultados de análisis disponibles",
-  "cannot_email_report_incomplete_data": "No se puede enviar el informe por correo electrónico: datos incompletos."
+  "cannot_email_report_incomplete_data": "No se puede enviar el informe por correo electrónico: datos incompletos.",
+  "audit_event_type_CONTRACT_OCR_FAILED": "OCR del contrato fallido",
+  "audit_event_type_CONTRACT_OCR_COMPLETED": "OCR del contrato completado"
 }
