@@ -11,7 +11,8 @@ import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
+import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
@@ -28,6 +29,11 @@ const Dashboard: React.FC = () => {
   const [showReanalysisModal, setShowReanalysisModal] = useState(false);
   const [reanalyzingContractName, setReanalyzingContractName] = useState<string | null>(null);
   const [contractIdBeingAnalyzed, setContractIdBeingAnalyzed] = useState<string | null>(null);
+
+  // ADDED: State for the main analysis modal
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [contractForModal, setContractForModal] = useState<Contract | null>(null);
+
 
   // Temporary log for debugging
   useEffect(() => {
@@ -74,12 +80,18 @@ const Dashboard: React.FC = () => {
     }
   }, [selectedContractId, contracts]);
 
+  // ADDED: Handle viewing analysis in modal
+  const handleViewAnalysis = (contract: Contract) => {
+    setContractForModal(contract);
+    setIsAnalysisModalOpen(true);
+  };
+
   // Callback to be passed to AnalysisResults when re-analysis is initiated
   const handleReanalyzeInitiated = (contractName: string) => {
     setShowReanalysisModal(true);
     setReanalyzingContractName(contractName);
-    if (selectedContract) {
-      setContractIdBeingAnalyzed(selectedContract.id);
+    if (contractForModal) { // Use contractForModal for re-analysis context
+      setContractIdBeingAnalyzed(contractForModal.id);
     }
   };
 
@@ -105,6 +117,10 @@ const Dashboard: React.FC = () => {
         setShowReanalysisModal(false);
         setReanalyzingContractName(null);
         setContractIdBeingAnalyzed(null);
+        // If the re-analyzed contract is the one in the modal, update the modal's content
+        if (contractForModal && contractForModal.id === currentContractState.id) {
+          setContractForModal(currentContractState);
+        }
       } else if (currentContractState && currentContractState.status === 'failed') {
         // Also close modal if analysis fails
         setShowReanalysisModal(false);
@@ -112,7 +128,7 @@ const Dashboard: React.FC = () => {
         setContractIdBeingAnalyzed(null);
       }
     }
-  }, [contracts, contractIdBeingAnalyzed]);
+  }, [contracts, contractIdBeingAnalyzed, contractForModal]);
 
 
   // Determine if the user is a paying customer based on subscription/orders
@@ -165,37 +181,12 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ContractList isSample={false} />
+            <ContractList isSample={false} onViewAnalysis={handleViewAnalysis} /> {/* MODIFIED: Pass onViewAnalysis */}
           </div>
           
-          {/* Main Content */}
+          {/* Main Content - Placeholder when modal is closed */}
           <div className="lg:col-span-2">
-            {selectedContract && selectedContract.analysisResult ? (
-              <div className="space-y-6">
-                {/* MODIFIED: Use translated_name if available, otherwise original name */}
-                <h1 className="text-2xl font-bold text-gray-900">{t('contract_analysis')}: {selectedContract.translated_name || selectedContract.name}</h1>
-                
-                {/* Analysis Results */}
-                <AnalysisResults
-                  analysisResult={selectedContract.analysisResult}
-                  isSample={false}
-                  onReanalyzeInitiated={handleReanalyzeInitiated}
-                  onReanalyzeCompleted={handleReanalyzeCompleted}
-                  onReanalyzeFailed={handleReanalyzeFailed}
-                  contractName={selectedContract.translated_name || selectedContract.name} // MODIFIED: Pass translated name
-                />
-                
-                {/* Jurisdiction Summaries */}
-                <div className="mt-8">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
-                      <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
+            {!isAnalysisModalOpen && (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -203,19 +194,25 @@ const Dashboard: React.FC = () => {
                   </svg>
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  {selectedContract && selectedContract.status !== 'completed'
-                    ? t('analysis_in_progress', { name: selectedContract.translated_name || selectedContract.name, progress: selectedContract.processing_progress || 0 }) // MODIFIED
-                    : t('no_completed_contract_selected')}
+                  {t('select_contract_to_view_analysis')}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {selectedContract && selectedContract.status !== 'completed'
-                    ? t('please_wait_analysis_in_progress')
-                    : t('select_contract_or_upload')}
+                  {t('click_contract_list_to_open_analysis')}
                 </p>
               </div>
             )}
           </div>
         </div>
+
+        {/* ADDED: Main Analysis Modal */}
+        {contractForModal && (
+          <AnalysisModal
+            isOpen={isAnalysisModalOpen}
+            onClose={() => setIsAnalysisModalOpen(false)}
+            contract={contractForModal}
+            onReanalyzeInitiated={handleReanalyzeInitiated}
+          />
+        )}
 
         {/* ADDED: Re-analysis Modal (managed by Dashboard) */}
         {showReanalysisModal && (
