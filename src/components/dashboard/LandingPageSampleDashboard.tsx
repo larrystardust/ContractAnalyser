@@ -8,9 +8,13 @@ import { useTranslation } from 'react-i18next';
 import Button from '../ui/Button'; // ADDED: Import Button for the placeholder message
 import { Sparkles } from 'lucide-react'; // ADDED: Import Sparkles for the placeholder message
 import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
+import SampleAnalysisResults from '../analysis/SampleAnalysisResults'; // ADDED: Import SampleAnalysisResults
+import JurisdictionSummary from '../analysis/JurisdictionSummary'; // ADDED: Import JurisdictionSummary
+import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
 
 const LandingPageSampleDashboard: React.FC = () => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile(); // ADDED: Use the hook
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [contractForModal, setContractForModal] = useState<Contract | null>(null);
 
@@ -26,7 +30,10 @@ const LandingPageSampleDashboard: React.FC = () => {
   // Handle viewing analysis in modal for sample contracts
   const handleViewAnalysis = (contract: Contract) => {
     setContractForModal(contract);
-    setIsAnalysisModalOpen(true);
+    if (isMobile) {
+      setIsAnalysisModalOpen(true);
+    }
+    // For desktop, contractForModal is set, and the content will render directly
   };
 
   // Placeholder for re-analysis initiated in sample mode (won't actually re-analyze)
@@ -50,7 +57,26 @@ const LandingPageSampleDashboard: React.FC = () => {
         
         {/* Main Content - Placeholder when modal is closed */}
         <div className="lg:col-span-2">
-          {!isAnalysisModalOpen && (
+          {/* MODIFIED: Conditional rendering based on isMobile */}
+          {!isMobile && contractForModal && (contractForModal.status === 'completed' || contractForModal.status === 'failed') ? (
+            <>
+              <SampleAnalysisResults
+                analysisResult={contractForModal.analysisResult!} // Assert non-null as we check status
+                isSample={true}
+                contractName={contractForModal.name}
+              />
+              {contractForModal.analysisResult && contractForModal.analysisResult.jurisdictionSummaries && Object.keys(contractForModal.analysisResult.jurisdictionSummaries).length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.values(contractForModal.analysisResult.jurisdictionSummaries).map((summary) => (
+                      <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
               <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,7 +99,7 @@ const LandingPageSampleDashboard: React.FC = () => {
         </div>
 
         {/* ADDED: Main Analysis Modal for Sample Content */}
-        {contractForModal && (
+        {isMobile && contractForModal && (
           <AnalysisModal
             isOpen={isAnalysisModalOpen}
             onClose={() => setIsAnalysisModalOpen(false)}
