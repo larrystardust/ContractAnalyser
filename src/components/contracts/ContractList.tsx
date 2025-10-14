@@ -13,9 +13,10 @@ interface ContractListProps {
   contractsToDisplay?: Contract[];
   onSelectContract?: (contractId: string) => void;
   isSample?: boolean;
+  onViewAnalysis?: (contract: Contract) => void; // ADDED: New prop for viewing analysis
 }
 
-const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract, isSample = false }) => {
+const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract, isSample = false, onViewAnalysis }) => {
   const { contracts, deleteContract } = useContracts();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
@@ -165,7 +166,9 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                 key={contract.id} 
                 hoverable={true}
                 onClick={() => {
-                  if (onSelectContract) {
+                  if (onViewAnalysis) { // MODIFIED: Use onViewAnalysis prop
+                    onViewAnalysis(contract);
+                  } else if (onSelectContract) {
                     onSelectContract(contract.id);
                   } else {
                     navigate(`/dashboard?contractId=${contract.id}`);
