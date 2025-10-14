@@ -30,7 +30,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`${t('contract_analysis')}: ${contract.translated_name || contract.name}`}
+      // MODIFIED: Ensure contract.name is translated for the modal title
+      title={`${t('contract_analysis')}: ${contract.translated_name || t(contract.name)}`}
       className="max-w-5xl" // Adjust modal width for better content display
     >
       <div className="space-y-6">
@@ -38,7 +39,8 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
           analysisResult={contract.analysisResult} // Pass analysisResult, which might be undefined
           isSample={false}
           onReanalyzeInitiated={onReanalyzeInitiated}
-          contractName={contract.translated_name || contract.name}
+          // MODIFIED: Ensure contract.name is translated before passing to AnalysisResults
+          contractName={contract.translated_name || t(contract.name)}
         />
 
         {/* MODIFIED: Conditionally render Jurisdiction Summaries only if analysisResult and summaries exist */}
