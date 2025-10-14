@@ -1,38 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SampleContractList from '../contracts/SampleContractList';
-import SampleAnalysisResults from '../analysis/SampleAnalysisResults';
-import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import { sampleContracts } from '../../data/sampleData';
 import { Contract } from '../../types';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // ADDED
+import { useTranslation } from 'react-i18next';
+import Button from '../ui/Button'; // ADDED: Import Button for the placeholder message
+import { Sparkles } from 'lucide-react'; // ADDED: Import Sparkles for the placeholder message
+import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
 
 const LandingPageSampleDashboard: React.FC = () => {
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
-  const { t } = useTranslation(); // ADDED
+  const { t } = useTranslation();
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [contractForModal, setContractForModal] = useState<Contract | null>(null);
 
   useEffect(() => {
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
-      setSelectedContractId(firstCompletedSample.id);
+      setContractForModal(firstCompletedSample);
     } else if (sampleContracts.length > 0) {
-      setSelectedContractId(sampleContracts.id);
+      setContractForModal(sampleContracts[0]);
     }
   }, []);
 
-  useEffect(() => {
-    if (selectedContractId) {
-      const contract = sampleContracts.find(c => c.id === selectedContractId);
-      setSelectedContract(contract || null);
-    } else {
-      setSelectedContract(null);
-    }
-  }, [selectedContractId]);
+  // Handle viewing analysis in modal for sample contracts
+  const handleViewAnalysis = (contract: Contract) => {
+    setContractForModal(contract);
+    setIsAnalysisModalOpen(true);
+  };
 
-  const handleSelectContract = (contractId: string) => {
-    setSelectedContractId(contractId);
+  // Placeholder for re-analysis initiated in sample mode (won't actually re-analyze)
+  const handleReanalyzeInitiated = (contractName: string) => {
+    alert(t('sample_reanalysis_not_available'));
   };
 
   return (
@@ -46,26 +45,12 @@ const LandingPageSampleDashboard: React.FC = () => {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <SampleContractList contractsToDisplay={sampleContracts} onSelectContract={handleSelectContract} />
+          <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} />
         </div>
         
+        {/* Main Content - Placeholder when modal is closed */}
         <div className="lg:col-span-2">
-          {selectedContract && selectedContract.analysisResult ? (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold text-gray-900">{t('sample_contract_analysis')}: {t(selectedContract.name)}</h1>
-              
-              <SampleAnalysisResults analysisResult={selectedContract.analysisResult} contractName={selectedContract.name} />
-              
-              <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
-                    <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
+          {!isAnalysisModalOpen && (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
               <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,9 +63,24 @@ const LandingPageSampleDashboard: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 {t('select_completed_sample_contract_to_view_analysis')}
               </p>
+              <Link to="/pricing">
+                <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
+                  {t('upgrade_to_analyze_own_contracts_button')}
+                </Button>
+              </Link>
             </div>
           )}
         </div>
+
+        {/* ADDED: Main Analysis Modal for Sample Content */}
+        {contractForModal && (
+          <AnalysisModal
+            isOpen={isAnalysisModalOpen}
+            onClose={() => setIsAnalysisModalOpen(false)}
+            contract={contractForModal}
+            onReanalyzeInitiated={handleReanalyzeInitiated} // Pass placeholder function
+          />
+        )}
       </div>
     </div>
   );
