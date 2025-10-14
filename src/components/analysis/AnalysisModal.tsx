@@ -10,6 +10,7 @@ interface AnalysisModalProps {
   onClose: () => void;
   contract: Contract;
   onReanalyzeInitiated: (contractName: string) => void;
+  isSampleContract: boolean; // ADDED: New prop to indicate if the contract is a sample
   // REMOVED: onReanalyzeCompleted and onReanalyzeFailed as modal dismissal is handled by parent
 }
 
@@ -18,10 +19,10 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
   onClose,
   contract,
   onReanalyzeInitiated,
+  isSampleContract, // ADDED: Destructure new prop
 }) => {
   const { t } = useTranslation();
 
-  // MODIFIED: Allow modal to open if contract exists, even if analysisResult is null/undefined
   if (!contract) {
     return null; // Should not happen if called correctly
   }
@@ -37,7 +38,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
       <div className="space-y-6">
         <AnalysisResults
           analysisResult={contract.analysisResult} // Pass analysisResult, which might be undefined
-          isSample={false}
+          isSample={isSampleContract} // MODIFIED: Pass the new isSampleContract prop
           onReanalyzeInitiated={onReanalyzeInitiated}
           // MODIFIED: Ensure contract.name is translated before passing to AnalysisResults
           contractName={contract.translated_name || t(contract.name)}
