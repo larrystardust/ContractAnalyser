@@ -10,11 +10,11 @@ interface CapturedImage {
 }
 
 interface CameraCaptureProps {
-  onAddImage: (imageData: CapturedImage) => void; // MODIFIED: Accepts CapturedImage object
+  onAddImage: (imageFile: File) => void; // MODIFIED: Accepts a File object
   onDoneCapturing: () => void;
   onCancel: () => void;
   isLoading: boolean;
-  capturedImages: CapturedImage[]; // MODIFIED: Array of CapturedImage objects
+  capturedImages: File[]; // MODIFIED: Array of File objects
   removeCapturedImage: (id: string) => void; // MODIFIED: Accepts id to remove
 }
 
@@ -73,7 +73,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
 
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
-      const videoElement = videoRef.current; // CORRECTED: Access video element from ref
+      const videoElement = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
@@ -81,9 +81,14 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
         canvas.width = videoElement.videoWidth;
         canvas.height = videoElement.videoHeight;
         context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        const uniqueId = crypto.randomUUID(); // Generate a unique ID
-        onAddImage({ id: uniqueId, data: imageData }); // MODIFIED: Pass CapturedImage object
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const uniqueId = crypto.randomUUID();
+            const imageFile = new File([blob], `scanned_image_${uniqueId}.jpeg`, { type: 'image/jpeg' });
+            onAddImage(imageFile); // MODIFIED: Pass the File object
+          }
+        }, 'image/jpeg', 0.9);
       }
     }
   };
@@ -127,12 +132,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
             <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
               <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {capturedImages.map((image) => ( // MODIFIED: Removed index from map
-                  <div key={image.id} className="relative group"> {/* MODIFIED: Use image.id as key */}
-                    <img src={image.data} alt={`${t('captured_page')} ${image.id}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Use image.data as src */}
+                {capturedImages.map((imageFile, index) => ( // MODIFIED: Iterate over File objects
+                  <div key={imageFile.name} className="relative group"> {/* MODIFIED: Use imageFile.name as key */}
+                    <img src={URL.createObjectURL(imageFile)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Create object URL */}
                     <button
                       type="button"
-                      onClick={() => removeCapturedImage(image.id)} // MODIFIED: Pass image.id
+                      onClick={() => removeCapturedImage(imageFile.name)} // MODIFIED: Pass imageFile.name
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
