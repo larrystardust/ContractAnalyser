@@ -1497,5 +1497,7 @@
   "key_finding": "Conclusion clé",
   "demo_full_analysis_prompt": "Ceci n'est qu'un aperçu ! Inscrivez-vous pour une analyse complète et détaillée, des conclusions exhaustives et des recommandations exploitables.",
   "demo_sign_up_for_full_analysis": "S'inscrire pour une analyse complète",
-  "demo_unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte. Seuls les fichiers PDF, DOCX et DOC sont pris en charge pour l'analyse démo."
+  "demo_unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte. Seuls les fichiers PDF, DOCX et DOC sont pris en charge pour l'analyse démo.",
+  "demo_disclaimer_title": "Mode Démo Actif",
+  "demo_disclaimer_message": "Ceci est uniquement à des fins de démonstration. Votre fichier téléchargé et son analyse ne sont pas enregistrés."
 }
