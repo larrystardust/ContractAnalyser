@@ -19,7 +19,7 @@ interface CapturedImage {
 const UploadPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
-  const [capturedImages, setCapturedImages] = useState<CapturedImage[]>([]); // MODIFIED: Array of CapturedImage objects
+  const [capturedImages, setCapturedImages] = useState<File[]>([]); // MODIFIED: Array of File objects
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { settings: appSettings, loading: loadingAppSettings, error: appSettingsError } = useAppSettings();
@@ -51,9 +51,10 @@ const UploadPage: React.FC = () => {
     setIsUploading(status);
   };
 
-  // MODIFIED: handleAddCapturedImage now accepts a CapturedImage object
-  const handleAddCapturedImage = (imageData: CapturedImage) => {
-    setCapturedImages(prev => [...prev, imageData]);
+  // MODIFIED: handleAddCapturedImage now accepts a File object
+  const handleAddCapturedImage = (imageFile: File) => {
+    setSelectedFiles(prev => [...prev, imageFile]); // ADDED: Add captured image to selectedFiles
+    setCapturedImages(prev => [...prev, imageFile]); // Keep capturedImages state for reordering/display
   };
 
   const handleDoneCapturing = () => {
@@ -63,11 +64,13 @@ const UploadPage: React.FC = () => {
   const handleCancelCamera = () => {
     setIsCameraMode(false);
     setCapturedImages([]); // Clear captured images on cancel
+    setSelectedFiles(prev => prev.filter(file => !file.name.startsWith('scanned_image_'))); // Remove scanned images from selectedFiles
   };
 
-  // MODIFIED: removeCapturedImage now filters by id
-  const removeCapturedImage = (idToRemove: string) => {
-    setCapturedImages(prev => prev.filter(image => image.id !== idToRemove));
+  // MODIFIED: removeCapturedImage now filters by file name
+  const removeCapturedImage = (fileNameToRemove: string) => {
+    setCapturedImages(prev => prev.filter(file => file.name !== fileNameToRemove));
+    setSelectedFiles(prev => prev.filter(file => file.name !== fileNameToRemove));
   };
 
   const removeSelectedFile = (indexToRemove: number) => {
