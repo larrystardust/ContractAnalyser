@@ -1475,5 +1475,26 @@
   "ocr_for_scanned_documents_modal": "OCR for Scanned Documents",
   "ocr_for_scanned_documents_desc_modal": "Our system can process image-based contracts (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR), making them ready for analysis.",
   "upload_failed_a_ocr": "Ensure your file is in a supported format (PDF, DOCX, DOC, or image files like JPG, PNG). If you're uploading an image-based document, ensure you've selected the 'Perform OCR' option. If the issue persists, please contact support with details of the error.",
-  "analysis_failed_a_ocr": "If your analysis failed or is incomplete, especially for scanned documents or images, ensure you selected the 'Perform OCR' option during upload. If the document is a native text file (PDF, DOCX, DOC) and the issue persists, please contact support."
+  "analysis_failed_a_ocr": "If your analysis failed or is incomplete, especially for scanned documents or images, ensure you selected the 'Perform OCR' option during upload. If the document is a native text file (PDF, DOCX, DOC) and the issue persists, please contact support.",
+
+  "demo_section_title": "Experience Instant Contract Analysis",
+  "demo_section_description": "Upload a document (PDF, DOCX, DOC) for a quick preview of our AI-powered analysis. See a summary, overall risk, and a key finding – no sign-up required!",
+  "demo_drag_drop_file": "Drag and drop your document here, or click to browse",
+  "demo_supported_file_types": "Supports PDF, DOCX, DOC files (max 1 file)",
+  "demo_browse_files": "Browse files",
+  "demo_unsupported_file_type": "Unsupported file type. Please upload a PDF, DOCX, or DOC file.",
+  "demo_only_one_file_allowed": "Only one document file can be uploaded for the demo.",
+  "demo_remove_file": "Remove file",
+  "demo_please_select_file": "Please select a file to analyze.",
+  "demo_no_extractable_text": "No extractable text found in the document. Please ensure it's not a scanned image.",
+  "demo_analysis_failed": "Demo analysis failed. Please try again.",
+  "demo_analysis_failed_unexpected": "Demo analysis failed due to an unexpected error.",
+  "demo_analyzing": "Analyzing...",
+  "demo_analyze_document": "Analyze Document",
+  "demo_analysis_preview": "Demo Analysis Preview",
+  "overall_risk_level": "Overall Risk Level",
+  "key_finding": "Key Finding",
+  "demo_full_analysis_prompt": "This is just a preview! Sign up for a full, detailed analysis, comprehensive findings, and actionable recommendations.",
+  "demo_sign_up_for_full_analysis": "Sign Up for Full Analysis",
+  "demo_unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction. Only PDF, DOCX, and DOC are supported for demo analysis."
 }
