@@ -206,6 +206,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
                   <Link to="/search" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2" onClick={toggleMobileMenu}>
                     {t('search')}
                   </Link>
+                  {/* ADDED: Notifications Link for Mobile */}
+                  <Link to="/notifications" className="text-blue-500 hover:text-blue-900 transition-colors font-medium py-2 relative" onClick={toggleMobileMenu}>
+                    {t('notifications')}
+                    {unreadCount > 0 && (<span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{unreadCount}</span>)}
+                  </Link>
                   <div className="pt-2 border-t border-gray-200">
                     {!loadingAdminStatus && isAdmin && (
                       <Button
