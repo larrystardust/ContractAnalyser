@@ -1476,5 +1476,26 @@
   "ocr_for_scanned_documents_modal": "OCR pour les documents numérisés",
   "ocr_for_scanned_documents_desc_modal": "Notre système peut traiter les contrats basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR), les rendant prêts pour l'analyse.",
   "upload_failed_a_ocr": "Assurez-vous que votre fichier est dans un format pris en charge (PDF, DOCX, DOC, ou fichiers image comme JPG, PNG) et réessayez. Si vous téléchargez un document basé sur une image, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR'. Si le problème persiste, veuillez contacter le support avec les détails de l'erreur.",
-  "analysis_failed_a_ocr": "Si votre analyse a échoué ou est incomplète, en particulier pour les documents numérisés ou les images, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR' lors du téléchargement. Si le document est un fichier texte natif (PDF, DOCX, DOC) et que le problème persiste, veuillez contacter le support."
+  "analysis_failed_a_ocr": "Si votre analyse a échoué ou est incomplète, en particulier pour les documents numérisés ou les images, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR' lors du téléchargement. Si le document est un fichier texte natif (PDF, DOCX, DOC) et que le problème persiste, veuillez contacter le support.",
+
+  "demo_section_title": "Découvrez l'Analyse de Contrats Instantanée",
+  "demo_section_description": "Téléchargez un document (PDF, DOCX, DOC) pour un aperçu rapide de notre analyse basée sur l'IA. Obtenez un résumé, le niveau de risque global et une conclusion clé – aucune inscription requise !",
+  "demo_drag_drop_file": "Glissez-déposez votre document ici, ou cliquez pour parcourir",
+  "demo_supported_file_types": "Prend en charge les fichiers PDF, DOCX, DOC (max 1 fichier)",
+  "demo_browse_files": "Parcourir les fichiers",
+  "demo_unsupported_file_type": "Type de fichier non pris en charge. Veuillez télécharger un fichier PDF, DOCX ou DOC.",
+  "demo_only_one_file_allowed": "Un seul fichier document peut être téléchargé pour la démo.",
+  "demo_remove_file": "Supprimer le fichier",
+  "demo_please_select_file": "Veuillez sélectionner un fichier à analyser.",
+  "demo_no_extractable_text": "Aucun texte extractible trouvé dans le document. Veuillez vous assurer qu'il ne s'agit pas d'une image numérisée.",
+  "demo_analysis_failed": "L'analyse démo a échoué. Veuillez réessayer.",
+  "demo_analysis_failed_unexpected": "L'analyse démo a échoué en raison d'une erreur inattendue.",
+  "demo_analyzing": "Analyse en cours...",
+  "demo_analyze_document": "Analyser le document",
+  "demo_analysis_preview": "Aperçu de l'analyse démo",
+  "overall_risk_level": "Niveau de risque global",
+  "key_finding": "Conclusion clé",
+  "demo_full_analysis_prompt": "Ceci n'est qu'un aperçu ! Inscrivez-vous pour une analyse complète et détaillée, des conclusions exhaustives et des recommandations exploitables.",
+  "demo_sign_up_for_full_analysis": "S'inscrire pour une analyse complète",
+  "demo_unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte. Seuls les fichiers PDF, DOCX et DOC sont pris en charge pour l'analyse démo."
 }
