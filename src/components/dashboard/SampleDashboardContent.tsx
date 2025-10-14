@@ -13,58 +13,45 @@ import JurisdictionSummary from '../analysis/JurisdictionSummary'; // ADDED: Imp
 import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
 
 const SampleDashboardContent: React.FC = () => {
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const { t } = useTranslation();
   const isMobile = useIsMobile(); // ADDED: Use the hook
-
-  // State for the main analysis modal
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [contractForModal, setContractForModal] = useState<Contract | null>(null);
 
   useEffect(() => {
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
-      setSelectedContractId(firstCompletedSample.id);
+      setContractForModal(firstCompletedSample);
     } else if (sampleContracts.length > 0) {
-      setSelectedContractId(sampleContracts[0].id);
+      setContractForModal(sampleContracts[0]);
     }
   }, []);
 
   useEffect(() => {
-    if (selectedContractId) {
-      const contract = sampleContracts.find(c => c.id === selectedContractId);
-      setSelectedContract(contract || null);
-      // If on mobile, also set contractForModal to open the modal
+    if (contractForModal) {
       if (isMobile) {
-        setContractForModal(contract || null);
         setIsAnalysisModalOpen(true);
       } else {
-        // On desktop, ensure modal is closed and contractForModal is cleared
-        setContractForModal(null);
         setIsAnalysisModalOpen(false);
       }
     } else {
-      setSelectedContract(null);
-      setContractForModal(null);
       setIsAnalysisModalOpen(false);
     }
-  }, [selectedContractId, isMobile]); // MODIFIED: Added isMobile to dependencies
+  }, [contractForModal, isMobile]); // MODIFIED: Added isMobile to dependencies
 
   // MODIFIED: handleSelectContract now directly sets selectedContractId
   const handleSelectContract = (contractId: string) => {
-    setSelectedContractId(contractId);
+    const contract = sampleContracts.find(c => c.id === contractId);
+    setContractForModal(contract || null);
   };
 
   // ADDED: Handle viewing analysis (for both mobile and desktop)
   const handleViewAnalysis = (contract: Contract) => {
-    setSelectedContractId(contract.id); // Keep selectedContractId updated
+    setContractForModal(contract);
     if (isMobile) {
-      setContractForModal(contract);
       setIsAnalysisModalOpen(true);
     } else {
       // For desktop, analysis is shown directly, no modal needed
-      setContractForModal(null); // Clear modal state
       setIsAnalysisModalOpen(false);
     }
   };
@@ -91,19 +78,19 @@ const SampleDashboardContent: React.FC = () => {
       
       {/* Main Content Area */}
       <div className="lg:col-span-2">
-        {/* Conditional rendering based on isMobile */}
-        {!isMobile && selectedContract && (selectedContract.status === 'completed' || selectedContract.status === 'failed') ? (
+        {/* MODIFIED: Conditional rendering based on isMobile */}
+        {!isMobile && contractForModal && (contractForModal.status === 'completed' || contractForModal.status === 'failed') ? (
           <>
             <SampleAnalysisResults
-              analysisResult={selectedContract.analysisResult!} // Assert non-null as we check status
+              analysisResult={contractForModal.analysisResult!} // Assert non-null as we check status
               isSample={true}
-              contractName={selectedContract.name}
+              contractName={contractForModal.name}
             />
-            {selectedContract.analysisResult && selectedContract.analysisResult.jurisdictionSummaries && Object.keys(selectedContract.analysisResult.jurisdictionSummaries).length > 0 && (
+            {contractForModal.analysisResult && contractForModal.analysisResult.jurisdictionSummaries && Object.keys(contractForModal.analysisResult.jurisdictionSummaries).length > 0 && (
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('jurisdiction_summaries')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.values(selectedContract.analysisResult.jurisdictionSummaries).map((summary) => (
+                  {Object.values(contractForModal.analysisResult.jurisdictionSummaries).map((summary) => (
                     <JurisdictionSummary key={summary.jurisdiction} summary={summary} />
                   ))}
                 </div>
@@ -132,13 +119,14 @@ const SampleDashboardContent: React.FC = () => {
         )}
       </div>
 
-      {/* Main Analysis Modal for Sample Content (only on mobile) */}
+      {/* ADDED: Main Analysis Modal for Sample Content */}
       {isMobile && contractForModal && (
         <AnalysisModal
           isOpen={isAnalysisModalOpen}
           onClose={() => setIsAnalysisModalOpen(false)}
           contract={contractForModal}
           onReanalyzeInitiated={handleReanalyzeInitiated} // Pass placeholder function
+          isSampleContract={true} // ADDED: This is a sample contract
         />
       )}
     </div>
