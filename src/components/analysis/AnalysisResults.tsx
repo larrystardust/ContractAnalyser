@@ -22,6 +22,14 @@ interface AnalysisResultsProps {
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, contractName }) => {
   const { t } = useTranslation();
+  // MOVE HOOKS TO TOP: All hooks must be called unconditionally at the top level
+  const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
+  const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
+  const [isEmailing, setIsEmailing] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const session = useSession();
+  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
+  const { reanalyzeContract, refetchContracts } = useContracts();
 
   // ADDED: Defensive check for analysisResult
   if (!analysisResult) {
@@ -36,14 +44,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       </Card>
     );
   }
-
-  const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
-  const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
-  const [isEmailing, setIsEmailing] = useState(false);
-  const [isReanalyzing, setIsReanalyzing] = useState(false);
-  const session = useSession();
-  const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
-  const { reanalyzeContract, refetchContracts } = useContracts();
 
   const jurisdictionSummaries = analysisResult.jurisdictionSummaries;
   
@@ -131,7 +131,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         body: {
           userId: session.user.id,
           contractId: analysisResult.contract_id,
-          reportSummary: analysisResult.executiveSummary,
+          reportSummary: executiveSummary,
           reportLink: reportLink,
           reportHtmlContent: reportHtmlContent,
         },
