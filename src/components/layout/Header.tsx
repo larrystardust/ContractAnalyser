@@ -192,7 +192,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHelpModal }) => {
 
       {/* Mobile Menu (conditionally rendered) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg animate-slideDown">
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg animate-slideDown max-h-[calc(100vh-64px)] overflow-y-auto">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
               {session?.user ? (
