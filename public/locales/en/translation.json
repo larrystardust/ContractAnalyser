@@ -1501,5 +1501,6 @@
   "demo_disclaimer_message": "This is only for demo purposes. Your uploaded file and its analysis are not saved.",
 
   "select_contract_to_view_analysis": "Select a contract to view its analysis",
-  "click_contract_list_to_open_analysis": "Click on a contract from the list to open its analysis."
+  "click_contract_list_to_open_analysis": "Click on a contract from the list to open its analysis.",
+  "no_analysis_results_available": "No analysis results available"
 }
