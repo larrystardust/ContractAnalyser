@@ -177,6 +177,17 @@ const DemoAnalysisSection: React.FC = () => {
 
         <Card className="max-w-4xl mx-auto p-6">
           <CardBody>
+            {/* ADDED: Disclaimer for demo purposes */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
+              <div className="flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="font-bold">{t('demo_disclaimer_title')}</p>
+                  <p className="text-sm">{t('demo_disclaimer_message')}</p>
+                </div>
+              </div>
+            </div>
+
             {!selectedFile ? (
               <div
                 className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center
