@@ -1468,5 +1468,26 @@
   "ocr_for_scanned_documents_modal": "OCR para documentos escaneados",
   "ocr_for_scanned_documents_desc_modal": "Nuestro sistema puede procesar contratos basados en imágenes (por ejemplo, PDF escaneados, JPG, PNG) extrayendo texto mediante Reconocimiento Óptico de Caracteres (OCR), dejándolos listos para el análisis.",
   "upload_failed_a_ocr": "Asegúrese de que su archivo esté en un formato compatible (PDF, DOCX, DOC o archivos de imagen como JPG, PNG) e inténtelo de nuevo. Si está subiendo un documento basado en imágenes, asegúrese de haber seleccionado la opción 'Realizar OCR'. Si el problema persiste, póngase en contacto con el soporte con los detalles del error.",
-  "analysis_failed_a_ocr": "Si su análisis falló o está incompleto, especialmente para documentos escaneados o imágenes, asegúrese de haber seleccionado la opción 'Realizar OCR' durante la carga. Si el documento es un archivo de texto nativo (PDF, DOCX, DOC) y el problema persiste, póngase en contacto con el soporte."
+  "analysis_failed_a_ocr": "Si su análisis falló o está incompleto, especialmente para documentos escaneados o imágenes, asegúrese de haber seleccionado la opción 'Realizar OCR' durante la carga. Si el documento es un archivo de texto nativo (PDF, DOCX, DOC) y el problema persiste, póngase en contacto con el soporte.",
+
+  "demo_section_title": "Experimente el Análisis Instantáneo de Contratos",
+  "demo_section_description": "Suba un documento (PDF, DOCX, DOC) para una vista previa rápida de nuestro análisis impulsado por IA. Vea un resumen, el riesgo general y un hallazgo clave, ¡sin necesidad de registrarse!",
+  "demo_drag_drop_file": "Arrastre y suelte su documento aquí, o haga clic para buscar",
+  "demo_supported_file_types": "Admite archivos PDF, DOCX, DOC (máx. 1 archivo)",
+  "demo_browse_files": "Buscar archivos",
+  "demo_unsupported_file_type": "Tipo de archivo no compatible. Por favor, suba un archivo PDF, DOCX o DOC.",
+  "demo_only_one_file_allowed": "Solo se puede subir un archivo de documento para la demostración.",
+  "demo_remove_file": "Eliminar archivo",
+  "demo_please_select_file": "Por favor, seleccione un archivo para analizar.",
+  "demo_no_extractable_text": "No se encontró texto extraíble en el documento. Asegúrese de que no sea una imagen escaneada.",
+  "demo_analysis_failed": "El análisis de demostración falló. Por favor, inténtelo de nuevo.",
+  "demo_analysis_failed_unexpected": "El análisis de demostración falló debido a un error inesperado.",
+  "demo_analyzing": "Analizando...",
+  "demo_analyze_document": "Analizar documento",
+  "demo_analysis_preview": "Vista previa del análisis de demostración",
+  "overall_risk_level": "Nivel de riesgo general",
+  "key_finding": "Hallazgo clave",
+  "demo_full_analysis_prompt": "¡Esto es solo una vista previa! Regístrese para un análisis completo y detallado, hallazgos exhaustivos y recomendaciones prácticas.",
+  "demo_sign_up_for_full_analysis": "Registrarse para un análisis completo",
+  "demo_unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto. Solo se admiten PDF, DOCX y DOC para el análisis de demostración."
 }
