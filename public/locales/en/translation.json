@@ -1496,5 +1496,7 @@
   "key_finding": "Key Finding",
   "demo_full_analysis_prompt": "This is just a preview! Sign up for a full, detailed analysis, comprehensive findings, and actionable recommendations.",
   "demo_sign_up_for_full_analysis": "Sign Up for Full Analysis",
-  "demo_unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction. Only PDF, DOCX, and DOC are supported for demo analysis."
+  "demo_unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction. Only PDF, DOCX, and DOC are supported for demo analysis.",
+  "demo_disclaimer_title": "Demo Mode Active",
+  "demo_disclaimer_message": "This is only for demo purposes. Your uploaded file and its analysis are not saved."
 }
