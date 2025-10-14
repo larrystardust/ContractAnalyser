@@ -1496,5 +1496,6 @@
   "demo_disclaimer_message": "هذا لأغراض العرض التوضيحي فقط. لا يتم حفظ ملفك الذي تم تحميله وتحليله.",
 
   "select_contract_to_view_analysis": "حدد عقدًا لعرض تحليله",
-  "click_contract_list_to_open_analysis": "انقر على عقد من القائمة لفتح تحليله."
+  "click_contract_list_to_open_analysis": "انقر على عقد من القائمة لفتح تحليله.",
+  "no_analysis_results_available": "لا توجد نتائج تحليل متاحة"
 }
