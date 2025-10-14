@@ -1491,5 +1491,8 @@
   "demo_sign_up_for_full_analysis": "Registrarse para un análisis completo",
   "demo_unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto. Solo se admiten PDF, DOCX y DOC para el análisis de demostración.",
   "demo_disclaimer_title": "Modo Demo Activo",
-  "demo_disclaimer_message": "Esto es solo para fines de demostración. Su archivo cargado y su análisis no se guardan."
+  "demo_disclaimer_message": "Esto es solo para fines de demostración. Su archivo cargado y su análisis no se guardan.",
+
+  "select_contract_to_view_analysis": "Seleccione un contrato para ver su análisis",
+  "click_contract_list_to_open_analysis": "Haga clic en un contrato de la lista para abrir su análisis."
 }
