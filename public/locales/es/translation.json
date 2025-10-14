@@ -1489,5 +1489,7 @@
   "key_finding": "Hallazgo clave",
   "demo_full_analysis_prompt": "¡Esto es solo una vista previa! Regístrese para un análisis completo y detallado, hallazgos exhaustivos y recomendaciones prácticas.",
   "demo_sign_up_for_full_analysis": "Registrarse para un análisis completo",
-  "demo_unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto. Solo se admiten PDF, DOCX y DOC para el análisis de demostración."
+  "demo_unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto. Solo se admiten PDF, DOCX y DOC para el análisis de demostración.",
+  "demo_disclaimer_title": "Modo Demo Activo",
+  "demo_disclaimer_message": "Esto es solo para fines de demostración. Su archivo cargado y su análisis no se guardan."
 }
