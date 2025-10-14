@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 interface SampleContractListProps {
   contractsToDisplay?: Contract[];
   onSelectContract?: (contractId: string) => void;
+  onViewAnalysis?: (contract: Contract) => void; // ADDED: New prop for viewing analysis
 }
 
-const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisplay, onSelectContract }) => {
+const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisplay, onSelectContract, onViewAnalysis }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -69,7 +70,9 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
               key={contract.id}
               hoverable={true}
               onClick={() => {
-                if (onSelectContract) {
+                if (onViewAnalysis) { // MODIFIED: Use onViewAnalysis prop
+                  onViewAnalysis(contract);
+                } else if (onSelectContract) {
                   onSelectContract(contract.id);
                 } else {
                   navigate(`/dashboard?contractId=${contract.id}`);
