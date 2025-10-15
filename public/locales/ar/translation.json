@@ -1414,7 +1414,7 @@
   "captured_document": "المستند الملتقط",
   "retake": "إعادة الالتقاط",
   "use_image": "استخدام الصورة",
-  "not_enough_credits_for_ocr_analysis": "لا توجد أرصدة كافية للتعرف الضوئي على الحروف والتحليل (مطلوب {{cost}} رصيد). احصل على أرصدة من ",
+  "not_enough_credits_for_ocr_analysis": "لا توجد أرصدة كافية لكل من التعرف الضوئي على الحروف والتحليل (مطلوب {{cost}} رصيد). احصل على أرصدة من ",
   "upload_file": "تحميل ملف",
   "scan_document": "مسح مستند",
   "supports_pdf_docx_doc_image_formats": "يدعم تنسيقات PDF و DOCX و DOC والصور (JPG، PNG)",
