@@ -4,7 +4,7 @@ import AnalysisResults from '../analysis/AnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import { useContracts } from '../../context/ContractContext';
 import { Contract } from '../../types';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom'; // MODIFIED: Added useNavigate
 import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
@@ -20,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate(); // MODIFIED: Initialize useNavigate
   const { t } = useTranslation();
   const isMobile = useIsMobile(); // ADDED: Use the hook
 
@@ -93,13 +94,16 @@ const Dashboard: React.FC = () => {
 
   // ADDED: Handle viewing analysis (for both mobile and desktop)
   const handleViewAnalysis = (contract: Contract) => {
-    setSelectedContractId(contract.id); // Keep selectedContractId updated
+    // MODIFIED: Update the URL search parameter to reflect the newly selected contract
+    navigate(`/dashboard?contractId=${contract.id}`); 
+    
+    // The rest of the logic for mobile modal can remain, but it will now be consistent
+    // with the URL and the useEffect's behavior.
     if (isMobile) {
       setContractForModal(contract);
       setIsAnalysisModalOpen(true);
     } else {
-      // For desktop, analysis is shown directly, no modal needed
-      setContractForModal(null); // Clear modal state
+      setContractForModal(null);
       setIsAnalysisModalOpen(false);
     }
   };
