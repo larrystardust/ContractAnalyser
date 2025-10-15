@@ -888,7 +888,7 @@
 
   "upload_new_contract": "Téléverser un Nouveau Contrat",
   "important_document_format": "Important : Format du Document",
-  "ocr_limitation_message": "Pour les documents numérisés ou les images, l'OCR (reconnaissance optique de caractères) sera effectuée pour extraire le texte. Ce processus peut prendre plus de temps et consommer des crédits supplémentaires.",
+  "ocr_limitation_message": "Téléchargez des fichiers contenant du texte sélectionnable (clair), c'est-à-dire PDF, DOCX, DOC (1 crédit pour chaque analyse de contrat). Cependant, si votre document est un scan ou une image, l'OCR (Reconnaissance Optique de Caractères) sera effectuée pour extraire le texte. Ce processus peut prendre plus de temps et consommer 3 crédits supplémentaires. Utilisez la caméra 'Scanner le document' pour capturer chaque page de votre document ou 'Parcourir les fichiers (Glisser-déposer)' pour importer vos documents. Assurez-vous de réorganiser vos documents scannés ou images dans leur ordre chronologique (page 1, 2, 3....) avant de télécharger le contrat.",
 
   "search_your_contracts": "Rechercher dans Vos Contrats",
   "search_by_contract_name": "Rechercher par nom de contrat...",
