@@ -1419,7 +1419,7 @@
   "captured_document": "Captured Document",
   "retake": "Retake",
   "use_image": "Use Image",
-  "not_enough_credits_for_ocr_analysis": "Not enough credits for OCR and Analysis ({{cost}} credits required). Get credits from the ",
+  "not_enough_credits_for_ocr_analysis": "Not enough credits for both OCR and Analysis ({{cost}} credits required). Get credits from the ",
   "upload_file": "Upload File",
   "scan_document": "Scan Document",
   "supports_pdf_docx_doc_image_formats": "Supports PDF, DOCX, DOC, and Image formats (JPG, PNG)",
