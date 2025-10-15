@@ -880,7 +880,7 @@
 
   "upload_new_contract": "Cargar Nuevo Contrato",
   "important_document_format": "Importante: Formato del Documento",
-  "ocr_limitation_message": "Para documentos escaneados o imágenes, se realizará OCR (reconocimiento óptico de caracteres) para extraer texto. Este proceso puede tardar más y consumir créditos adicionales.",
+  "ocr_limitation_message": "Suba archivos que contengan texto seleccionable (claro), es decir, PDF, DOCX, DOC (1 crédito por cada análisis de contrato). Sin embargo, si su documento es un escaneo o una imagen, se realizará OCR (Reconocimiento Óptico de Caracteres) para extraer el texto. Este proceso puede tardar más y consumir 3 créditos adicionales. Utilice la cámara 'Escanear documento' para capturar cada página de su documento o 'Examinar archivos (Arrastrar y soltar)' para importar sus documentos. Asegúrese de reorganizar sus documentos escaneados o imágenes en su orden cronológico (página 1, 2, 3....) antes de cargar el contrato.",
 
   "search_your_contracts": "Buscar en Sus Contratos",
   "search_by_contract_name": "Buscar por nombre de contrato...",
