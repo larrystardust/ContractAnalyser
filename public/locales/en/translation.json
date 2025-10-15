@@ -887,7 +887,7 @@
 
   "upload_new_contract": "Upload New Contract",
   "important_document_format": "Important: Document Format",
-  "ocr_limitation_message": "For scanned documents or images, OCR (Optical Character Recognition) will be performed to extract text. This process may take longer and consume additional credits.",
+  "ocr_limitation_message": "Upload files containing selectable (clear) text i.e. PDF, DOCX, DOC (1 credit for each contract analysis). However, if your document is a scan or an image, OCR (Optical Character Recognition) will be performed to extract text. This process may take longer and consume additional 3 credits. Use the 'Scan Document' camera to capture each page of your document or 'Browse Files (Drag and Drop)' to import your documents. Ensure to re-arrange your scan or image documents in its chronological order (page 1, 2, 3....) before uploading contract.",
 
   "search_your_contracts": "Search Your Contracts",
   "search_by_contract_name": "Search by contract name...",
@@ -1503,5 +1503,7 @@
   "select_contract_to_view_analysis": "Select a contract to view its analysis",
   "click_contract_list_to_open_analysis": "Click on a contract from the list to open its analysis.",
   "no_analysis_results_available": "No analysis results available",
-  "cannot_email_report_incomplete_data": "Cannot email report: incomplete data."
+  "cannot_email_report_incomplete_data": "Cannot email report: incomplete data.",
+  "audit_event_type_CONTRACT_OCR_FAILED": "Contract OCR Failed",
+  "audit_event_type_CONTRACT_OCR_COMPLETED": "Contract OCR Completed"
 }
