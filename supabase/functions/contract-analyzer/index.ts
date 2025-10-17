@@ -744,18 +744,16 @@ NOTES FOR ADVANCED ANALYSIS:
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
         report_file_path: reportFilePath,
-        // ADDED: Insert new advanced fields (assuming schema is updated)
-        // For now, these fields are not in the DB schema, so they will be ignored by Supabase.
-        // This is a placeholder for when the schema is updated.
-        // effective_date: analysisData.effectiveDate || null,
-        // termination_date: analysisData.terminationDate || null,
-        // renewal_date: analysisData.renewalDate || null,
-        // contract_type: analysisData.contractType || null,
-        // contract_value: analysisData.contractValue || null,
-        // parties: analysisData.parties || null,
-        // liability_cap_summary: analysisData.liabilityCapSummary || null,
-        // indemnification_clause_summary: analysisData.indemnificationClauseSummary || null,
-        // confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || null,
+        // CRITICAL FIX: Uncomment and map new advanced fields
+        effective_date: analysisData.effectiveDate || null,
+        termination_date: analysisData.terminationDate || null,
+        renewal_date: analysisData.renewalDate || null,
+        contract_type: analysisData.contractType || null,
+        contract_value: analysisData.contractValue || null,
+        parties: analysisData.parties || null,
+        liability_cap_summary: analysisData.liabilityCapSummary || null,
+        indemnification_clause_summary: analysisData.indemnificationClauseSummary || null,
+        confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || null,
       })
       .select()
       .single();
