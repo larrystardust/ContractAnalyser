@@ -18,6 +18,7 @@ interface ContractContextType {
     outputLanguage: AnalysisLanguage;
     performOcr: boolean;
     performAnalysis: boolean;
+    performAdvancedAnalysis: boolean; // ADDED: New flag for advanced analysis
     creditCost: number;
   }) => Promise<string>;
   updateContract: (contractId: string, updates: Partial<Contract>) => Promise<void>;
@@ -108,8 +109,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               category: dbFinding.category,
               recommendations: dbFinding.recommendations,
               clauseReference: dbFinding.clause_reference,
-              created_at: dbFinding.created_at,
-              updated_at: dbFinding.updated_at,
             })),
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
             reportFilePath: analysisResultData.report_file_path,
@@ -153,6 +152,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     outputLanguage: AnalysisLanguage;
     performOcr: boolean;
     performAnalysis: boolean;
+    performAdvancedAnalysis: boolean; // ADDED: New flag for advanced analysis
     creditCost: number;
   }) => {
     if (!session?.user?.id) {
@@ -250,6 +250,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('  image_datas (count):', newContractData.imageDatas?.length);
       console.log('  perform_ocr_flag:', newContractData.performOcr);
       console.log('  perform_analysis:', newContractData.performAnalysis);
+      console.log('  perform_advanced_analysis:', newContractData.performAdvancedAnalysis); // ADDED: Log new flag
       console.log('  credit_cost:', newContractData.creditCost);
 
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
@@ -262,6 +263,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           original_contract_name: newContractData.fileName,
           perform_ocr_flag: newContractData.performOcr,
           perform_analysis: newContractData.performAnalysis,
+          perform_advanced_analysis: newContractData.performAdvancedAnalysis, // ADDED: Pass new flag
           credit_cost: newContractData.creditCost,
         },
       });
