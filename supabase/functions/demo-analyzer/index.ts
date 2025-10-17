@@ -123,6 +123,7 @@ COMPLIANCE SCORE RULES (MANDATORY):
   • Low risk = -3 points
 - Minimum score is 0.
 - Round to the nearest whole number.
+- Ensure the score reflects overall risk exposure and enforceability of the contract.
 
 OUTPUT REQUIREMENTS:
 Return your findings strictly as a valid JSON object with the following structure:
@@ -132,7 +133,16 @@ Return your findings strictly as a valid JSON object with the following structur
   "overallRiskLevel": "high",
   "keyFindingTitle": "...",
   "keyFindingDescription": "...",
-  "complianceScore": 0
+  "complianceScore": 0,
+  "effectiveDate": "YYYY-MM-DD",
+  "terminationDate": "YYYY-MM-DD",
+  "renewalDate": "YYYY-MM-DD",
+  "contractType": "...",
+  "contractValue": "...",
+  "parties": ["...", "..."],
+  "liabilityCapSummary": "...",
+  "indemnificationClauseSummary": "...",
+  "confidentialityObligationsSummary": "..."
 }
 
 NOTES:
@@ -140,6 +150,7 @@ NOTES:
 - Do not include any text outside the JSON object.
 - All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 - Risk levels must be one of: high, medium, low, none.
+- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "Not specified".
 `;
 
     const completion = await openai.chat.completions.create({
@@ -179,6 +190,16 @@ NOTES:
     if (demoAnalysis.keyFindingDescription) {
       demoAnalysis.keyFindingDescription = await translateText(demoAnalysis.keyFindingDescription, outputLanguage);
     }
+    // ADDED: Translate new advanced fields if present
+    if (demoAnalysis.contractType) demoAnalysis.contractType = await translateText(demoAnalysis.contractType, outputLanguage);
+    if (demoAnalysis.contractValue) demoAnalysis.contractValue = await translateText(demoAnalysis.contractValue, outputLanguage);
+    if (Array.isArray(demoAnalysis.parties)) {
+      demoAnalysis.parties = await Promise.all(demoAnalysis.parties.map((p: string) => translateText(p, outputLanguage)));
+    }
+    if (demoAnalysis.liabilityCapSummary) demoAnalysis.liabilityCapSummary = await translateText(demoAnalysis.liabilityCapSummary, outputLanguage);
+    if (demoAnalysis.indemnificationClauseSummary) demoAnalysis.indemnificationClauseSummary = await translateText(demoAnalysis.indemnificationClauseSummary, outputLanguage);
+    if (demoAnalysis.confidentialityObligationsSummary) demoAnalysis.confidentialityObligationsSummary = await translateText(demoAnalysis.confidentialityObligationsSummary, outputLanguage);
+
 
     // Ensure risk level is valid
     const validRiskLevels: RiskLevel[] = ['high', 'medium', 'low', 'none'];
