@@ -32,6 +32,9 @@ function corsResponse(body: string | object | null, status = 200, origin: string
   return new Response(JSON.stringify(body), { status, headers });
 }
 
+// ADDED: Cost for advanced analysis add-on
+const ADVANCED_ANALYSIS_ADDON_COST = 1;
+
 Deno.serve(async (req) => {
   // console.log('re-analyze-contract: Function started.'); // REMOVED
 
@@ -50,6 +53,7 @@ Deno.serve(async (req) => {
   let userId: string;
   let userEmail: string;
   let userPreferredLanguage: string = 'en'; // ADDED
+  let performAdvancedAnalysis: boolean = false; // ADDED: Initialize new flag
 
   try {
     let requestBody;
@@ -132,8 +136,31 @@ Deno.serve(async (req) => {
     // console.log('re-analyze-contract: Contract content found.'); // REMOVED
 
     // --- START: Authorization Logic for re-analysis ---
-    // Re-analysis costs 1 credit
-    const ANALYSIS_COST = 1;
+    // Re-analysis costs 1 credit for basic, +1 for advanced
+    const BASIC_ANALYSIS_COST = 1;
+    let ANALYSIS_COST = BASIC_ANALYSIS_COST;
+
+    // ADDED: Determine if advanced analysis was performed on the original contract
+    // For simplicity, we'll assume if the contract has any advanced fields populated,
+    // it implies advanced analysis was performed. This is a temporary heuristic.
+    // A better approach would be to store a `perform_advanced_analysis` flag in the `contracts` table.
+    const { data: analysisResultData, error: fetchAnalysisResultError } = await supabase
+      .from('analysis_results')
+      .select('effectiveDate, terminationDate, renewalDate, contractType, contractValue, parties, liabilityCapSummary, indemnificationClauseSummary, confidentialityObligationsSummary')
+      .eq('contract_id', contractId)
+      .maybeSingle();
+
+    if (fetchAnalysisResultError) {
+      console.warn('re-analyze-contract: Error fetching analysis result for advanced analysis check:', fetchAnalysisResultError);
+    } else if (analysisResultData && (
+      analysisResultData.effectiveDate || analysisResultData.terminationDate || analysisResultData.renewalDate ||
+      analysisResultData.contractType || analysisResultData.contractValue || analysisResultData.parties ||
+      analysisResultData.liabilityCapSummary || analysisResultData.indemnificationClauseSummary || analysisResultData.confidentialityObligationsSummary
+    )) {
+      performAdvancedAnalysis = true;
+      ANALYSIS_COST += ADVANCED_ANALYSIS_ADDON_COST;
+    }
+    // END ADDED
 
     const { data: membershipData, error: membershipError } = await supabase
       .from('subscription_memberships')
@@ -224,7 +251,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_REANALYSIS_INITIATED',
       `User ${userEmail} initiated re-analysis for contract ID: ${contractId}`,
-      { contract_id: contractId }
+      { contract_id: contractId, perform_advanced_analysis: performAdvancedAnalysis } // MODIFIED: Log new flag
     );
 
     // Invoke the main contract-analyzer Edge Function
@@ -239,6 +266,7 @@ Deno.serve(async (req) => {
         image_data: undefined, // No image data for re-analysis
         perform_ocr: false, // No OCR for re-analysis
         perform_analysis: true, // Always perform analysis for re-analysis
+        perform_advanced_analysis: performAdvancedAnalysis, // ADDED: Pass new flag
         credit_cost: ANALYSIS_COST, // Pass the cost for analysis
       },
       headers: {
