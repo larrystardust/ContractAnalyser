@@ -45,6 +45,16 @@ export interface AnalysisResult {
   reportFilePath?: string | null; // ADDED: Path to the generated HTML report
   created_at: string; // Added
   updated_at: string; // Added
+  // ADDED: New fields for advanced analysis
+  effectiveDate?: string | null; // YYYY-MM-DD
+  terminationDate?: string | null; // YYYY-MM-DD
+  renewalDate?: string | null; // YYYY-MM-DD
+  contractType?: string | null;
+  contractValue?: string | null;
+  parties?: string[] | null;
+  liabilityCapSummary?: string | null;
+  indemnificationClauseSummary?: string | null;
+  confidentialityObligationsSummary?: string | null;
 }
 
 export interface JurisdictionSummary {
