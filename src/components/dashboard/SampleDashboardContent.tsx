@@ -50,10 +50,8 @@ const SampleDashboardContent: React.FC = () => {
     setContractForModal(contract);
     if (isMobile) {
       setIsAnalysisModalOpen(true);
-    } else {
-      // For desktop, analysis is shown directly, no modal needed
-      setIsAnalysisModalOpen(false);
     }
+    // For desktop, contractForModal is set, and the content will render directly
   };
 
   // Placeholder for re-analysis initiated in sample mode (won't actually re-analyze)
@@ -76,7 +74,7 @@ const SampleDashboardContent: React.FC = () => {
         <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} />
       </div>
       
-      {/* Main Content Area */}
+      {/* Main Content - Placeholder when modal is closed */}
       <div className="lg:col-span-2">
         {/* MODIFIED: Conditional rendering based on isMobile */}
         {!isMobile && contractForModal && (contractForModal.status === 'completed' || contractForModal.status === 'failed') ? (
@@ -110,7 +108,7 @@ const SampleDashboardContent: React.FC = () => {
             <p className="text-gray-600 mb-6">
               {t('select_completed_sample_contract_to_view_analysis')}
             </p>
-            <Link to="/pricing">
+            <Link to="/signup">
               <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
                 {t('upgrade_to_analyze_own_contracts_button')}
               </Button>
