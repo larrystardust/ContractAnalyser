@@ -103,6 +103,15 @@ Deno.serve(async (req) => {
             data_protection_impact,
             compliance_score,
             jurisdiction_summaries,
+            effective_date,
+            termination_date,
+            renewal_date,
+            contract_type,
+            contract_value,
+            parties,
+            liability_cap_summary,
+            indemnification_clause_summary,
+            confidentiality_obligations_summary,
             findings (*)
           )
         `)
@@ -182,6 +191,23 @@ Deno.serve(async (req) => {
               <div class="section">
                   <h2>${getTranslatedMessage('data_protection_impact', outputLanguage)}</h2>
                   <p>${finalAnalysisResult.data_protection_impact}</p>
+              </div>
+              ` : ''}
+
+              ${(finalAnalysisResult.effectiveDate || finalAnalysisResult.terminationDate || finalAnalysisResult.renewalDate ||
+                 finalAnalysisResult.contractType || finalAnalysisResult.contractValue || finalAnalysisResult.parties ||
+                 finalAnalysisResult.liabilityCapSummary || finalAnalysisResult.indemnificationClauseSummary || finalAnalysisResult.confidentialityObligationsSummary) ? `
+              <div class="section">
+                  <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
+                  ${finalAnalysisResult.effectiveDate ? `<p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effectiveDate}</p>` : ''}
+                  ${finalAnalysisResult.terminationDate ? `<p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.terminationDate}</p>` : ''}
+                  ${finalAnalysisResult.renewalDate ? `<p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewalDate}</p>` : ''}
+                  ${finalAnalysisResult.contractType ? `<p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contractType}</p>` : ''}
+                  ${finalAnalysisResult.contractValue ? `<p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contractValue}</p>` : ''}
+                  ${finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0 ? `<p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${finalAnalysisResult.parties.join(', ')}</p>` : ''}
+                  ${finalAnalysisResult.liabilityCapSummary ? `<p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liabilityCapSummary}</p>` : ''}
+                  ${finalAnalysisResult.indemnificationClauseSummary ? `<p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnificationClauseSummary}</p>` : ''}
+                  ${finalAnalysisResult.confidentialityObligationsSummary ? `<p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentialityObligationsSummary}</p>` : ''}
               </div>
               ` : ''}
 
