@@ -64,13 +64,23 @@ export interface JurisdictionSummary {
   riskLevel: RiskLevel;
 }
 
-// ADDED: New interface for simplified demo analysis result
+// MODIFIED: New interface for simplified demo analysis result, now including advanced fields
 export interface DemoAnalysisResult {
   executiveSummary: string;
   overallRiskLevel: RiskLevel;
   keyFindingTitle?: string;
   keyFindingDescription?: string;
   complianceScore: number;
+  // ADDED: New fields for advanced analysis in demo results
+  effectiveDate?: string | null; // YYYY-MM-DD
+  terminationDate?: string | null; // YYYY-MM-DD
+  renewalDate?: string | null; // YYYY-MM-DD
+  contractType?: string | null;
+  contractValue?: string | null;
+  parties?: string[] | null;
+  liabilityCapSummary?: string | null;
+  indemnificationClauseSummary?: string | null;
+  confidentialityObligationsSummary?: string | null;
 }
 
 // StripeProduct interface moved to supabase/functions/_shared/stripe_product_types.ts
