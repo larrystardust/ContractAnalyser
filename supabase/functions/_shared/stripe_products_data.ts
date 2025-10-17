@@ -39,6 +39,29 @@ export const stripeProducts: StripeProduct[] = [
       },
     },
   },
+  // ADDED: New Advanced Subscription Plans - Professional Use (Advanced)
+  {
+    id: 'prod_AdvancedProfessional',
+    name: 'product_name_professional_use_advanced',
+    description: 'product_desc_professional_use_advanced',
+    mode: 'subscription',
+    fileRetentionPolicy: 'file_retention_policy_subscription_desc',
+    maxFiles: 200,
+    max_users: 2,
+    tier: 4, // New tier for advanced professional
+    pricing: {
+      monthly: {
+        priceId: 'price_1S6X58CgxsPALRL79XzfjR5o_advanced', // Placeholder, replace with actual Stripe Price ID
+        price: 49.99,
+        interval: 'month',
+      },
+      yearly: {
+        priceId: 'price_1S6X8fCgxsPALRL72srcz1Sj_advanced', // Placeholder, replace with actual Stripe Price ID
+        price: 499.90,
+        interval: 'year',
+      },
+    },
+  },
   {
     id: 'prod_T2cLOwJZatHP03',
     name: 'product_name_enterprise_use', // MODIFIED to translation key
@@ -61,7 +84,30 @@ export const stripeProducts: StripeProduct[] = [
       },
     },
   },
-  // New Admin-Assigned Free Plans
+  // ADDED: New Advanced Subscription Plans - Enterprise Use (Advanced)
+  {
+    id: 'prod_AdvancedEnterprise',
+    name: 'product_name_enterprise_use_advanced',
+    description: 'product_desc_enterprise_use_advanced',
+    mode: 'subscription',
+    fileRetentionPolicy: 'file_retention_policy_subscription_desc',
+    maxFiles: 1000,
+    max_users: 999999,
+    tier: 5, // New tier for advanced enterprise
+    pricing: {
+      monthly: {
+        priceId: 'price_1S6X75CgxsPALRL75wVzY9tJ_advanced', // Placeholder, replace with actual Stripe Price ID
+        price: 499.99,
+        interval: 'month',
+      },
+      yearly: {
+        priceId: 'price_1S6X9gCgxsPALRL7c0O6Aipe_advanced', // Placeholder, replace with actual Stripe Price ID
+        price: 4999.90,
+        interval: 'year',
+      },
+    },
+  },
+  // New Admin-Assigned Free Plans (these remain at the end as they are filtered out for public display)
   {
     id: 'prod_AdminFreeProfessional',
     name: 'product_name_admin_free_professional', // MODIFIED to translation key
@@ -93,51 +139,6 @@ export const stripeProducts: StripeProduct[] = [
         priceId: 'price_admin_enterprise_free',
         price: 0.00,
         interval: 'month',
-      },
-    },
-  },
-  // ADDED: New Advanced Subscription Plans
-  {
-    id: 'prod_AdvancedProfessional',
-    name: 'product_name_professional_use_advanced',
-    description: 'product_desc_professional_use_advanced',
-    mode: 'subscription',
-    fileRetentionPolicy: 'file_retention_policy_subscription_desc',
-    maxFiles: 200,
-    max_users: 2,
-    tier: 4, // New tier for advanced professional
-    pricing: {
-      monthly: {
-        priceId: 'price_1S6X58CgxsPALRL79XzfjR5o_advanced', // Placeholder, replace with actual Stripe Price ID
-        price: 49.99,
-        interval: 'month',
-      },
-      yearly: {
-        priceId: 'price_1S6X8fCgxsPALRL72srcz1Sj_advanced', // Placeholder, replace with actual Stripe Price ID
-        price: 499.90,
-        interval: 'year',
-      },
-    },
-  },
-  {
-    id: 'prod_AdvancedEnterprise',
-    name: 'product_name_enterprise_use_advanced',
-    description: 'product_desc_enterprise_use_advanced',
-    mode: 'subscription',
-    fileRetentionPolicy: 'file_retention_policy_subscription_desc',
-    maxFiles: 1000,
-    max_users: 999999,
-    tier: 5, // New tier for advanced enterprise
-    pricing: {
-      monthly: {
-        priceId: 'price_1S6X75CgxsPALRL75wVzY9tJ_advanced', // Placeholder, replace with actual Stripe Price ID
-        price: 499.99,
-        interval: 'month',
-      },
-      yearly: {
-        priceId: 'price_1S6X9gCgxsPALRL7c0O6Aipe_advanced', // Placeholder, replace with actual Stripe Price ID
-        price: 4999.90,
-        interval: 'year',
       },
     },
   },
