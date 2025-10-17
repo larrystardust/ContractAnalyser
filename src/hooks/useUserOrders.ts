@@ -8,7 +8,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 export type StripeOrder = Database['public']['Tables']['stripe_orders']['Row'];
 
 export function useUserOrders() {
-  const supabase = useSupabaseClient<Database>();
+  const supabase = useSupabaseClient();
   const session = useSession();
   const [orders, setOrders] = useState<StripeOrder[]>([]);
   const [loading, setLoading] = useState(true);
