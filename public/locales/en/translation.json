@@ -1507,9 +1507,9 @@
   "audit_event_type_CONTRACT_OCR_FAILED": "Contract OCR Failed",
   "audit_event_type_CONTRACT_OCR_COMPLETED": "Contract OCR Completed",
 
-  "product_name_professional_use_advanced": "Professional Use (Advanced)",
+  "product_name_professional_use_advanced": "ContractAnalyser Professional Use (Advanced)",
   "product_desc_professional_use_advanced": "Includes all Professional Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
-  "product_name_enterprise_use_advanced": "Enterprise Use (Advanced)",
+  "product_name_enterprise_use_advanced": "ContractAnalyser Enterprise Use (Advanced)",
   "product_desc_enterprise_use_advanced": "Includes all Enterprise Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
 
   "advanced_analysis_addon_cost": "Advanced Analysis Add-on Cost",
