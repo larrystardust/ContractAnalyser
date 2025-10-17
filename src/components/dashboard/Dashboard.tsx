@@ -46,7 +46,6 @@ const Dashboard: React.FC = () => {
     // console.log('  session?.user?.id:', session?.user?.id); // COMMENTED OUT
     // console.log('  loadingSubscription:', loadingSubscription); // COMMENTED OUT
     // console.log('  loadingOrders:', loadingOrders); // COMMENTED OUT
-    // console.log('  loadingContracts:', loadingContracts); // COMMENTED OUT
   }, [isSessionLoading, session, loadingSubscription, loadingOrders, loadingContracts]);
 
 
