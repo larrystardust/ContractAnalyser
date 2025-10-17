@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "populate-stripe-metadata": "npx tsc --project tsconfig.node.json && node ./dist-node/populateStripeMetadata.js"
+    "populate-stripe-metadata": "npx tsc --project tsconfig.node.json && node ./dist-node/populateStripeMetadata.js",
     "generate-supabase-types": "supabase gen types typescript --project-id \"qexmdkniehdrumcsshvr\" --schema public > src/types/supabase.ts"
   },
   "dependencies": {
