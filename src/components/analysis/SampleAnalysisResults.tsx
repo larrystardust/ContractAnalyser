@@ -97,6 +97,44 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         </div>
       </div>
       
+      {/* ADDED: Advanced Analysis Details Section for Sample */}
+      {analysisResult.effectiveDate || analysisResult.terminationDate || analysisResult.renewalDate ||
+       analysisResult.contractType || analysisResult.contractValue || analysisResult.parties ||
+       analysisResult.liabilityCapSummary || analysisResult.indemnificationClauseSummary || analysisResult.confidentialityObligationsSummary ? (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('advanced_analysis_details')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+            {analysisResult.effectiveDate && (
+              <p><strong>{t('effective_date')}:</strong> {analysisResult.effectiveDate}</p>
+            )}
+            {analysisResult.terminationDate && (
+              <p><strong>{t('termination_date')}:</strong> {analysisResult.terminationDate}</p>
+            )}
+            {analysisResult.renewalDate && (
+              <p><strong>{t('renewal_date')}:</strong> {analysisResult.renewalDate}</p>
+            )}
+            {analysisResult.contractType && (
+              <p><strong>{t('contract_type')}:</strong> {analysisResult.contractType}</p>
+            )}
+            {analysisResult.contractValue && (
+              <p><strong>{t('contract_value')}:</strong> {analysisResult.contractValue}</p>
+            )}
+            {analysisResult.parties && analysisResult.parties.length > 0 && (
+              <p><strong>{t('parties')}:</strong> {analysisResult.parties.join(', ')}</p>
+            )}
+            {analysisResult.liabilityCapSummary && (
+              <p className="md:col-span-2"><strong>{t('liability_cap_summary')}:</strong> {analysisResult.liabilityCapSummary}</p>
+            )}
+            {analysisResult.indemnificationClauseSummary && (
+              <p className="md:col-span-2"><strong>{t('indemnification_clause_summary')}:</strong> {analysisResult.indemnificationClauseSummary}</p>
+            )}
+            {analysisResult.confidentialityObligationsSummary && (
+              <p className="md:col-span-2"><strong>{t('confidentiality_obligations_summary')}:</strong> {analysisResult.confidentialityObligationsSummary}</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+      
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setSelectedJurisdiction('all')}
