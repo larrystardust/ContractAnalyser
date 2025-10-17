@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContractUpload from '../components/contracts/ContractUpload';
 import CameraCapture from '../components/CameraCapture';
-import { Loader2, AlertTriangle, Camera, FileText } from 'lucide-react'; // Removed UploadIcon, X as they are not used directly here
+import { Loader2, AlertTriangle, Camera, FileText } from 'lucide-react';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
+import Button from '../components/ui/Button'; // ADDED: Import Button component
 
 // Define the structure for a captured image
 interface CapturedImage {
