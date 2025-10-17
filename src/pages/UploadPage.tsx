@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ContractUpload from '../components/contracts/ContractUpload';
 import CameraCapture from '../components/CameraCapture';
 import { Loader2, AlertTriangle, Camera, FileText } from 'lucide-react'; // Removed UploadIcon, X as they are not used directly here
@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import Button from '../components/ui/Button';
 
 // Define the structure for a captured image
 interface CapturedImage {
@@ -32,17 +31,24 @@ const UploadPage: React.FC = () => {
   }, [isUploading]);
 
   const OCR_COST = 3;
-  const ANALYSIS_COST = 1;
-  const OCR_AND_ANALYSIS_COST = OCR_COST + ANALYSIS_COST;
+  const BASIC_ANALYSIS_COST = 1; // MODIFIED: Renamed for clarity
+  const ADVANCED_ANALYSIS_ADDON_COST = 1; // ADDED: New constant for advanced feature cost
+
+  // MODIFIED: Update cost calculations to include advanced addon
+  const OCR_AND_BASIC_ANALYSIS_COST = OCR_COST + BASIC_ANALYSIS_COST;
+  const OCR_BASIC_AND_ADVANCED_ANALYSIS_COST = OCR_COST + BASIC_ANALYSIS_COST + ADVANCED_ANALYSIS_ADDON_COST;
+  const BASIC_AND_ADVANCED_ANALYSIS_COST = BASIC_ANALYSIS_COST + ADVANCED_ANALYSIS_ADDON_COST;
+
 
   const availableCredits = getTotalSingleUseCredits();
   const hasSubscription = subscription && (subscription.status === 'active' || subscription.status === 'trialing');
   const maxAllowedFiles = subscription?.max_files || Infinity;
   const hasSubscriptionFileCapacity = hasSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles;
 
+  // MODIFIED: Update credit checks for new costs
   const canPerformOcr = hasSubscription || availableCredits >= OCR_COST;
-  const canPerformAnalysis = hasSubscription || availableCredits >= ANALYSIS_COST;
-  const canPerformOcrAndAnalysis = hasSubscription || availableCredits >= OCR_AND_ANALYSIS_COST;
+  const canPerformBasicAnalysis = hasSubscription || availableCredits >= BASIC_ANALYSIS_COST;
+  const canPerformAdvancedAddon = hasSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST; // Check for the addon cost itself
 
   // ADDED: Determine if processing options should be shown
   const showProcessingOptions = !hasSubscription;
@@ -135,9 +141,10 @@ const UploadPage: React.FC = () => {
                 <p className="text-sm">{t('credits_remaining_message', { count: availableCredits })}</p>
               </>
             )}
-            {!hasSubscription && availableCredits < OCR_AND_ANALYSIS_COST && (
+            {/* MODIFIED: Update credit warning message */}
+            {!hasSubscription && availableCredits < OCR_BASIC_AND_ADVANCED_ANALYSIS_COST && (
               <p className="text-sm mt-2">
-                {t('not_enough_credits_for_ocr_analysis', { cost: OCR_AND_ANALYSIS_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
+                {t('not_enough_credits_for_ocr_analysis', { cost: OCR_BASIC_AND_ADVANCED_ANALYSIS_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
               </p>
             )}
           </div>
@@ -173,11 +180,13 @@ const UploadPage: React.FC = () => {
           setCapturedImages={setCapturedImages}
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}
-          canPerformOcrAndAnalysis={canPerformOcrAndAnalysis}
+          // MODIFIED: Pass new credit costs and checks
           canPerformOcr={canPerformOcr}
-          canPerformAnalysis={canPerformAnalysis}
+          canPerformBasicAnalysis={canPerformBasicAnalysis}
+          canPerformAdvancedAddon={canPerformAdvancedAddon}
           ocrCost={OCR_COST}
-          analysisCost={ANALYSIS_COST}
+          basicAnalysisCost={BASIC_ANALYSIS_COST}
+          advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST}
           showProcessingOptions={showProcessingOptions} // ADDED: Pass the new prop
         />
       )}
