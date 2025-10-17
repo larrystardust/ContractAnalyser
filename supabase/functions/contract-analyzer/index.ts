@@ -173,6 +173,9 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
   }
 }
 
+// ADDED: Cost for advanced analysis add-on
+const ADVANCED_ANALYSIS_ADDON_COST = 1;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return corsResponse(null, 204);
@@ -199,6 +202,7 @@ Deno.serve(async (req) => {
   let imageDatas: string[] | undefined; // MODIFIED: Array of image data
   let shouldPerformOcr: boolean;
   let performAnalysis: boolean;
+  let performAdvancedAnalysis: boolean; // ADDED: New flag
   let creditCost: number;
 
   try {
@@ -211,6 +215,7 @@ Deno.serve(async (req) => {
       image_datas, // MODIFIED: Array of image data
       perform_ocr_flag,
       perform_analysis,
+      perform_advanced_analysis, // ADDED: Destructure new flag
       credit_cost,
     } = await req.json();
 
@@ -222,6 +227,7 @@ Deno.serve(async (req) => {
     imageDatas = image_datas; // MODIFIED: Array of image data
     shouldPerformOcr = perform_ocr_flag || false;
     performAnalysis = perform_analysis || false;
+    performAdvancedAnalysis = perform_advanced_analysis || false; // ADDED: Initialize new flag
     creditCost = credit_cost || 0;
 
     if (!contractId || (!contractText && (!imageDatas || imageDatas.length === 0))) { // MODIFIED: Check for imageDatas array
@@ -363,7 +369,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_ANALYSIS_STARTED',
       `User ${userEmail} started analysis for contract ID: ${contractId}`,
-      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, credit_cost: creditCost }
+      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, perform_advanced_analysis: performAdvancedAnalysis, credit_cost: creditCost } // MODIFIED: Log new flag
     );
 
     await supabase
@@ -465,7 +471,7 @@ Deno.serve(async (req) => {
 
     translatedContractName = await translateText(originalContractName, outputLanguage);
 
-    const systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+    let systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
@@ -537,6 +543,33 @@ JURISDICTION FOCUS:
 The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
 `;
 
+    // ADDED: Conditional prompt modification for advanced analysis
+    if (performAdvancedAnalysis) {
+      systemPromptContent += `
+
+ADVANCED ANALYSIS REQUIREMENTS (MANDATORY IF REQUESTED):
+In addition to the above, if 'performAdvancedAnalysis' is true, extract the following specific data points from the contract. If a data point is not explicitly found, infer it if possible, or state "Not specified" or "N/A".
+
+Add these fields to the root of the JSON object:
+{
+  // ... existing fields ...
+  "effectiveDate": "YYYY-MM-DD", // The date the contract becomes active.
+  "terminationDate": "YYYY-MM-DD", // The date the contract is set to terminate, if specified.
+  "renewalDate": "YYYY-MM-DD", // The date the contract is set to renew, if applicable.
+  "contractType": "...", // e.g., "Service Agreement", "NDA", "Lease Agreement", "Employment Contract".
+  "contractValue": "...", // The monetary value of the contract, if specified (e.g., "$100,000 USD", "500,000 EUR").
+  "parties": ["...", "..."], // An array of the names of all parties involved in the contract.
+  "liabilityCapSummary": "...", // A concise summary (1-2 sentences) of any liability caps or limitations.
+  "indemnificationClauseSummary": "...", // A concise summary (1-2 sentences) of the indemnification clause.
+  "confidentialityObligationsSummary": "..." // A concise summary (1-2 sentences) of confidentiality obligations.
+}
+
+NOTES FOR ADVANCED ANALYSIS:
+- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "Not specified".
+- Ensure all new text fields are also generated in ${outputLanguage}.
+`;
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -550,6 +583,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         },
       ],
       response_format: { type: "json_object" },
+      temperature: 0.2, // Keep it low for consistent demo results
     });
 
     const aiResponseContent = completion.choices[0].message?.content;
@@ -646,6 +680,18 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       analysisData.jurisdictionSummaries = newJurisdictionSummaries; // Assign the new summaries object
     }
 
+    // ADDED: Translate new advanced fields if present
+    if (performAdvancedAnalysis) {
+      if (analysisData.contractType) analysisData.contractType = await translateText(analysisData.contractType, outputLanguage);
+      if (analysisData.contractValue) analysisData.contractValue = await translateText(analysisData.contractValue, outputLanguage);
+      if (Array.isArray(analysisData.parties)) {
+        analysisData.parties = await Promise.all(analysisData.parties.map((p: string) => translateText(p, outputLanguage)));
+      }
+      if (analysisData.liabilityCapSummary) analysisData.liabilityCapSummary = await translateText(analysisData.liabilityCapSummary, outputLanguage);
+      if (analysisData.indemnificationClauseSummary) analysisData.indemnificationClauseSummary = await translateText(analysisData.indemnificationClauseSummary, outputLanguage);
+      if (analysisData.confidentialityObligationsSummary) analysisData.confidentialityObligationsSummary = await translateText(analysisData.confidentialityObligationsSummary, outputLanguage);
+    }
+
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
     const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
@@ -664,6 +710,16 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           compliance_score: complianceScore,
           jurisdiction_summaries: jurisdictionSummaries,
           findings: findings,
+          // ADDED: Pass new advanced fields to report generator
+          effectiveDate: analysisData.effectiveDate || null,
+          terminationDate: analysisData.terminationDate || null,
+          renewalDate: analysisData.renewalDate || null,
+          contractType: analysisData.contractType || null,
+          contractValue: analysisData.contractValue || null,
+          parties: analysisData.parties || null,
+          liabilityCapSummary: analysisData.liabilityCapSummary || null,
+          indemnificationClauseSummary: analysisData.indemnificationClauseSummary || null,
+          confidentialityObligationsSummary: analysisData.confidentialityObligationsSummary || null,
         },
         outputLanguage: outputLanguage,
       },
@@ -688,6 +744,18 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
         report_file_path: reportFilePath,
+        // ADDED: Insert new advanced fields (assuming schema is updated)
+        // For now, these fields are not in the DB schema, so they will be ignored by Supabase.
+        // This is a placeholder for when the schema is updated.
+        // effective_date: analysisData.effectiveDate || null,
+        // termination_date: analysisData.terminationDate || null,
+        // renewal_date: analysisData.renewalDate || null,
+        // contract_type: analysisData.contractType || null,
+        // contract_value: analysisData.contractValue || null,
+        // parties: analysisData.parties || null,
+        // liability_cap_summary: analysisData.liabilityCapSummary || null,
+        // indemnification_clause_summary: analysisData.indemnificationClauseSummary || null,
+        // confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || null,
       })
       .select()
       .single();
@@ -755,7 +823,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const notificationContractName = translatedContractName;
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_complete_message', userPreferredLanguage, { contractName: notificationContractName });
+      const notificationMessage = getTranslatedMessage('notification_message_analysis_complete', userPreferredLanguage, { contractName: notificationContractName });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_complete',
@@ -769,7 +837,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     const highRiskFindings = findings.filter((f: any) => f.risk_level === 'high' || f.riskLevel === 'high');
     if (highRiskFindings.length > 0 && userNotificationSettings['high-risk-findings']?.inApp) {
-      const notificationMessage = getTranslatedMessage('high_risk_findings_message', userPreferredLanguage, { contractName: notificationContractName, count: highRiskFindings.length });
+      const notificationMessage = getTranslatedMessage('notification_message_high_risk_findings', userPreferredLanguage, { contractName: notificationContractName, count: highRiskFindings.length });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_high_risk_findings',
@@ -786,7 +854,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       userId,
       'CONTRACT_ANALYSIS_COMPLETED',
       `User ${userEmail} completed analysis for contract ID: ${contractId} with compliance score: ${complianceScore}%`,
-      { contract_id: contractId, compliance_score: complianceScore }
+      { contract_id: contractId, compliance_score: complianceScore, perform_advanced_analysis: performAdvancedAnalysis } // MODIFIED: Log new flag
     );
 
     return corsResponse({ message: 'Analysis completed successfully', translated_contract_name: translatedContractName });
@@ -803,13 +871,13 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       userId,
       'CONTRACT_ANALYSIS_FAILED',
       `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
-      { contract_id: contractId, error: error.message }
+      { contract_id: contractId, error: error.message, perform_advanced_analysis: performAdvancedAnalysis } // MODIFIED: Log new flag
     );
 
     const notificationContractName = translatedContractName;
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
-      const notificationMessage = getTranslatedMessage('analysis_failed_message', userPreferredLanguage, { contractName: notificationContractName });
+      const notificationMessage = getTranslatedMessage('notification_message_analysis_failed', userPreferredLanguage, { contractName: notificationContractName });
       const { error: notificationError } = await supabase.from('notifications').insert({
         user_id: userId,
         title: 'notification_title_analysis_failed',
