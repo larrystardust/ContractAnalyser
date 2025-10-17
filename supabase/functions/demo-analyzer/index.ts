@@ -151,6 +151,7 @@ NOTES:
 - All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 - Risk levels must be one of: high, medium, low, none.
 - Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "Not specified".
+- For 'liabilityCapSummary', 'indemnificationClauseSummary', and 'confidentialityObligationsSummary', provide a concise summary (1-2 sentences).
 `;
 
     const completion = await openai.chat.completions.create({
