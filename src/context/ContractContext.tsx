@@ -112,6 +112,16 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             })),
             jurisdictionSummaries: analysisResultData.jurisdiction_summaries || {},
             reportFilePath: analysisResultData.report_file_path,
+            // ADDED: Map new advanced fields
+            effectiveDate: analysisResultData.effective_date,
+            terminationDate: analysisResultData.termination_date,
+            renewalDate: analysisResultData.renewal_date,
+            contractType: analysisResultData.contract_type,
+            contractValue: analysisResultData.contract_value,
+            parties: analysisResultData.parties,
+            liabilityCapSummary: analysisResultData.liability_cap_summary,
+            indemnificationClauseSummary: analysisResultData.indemnification_clause_summary,
+            confidentialityObligationsSummary: analysisResultData.confidentiality_obligations_summary,
           } : undefined,
         };
       });
