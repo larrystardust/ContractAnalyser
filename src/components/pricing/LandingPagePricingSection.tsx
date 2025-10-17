@@ -16,6 +16,27 @@ const LandingPagePricingSection: React.FC = () => {
     product.mode === 'payment' || product.mode === 'subscription'
   );
 
+  // Group products for rendering
+  const groupedProducts = [];
+  for (let i = 0; i < publicProducts.length; i++) {
+    const product = publicProducts[i];
+    if (product.id === 'prod_AdvancedProfessional' || product.id === 'prod_AdvancedEnterprise') {
+      // These will be handled when their base product is encountered
+      continue;
+    }
+    
+    const group = [product];
+    // Check for corresponding advanced product
+    if (product.id === 'prod_T2cJ7cQzgeS3Ku') { // Professional Use
+      const advancedProduct = publicProducts.find(p => p.id === 'prod_AdvancedProfessional');
+      if (advancedProduct) group.push(advancedProduct);
+    } else if (product.id === 'prod_T2cLOwJZatHP03') { // Enterprise Use
+      const advancedProduct = publicProducts.find(p => p.id === 'prod_AdvancedEnterprise');
+      if (advancedProduct) group.push(advancedProduct);
+    }
+    groupedProducts.push(group);
+  }
+
   // Generate Product schema for each public product
   const productSchema = publicProducts.map(product => {
     const offers: any[] = [];
@@ -111,8 +132,25 @@ const LandingPagePricingSection: React.FC = () => {
           </div>
 
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
-            {publicProducts.map((product) => (
-              <PricingCard key={product.id} product={product} billingPeriod={billingPeriod} />
+            {groupedProducts.map((group, index) => (
+              <React.Fragment key={index}>
+                {group.length === 1 ? (
+                  <PricingCard
+                    product={group[0]}
+                    billingPeriod={billingPeriod}
+                  />
+                ) : (
+                  <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {group.map(product => (
+                      <PricingCard
+                        key={product.id}
+                        product={product}
+                        billingPeriod={billingPeriod}
+                      />
+                    ))}
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </div>
