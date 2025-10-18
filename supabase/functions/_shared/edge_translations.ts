@@ -489,6 +489,9 @@ export const edgeTranslations = {
     "analysis_complete_message": ({ contractName }: { contractName: string }) => `Votre contrat "${contractName}" a été analysé avec succès.`,
     "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
     "analysis_failed_message": ({ contractName }: { contractName: string }) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
+    "notification_message_analysis_complete": ({ contractName }: { contractName: string }) => `Votre contrat "${contractName}" a été analysé avec succès.`,
+    "notification_message_high_risk_findings": ({ contractName, count }: { contractName: string; count: number }) => `Votre contrat "${contractName}" contient ${count} constatations à haut risque. Veuillez les examiner immédiatement.`,
+    "notification_message_analysis_failed": ({ contractName }: { contractName: string }) => `L'analyse du contrat "${contractName}" a échoué. Veuillez réessayer ou contacter le support.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `Vous êtes invité à ContractAnalyser par ${inviterName} !`,
