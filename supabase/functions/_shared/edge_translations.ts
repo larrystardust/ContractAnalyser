@@ -704,6 +704,9 @@ export const edgeTranslations = {
     "analysis_complete_message": ({ contractName }: { contractName: string }) => `تم تحليل عقدك "${contractName}" بنجاح.`,
     "high_risk_findings_message": ({ contractName, count }: { contractName: string; count: number }) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
     "analysis_failed_message": ({ contractName }: { contractName: string }) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`,
+    "notification_message_analysis_complete": ({ contractName }: { contractName: string }) => `تم تحليل عقدك "${contractName}" بنجاح.`,
+    "notification_message_high_risk_findings": ({ contractName, count }: { contractName: string; count: number }) => `عقدك "${contractName}" يحتوي على ${count} نتائج عالية الخطورة. يرجى المراجعة فوراً.`,
+    "notification_message_analysis_failed": ({ contractName }: { contractName: string }) => `فشل تحليل العقد "${contractName}". يرجى المحاولة مرة أخرى أو الاتصال بالدعم.`,
 
     // NEW KEYS FOR EDGE FUNCTIONS TRANSLATION
     "email_subject_invitation": ({ inviterName }: { inviterName: string }) => `أنت مدعو إلى ContractAnalyser بواسطة ${inviterName}!`,
