@@ -1566,5 +1566,7 @@
   "renewal_date_end": "Renewal Date (End)",
   "e_g_limited_to_1m": "e.g., Limited to $1M",
   "e_g_mutual_indemnity": "e.g., Mutual Indemnity",
-  "e_g_non_disclosure": "e.g., Non-disclosure"
+  "e_g_non_disclosure": "e.g., Non-disclosure",
+  "loading_contracts": "Loading contracts...",
+  "no_contracts_found_matching_search": "No contracts found matching your search criteria."
 }
