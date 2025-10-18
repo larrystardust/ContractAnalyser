@@ -1548,5 +1548,18 @@
   "advanced_analysis_not_available_for_ocr_only": "التحليل المتقدم غير متاح للمعالجة بتقنية التعرف الضوئي على الحروف فقط.",
   "advanced_analysis_not_available_for_text_only": "التحليل المتقدم غير متاح للمعالجة النصية فقط بدون تحليل كامل.",
   "advanced_analysis_details": "تفاصيل التحليل المتقدم",
-  "notification_message_analysis_complete": "تحليل عقدك لـ {{contractName}} قد اكتمل."
+  "notification_message_analysis_complete": "تحليل عقدك لـ {{contractName}} قد اكتمل.",
+
+  "advanced_filters": "فلاتر متقدمة",
+  "e_g_service_agreement": "مثال: اتفاقية خدمة",
+  "e_g_acme_corp": "مثال: شركة Acme",
+  "effective_date_start": "تاريخ السريان (البداية)",
+  "effective_date_end": "تاريخ السريان (النهاية)",
+  "termination_date_start": "تاريخ الإنهاء (البداية)",
+  "termination_date_end": "تاريخ الإنهاء (النهاية)",
+  "renewal_date_start": "تاريخ التجديد (البداية)",
+  "renewal_date_end": "تاريخ التجديد (النهاية)",
+  "e_g_limited_to_1m": "مثال: محدود بـ 1 مليون دولار",
+  "e_g_mutual_indemnity": "مثال: تعويض متبادل",
+  "e_g_non_disclosure": "مثال: عدم الإفصاح"
 }
