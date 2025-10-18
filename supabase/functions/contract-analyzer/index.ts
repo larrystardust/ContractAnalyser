@@ -556,7 +556,7 @@ Add these fields to the root of the JSON object:
   "effectiveDate": "YYYY-MM-DD", // The date the contract becomes active.
   "terminationDate": "YYYY-MM-DD", // The date the contract is set to terminate, if specified.
   "renewalDate": "YYYY-MM-DD", // The date the contract is set to renew, if applicable.
-  "contractType": "...", // e.g., "Service Agreement", "NDA", "Lease Agreement", "Employment Contract".
+  "contractType": "...", // e.g., "Service Agreement", "Sales Agreements", "Non-Disclosure Agreements (NDAs)", "Lease Agreement", "Licensing Agreements", "Employment Contract", "Partnership Agreements", "Loan Agreements", "Independent Contractor Agreements".
   "contractValue": "...", // The monetary value of the contract, if specified (e.g., "$100,000 USD", "500,000 EUR").
   "parties": ["...", "..."], // An array of the names of all parties involved in the contract.
   "liabilityCapSummary": "...", // A summary (2-4 sentences) of any liability caps or limitations.
