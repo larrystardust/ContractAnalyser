@@ -1546,5 +1546,18 @@
   "advanced_analysis_not_available_for_ocr_only": "El análisis avanzado no está disponible para el procesamiento solo de OCR.",
   "advanced_analysis_not_available_for_text_only": "El análisis avanzado no está disponible para el procesamiento solo de texto sin análisis completo.",
   "advanced_analysis_details": "Detalles del análisis avanzado",
-  "notification_message_analysis_complete": "Su análisis de contrato para {{contractName}} está completo."
+  "notification_message_analysis_complete": "Su análisis de contrato para {{contractName}} está completo.",
+
+  "advanced_filters": "Filtros Avanzados",
+  "e_g_service_agreement": "ej: Acuerdo de Servicio",
+  "e_g_acme_corp": "ej: Acme Corp",
+  "effective_date_start": "Fecha de Vigencia (Inicio)",
+  "effective_date_end": "Fecha de Vigencia (Fin)",
+  "termination_date_start": "Fecha de Terminación (Inicio)",
+  "termination_date_end": "Fecha de Terminación (Fin)",
+  "renewal_date_start": "Fecha de Renovación (Inicio)",
+  "renewal_date_end": "Fecha de Renovación (Fin)",
+  "e_g_limited_to_1m": "ej: Limitado a 1M $",
+  "e_g_mutual_indemnity": "ej: Indemnización Mutua",
+  "e_g_non_disclosure": "ej: No divulgación"
 }
