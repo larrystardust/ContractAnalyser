@@ -1554,5 +1554,18 @@
   "advanced_analysis_not_available_for_ocr_only": "L'analyse avancée n'est pas disponible pour le traitement OCR uniquement.",
   "advanced_analysis_not_available_for_text_only": "L'analyse avancée n'est pas disponible pour le traitement de texte uniquement sans analyse complète.",
   "advanced_analysis_details": "Détails de l'analyse avancée",
-  "notification_message_analysis_complete": "Votre analyse de contrat pour {{contractName}} est terminée."
+  "notification_message_analysis_complete": "Votre analyse de contrat pour {{contractName}} est terminée.",
+
+  "advanced_filters": "Filtres Avancés",
+  "e_g_service_agreement": "ex: Contrat de Service",
+  "e_g_acme_corp": "ex: Acme Corp",
+  "effective_date_start": "Date d'Effet (Début)",
+  "effective_date_end": "Date d'Effet (Fin)",
+  "termination_date_start": "Date de Résiliation (Début)",
+  "termination_date_end": "Date de Résiliation (Fin)",
+  "renewal_date_start": "Date de Renouvellement (Début)",
+  "renewal_date_end": "Date de Renouvellement (Fin)",
+  "e_g_limited_to_1m": "ex: Limité à 1M $",
+  "e_g_mutual_indemnity": "ex: Indemnité Mutuelle",
+  "e_g_non_disclosure": "ex: Non-divulgation"
 }
