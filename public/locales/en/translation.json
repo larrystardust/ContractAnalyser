@@ -1551,5 +1551,7 @@
   "advanced_analysis_upgrade_for_access": "Upgrade your plan to access advanced analysis features.",
   "advanced_analysis_not_available_for_sample": "Advanced analysis is not available for sample contracts.",
   "advanced_analysis_not_available_for_ocr_only": "Advanced analysis is not available for OCR-only processing.",
-  "advanced_analysis_not_available_for_text_only": "Advanced analysis is not available for text-only processing without full analysis."
+  "advanced_analysis_not_available_for_text_only": "Advanced analysis is not available for text-only processing without full analysis.",
+  "advanced_analysis_details": "Advanced Analysis Details",
+  "notification_message_analysis_complete": "Your contract analysis for {{contractName}} is complete."
 }
