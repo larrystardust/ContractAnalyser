@@ -1561,5 +1561,7 @@
   "renewal_date_end": "تاريخ التجديد (النهاية)",
   "e_g_limited_to_1m": "مثال: محدود بـ 1 مليون دولار",
   "e_g_mutual_indemnity": "مثال: تعويض متبادل",
-  "e_g_non_disclosure": "مثال: عدم الإفصاح"
+  "e_g_non_disclosure": "مثال: عدم الإفصاح",
+  "loading_contracts": "جاري تحميل العقود...",
+  "no_contracts_found_matching_search": "لم يتم العثور على عقود مطابقة لمعايير البحث الخاصة بك."
 }
