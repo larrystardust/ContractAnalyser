@@ -1567,5 +1567,7 @@
   "renewal_date_end": "Date de Renouvellement (Fin)",
   "e_g_limited_to_1m": "ex: Limité à 1M $",
   "e_g_mutual_indemnity": "ex: Indemnité Mutuelle",
-  "e_g_non_disclosure": "ex: Non-divulgation"
+  "e_g_non_disclosure": "ex: Non-divulgation",
+  "loading_contracts": "Chargement des contrats...",
+  "no_contracts_found_matching_search": "Aucun contrat trouvé correspondant à vos critères de recherche."
 }
