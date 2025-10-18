@@ -27,6 +27,10 @@ const SearchPage: React.FC = () => {
   const [confidentialityFilter, setConfidentialityFilter] = useState('');
 
   useEffect(() => {
+    // ADDED: Console logs for debugging
+    console.log('SearchPage: Contracts data:', contracts);
+    console.log('SearchPage: Filter values:', { searchTerm, contractTypeFilter, partiesFilter, effectiveDateStart, effectiveDateEnd, terminationDateStart, terminationDateEnd, renewalDateStart, renewalDateEnd, liabilityCapFilter, indemnificationFilter, confidentialityFilter });
+
     let results = contracts;
 
     // Filter by contract name (searchTerm)
@@ -40,6 +44,9 @@ const SearchPage: React.FC = () => {
 
     // Apply advanced filters
     results = results.filter(contract => {
+      // ADDED: Console log for debugging individual contract's analysisResult
+      console.log(`SearchPage: Checking contract ID: ${contract.id}, analysisResult:`, contract.analysisResult);
+
       if (!contract.analysisResult) return false; // Only filter contracts with analysis results
 
       const ar = contract.analysisResult;
