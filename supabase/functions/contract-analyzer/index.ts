@@ -559,9 +559,9 @@ Add these fields to the root of the JSON object:
   "contractType": "...", // e.g., "Service Agreement", "NDA", "Lease Agreement", "Employment Contract".
   "contractValue": "...", // The monetary value of the contract, if specified (e.g., "$100,000 USD", "500,000 EUR").
   "parties": ["...", "..."], // An array of the names of all parties involved in the contract.
-  "liabilityCapSummary": "...", // A concise summary (1-2 sentences) of any liability caps or limitations.
-  "indemnificationClauseSummary": "...", // A concise summary (1-2 sentences) of the indemnification clause.
-  "confidentialityObligationsSummary": "..." // A concise summary (1-2 sentences) of confidentiality obligations.
+  "liabilityCapSummary": "...", // A summary (2-4 sentences) of any liability caps or limitations.
+  "indemnificationClauseSummary": "...", // A summary (2-4 sentences) of the indemnification clause.
+  "confidentialityObligationsSummary": "..." // A summary (2-4 sentences) of confidentiality obligations.
 }
 
 NOTES FOR ADVANCED ANALYSIS:
