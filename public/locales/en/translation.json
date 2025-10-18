@@ -1553,5 +1553,18 @@
   "advanced_analysis_not_available_for_ocr_only": "Advanced analysis is not available for OCR-only processing.",
   "advanced_analysis_not_available_for_text_only": "Advanced analysis is not available for text-only processing without full analysis.",
   "advanced_analysis_details": "Advanced Analysis Details",
-  "notification_message_analysis_complete": "Your contract analysis for {{contractName}} is complete."
+  "notification_message_analysis_complete": "Your contract analysis for {{contractName}} is complete.",
+
+  "advanced_filters": "Advanced Filters",
+  "e_g_service_agreement": "e.g., Service Agreement",
+  "e_g_acme_corp": "e.g., Acme Corp",
+  "effective_date_start": "Effective Date (Start)",
+  "effective_date_end": "Effective Date (End)",
+  "termination_date_start": "Termination Date (Start)",
+  "termination_date_end": "Termination Date (End)",
+  "renewal_date_start": "Renewal Date (Start)",
+  "renewal_date_end": "Renewal Date (End)",
+  "e_g_limited_to_1m": "e.g., Limited to $1M",
+  "e_g_mutual_indemnity": "e.g., Mutual Indemnity",
+  "e_g_non_disclosure": "e.g., Non-disclosure"
 }
