@@ -27,6 +27,7 @@ interface ContractContextType {
   loadingContracts: boolean;
   errorContracts: Error | null;
   refetchContracts: () => Promise<void>;
+  contracts: Contract[]; // ADDED: Expose contracts array
 }
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
@@ -57,7 +58,19 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         output_language,
         translated_name,
         original_file_type,
-        analysis_results (*, findings(*))
+        analysis_results (
+          *,
+          findings(*),
+          effective_date,
+          termination_date,
+          renewal_date,
+          contract_type,
+          contract_value,
+          parties,
+          liability_cap_summary,
+          indemnification_clause_summary,
+          confidentiality_obligations_summary
+        )
       `)
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
