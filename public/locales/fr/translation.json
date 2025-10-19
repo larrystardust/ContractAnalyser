@@ -1583,5 +1583,9 @@
   "demo_disclaimer_message": "Ceci est une analyse de démonstration simplifiée et peut ne pas refléter toutes les capacités ou la précision d'une analyse complète. Pour des résultats complets, veuillez utiliser l'application complète. Votre fichier téléchargé pour la démo et son analyse ne sont pas enregistrés.",
   "demo_section_title": "Découvrez l'Analyse de Contrats par IA Instantanément",
   "notification_title_contract_renewal_alert": "Renouvellement de Contrat à Venir",
-  "notification_title_contract_termination_alert": "Résiliation de Contrat à Venir"
+  "notification_title_contract_termination_alert": "Résiliation de Contrat à Venir",
+  "renewal_alerts": "Alertes de Renouvellement",
+  "termination_alerts": "Alertes de Résiliation",
+  "get_notified_before_contract_renewal_dates": "Recevoir des notifications avant les dates de renouvellement des contrats",
+  "get_notified_before_contract_termination_dates": "Recevoir des notifications avant les dates de résiliation des contrats"
 }
