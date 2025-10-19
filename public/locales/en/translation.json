@@ -1586,5 +1586,6 @@
   "termination_alerts": "Termination Alerts",
   "get_notified_before_contract_renewal_dates": "Get notified before contract renewal dates",
   "get_notified_before_contract_termination_dates": "Get notified before contract termination dates",
-  "advanced_analysis_requires_basic": "Advanced analysis requires basic analysis to be selected."
+  "advanced_analysis_requires_basic": "Advanced analysis requires basic analysis to be selected.",
+  "not_specified": "Not specified"
 }
