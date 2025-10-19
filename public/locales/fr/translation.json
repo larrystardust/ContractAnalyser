@@ -1588,5 +1588,6 @@
   "termination_alerts": "Alertes de Résiliation",
   "get_notified_before_contract_renewal_dates": "Recevoir des notifications avant les dates de renouvellement des contrats",
   "get_notified_before_contract_termination_dates": "Recevoir des notifications avant les dates de résiliation des contrats",
-  "advanced_analysis_requires_basic": "L'analyse avancée nécessite la sélection de l'analyse de base."
+  "advanced_analysis_requires_basic": "L'analyse avancée nécessite la sélection de l'analyse de base.",
+  "not_specified": "Non spécifié"
 }
