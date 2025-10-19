@@ -893,6 +893,16 @@ export const edgeTranslations = {
     error_failed_to_deduct_credits: "فشل خصم الاعتمادات.",
     notification_message_contract_renewal_alert: "عقدك '{contractName}' مستحق للتجديد خلال {days} يومًا.",
     notification_message_contract_termination_alert: "عقدك '{contractName}' مستحق للإنهاء خلال {days} يومًا.",
+    advanced_analysis_details: "تفاصيل التحليل المتقدم",
+    effective_date: "تاريخ السريان",
+    termination_date: "تاريخ الإنهاء",
+    renewal_date: "تاريخ التجديد",
+    contract_type: "نوع العقد",
+    contract_value: "قيمة العقد",
+    parties: "الأطراف",
+    liability_cap_summary: "ملخص سقف المسؤولية",
+    indemnification_clause_summary: "ملخص بند التعويض",
+    confidentiality_obligations_summary: "ملخص التزامات السرية",
   }
 };
 
