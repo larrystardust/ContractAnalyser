@@ -146,16 +146,16 @@ Deno.serve(async (req) => {
     // A better approach would be to store a `perform_advanced_analysis` flag in the `contracts` table.
     const { data: analysisResultData, error: fetchAnalysisResultError } = await supabase
       .from('analysis_results')
-      .select('effectiveDate, terminationDate, renewalDate, contractType, contractValue, parties, liabilityCapSummary, indemnificationClauseSummary, confidentialityObligationsSummary')
+      .select('effective_date, termination_date, renewal_date, contract_type, contract_value, parties, liability_cap_summary, indemnification_clause_summary, confidentiality_obligations_summary') // MODIFIED: Select new fields
       .eq('contract_id', contractId)
       .maybeSingle();
 
     if (fetchAnalysisResultError) {
       console.warn('re-analyze-contract: Error fetching analysis result for advanced analysis check:', fetchAnalysisResultError);
     } else if (analysisResultData && (
-      analysisResultData.effectiveDate || analysisResultData.terminationDate || analysisResultData.renewalDate ||
-      analysisResultData.contractType || analysisResultData.contractValue || analysisResultData.parties ||
-      analysisResultData.liabilityCapSummary || analysisResultData.indemnificationClauseSummary || analysisResultData.confidentialityObligationsSummary
+      analysisResultData.effective_date || analysisResultData.termination_date || analysisResultData.renewal_date ||
+      analysisResultData.contract_type || analysisResultData.contract_value || analysisResultData.parties ||
+      analysisResultData.liability_cap_summary || analysisResultData.indemnification_clause_summary || analysisResultData.confidentiality_obligations_summary
     )) {
       performAdvancedAnalysis = true;
       ANALYSIS_COST += ADVANCED_ANALYSIS_ADDON_COST;
@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
         output_language: contract.output_language || 'en', // Use contract's output language
         original_contract_name: contract.name,
         image_data: undefined, // No image data for re-analysis
-        perform_ocr: false, // No OCR for re-analysis
+        perform_ocr_flag: false, // No OCR for re-analysis
         perform_analysis: true, // Always perform analysis for re-analysis
         perform_advanced_analysis: performAdvancedAnalysis, // ADDED: Pass new flag
         credit_cost: ANALYSIS_COST, // Pass the cost for analysis
