@@ -1479,8 +1479,7 @@
   "ocr_for_scanned_documents_desc_modal": "Our system can process image-based contracts (e.g., scanned PDFs, JPG, PNG) by extracting text using Optical Character Recognition (OCR), making them ready for analysis.",
   "upload_failed_a_ocr": "Ensure your file is in a supported format (PDF, DOCX, DOC, or image files like JPG, PNG). If you're uploading an image-based document, ensure you've selected the 'Perform OCR' option. If the issue persists, please contact support with details of the error.",
   "analysis_failed_a_ocr": "If your analysis failed or is incomplete, especially for scanned documents or images, ensure you selected the 'Perform OCR' option during upload. If the document is a native text file (PDF, DOCX, DOC) and the issue persists, please contact support.",
-
-  "demo_section_title": "Experience Instant Contract Analysis",
+  
   "demo_section_description": "Upload a document (PDF, DOCX, DOC) for a quick preview of our AI-powered analysis. See a summary, overall risk, and a key finding – no sign-up required!",
   "demo_drag_drop_file": "Drag and drop your document here, or click to browse",
   "demo_supported_file_types": "Supports PDF, DOCX, DOC files (max 1 file)",
@@ -1500,9 +1499,6 @@
   "demo_full_analysis_prompt": "This is just a preview! Sign up for a full, detailed analysis, comprehensive findings, and actionable recommendations.",
   "demo_sign_up_for_full_analysis": "Sign Up for Full Analysis",
   "demo_unsupported_file_type_for_text_extraction": "Unsupported file type for text extraction. Only PDF, DOCX, and DOC are supported for demo analysis.",
-  "demo_disclaimer_title": "Demo Mode Active",
-  "demo_disclaimer_message": "This is only for demo purposes. Your uploaded file and its analysis are not saved.",
-
   "select_contract_to_view_analysis": "Select a contract to view its analysis",
   "click_contract_list_to_open_analysis": "Click on a contract from the list to open its analysis.",
   "no_analysis_results_available": "No analysis results available",
@@ -1540,7 +1536,6 @@
   "liability_cap_summary": "Liability Cap Summary",
   "indemnification_clause_summary": "Indemnification Clause Summary",
   "confidentiality_obligations_summary": "Confidentiality Obligations Summary",
-  "upcoming_renewals": "Upcoming Renewals",
   "contracts_with_uncapped_liability": "Contracts with Uncapped Liability",
   "contracts_by_type": "Contracts by Type",
   "contracts_by_party": "Contracts by Party",
@@ -1571,5 +1566,20 @@
   "e_g_mutual_indemnity": "e.g., Mutual Indemnity",
   "e_g_non_disclosure": "e.g., Non-disclosure",
   "loading_contracts": "Loading contracts...",
-  "no_contracts_found_matching_search": "No contracts found matching your search criteria."
+  "no_contracts_found_matching_search": "No contracts found matching your search criteria.",
+
+  "key_date_notifications": "Key Date Notifications",
+  "notify_before_renewal": "Notify me X days before contract renewal",
+  "notify_before_renewal_hint": "Receive notifications X days before a contract's renewal date. Set to 0 to disable.",
+  "notify_before_termination": "Notify me Y days before contract termination",
+  "notify_before_termination_hint": "Receive notifications Y days before a contract's termination date. Set to 0 to disable.",
+  "upcoming_renewals": "Upcoming Renewals (Next 90 Days)",
+  "upcoming_terminations": "Upcoming Terminations (Next 90 Days)",
+  "count": "Count",
+  "demo_sign_up_for_full_analysis": "Sign Up for Full Analysis",
+  "demo_disclaimer_title": "Demo Disclaimer",
+  "demo_disclaimer_message": "This is a simplified demo analysis and may not reflect the full capabilities or accuracy of a complete analysis. For comprehensive results, please use the full application. Your uploaded file for the demo and its analysis are not saved.",
+  "demo_section_title": "Experience AI Contract Analysis Instantly",
+  "notification_title_contract_renewal_alert": "Upcoming Contract Renewal",
+  "notification_title_contract_termination_alert": "Upcoming Contract Termination"
 }
