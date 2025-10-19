@@ -237,31 +237,31 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('advanced_analysis_details')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
             {analysisResult.effectiveDate && (
-              <p><strong>{t('effective_date')}:</strong> {analysisResult.effectiveDate}</p>
+              <p><strong>{t('effective_date')}:</strong> {t(analysisResult.effectiveDate)}</p>
             )}
             {analysisResult.terminationDate && (
-              <p><strong>{t('termination_date')}:</strong> {analysisResult.terminationDate}</p>
+              <p><strong>{t('termination_date')}:</strong> {t(analysisResult.terminationDate)}</p>
             )}
             {analysisResult.renewalDate && (
-              <p><strong>{t('renewal_date')}:</strong> {analysisResult.renewalDate}</p>
+              <p><strong>{t('renewal_date')}:</strong> {t(analysisResult.renewalDate)}</p>
             )}
             {analysisResult.contractType && (
-              <p><strong>{t('contract_type')}:</strong> {analysisResult.contractType}</p>
+              <p><strong>{t('contract_type')}:</strong> {t(analysisResult.contractType)}</p>
             )}
             {analysisResult.contractValue && (
-              <p><strong>{t('contract_value')}:</strong> {analysisResult.contractValue}</p>
+              <p><strong>{t('contract_value')}:</strong> {t(analysisResult.contractValue)}</p>
             )}
             {analysisResult.parties && analysisResult.parties.length > 0 && (
-              <p><strong>{t('parties')}:</strong> {analysisResult.parties.join(', ')}</p>
+              <p><strong>{t('parties')}:</strong> {analysisResult.parties.map(p => t(p)).join(', ')}</p>
             )}
             {analysisResult.liabilityCapSummary && (
-              <p className="md:col-span-2"><strong>{t('liability_cap_summary')}:</strong> {analysisResult.liabilityCapSummary}</p>
+              <p className="md:col-span-2"><strong>{t('liability_cap_summary')}:</strong> {t(analysisResult.liabilityCapSummary)}</p>
             )}
             {analysisResult.indemnificationClauseSummary && (
-              <p className="md:col-span-2"><strong>{t('indemnification_clause_summary')}:</strong> {analysisResult.indemnificationClauseSummary}</p>
+              <p className="md:col-span-2"><strong>{t('indemnification_clause_summary')}:</strong> {t(analysisResult.indemnificationClauseSummary)}</p>
             )}
             {analysisResult.confidentialityObligationsSummary && (
-              <p className="md:col-span-2"><strong>{t('confidentiality_obligations_summary')}:</strong> {analysisResult.confidentialityObligationsSummary}</p>
+              <p className="md:col-span-2"><strong>{t('confidentiality_obligations_summary')}:</strong> {t(analysisResult.confidentialityObligationsSummary)}</p>
             )}
           </div>
         </div>
