@@ -859,6 +859,12 @@ export const edgeTranslations = {
     error_forbidden_action: "محظور: ليس لديك إذن لتنفيذ هذا الإجراء.",
     error_failed_to_reanalyze_contract: "فشل إعادة تحليل العقد: {{message}}",
     message_reanalysis_initiated_successfully: "تم بدء إعادة التحليل بنجاح.",
+
+    error_failed_to_obtain_gcp_access_token: "فشل الحصول على رمز الوصول لمنصة Google Cloud Platform لـ OCR.",
+    error_failed_to_check_available_credits: "فشل التحقق من الاعتمادات المتاحة.",
+    error_failed_to_deduct_credits: "فشل خصم الاعتمادات.",
+    notification_message_contract_renewal_alert: "عقدك '{contractName}' مستحق للتجديد خلال {days} يومًا.",
+    notification_message_contract_termination_alert: "عقدك '{contractName}' مستحق للإنهاء خلال {days} يومًا.",
   }
 };
 
