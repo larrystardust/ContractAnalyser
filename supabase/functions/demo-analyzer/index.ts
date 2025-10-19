@@ -203,7 +203,7 @@ NOTES:
 
 
     // Ensure risk level is valid
-    const validRiskLevels: RiskLevel[] = ['high', 'medium', 'low', 'none'];
+    const validRiskLevels: string[] = ['high', 'medium', 'low', 'none']; // Changed to string[] for comparison
     if (!validRiskLevels.includes(demoAnalysis.overallRiskLevel)) {
       demoAnalysis.overallRiskLevel = 'none'; // Default to none if invalid
     }
