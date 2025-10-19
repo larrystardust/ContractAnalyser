@@ -1472,8 +1472,7 @@
   "ocr_for_scanned_documents_desc_modal": "Nuestro sistema puede procesar contratos basados en imágenes (por ejemplo, PDF escaneados, JPG, PNG) extrayendo texto mediante Reconocimiento Óptico de Caracteres (OCR), dejándolos listos para el análisis.",
   "upload_failed_a_ocr": "Asegúrese de que su archivo esté en un formato compatible (PDF, DOCX, DOC o archivos de imagen como JPG, PNG) e inténtelo de nuevo. Si está subiendo un documento basado en imágenes, asegúrese de haber seleccionado la opción 'Realizar OCR'. Si el problema persiste, póngase en contacto con el soporte con los detalles del error.",
   "analysis_failed_a_ocr": "Si su análisis falló o está incompleto, especialmente para documentos escaneados o imágenes, asegúrese de haber seleccionado la opción 'Realizar OCR' durante la carga. Si el documento es un archivo de texto nativo (PDF, DOCX, DOC) y el problema persiste, póngase en contacto con el soporte.",
-
-  "demo_section_title": "Experimente el Análisis Instantáneo de Contratos",
+  
   "demo_section_description": "Suba un documento (PDF, DOCX, DOC) para una vista previa rápida de nuestro análisis impulsado por IA. Vea un resumen, el riesgo general y un hallazgo clave, ¡sin necesidad de registrarse!",
   "demo_drag_drop_file": "Arrastre y suelte su documento aquí, o haga clic para buscar",
   "demo_supported_file_types": "Admite archivos PDF, DOCX, DOC (máx. 1 archivo)",
@@ -1493,8 +1492,6 @@
   "demo_full_analysis_prompt": "¡Esto es solo una vista previa! Regístrese para un análisis completo y detallado, hallazgos exhaustivos y recomendaciones prácticas.",
   "demo_sign_up_for_full_analysis": "Registrarse para un análisis completo",
   "demo_unsupported_file_type_for_text_extraction": "Tipo de archivo no compatible para la extracción de texto. Solo se admiten PDF, DOCX y DOC para el análisis de demostración.",
-  "demo_disclaimer_title": "Modo Demo Activo",
-  "demo_disclaimer_message": "Esto es solo para fines de demostración. Su archivo cargado y su análisis no se guardan.",
 
   "select_contract_to_view_analysis": "Seleccione un contrato para ver su análisis",
   "click_contract_list_to_open_analysis": "Haga clic en un contrato de la lista para abrir su análisis.",
@@ -1533,7 +1530,6 @@
   "liability_cap_summary": "Resumen del límite de responsabilidad",
   "indemnification_clause_summary": "Resumen de la cláusula de indemnización",
   "confidentiality_obligations_summary": "Resumen de las obligaciones de confidencialidad",
-  "upcoming_renewals": "Próximas renovaciones",
   "contracts_with_uncapped_liability": "Contratos con responsabilidad ilimitada",
   "contracts_by_type": "Contratos por tipo",
   "contracts_by_party": "Contratos por parte",
@@ -1564,5 +1560,19 @@
   "e_g_mutual_indemnity": "ej: Indemnización Mutua",
   "e_g_non_disclosure": "ej: No divulgación",
   "loading_contracts": "Cargando contratos...",
-  "no_contracts_found_matching_search": "No se encontraron contratos que coincidan con sus criterios de búsqueda."
+  "no_contracts_found_matching_search": "No se encontraron contratos que coincidan con sus criterios de búsqueda.",
+
+  "key_date_notifications": "Notificaciones de Fechas Clave",
+  "notify_before_renewal": "Notificarme X días antes de la renovación del contrato",
+  "notify_before_renewal_hint": "Recibir notificaciones X días antes de la fecha de renovación de un contrato. Establecer en 0 para deshabilitar.",
+  "notify_before_termination": "Notificarme Y días antes de la terminación del contrato",
+  "notify_before_termination_hint": "Recibir notificaciones Y días antes de la fecha de terminación de un contrato. Establecer en 0 para deshabilitar.",
+  "upcoming_renewals": "Próximas Renovaciones (Próximos 90 Días)",
+  "upcoming_terminations": "Próximas Terminaciones (Próximos 90 Días)",
+  "count": "Recuento",
+  "demo_disclaimer_title": "Descargo de Responsabilidad de la Demostración",
+  "demo_disclaimer_message": "Este es un análisis de demostración simplificado y puede no reflejar todas las capacidades o la precisión de un análisis completo. Para obtener resultados completos, utilice la aplicación completa. Su archivo cargado para la demostración y su análisis no se guardan.",
+  "demo_section_title": "Experimente el Análisis de Contratos con IA al Instante",
+  "notification_title_contract_renewal_alert": "Próxima Renovación de Contrato",
+  "notification_title_contract_termination_alert": "Próxima Terminación de Contrato"
 }
