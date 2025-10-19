@@ -380,7 +380,7 @@ Deno.serve(async (req) => {
     // Fetch the contract details, including file_path if OCR is needed for a document
     const { data: contractDetails, error: fetchContractError } = await supabase
       .from('contracts')
-      .select('contract_content, user_id, jurisdictions, name, file_path')
+      .select('contract_content, user_id, jurisdictions, name, output_language, file_path') // MODIFIED: Added output_language, file_path
       .eq('id', contractId)
       .single();
 
