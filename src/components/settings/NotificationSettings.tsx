@@ -32,6 +32,19 @@ const notificationTypes = {
     defaultEmail: false,
     defaultInApp: true
   },
+  // ADDED: New notification types for key dates
+  'renewal-alerts': {
+    titleKey: 'renewal_alerts',
+    descriptionKey: 'get_notified_before_contract_renewal_dates',
+    defaultEmail: true,
+    defaultInApp: true
+  },
+  'termination-alerts': {
+    titleKey: 'termination_alerts',
+    descriptionKey: 'get_notified_before_contract_termination_dates',
+    defaultEmail: true,
+    defaultInApp: true
+  },
 };
 
 const NotificationSettings: React.FC = () => {
