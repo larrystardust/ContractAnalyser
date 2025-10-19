@@ -1475,7 +1475,6 @@
   "upload_failed_a_ocr": "تأكد من أن ملفك بتنسيق مدعوم (PDF، DOCX، DOC، أو ملفات صور مثل JPG، PNG) وحاول مرة أخرى. إذا كنت تقوم بتحميل مستند يستند إلى الصور، فتأكد من تحديد خيار 'إجراء التعرف الضوئي على الحروف (OCR)'. إذا استمرت المشكلة، يرجى الاتصال بالدعم مع تفاصيل الخطأ.",
   "analysis_failed_a_ocr": "إذا فشل تحليلك أو كان غير مكتمل، خاصة للمستندات الممسوحة ضوئيًا أو الصور، فتأكد من تحديد خيار 'إجراء التعرف الضوئي على الحروف (OCR)' أثناء التحميل. إذا كان المستند ملفًا نصيًا أصليًا (PDF، DOCX، DOC) واستمرت المشكلة، يرجى الاتصال بالدعم.",
 
-  "demo_section_title": "جرب تحليل العقود الفوري",
   "demo_section_description": "قم بتحميل مستند (PDF، DOCX، DOC) للحصول على معاينة سريعة لتحليلنا المدعوم بالذكاء الاصطناعي. شاهد ملخصًا ومستوى المخاطر الإجمالي ونتيجة رئيسية - لا يلزم التسجيل!",
   "demo_drag_drop_file": "اسحب وأفلت مستندك هنا، أو انقر للتصفح",
   "demo_supported_file_types": "يدعم ملفات PDF، DOCX، DOC (ملف واحد كحد أقصى)",
@@ -1495,8 +1494,6 @@
   "demo_full_analysis_prompt": "هذه مجرد معاينة! اشترك للحصول على تحليل كامل ومفصل، ونتائج شاملة، وتوصيات قابلة للتنفيذ.",
   "demo_sign_up_for_full_analysis": "اشترك للحصول على تحليل كامل",
   "demo_unsupported_file_type_for_text_extraction": "نوع الملف غير مدعوم لاستخراج النص. يتم دعم PDF و DOCX و DOC فقط للتحليل التجريبي.",
-  "demo_disclaimer_title": "الوضع التجريبي نشط",
-  "demo_disclaimer_message": "هذا لأغراض العرض التوضيحي فقط. لا يتم حفظ ملفك الذي تم تحميله وتحليله.",
 
   "select_contract_to_view_analysis": "حدد عقدًا لعرض تحليله",
   "click_contract_list_to_open_analysis": "انقر على عقد من القائمة لفتح تحليله.",
@@ -1535,7 +1532,6 @@
   "liability_cap_summary": "ملخص سقف المسؤولية",
   "indemnification_clause_summary": "ملخص بند التعويض",
   "confidentiality_obligations_summary": "ملخص التزامات السرية",
-  "upcoming_renewals": "التجديدات القادمة",
   "contracts_with_uncapped_liability": "العقود ذات المسؤولية غير المحدودة",
   "contracts_by_type": "العقود حسب النوع",
   "contracts_by_party": "العقود حسب الطرف",
@@ -1566,5 +1562,19 @@
   "e_g_mutual_indemnity": "مثال: تعويض متبادل",
   "e_g_non_disclosure": "مثال: عدم الإفصاح",
   "loading_contracts": "جاري تحميل العقود...",
-  "no_contracts_found_matching_search": "لم يتم العثور على عقود مطابقة لمعايير البحث الخاصة بك."
+  "no_contracts_found_matching_search": "لم يتم العثور على عقود مطابقة لمعايير البحث الخاصة بك.",
+
+  "key_date_notifications": "إشعارات التواريخ الرئيسية",
+  "notify_before_renewal": "إشعاري قبل X يومًا من تجديد العقد",
+  "notify_before_renewal_hint": "تلقي إشعارات قبل X يومًا من تاريخ تجديد العقد. اضبط على 0 للتعطيل.",
+  "notify_before_termination": "إشعاري قبل Y يومًا من إنهاء العقد",
+  "notify_before_termination_hint": "تلقي إشعارات قبل Y يومًا من تاريخ إنهاء العقد. اضبط على 0 للتعطيل.",
+  "upcoming_renewals": "التجديدات القادمة (خلال 90 يومًا)",
+  "upcoming_terminations": "الإنهاءات القادمة (خلال 90 يومًا)",
+  "count": "العدد",
+  "demo_disclaimer_title": "إخلاء مسؤولية العرض التوضيحي",
+  "demo_disclaimer_message": "هذا تحليل تجريبي مبسط وقد لا يعكس القدرات الكاملة أو الدقة للتحليل الكامل. للحصول على نتائج شاملة، يرجى استخدام التطبيق الكامل. الملف الذي قمت بتحميله للعرض التوضيحي وتحليله لا يتم حفظهما."
+  "demo_section_title": "تجربة تحليل العقود بالذكاء الاصطناعي فورًا",
+  "notification_title_contract_renewal_alert": "تجديد العقد القادم",
+  "notification_title_contract_termination_alert": "إنهاء العقد القادم"
 }
