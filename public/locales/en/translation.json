@@ -1581,5 +1581,9 @@
   "demo_disclaimer_message": "This is a simplified demo analysis and may not reflect the full capabilities or accuracy of a complete analysis. For comprehensive results, please use the full application. Your uploaded file for the demo and its analysis are not saved.",
   "demo_section_title": "Experience AI Contract Analysis Instantly",
   "notification_title_contract_renewal_alert": "Upcoming Contract Renewal",
-  "notification_title_contract_termination_alert": "Upcoming Contract Termination"
+  "notification_title_contract_termination_alert": "Upcoming Contract Termination",
+  "renewal_alerts": "Renewal Alerts",
+  "termination_alerts": "Termination Alerts",
+  "get_notified_before_contract_renewal_dates": "Get notified before contract renewal dates",
+  "get_notified_before_contract_termination_dates": "Get notified before contract termination dates"
 }
