@@ -192,6 +192,7 @@ const DemoAnalysisSection: React.FC = () => {
               <div
                 className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center
                   ${isDragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-gray-50'}
+                  ${isAnyInputSelected ? 'bg-gray-100' : ''}
                   transition-colors duration-200`}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
