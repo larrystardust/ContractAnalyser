@@ -548,7 +548,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       systemPromptContent += `
 
 ADVANCED ANALYSIS REQUIREMENTS (MANDATORY IF REQUESTED):
-In addition to the above, if 'performAdvancedAnalysis' is true, extract the following specific data points from the contract. If a data point is not explicitly found, infer it if possible, or state "Not specified" or "N/A".
+In addition to the above, if 'performAdvancedAnalysis' is true, extract the following specific data points from the contract. If a data point is not explicitly found, infer it if possible, or state "${getTranslatedMessage('not_specified', outputLanguage)}".
 
 Add these fields to the root of the JSON object:
 {
@@ -565,7 +565,7 @@ Add these fields to the root of the JSON object:
 }
 
 NOTES FOR ADVANCED ANALYSIS:
-- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "Not specified".
+- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "${getTranslatedMessage('not_specified', outputLanguage)}".
 - Ensure all new text fields are also generated in ${outputLanguage}.
 `;
     }
