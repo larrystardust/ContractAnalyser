@@ -194,20 +194,20 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${(finalAnalysisResult.effective_date || finalAnalysisResult.termination_date || finalAnalysisResult.renewal_date ||
-                 finalAnalysisResult.contract_type || finalAnalysisResult.contract_value || finalAnalysisResult.parties ||
-                 finalAnalysisResult.liability_cap_summary || finalAnalysisResult.indemnification_clause_summary || finalAnalysisResult.confidentiality_obligations_summary) ? `
+              ${(finalAnalysisResult.effectiveDate || finalAnalysisResult.terminationDate || finalAnalysisResult.renewalDate ||
+                 finalAnalysisResult.contractType || finalAnalysisResult.contractValue || finalAnalysisResult.parties ||
+                 finalAnalysisResult.liabilityCapSummary || finalAnalysisResult.indemnificationClauseSummary || finalAnalysisResult.confidentialityObligationsSummary) ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
-                  ${finalAnalysisResult.effective_date ? `<p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>` : ''}
-                  ${finalAnalysisResult.termination_date ? `<p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date}</p>` : ''}
-                  ${finalAnalysisResult.renewal_date ? `<p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date}</p>` : ''}
-                  ${finalAnalysisResult.contract_type ? `<p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type}</p>` : ''}
-                  ${finalAnalysisResult.contract_value ? `<p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value}</p>` : ''}
+                  ${finalAnalysisResult.effectiveDate ? `<p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effectiveDate}</p>` : ''}
+                  ${finalAnalysisResult.terminationDate ? `<p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.terminationDate}</p>` : ''}
+                  ${finalAnalysisResult.renewalDate ? `<p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewalDate}</p>` : ''}
+                  ${finalAnalysisResult.contractType ? `<p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contractType}</p>` : ''}
+                  ${finalAnalysisResult.contractValue ? `<p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contractValue}</p>` : ''}
                   ${finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0 ? `<p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${finalAnalysisResult.parties.join(', ')}</p>` : ''}
-                  ${finalAnalysisResult.liability_cap_summary ? `<p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>` : ''}
-                  ${finalAnalysisResult.indemnification_clause_summary ? `<p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>` : ''}
-                  ${finalAnalysisResult.confidentiality_obligations_summary ? `<p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>` : ''}
+                  ${finalAnalysisResult.liabilityCapSummary ? `<p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liabilityCapSummary}</p>` : ''}
+                  ${finalAnalysisResult.indemnificationClauseSummary ? `<p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnificationClauseSummary}</p>` : ''}
+                  ${finalAnalysisResult.confidentialityObligationsSummary ? `<p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentialityObligationsSummary}</p>` : ''}
               </div>
               ` : ''}
 
