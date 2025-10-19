@@ -700,6 +700,21 @@ NOTES FOR ADVANCED ANALYSIS:
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
+    // CRITICAL FIX: Process advanced analysis fields into their final translated string form
+    // This ensures the database stores the display string, and the report generator receives it.
+    const notSpecifiedTranslatedString = getTranslatedMessage('not_specified', outputLanguage);
+
+    const processedEffectiveDate = analysisData.effectiveDate || notSpecifiedTranslatedString;
+    const processedTerminationDate = analysisData.terminationDate || notSpecifiedTranslatedString;
+    const processedRenewalDate = analysisData.renewalDate || notSpecifiedTranslatedString;
+    const processedContractType = analysisData.contractType || notSpecifiedTranslatedString;
+    const processedContractValue = analysisData.contractValue || notSpecifiedTranslatedString;
+    const processedParties = analysisData.parties || []; // Keep as array for DB, but pass as string for report
+    const processedLiabilityCapSummary = analysisData.liabilityCapSummary || notSpecifiedTranslatedString;
+    const processedIndemnificationClauseSummary = analysisData.indemnificationClauseSummary || notSpecifiedTranslatedString;
+    const processedConfidentialityObligationsSummary = analysisData.confidentialityObligationsSummary || notSpecifiedTranslatedString;
+
+
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
@@ -710,16 +725,16 @@ NOTES FOR ADVANCED ANALYSIS:
           compliance_score: complianceScore,
           jurisdiction_summaries: jurisdictionSummaries,
           findings: findings,
-          // ADDED: Pass new advanced fields to report generator
-          effectiveDate: analysisData.effectiveDate || null,
-          terminationDate: analysisData.terminationDate || null,
-          renewalDate: analysisData.renewalDate || null,
-          contractType: analysisData.contractType || null,
-          contractValue: analysisData.contractValue || null,
-          parties: analysisData.parties || null,
-          liabilityCapSummary: analysisData.liabilityCapSummary || null,
-          indemnificationClauseSummary: analysisData.indemnificationClauseSummary || null,
-          confidentialityObligationsSummary: analysisData.confidentialityObligationsSummary || null,
+          // CRITICAL FIX: Pass processed string values to report generator
+          effective_date: processedEffectiveDate,
+          termination_date: processedTerminationDate,
+          renewal_date: processedRenewalDate,
+          contract_type: processedContractType,
+          contract_value: processedContractValue,
+          parties: processedParties, // Pass as array, generate-analysis-report will join
+          liability_cap_summary: processedLiabilityCapSummary,
+          indemnification_clause_summary: processedIndemnificationClauseSummary,
+          confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
         },
         outputLanguage: outputLanguage,
       },
@@ -735,9 +750,6 @@ NOTES FOR ADVANCED ANALYSIS:
     const reportHtmlContent = reportData?.htmlContent || null;
     const reportLink = reportData?.url || null;
 
-    // CRITICAL FIX: Ensure advanced analysis fields are always strings (or translated 'Not specified') before DB insertion
-    const notSpecifiedTranslated = getTranslatedMessage('not_specified', outputLanguage);
-
     const { data: analysisResult, error: analysisError } = await supabase
       .from('analysis_results')
       .insert({
@@ -747,16 +759,16 @@ NOTES FOR ADVANCED ANALYSIS:
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
         report_file_path: reportFilePath,
-        // CRITICAL FIX: Ensure these fields are always strings (or translated 'Not specified')
-        effective_date: analysisData.effectiveDate || notSpecifiedTranslated,
-        termination_date: analysisData.terminationDate || notSpecifiedTranslated,
-        renewal_date: analysisData.renewalDate || notSpecifiedTranslated,
-        contract_type: analysisData.contractType || notSpecifiedTranslated,
-        contract_value: analysisData.contractValue || notSpecifiedTranslated,
-        parties: analysisData.parties || [], // Ensure parties is an array, even if empty
-        liability_cap_summary: analysisData.liabilityCapSummary || notSpecifiedTranslated,
-        indemnification_clause_summary: analysisData.indemnificationClauseSummary || notSpecifiedTranslated,
-        confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || notSpecifiedTranslated,
+        // CRITICAL FIX: Store processed string values in the database
+        effective_date: processedEffectiveDate,
+        termination_date: processedTerminationDate,
+        renewal_date: processedRenewalDate,
+        contract_type: processedContractType,
+        contract_value: processedContractValue,
+        parties: processedParties,
+        liability_cap_summary: processedLiabilityCapSummary,
+        indemnification_clause_summary: processedIndemnificationClauseSummary,
+        confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
       })
       .select()
       .single();
