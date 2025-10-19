@@ -131,7 +131,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         body: {
           userId: session.user.id,
           contractId: analysisResult.contract_id,
-          reportSummary: executiveSummary,
+          reportSummary: analysisResult.executiveSummary, // MODIFIED: Use analysisResult.executiveSummary
           reportLink: reportLink,
           reportHtmlContent: reportHtmlContent,
         },
