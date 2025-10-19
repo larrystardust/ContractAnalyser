@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Globe, Palette, FileText, Mail, Smartphone } from 'lucide-react';
+import { Settings, Globe, Palette, FileText, Mail, Smartphone, CalendarDays } from 'lucide-react'; // ADDED CalendarDays
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -19,6 +19,9 @@ const ApplicationPreferences: React.FC = () => {
   const [emailReportsEnabled, setEmailReportsEnabled] = useState(false);
   const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(true);
   const [selectedDefaultJurisdictions, setSelectedDefaultJurisdictions] = useState<Jurisdiction[]>([]); // ADDED: New state for default jurisdictions
+  // ADDED: New states for date-based notification preferences
+  const [renewalNotificationDaysBefore, setRenewalNotificationDaysBefore] = useState(30);
+  const [terminationNotificationDaysBefore, setTerminationNotificationDaysBefore] = useState(30);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -36,7 +39,7 @@ const ApplicationPreferences: React.FC = () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled, default_jurisdictions') // MODIFIED: Added default_jurisdictions
+        .select('language_preference, theme_preference, email_reports_enabled, auto_start_analysis_enabled, default_jurisdictions, renewal_notification_days_before, termination_notification_days_before') // MODIFIED: Added new notification fields
         .eq('id', session.user.id)
         .maybeSingle();
 
@@ -64,6 +67,9 @@ const ApplicationPreferences: React.FC = () => {
       setEmailReportsEnabled(data?.email_reports_enabled || false);
       setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
       setSelectedDefaultJurisdictions((data?.default_jurisdictions as Jurisdiction[]) || []); // ADDED: Set default jurisdictions
+      // ADDED: Set new notification preferences
+      setRenewalNotificationDaysBefore(data?.renewal_notification_days_before || 30);
+      setTerminationNotificationDaysBefore(data?.termination_notification_days_before || 30);
 
     } catch (err: any) {
       console.error('Error fetching notification preferences:', err);
@@ -145,6 +151,9 @@ const ApplicationPreferences: React.FC = () => {
             email_reports_enabled: emailReportsEnabled,
             auto_start_analysis_enabled: autoStartAnalysisEnabled,
             default_jurisdictions: selectedDefaultJurisdictions,
+            // ADDED: Save new notification preferences
+            renewal_notification_days_before: renewalNotificationDaysBefore,
+            termination_notification_days_before: terminationNotificationDaysBefore,
           },
           { onConflict: 'id' }
         );
@@ -313,6 +322,52 @@ const ApplicationPreferences: React.FC = () => {
               onChange={setAutoStartAnalysisEnabled}
               disabled={isSaving}
             />
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* ADDED: Key Date Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center">
+            <CalendarDays className="h-5 w-5 text-blue-900 mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">{t('key_date_notifications')}</h3>
+          </div>
+        </CardHeader>
+        <CardBody>
+          {/* Renewal Notification Days Before */}
+          <div className="py-3">
+            <label htmlFor="renewalNotificationDaysBefore" className="block text-sm font-medium text-gray-700 mb-1">
+              {t('notify_before_renewal')}
+            </label>
+            <input
+              type="number"
+              id="renewalNotificationDaysBefore"
+              name="renewalNotificationDaysBefore"
+              value={renewalNotificationDaysBefore}
+              onChange={(e) => setRenewalNotificationDaysBefore(parseInt(e.target.value))}
+              min="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              disabled={isSaving}
+            />
+            <p className="text-xs text-gray-500 mt-1">{t('notify_before_renewal_hint')}</p>
+          </div>
+          {/* Termination Notification Days Before */}
+          <div className="py-3 border-t border-gray-200">
+            <label htmlFor="terminationNotificationDaysBefore" className="block text-sm font-medium text-gray-700 mb-1">
+              {t('notify_before_termination')}
+            </label>
+            <input
+              type="number"
+              id="terminationNotificationDaysBefore"
+              name="terminationNotificationDaysBefore"
+              value={terminationNotificationDaysBefore}
+              onChange={(e) => setTerminationNotificationDaysBefore(parseInt(e.target.value))}
+              min="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              disabled={isSaving}
+            />
+            <p className="text-xs text-gray-500 mt-1">{t('notify_before_termination_hint')}</p>
           </div>
         </CardBody>
       </Card>
