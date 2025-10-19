@@ -1576,5 +1576,9 @@
   "demo_disclaimer_message": "هذا تحليل تجريبي مبسط وقد لا يعكس القدرات الكاملة أو الدقة للتحليل الكامل. للحصول على نتائج شاملة، يرجى استخدام التطبيق الكامل. الملف الذي قمت بتحميله للعرض التوضيحي وتحليله لا يتم حفظهما.",
   "demo_section_title": "تجربة تحليل العقود بالذكاء الاصطناعي فورًا",
   "notification_title_contract_renewal_alert": "تجديد العقد القادم",
-  "notification_title_contract_termination_alert": "إنهاء العقد القادم"
+  "notification_title_contract_termination_alert": "إنهاء العقد القادم",
+  "renewal_alerts": "تنبيهات التجديد",
+  "termination_alerts": "تنبيهات الإنهاء",
+  "get_notified_before_contract_renewal_dates": "احصل على إشعارات قبل تواريخ تجديد العقد",
+  "get_notified_before_contract_termination_dates": "احصل على إشعارات قبل تواريخ إنهاء العقد"
 }
