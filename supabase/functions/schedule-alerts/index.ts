@@ -41,6 +41,16 @@ Deno.serve(async (req) => {
     return corsResponse({ error: 'Method not allowed' }, 405);
   }
 
+  // --- START MODIFICATION ---
+  const cronSecret = req.headers.get('X-Cron-Secret');
+  const expectedSecret = Deno.env.get('CRON_SECRET_KEY');
+
+  if (!cronSecret || cronSecret !== expectedSecret) {
+    console.warn('schedule-alerts: Unauthorized access attempt - Invalid or missing X-Cron-Secret.');
+    return corsResponse({ error: 'Unauthorized: Invalid or missing secret' }, 401);
+  }
+  // --- END MODIFICATION ---
+
   try {
     console.log('schedule-alerts: Starting scheduled alerts check...');
 
