@@ -230,6 +230,7 @@ export const edgeTranslations = {
     liability_cap_summary: "Liability Cap Summary",
     indemnification_clause_summary: "Indemnification Clause Summary",
     confidentiality_obligations_summary: "Confidentiality Obligations Summary",
+    not_specified: "Not specified",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -461,6 +462,7 @@ export const edgeTranslations = {
     liability_cap_summary: "Resumen del límite de responsabilidad",
     indemnification_clause_summary: "Resumen de la cláusula de indemnización",
     confidentiality_obligations_summary: "Resumen de las obligaciones de confidencialidad",
+    not_specified: "No especificado",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -692,6 +694,7 @@ export const edgeTranslations = {
     liability_cap_summary: "Résumé du plafond de responsabilité",
     indemnification_clause_summary: "Résumé de la clause d'indemnisation",
     confidentiality_obligations_summary: "Résumé des obligations de confidentialité",
+    not_specified: "Non spécifié",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
