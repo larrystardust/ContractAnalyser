@@ -429,6 +429,12 @@ export const edgeTranslations = {
     error_forbidden_action: "Prohibido: No tiene permiso para realizar esta acción.",
     error_failed_to_reanalyze_contract: "Error al reanalizar el contrato: {{message}}",
     message_reanalysis_initiated_successfully: "Reanálisis iniciado con éxito.",
+
+    error_failed_to_obtain_gcp_access_token: "No se pudo obtener el token de acceso de Google Cloud Platform para OCR.",
+    error_failed_to_check_available_credits: "No se pudieron verificar los créditos disponibles.",
+    error_failed_to_deduct_credits: "No se pudieron deducir los créditos.",
+    notification_message_contract_renewal_alert: "Su contrato '{contractName}' vence para renovación en {days} días.",
+    notification_message_contract_termination_alert: "Su contrato '{contractName}' vence para terminación en {days} días.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
