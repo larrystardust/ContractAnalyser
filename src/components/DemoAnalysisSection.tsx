@@ -27,6 +27,9 @@ const DemoAnalysisSection: React.FC = () => {
   const [demoResult, setDemoResult] = useState<DemoAnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ADDED: Define isAnyInputSelected for this component
+  const isAnyInputSelected = selectedFile !== null;
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
