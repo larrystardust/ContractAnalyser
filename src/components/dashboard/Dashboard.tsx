@@ -10,7 +10,7 @@ import { useUserOrders } from '../../hooks/useUserOrders';
 import SampleDashboardContent from './SampleDashboardContent';
 import { useSessionContext } from '@supabase/auth-helpers-react';
 import Modal from '../ui/Modal';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CalendarDays, AlertTriangle as AlertIcon } from 'lucide-react'; // MODIFIED: Added CalendarDays, AlertTriangle as AlertIcon
 import { useTranslation } from 'react-i18next';
 import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
 import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
@@ -36,6 +36,10 @@ const Dashboard: React.FC = () => {
   // ADDED: State for the main analysis modal
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [contractForModal, setContractForModal] = useState<Contract | null>(null);
+
+  // ADDED: State for upcoming key dates
+  const [upcomingRenewals, setUpcomingRenewals] = useState<Contract[]>([]);
+  const [upcomingTerminations, setUpcomingTerminations] = useState<Contract[]>([]);
 
 
   // Temporary log for debugging
@@ -90,6 +94,55 @@ const Dashboard: React.FC = () => {
       }
     }
   }, [selectedContractId, contracts, isMobile]);
+
+  // ADDED: Effect to calculate upcoming key dates
+  useEffect(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Normalize to start of day
+
+    const renewals: Contract[] = [];
+    const terminations: Contract[] = [];
+
+    contracts.forEach(contract => {
+      if (contract.status === 'completed' && contract.analysisResult) {
+        const ar = contract.analysisResult;
+
+        // Check for upcoming renewals
+        if (ar.renewalDate) {
+          const renewalDate = new Date(ar.renewalDate);
+          renewalDate.setHours(0, 0, 0, 0);
+          const diffTime = renewalDate.getTime() - now.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays > 0 && diffDays <= 90) { // Upcoming within 90 days
+            renewals.push(contract);
+          }
+        }
+
+        // Check for upcoming terminations
+        if (ar.terminationDate) {
+          const terminationDate = new Date(ar.terminationDate);
+          terminationDate.setHours(0, 0, 0, 0);
+          const diffTime = terminationDate.getTime() - now.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays > 0 && diffDays <= 90) { // Upcoming within 90 days
+            terminations.push(contract);
+          }
+        }
+      }
+    });
+
+    setUpcomingRenewals(renewals.sort((a, b) => {
+      const dateA = new Date(a.analysisResult?.renewalDate || 0).getTime();
+      const dateB = new Date(b.analysisResult?.renewalDate || 0).getTime();
+      return dateA - dateB;
+    }));
+    setUpcomingTerminations(terminations.sort((a, b) => {
+      const dateA = new Date(a.analysisResult?.terminationDate || 0).getTime();
+      const dateB = new Date(b.analysisResult?.terminationDate || 0).getTime();
+      return dateA - dateB;
+    }));
+  }, [contracts]);
+
 
   // ADDED: Handle viewing analysis (for both mobile and desktop)
   const handleViewAnalysis = (contract: Contract) => {
@@ -206,6 +259,42 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            {/* ADDED: Upcoming Renewals Widget */}
+            {upcomingRenewals.length > 0 && (
+              <Card>
+                <CardBody>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
+                  </h3>
+                  <ul className="space-y-2">
+                    {upcomingRenewals.map(contract => (
+                      <li key={contract.id} className="text-sm text-gray-700">
+                        <span className="font-medium">{contract.translated_name || contract.name}</span>: {contract.analysisResult?.renewalDate}
+                      </li>
+                    ))}
+                  </ul>
+                </CardBody>
+              </Card>
+            )}
+
+            {/* ADDED: Upcoming Terminations Widget */}
+            {upcomingTerminations.length > 0 && (
+              <Card>
+                <CardBody>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
+                  </h3>
+                  <ul className="space-y-2">
+                    {upcomingTerminations.map(contract => (
+                      <li key={contract.id} className="text-sm text-gray-700">
+                        <span className="font-medium">{contract.translated_name || contract.name}</span>: {contract.analysisResult?.terminationDate}
+                      </li>
+                    ))}
+                  </ul>
+                </CardBody>
+              </Card>
+            )}
+
             <ContractList isSample={false} onViewAnalysis={handleViewAnalysis} /> {/* MODIFIED: Pass onViewAnalysis */}
           </div>
           
