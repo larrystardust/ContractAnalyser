@@ -131,19 +131,9 @@ Deno.serve(async (req) => {
       finalAnalysisResult = contractData.analysis_results; // Assuming one analysis result per contract
     }
 
-    // CRITICAL FIX: Ensure all advanced analysis fields are strings (or translated 'Not specified')
-    // This ensures they are always rendered if advanced analysis was performed.
-    const notSpecifiedTranslated = getTranslatedMessage('not_specified', outputLanguage);
-
-    const effectiveDate = finalAnalysisResult.effective_date || notSpecifiedTranslated;
-    const terminationDate = finalAnalysisResult.termination_date || notSpecifiedTranslated;
-    const renewalDate = finalAnalysisResult.renewal_date || notSpecifiedTranslated;
-    const contractType = finalAnalysisResult.contract_type || notSpecifiedTranslated;
-    const contractValue = finalAnalysisResult.contract_value || notSpecifiedTranslated;
-    const parties = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : notSpecifiedTranslated;
-    const liabilityCapSummary = finalAnalysisResult.liability_cap_summary || notSpecifiedTranslated;
-    const indemnificationClauseSummary = finalAnalysisResult.indemnification_clause_summary || notSpecifiedTranslated;
-    const confidentialityObligationsSummary = finalAnalysisResult.confidentiality_obligations_summary || notSpecifiedTranslated;
+    // CRITICAL FIX: Directly use the values from finalAnalysisResult, as contract-analyzer now guarantees them to be strings
+    // If parties is an empty array, display the translated 'not_specified'
+    const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
 
     // Embedded CSS content from public/report.css
@@ -211,15 +201,15 @@ Deno.serve(async (req) => {
 
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
-                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${effectiveDate}</p>
-                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${terminationDate}</p>
-                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${renewalDate}</p>
-                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${contractType}</p>
-                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${contractValue}</p>
-                  <p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${parties}</p>
-                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${liabilityCapSummary}</p>
-                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${indemnificationClauseSummary}</p>
-                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${confidentialityObligationsSummary}</p>
+                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>
+                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date}</p>
+                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date}</p>
+                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type}</p>
+                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value}</p>
+                  <p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${partiesString}</p>
+                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>
+                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
+                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div>
 
               <div class="section">
