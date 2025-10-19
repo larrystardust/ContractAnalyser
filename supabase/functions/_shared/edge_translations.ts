@@ -923,6 +923,7 @@ export const edgeTranslations = {
     liability_cap_summary: "ملخص سقف المسؤولية",
     indemnification_clause_summary: "ملخص بند التعويض",
     confidentiality_obligations_summary: "ملخص التزامات السرية",
+    not_specified: "غير محدد",
   }
 };
 
