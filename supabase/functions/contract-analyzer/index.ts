@@ -735,6 +735,9 @@ NOTES FOR ADVANCED ANALYSIS:
     const reportHtmlContent = reportData?.htmlContent || null;
     const reportLink = reportData?.url || null;
 
+    // CRITICAL FIX: Ensure advanced analysis fields are always strings (or translated 'Not specified') before DB insertion
+    const notSpecifiedTranslated = getTranslatedMessage('not_specified', outputLanguage);
+
     const { data: analysisResult, error: analysisError } = await supabase
       .from('analysis_results')
       .insert({
@@ -744,16 +747,16 @@ NOTES FOR ADVANCED ANALYSIS:
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
         report_file_path: reportFilePath,
-        // CRITICAL FIX: Uncomment and map new advanced fields
-        effective_date: analysisData.effectiveDate || null,
-        termination_date: analysisData.terminationDate || null,
-        renewal_date: analysisData.renewalDate || null,
-        contract_type: analysisData.contractType || null,
-        contract_value: analysisData.contractValue || null,
-        parties: analysisData.parties || null,
-        liability_cap_summary: analysisData.liabilityCapSummary || null,
-        indemnification_clause_summary: analysisData.indemnificationClauseSummary || null,
-        confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || null,
+        // CRITICAL FIX: Ensure these fields are always strings (or translated 'Not specified')
+        effective_date: analysisData.effectiveDate || notSpecifiedTranslated,
+        termination_date: analysisData.terminationDate || notSpecifiedTranslated,
+        renewal_date: analysisData.renewalDate || notSpecifiedTranslated,
+        contract_type: analysisData.contractType || notSpecifiedTranslated,
+        contract_value: analysisData.contractValue || notSpecifiedTranslated,
+        parties: analysisData.parties || [], // Ensure parties is an array, even if empty
+        liability_cap_summary: analysisData.liabilityCapSummary || notSpecifiedTranslated,
+        indemnification_clause_summary: analysisData.indemnificationClauseSummary || notSpecifiedTranslated,
+        confidentiality_obligations_summary: analysisData.confidentialityObligationsSummary || notSpecifiedTranslated,
       })
       .select()
       .single();
