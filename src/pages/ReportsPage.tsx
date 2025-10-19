@@ -1,7 +1,7 @@
 import React from 'react';
 import { useContracts } from '../context/ContractContext';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
-import { FileText, CheckCircle, Clock, AlertTriangle, Sparkles } from 'lucide-react';
+import { FileText, CheckCircle, Clock, AlertTriangle, Sparkles, CalendarDays, AlertTriangle as AlertIcon, Users, Briefcase } from 'lucide-react'; // MODIFIED: Added CalendarDays, AlertTriangle as AlertIcon, Users, Briefcase
 import { getRiskLevelLabel } from '../utils/riskUtils';
 import { useSubscription } from '../hooks/useSubscription';
 import { useUserOrders } from '../hooks/useUserOrders';
@@ -40,6 +40,58 @@ const ReportsPage: React.FC = () => {
     }
     return acc;
   }, { high: 0, medium: 0, low: 0, none: 0 } as Record<RiskLevel, number>); // MODIFIED
+
+  // ADDED: Logic for upcoming renewals and terminations
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const upcomingRenewals = contractsToDisplay.filter(contract => {
+    if (contract.status === 'completed' && contract.analysisResult?.renewalDate) {
+      const renewalDate = new Date(contract.analysisResult.renewalDate);
+      renewalDate.setHours(0, 0, 0, 0);
+      const diffTime = renewalDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 && diffDays <= 90;
+    }
+    return false;
+  }).sort((a, b) => {
+    const dateA = new Date(a.analysisResult?.renewalDate || 0).getTime();
+    const dateB = new Date(b.analysisResult?.renewalDate || 0).getTime();
+    return dateA - dateB;
+  });
+
+  const upcomingTerminations = contractsToDisplay.filter(contract => {
+    if (contract.status === 'completed' && contract.analysisResult?.terminationDate) {
+      const terminationDate = new Date(contract.analysisResult.terminationDate);
+      terminationDate.setHours(0, 0, 0, 0);
+      const diffTime = terminationDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 && diffDays <= 90;
+    }
+    return false;
+  }).sort((a, b) => {
+    const dateA = new Date(a.analysisResult?.terminationDate || 0).getTime();
+    const dateB = new Date(b.analysisResult?.terminationDate || 0).getTime();
+    return dateA - dateB;
+  });
+
+  // ADDED: Logic for Contracts by Type and Parties
+  const contractsByType = contractsToDisplay.reduce((acc, contract) => {
+    if (contract.status === 'completed' && contract.analysisResult?.contractType) {
+      const type = contract.analysisResult.contractType;
+      acc[type] = (acc[type] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const contractsByParty = contractsToDisplay.reduce((acc, contract) => {
+    if (contract.status === 'completed' && contract.analysisResult?.parties) {
+      contract.analysisResult.parties.forEach(party => {
+        acc[party] = (acc[party] || 0) + 1;
+      });
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
 
   if (loadingData) {
     return (
@@ -134,6 +186,82 @@ const ReportsPage: React.FC = () => {
               </Card>
             ))}
           </div>
+
+          {/* ADDED: Upcoming Renewals Widget */}
+          {upcomingRenewals.length > 0 && (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
+                <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {upcomingRenewals.map(contract => (
+                  <Card key={contract.id}>
+                    <CardBody>
+                      <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
+                      <p className="text-xs text-gray-600 mt-1">{t('renewal_date')}: {contract.analysisResult?.renewalDate}</p>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ADDED: Upcoming Terminations Widget */}
+          {upcomingTerminations.length > 0 && (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
+                <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {upcomingTerminations.map(contract => (
+                  <Card key={contract.id}>
+                    <CardBody>
+                      <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
+                      <p className="text-xs text-gray-600 mt-1">{t('termination_date')}: {contract.analysisResult?.terminationDate}</p>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ADDED: Contracts by Type Widget */}
+          {Object.keys(contractsByType).length > 0 && (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
+                <Briefcase className="h-5 w-5 mr-2 text-purple-600" /> {t('contracts_by_type')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Object.entries(contractsByType).map(([type, count]) => (
+                  <Card key={type}>
+                    <CardBody>
+                      <p className="text-sm font-medium text-gray-900">{type}</p>
+                      <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ADDED: Contracts by Party Widget */}
+          {Object.keys(contractsByParty).length > 0 && (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
+                <Users className="h-5 w-5 mr-2 text-orange-600" /> {t('contracts_by_party')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Object.entries(contractsByParty).map(([party, count]) => (
+                  <Card key={party}>
+                    <CardBody>
+                      <p className="text-sm font-medium text-gray-900">{party}</p>
+                      <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
