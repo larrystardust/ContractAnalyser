@@ -650,6 +650,12 @@ export const edgeTranslations = {
     error_forbidden_action: "Interdit : Vous n'avez pas la permission d'effectuer cette action.",
     error_failed_to_reanalyze_contract: "Échec de la réanalyse du contrat : {{message}}",
     message_reanalysis_initiated_successfully: "Réanalyse initiée avec succès.",
+
+    error_failed_to_obtain_gcp_access_token: "Échec de l'obtention du jeton d'accès Google Cloud Platform pour l'OCR.",
+    error_failed_to_check_available_credits: "Échec de la vérification des crédits disponibles.",
+    error_failed_to_deduct_credits: "Échec de la déduction des crédits.",
+    notification_message_contract_renewal_alert: "Votre contrat '{contractName}' doit être renouvelé dans {days} jours.",
+    notification_message_contract_termination_alert: "Votre contrat '{contractName}' doit être résilié dans {days} jours.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
