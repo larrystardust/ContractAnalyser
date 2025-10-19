@@ -131,6 +131,21 @@ Deno.serve(async (req) => {
       finalAnalysisResult = contractData.analysis_results; // Assuming one analysis result per contract
     }
 
+    // CRITICAL FIX: Ensure all advanced analysis fields are strings (or translated 'Not specified')
+    // This ensures they are always rendered if advanced analysis was performed.
+    const notSpecifiedTranslated = getTranslatedMessage('not_specified', outputLanguage);
+
+    const effectiveDate = finalAnalysisResult.effective_date || notSpecifiedTranslated;
+    const terminationDate = finalAnalysisResult.termination_date || notSpecifiedTranslated;
+    const renewalDate = finalAnalysisResult.renewal_date || notSpecifiedTranslated;
+    const contractType = finalAnalysisResult.contract_type || notSpecifiedTranslated;
+    const contractValue = finalAnalysisResult.contract_value || notSpecifiedTranslated;
+    const parties = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : notSpecifiedTranslated;
+    const liabilityCapSummary = finalAnalysisResult.liability_cap_summary || notSpecifiedTranslated;
+    const indemnificationClauseSummary = finalAnalysisResult.indemnification_clause_summary || notSpecifiedTranslated;
+    const confidentialityObligationsSummary = finalAnalysisResult.confidentiality_obligations_summary || notSpecifiedTranslated;
+
+
     // Embedded CSS content from public/report.css
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
@@ -194,22 +209,18 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${(finalAnalysisResult.effective_date || finalAnalysisResult.termination_date || finalAnalysisResult.renewal_date ||
-                 finalAnalysisResult.contract_type || finalAnalysisResult.contract_value || finalAnalysisResult.parties ||
-                 finalAnalysisResult.liability_cap_summary || finalAnalysisResult.indemnification_clause_summary || finalAnalysisResult.confidentiality_obligations_summary) ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
-                  ${finalAnalysisResult.effective_date ? `<p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>` : ''}
-                  ${finalAnalysisResult.termination_date ? `<p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date}</p>` : ''}
-                  ${finalAnalysisResult.renewal_date ? `<p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date}</p>` : ''}
-                  ${finalAnalysisResult.contract_type ? `<p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type}</p>` : ''}
-                  ${finalAnalysisResult.contract_value ? `<p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value}</p>` : ''}
-                  ${finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0 ? `<p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${finalAnalysisResult.parties.join(', ')}</p>` : ''}
-                  ${finalAnalysisResult.liability_cap_summary ? `<p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>` : ''}
-                  ${finalAnalysisResult.indemnification_clause_summary ? `<p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>` : ''}
-                  ${finalAnalysisResult.confidentiality_obligations_summary ? `<p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>` : ''}
+                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${effectiveDate}</p>
+                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${terminationDate}</p>
+                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${renewalDate}</p>
+                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${contractType}</p>
+                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${contractValue}</p>
+                  <p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${parties}</p>
+                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${liabilityCapSummary}</p>
+                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${indemnificationClauseSummary}</p>
+                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${confidentialityObligationsSummary}</p>
               </div>
-              ` : ''}
 
               <div class="section">
                   <h2>${getTranslatedMessage('jurisdiction_summaries', outputLanguage)}</h2>
