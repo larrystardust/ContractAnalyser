@@ -1480,8 +1480,7 @@
   "ocr_for_scanned_documents_desc_modal": "Notre système peut traiter les contrats basés sur des images (par exemple, PDF numérisés, JPG, PNG) en extrayant le texte à l'aide de la reconnaissance optique de caractères (OCR), les rendant prêts pour l'analyse.",
   "upload_failed_a_ocr": "Assurez-vous que votre fichier est dans un format pris en charge (PDF, DOCX, DOC, ou fichiers image comme JPG, PNG) et réessayez. Si vous téléchargez un document basé sur une image, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR'. Si le problème persiste, veuillez contacter le support avec les détails de l'erreur.",
   "analysis_failed_a_ocr": "Si votre analyse a échoué ou est incomplète, en particulier pour les documents numérisés ou les images, assurez-vous d'avoir sélectionné l'option 'Effectuer l'OCR' lors du téléchargement. Si le document est un fichier texte natif (PDF, DOCX, DOC) et que le problème persiste, veuillez contacter le support.",
-
-  "demo_section_title": "Découvrez l'Analyse de Contrats Instantanée",
+  
   "demo_section_description": "Téléchargez un document (PDF, DOCX, DOC) pour un aperçu rapide de notre analyse basée sur l'IA. Obtenez un résumé, le niveau de risque global et une conclusion clé – aucune inscription requise !",
   "demo_drag_drop_file": "Glissez-déposez votre document ici, ou cliquez pour parcourir",
   "demo_supported_file_types": "Prend en charge les fichiers PDF, DOCX, DOC (max 1 fichier)",
@@ -1501,7 +1500,6 @@
   "demo_full_analysis_prompt": "Ceci n'est qu'un aperçu ! Inscrivez-vous pour une analyse complète et détaillée, des conclusions exhaustives et des recommandations exploitables.",
   "demo_sign_up_for_full_analysis": "S'inscrire pour une analyse complète",
   "demo_unsupported_file_type_for_text_extraction": "Type de fichier non pris en charge pour l'extraction de texte. Seuls les fichiers PDF, DOCX et DOC sont pris en charge pour l'analyse démo.",
-  "demo_disclaimer_title": "Mode Démo Actif",
   "demo_disclaimer_message": "Ceci est uniquement à des fins de démonstration. Votre fichier téléchargé et son analyse ne sont pas enregistrés.",
 
   "select_contract_to_view_analysis": "Sélectionnez un contrat pour voir son analyse",
@@ -1541,7 +1539,6 @@
   "liability_cap_summary": "Résumé du plafond de responsabilité",
   "indemnification_clause_summary": "Résumé de la clause d'indemnisation",
   "confidentiality_obligations_summary": "Résumé des obligations de confidentialité",
-  "upcoming_renewals": "Renouvellements à venir",
   "contracts_with_uncapped_liability": "Contrats à responsabilité illimitée",
   "contracts_by_type": "Contrats par type",
   "contracts_by_party": "Contrats par partie",
@@ -1572,5 +1569,19 @@
   "e_g_mutual_indemnity": "ex: Indemnité Mutuelle",
   "e_g_non_disclosure": "ex: Non-divulgation",
   "loading_contracts": "Chargement des contrats...",
-  "no_contracts_found_matching_search": "Aucun contrat trouvé correspondant à vos critères de recherche."
+  "no_contracts_found_matching_search": "Aucun contrat trouvé correspondant à vos critères de recherche.",
+
+  "key_date_notifications": "Notifications de Dates Clés",
+  "notify_before_renewal": "Me notifier X jours avant le renouvellement du contrat",
+  "notify_before_renewal_hint": "Recevoir des notifications X jours avant la date de renouvellement d'un contrat. Mettre à 0 pour désactiver.",
+  "notify_before_termination": "Me notifier Y jours avant la résiliation du contrat",
+  "notify_before_termination_hint": "Recevoir des notifications Y jours avant la date de résiliation d'un contrat. Mettre à 0 pour désactiver.",
+  "upcoming_renewals": "Renouvellements à Venir (90 Prochains Jours)",
+  "upcoming_terminations": "Résiliations à Venir (90 Prochains Jours)",
+  "count": "Compte",
+  "demo_disclaimer_title": "Avertissement de Démonstration",
+  "demo_disclaimer_message": "Ceci est une analyse de démonstration simplifiée et peut ne pas refléter toutes les capacités ou la précision d'une analyse complète. Pour des résultats complets, veuillez utiliser l'application complète. Votre fichier téléchargé pour la démo et son analyse ne sont pas enregistrés.",
+  "demo_section_title": "Découvrez l'Analyse de Contrats par IA Instantanément",
+  "notification_title_contract_renewal_alert": "Renouvellement de Contrat à Venir",
+  "notification_title_contract_termination_alert": "Résiliation de Contrat à Venir"
 }
