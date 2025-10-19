@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { edgeTranslations, getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
-    const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult, outputLanguage } = requestBody; // MODIFIED: Added outputLanguage
+    const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult, outputLanguage } = requestBody;
     // console.log('generate-analysis-report: Extracted contractId:', contractId); // REMOVED
 
     if (!contractId) {
