@@ -1579,5 +1579,6 @@
   "termination_alerts": "Alertas de Terminación",
   "get_notified_before_contract_renewal_dates": "Recibir notificaciones antes de las fechas de renovación del contrato",
   "get_notified_before_contract_termination_dates": "Recibir notificaciones antes de las fechas de terminación del contrato",
-  "advanced_analysis_requires_basic": "El análisis avanzado requiere que se seleccione el análisis básico."
+  "advanced_analysis_requires_basic": "El análisis avanzado requiere que se seleccione el análisis básico.",
+  "not_specified": "No especificado"
 }
