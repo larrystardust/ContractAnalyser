@@ -6,6 +6,8 @@ import { Jurisdiction, AnalysisLanguage } from '../../types';
 import { useContracts } from '../../context/ContractContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
+import { useUserOrders } from '../../hooks/useUserOrders'; // ADDED: Import useUserOrders
 
 // Dynamically import pdfjs-dist and mammoth
 const loadPdfjs = async () => {
@@ -32,9 +34,6 @@ interface ContractUploadProps {
   selectedFiles: File[];
   setSelectedFiles: (files: File[]) => void;
   // MODIFIED: Updated credit checks and costs
-  canPerformOcr: boolean;
-  canPerformBasicAnalysis: boolean;
-  canPerformAdvancedAddon: boolean;
   ocrCost: number;
   basicAnalysisCost: number;
   advancedAnalysisAddonCost: number;
@@ -49,9 +48,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   selectedFiles,
   setSelectedFiles,
   // MODIFIED: Destructure new credit checks and costs
-  canPerformOcr,
-  canPerformBasicAnalysis,
-  canPerformAdvancedAddon,
   ocrCost,
   basicAnalysisCost,
   advancedAnalysisAddonCost,
@@ -64,6 +60,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use subscription hook
+  const { getTotalSingleUseCredits } = useUserOrders(); // ADDED: Use user orders hook
 
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
@@ -86,6 +84,17 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     { value: 'ar', label: t('arabic') },
   ];
 
+  // ADDED: Determine if user has an advanced subscription plan
+  const isAdvancedSubscription = subscription && (subscription.tier === 4 || subscription.tier === 5);
+  const isBasicSubscription = subscription && (subscription.tier === 2 || subscription.tier === 3);
+  const availableCredits = getTotalSingleUseCredits();
+
+  // MODIFIED: Recalculate canPerformOcr, canPerformBasicAnalysis, canPerformAdvancedAddon based on new logic
+  const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
+  const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
+
+
   useEffect(() => {
     if (defaultJurisdictions && defaultJurisdictions.length > 0) {
       setSelectedJurisdictions(defaultJurisdictions);
@@ -107,17 +116,17 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (anyImageInput) {
       setPerformOcr(true);
       setPerformAnalysis(true); // Always perform basic analysis if OCR is needed
-      setPerformAdvancedAnalysis(false); // Reset advanced analysis when OCR is enabled
+      setPerformAdvancedAnalysis(isAdvancedSubscription); // Auto-check if advanced subscription
     } else if (anyDocumentFile) {
       setPerformOcr(false);
       setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false); // Reset advanced analysis when document is selected
+      setPerformAdvancedAnalysis(isAdvancedSubscription); // Auto-check if advanced subscription
     } else {
       setPerformOcr(false);
       setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false);
+      setPerformAdvancedAnalysis(isAdvancedSubscription); // Auto-check if advanced subscription
     }
-  }, [capturedImages, selectedFiles]); // MODIFIED: Removed canPerformOcrAndAnalysis from dependencies as it's not directly used here for setting initial state
+  }, [capturedImages, selectedFiles, isAdvancedSubscription]); // MODIFIED: Added isAdvancedSubscription to dependencies
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -279,7 +288,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (performOcr) currentCreditCost += ocrCost;
     if (performAnalysis) {
       currentCreditCost += basicAnalysisCost; // MODIFIED: Use basicAnalysisCost
-      if (performAdvancedAnalysis) { // ADDED: Include advanced addon cost
+      if (performAdvancedAnalysis && !isAdvancedSubscription) { // ADDED: Only add cost if not on advanced plan
         currentCreditCost += advancedAnalysisAddonCost;
       }
     }
@@ -297,7 +306,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       alert(t('not_enough_credits_for_analysis', { cost: basicAnalysisCost }));
       return;
     }
-    if (performAdvancedAnalysis && !canPerformAdvancedAddon) {
+    if (performAdvancedAnalysis && !isAdvancedSubscription && !canPerformAdvancedAddon) { // MODIFIED: Check if not advanced sub AND not enough credits
       alert(t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost }));
       return;
     }
@@ -665,17 +674,21 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performAdvancedAnalysis}
                     onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                    disabled={uploading || !performAnalysis || !canPerformAdvancedAddon} // MODIFIED: Disabled if basic analysis is not selected or not enough credits
+                    disabled={uploading || isAdvancedSubscription || !performAnalysis || !canPerformAdvancedAddon} // MODIFIED: Disabled if basic analysis is not selected or not enough credits
                   />
                   <span className="ml-2 text-gray-700">
-                    {t('perform_advanced_analysis')} ({advancedAnalysisAddonCost} {t('credits')})
+                    {t('perform_advanced_analysis')}
+                    {!isAdvancedSubscription && ` (${advancedAnalysisAddonCost} ${t('credits')})`} {/* MODIFIED: Only show cost if not advanced sub */}
                   </span>
                 </label>
                 {!performAnalysis && (
                   <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
                 )}
-                {!canPerformAdvancedAddon && performAnalysis && ( // Only show this warning if basic analysis is selected
+                {!isAdvancedSubscription && performAnalysis && !canPerformAdvancedAddon && ( // Only show this warning if basic analysis is selected
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                )}
+                {isAdvancedSubscription && (
+                  <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_included_in_plan')}</p>
                 )}
               </div>
             </div>
