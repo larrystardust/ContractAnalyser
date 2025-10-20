@@ -143,9 +143,9 @@ const UploadPage: React.FC = () => {
               </>
             )}
             {/* MODIFIED: Update credit warning message */}
-            {!hasSubscription && availableCredits < OCR_BASIC_AND_ADVANCED_ANALYSIS_COST && (
+            {!hasSubscription && availableCredits < OCR_AND_BASIC_ANALYSIS_COST && (
               <p className="text-sm mt-2">
-                {t('not_enough_credits_for_ocr_analysis', { cost: OCR_BASIC_AND_ADVANCED_ANALYSIS_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
+                {t('not_enough_credits_for_ocr_analysis', { cost: OCR_AND_BASIC_ANALYSIS_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
               </p>
             )}
           </div>
