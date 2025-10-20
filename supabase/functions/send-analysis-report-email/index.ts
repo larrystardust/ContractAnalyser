@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
 
     // Construct the URL for the new public report viewer page
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${encodeURIComponent(reportLink)}`;
+    // MODIFIED: Removed encodeURIComponent around reportLink
+    const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${reportLink}`;
 
     // --- START: Email Service Integration ---
     try {
