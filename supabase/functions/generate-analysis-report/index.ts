@@ -88,6 +88,17 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
+    // Verify that the user owns the contract associated with this report
+    const { data: contract, error: contractError } = await supabase
+      .from('contracts')
+      .select('user_id')
+      .eq('id', contractId)
+      .single();
+
+    if (contractError || contract.user_id !== user.id) {
+      return corsResponse({ error: 'Forbidden: You do not have permission to access this report.' }, 403);
+    }
+
     let finalContractName = bodyContractName;
     let finalAnalysisResult = bodyAnalysisResult;
 
@@ -111,8 +122,7 @@ Deno.serve(async (req) => {
             parties,
             liability_cap_summary,
             indemnification_clause_summary,
-            confidentiality_obligations_summary,
-            findings (*)
+            confidentiality_obligations_summary
           )
         `)
         .eq('id', contractId)

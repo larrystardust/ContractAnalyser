@@ -710,6 +710,9 @@ NOTES FOR ADVANCED ANALYSIS:
 
     // ADDED: Translate new advanced fields if present
     if (performAdvancedAnalysis) {
+      if (analysisData.effectiveDate) analysisData.effectiveDate = await translateText(analysisData.effectiveDate, outputLanguage);
+      if (analysisData.terminationDate) analysisData.terminationDate = await translateText(analysisData.terminationDate, outputLanguage);
+      if (analysisData.renewalDate) analysisData.renewalDate = await translateText(analysisData.renewalDate, outputLanguage);
       if (analysisData.contractType) analysisData.contractType = await translateText(analysisData.contractType, outputLanguage);
       if (analysisData.contractValue) analysisData.contractValue = await translateText(analysisData.contractValue, outputLanguage);
       if (Array.isArray(analysisData.parties)) {
