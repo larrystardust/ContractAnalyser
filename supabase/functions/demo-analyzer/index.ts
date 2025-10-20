@@ -136,13 +136,9 @@ Return your findings strictly as a valid JSON object with the following structur
   "complianceScore": 0,
   "effectiveDate": "YYYY-MM-DD",
   "terminationDate": "YYYY-MM-DD",
-  "renewalDate": "YYYY-MM-DD",
   "contractType": "...",
-  "contractValue": "...",
   "parties": ["...", "..."],
   "liabilityCapSummary": "...",
-  "indemnificationClauseSummary": "...",
-  "confidentialityObligationsSummary": "..."
 }
 
 NOTES:
@@ -151,7 +147,7 @@ NOTES:
 - All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 - Risk levels must be one of: high, medium, low, none.
 - Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "${getTranslatedMessage('not_specified', outputLanguage)}".
-- For 'liabilityCapSummary', 'indemnificationClauseSummary', and 'confidentialityObligationsSummary', provide a concise summary (1-2 sentences).
+- For 'liabilityCapSummary', provide a concise summary (1-2 sentences).
 `;
 
     const completion = await openai.chat.completions.create({
@@ -193,13 +189,10 @@ NOTES:
     }
     // ADDED: Translate new advanced fields if present
     if (demoAnalysis.contractType) demoAnalysis.contractType = await translateText(demoAnalysis.contractType, outputLanguage);
-    if (demoAnalysis.contractValue) demoAnalysis.contractValue = await translateText(demoAnalysis.contractValue, outputLanguage);
     if (Array.isArray(demoAnalysis.parties)) {
       demoAnalysis.parties = await Promise.all(demoAnalysis.parties.map((p: string) => translateText(p, outputLanguage)));
     }
     if (demoAnalysis.liabilityCapSummary) demoAnalysis.liabilityCapSummary = await translateText(demoAnalysis.liabilityCapSummary, outputLanguage);
-    if (demoAnalysis.indemnificationClauseSummary) demoAnalysis.indemnificationClauseSummary = await translateText(demoAnalysis.indemnificationClauseSummary, outputLanguage);
-    if (demoAnalysis.confidentialityObligationsSummary) demoAnalysis.confidentialityObligationsSummary = await translateText(demoAnalysis.confidentialityObligationsSummary, outputLanguage);
 
 
     // Ensure risk level is valid
