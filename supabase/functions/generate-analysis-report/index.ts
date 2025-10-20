@@ -290,17 +290,17 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to generate and store report.' }, 500);
     }
 
-    // Get signed URL for the uploaded report
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    // MODIFIED: Use getPublicUrl instead of createSignedUrl
+    const { data: publicUrlData } = supabase.storage
       .from('reports')
-      .createSignedUrl(filePath, 3600);
+      .getPublicUrl(filePath);
 
-    if (signedUrlError) {
-      console.error('Error creating signed URL:', signedUrlError);
-      return corsResponse({ error: 'Failed to get downloadable link for report.' }, 500);
+    if (!publicUrlData || !publicUrlData.publicUrl) {
+      console.error('Error getting public URL:', publicUrlData);
+      return corsResponse({ error: 'Failed to get public URL for report.' }, 500);
     }
 
-    return corsResponse({ url: signedUrlData.signedUrl, filePath: filePath, htmlContent: htmlContent });
+    return corsResponse({ url: publicUrlData.publicUrl, filePath: filePath, htmlContent: htmlContent });
   } catch (error: any) {
     console.error('Error in generate-analysis-report Edge Function:', error);
     return corsResponse({ error: error.message }, 500);
