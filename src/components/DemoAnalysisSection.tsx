@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, AlertTriangle, CheckCircle, Loader2, X } from 'lucide-react';
 import Button from './ui/Button';
-import Card, { CardBody } from './ui/Card';
+import Card, { CardBody } from '../ui/Card';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DemoAnalysisResult, RiskLevel } from '../types';
@@ -293,9 +293,9 @@ const DemoAnalysisSection: React.FC = () => {
                   </div>
 
                   {/* ADDED: Display Advanced Analysis Fields for Demo */}
-                  {(demoResult.effectiveDate || demoResult.terminationDate || demoResult.renewalDate ||
-                    demoResult.contractType || demoResult.contractValue || demoResult.parties ||
-                    demoResult.liabilityCapSummary || demoResult.indemnificationClauseSummary || demoResult.confidentialityObligationsSummary) && (
+                  {(demoResult.effectiveDate || demoResult.terminationDate ||
+                    demoResult.contractType || demoResult.parties ||
+                    demoResult.liabilityCapSummary) && (
                     <div className="pt-4 border-t border-gray-200">
                       <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">{t('advanced_analysis_details')}</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-700 dark:text-gray-200">
@@ -305,26 +305,14 @@ const DemoAnalysisSection: React.FC = () => {
                         {demoResult.terminationDate && (
                           <p><strong>{t('termination_date')}:</strong> {demoResult.terminationDate}</p>
                         )}
-                        {demoResult.renewalDate && (
-                          <p><strong>{t('renewal_date')}:</strong> {demoResult.renewalDate}</p>
-                        )}
                         {demoResult.contractType && (
                           <p><strong>{t('contract_type')}:</strong> {demoResult.contractType}</p>
-                        )}
-                        {demoResult.contractValue && (
-                          <p><strong>{t('contract_value')}:</strong> {demoResult.contractValue}</p>
                         )}
                         {demoResult.parties && demoResult.parties.length > 0 && (
                           <p><strong>{t('parties')}:</strong> {demoResult.parties.join(', ')}</p>
                         )}
                         {demoResult.liabilityCapSummary && (
                           <p className="md:col-span-2"><strong>{t('liability_cap_summary')}:</strong> {demoResult.liabilityCapSummary}</p>
-                        )}
-                        {demoResult.indemnificationClauseSummary && (
-                          <p className="md:col-span-2"><strong>{t('indemnification_clause_summary')}:</strong> {demoResult.indemnificationClauseSummary}</p>
-                        )}
-                        {demoResult.confidentialityObligationsSummary && (
-                          <p className="md:col-span-2"><strong>{t('confidentiality_obligations_summary')}:</strong> {demoResult.confidentialityObligationsSummary}</p>
                         )}
                       </div>
                     </div>
