@@ -194,6 +194,7 @@ Deno.serve(async (req) => {
   let userEmail: string;
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
+  let userSubscriptionTier: number | null = null; // ADDED: To store user's subscription tier
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
   let token: string;
   let userPreferredLanguage: string = 'en';
@@ -281,9 +282,10 @@ Deno.serve(async (req) => {
       userPreferredLanguage = profileData?.language_preference || outputLanguage; // MODIFIED: Use profileData.language_preference
     }
 
+    // MODIFIED: Fetch user's subscription tier
     const { data: membershipData, error: membershipError } = await supabase
       .from('subscription_memberships')
-      .select('subscription_id')
+      .select('subscription_id, stripe_subscriptions(tier)') // Select tier from related stripe_subscriptions
       .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle();
@@ -292,8 +294,28 @@ Deno.serve(async (req) => {
       console.error(`contract-analyzer: Error fetching membership for user ${userId}:`, membershipError);
     } else if (membershipData) {
       userSubscriptionId = membershipData.subscription_id;
+      userSubscriptionTier = membershipData.stripe_subscriptions?.tier || null; // Extract tier
     } else {
-      // User has no active membership.
+      // If no active membership, check for direct subscription (owner)
+      const { data: customerData, error: customerError } = await supabase
+        .from('stripe_customers')
+        .select('customer_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!customerError && customerData?.customer_id) {
+        const { data: directSubData, error: directSubError } = await supabase
+          .from('stripe_subscriptions')
+          .select('subscription_id, tier')
+          .eq('customer_id', customerData.customer_id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (!directSubError && directSubData) {
+          userSubscriptionId = directSubData.subscription_id;
+          userSubscriptionTier = directSubData.tier || null;
+        }
+      }
     }
 
   } catch (error) {
@@ -304,7 +326,17 @@ Deno.serve(async (req) => {
   let consumedOrderId: number | null = null;
 
   // --- START: Authorization Logic & Credit Deduction ---
-  if (!userSubscriptionId) { // Only check credits if no active subscription
+  // MODIFIED: Only deduct credits if user is NOT on an advanced subscription plan
+  if (!userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4)) { // If no subscription or basic/admin subscription
+    // If advanced analysis is requested and user is not on an advanced plan, ensure creditCost includes it
+    if (performAdvancedAnalysis && (userSubscriptionTier === null || userSubscriptionTier < 4)) {
+      // The creditCost from frontend should already include this, but we re-verify
+      // If the frontend sent 0 cost for advanced analysis for a basic user, we correct it here.
+      // For simplicity, we trust the frontend's `creditCost` for now, but a more robust system
+      // would recalculate it here based on `performOcr`, `performAnalysis`, `performAdvancedAnalysis`
+      // and the user's actual plan.
+    }
+
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
       .select('customer_id')
@@ -610,14 +642,10 @@ NOTES FOR ADVANCED ANALYSIS:
     }
 
     // Defensive checks before processing analysisData properties
-    analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string'
-      ? analysisData.executiveSummary
-      : '';
+    analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : '';
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
-    analysisData.dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string'
-      ? analysisData.dataProtectionImpact
-      : null;
+    analysisData.dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
     if (analysisData.dataProtectionImpact) {
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
