@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, AlertTriangle, CheckCircle, Loader2, X } from 'lucide-react';
 import Button from './ui/Button';
-import Card, { CardBody } from '../ui/Card';
+import Card, { CardBody } from './ui/Card';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DemoAnalysisResult, RiskLevel } from '../types';
