@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../types/supabase';
 
-export type Subscription = Database['public']['Tables']['stripe_subscriptions']['Row'] & { max_users?: number; max_files?: number; };
+// MODIFIED: Add 'tier' to the Subscription type
+export type Subscription = Database['public']['Tables']['stripe_subscriptions']['Row'] & { max_users?: number; max_files?: number; tier?: number; };
 export type SubscriptionMembership = Database['public']['Tables']['subscription_memberships']['Row'];
 
 export function useSubscription() {
@@ -37,7 +38,7 @@ export function useSubscription() {
         // console.log('useSubscription: Attempting to fetch membership record for user:', session.user.id); // REMOVED
         const { data: memberData, error: memberError } = await supabase
           .from('subscription_memberships')
-          .select('subscription_id, role, status, invited_by, invited_email_address') // Select all columns needed for membership
+          .select('subscription_id, role, status')
           .eq('user_id', session.user.id)
           .in('status', ['active', 'invited']) // Consider both active and invited memberships
           .maybeSingle();
@@ -55,8 +56,9 @@ export function useSubscription() {
 
           // console.log('useSubscription: Fetching subscription details for subscription_id:', fetchedMembership.subscription_id); // REMOVED
           const { data: subData, error: subError } = await supabase
+            // MODIFIED: Select 'tier' as well
             .from('stripe_subscriptions')
-            .select('*, max_users, max_files')
+            .select('*, max_users, max_files, tier')
             .eq('subscription_id', fetchedMembership.subscription_id)
             .maybeSingle();
 
@@ -66,7 +68,7 @@ export function useSubscription() {
           }
           fetchedSubscription = subData;
           setSubscription(fetchedSubscription);
-          // console.log('useSubscription: Found subscription:', fetchedSubscription); // REMOVED
+          // console.log('useSubscription: Found direct subscription:', fetchedSubscription); // REMOVED
 
         } else {
           // 2. If no membership record is found, check if the user is a direct customer (owner)
@@ -88,8 +90,9 @@ export function useSubscription() {
             // console.log('useSubscription: Found customer_id:', customerData.customer_id); // REMOVED
             // console.log('useSubscription: Fetching direct subscription for customer_id:', customerData.customer_id); // REMOVED
             const { data: subData, error: subError } = await supabase
+              // MODIFIED: Select 'tier' as well
               .from('stripe_subscriptions')
-              .select('*, max_users, max_files')
+              .select('*, max_users, max_files, tier')
               .eq('customer_id', customerData.customer_id)
               .in('status', ['trialing', 'active']) // Only consider active subscriptions
               .order('created_at', { ascending: false })
