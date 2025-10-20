@@ -43,7 +43,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  const isAnyAdminAssignedPlanActive = isUsersCurrentPlanAdminAssigned;
+  const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 4 || userSubscription.tier === 5); // ADDED
+  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 3); // ADDED
 
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
@@ -52,17 +53,33 @@ const PricingCard: React.FC<PricingCardProps> = ({
                             usersCurrentProduct.mode === 'subscription' &&
                             product.tier < usersCurrentProduct.tier;
 
-  const isDisabledForSubscribers = product.mode === 'payment' &&
-                                   (userSubscription && (userSubscription.status === 'active' || userSubscription.status === 'trialing'));
+  // MODIFIED: isDisabledForSubscribers logic
+  let isDisabledForSubscribers = false;
+  if (product.mode === 'payment') { // Single-use credits
+    if (isUsersCurrentPlanAdvanced) { // Advanced plan users don't need single-use credits
+      isDisabledForSubscribers = true;
+    }
+  } else if (product.mode === 'subscription') { // Subscription plans
+    if (isUsersCurrentPlanAdvanced && (product.tier === 4 || product.tier === 5)) { // Already on an advanced plan
+      isDisabledForSubscribers = true;
+    } else if (isUsersCurrentPlanBasic && (product.tier === 2 || product.tier === 3) && isCurrentPlan) { // Already on this basic plan
+      isDisabledForSubscribers = true;
+    }
+  }
+
 
   let shouldBeDisabled = isDataLoading; 
 
   if (!shouldBeDisabled) { 
     if (isCurrentPlan) {
       shouldBeDisabled = true;
-    } else if (isDisabledForSubscribers) {
+    } else if (isDisabledForSubscribers) { // MODIFIED: Use the new isDisabledForSubscribers
       shouldBeDisabled = true;
-    } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && product.mode === 'payment') { // Admin assigned users can buy single use credits
+      shouldBeDisabled = false;
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 4 || product.tier === 5)) { // Admin assigned users can upgrade to advanced
+      shouldBeDisabled = false;
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan) { // Admin assigned users cannot buy other basic plans
       shouldBeDisabled = true;
     } else if (isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       shouldBeDisabled = true;
@@ -78,7 +95,13 @@ const PricingCard: React.FC<PricingCardProps> = ({
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = t('current_plan_button');
-  } else if (isAnyAdminAssignedPlanActive && !isCurrentPlan) {
+  } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users don't need single-use
+    buttonText = t('included_in_your_plan');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && product.mode === 'payment') { // Admin assigned users can buy single use credits
+    buttonText = t('purchase_button');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 4 || product.tier === 5)) { // Admin assigned users can upgrade to advanced
+    buttonText = t('upgrade_button');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan) { // Admin assigned users cannot buy other basic plans
     buttonText = t('zero_payment');
   } else if (isDowngradeOption) {
     buttonText = t('downgrade_button');
@@ -108,6 +131,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
     // If it's a downgrade option, direct to customer portal
     if (isDowngradeOption) {
       createCustomerPortalSession();
+    } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users cannot purchase single-use
+      return;
     } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
       // 🚫 Block member from purchasing Enterprise Use
       return;
@@ -157,12 +182,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
       >
         {buttonText}
       </Button>
-      {isDisabledForSubscribers && product.mode === 'payment' && (
+      {isDisabledForSubscribers && product.mode === 'payment' && ( // MODIFIED: Use new isDisabledForSubscribers
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-          {t('already_covered_by_subscription')}
+          {t('included_in_your_advanced_plan')} {/* MODIFIED: New translation key */}
         </p>
       )}
-      {isAnyAdminAssignedPlanActive && !isCurrentPlan && (
+      {isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 2 || product.tier === 3) && ( // MODIFIED: Admin assigned users cannot buy other basic plans
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           {t('no_payment_needed_admin_assigned')}
         </p>
