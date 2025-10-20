@@ -35,7 +35,7 @@ const ReportsPage: React.FC = () => {
   const aggregatedRiskCounts = contractsToDisplay.reduce((acc, contract) => {
     if (contract.status === 'completed' && contract.analysisResult) {
       contract.analysisResult.findings.forEach(finding => {
-        acc[finding.riskLevel] = (acc[finding.riskLevel] || 0) + 1;
+        acc[finding.riskLevel]++;
       });
     }
     return acc;
