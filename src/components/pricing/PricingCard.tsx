@@ -95,7 +95,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   let buttonText: string;
   if (isCurrentPlan) {
     buttonText = t('current_plan_button');
-  } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users don't need single-use
+  } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users cannot purchase single-use
     buttonText = t('included_in_your_plan');
   } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && product.mode === 'payment') { // Admin assigned users can buy single use credits
     buttonText = t('purchase_button');
