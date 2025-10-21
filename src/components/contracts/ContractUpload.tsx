@@ -35,7 +35,7 @@ interface ContractUploadProps {
   setSelectedFiles: (files: File[]) => void;
   ocrCost: number;
   basicAnalysisCost: number;
-  advancedAnalysisAddonCost: number; // MODIFIED: Added as prop
+  advancedAnalysisAddonCost: number;
   showProcessingOptions: boolean; // This now controls visibility for single-use users
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
@@ -50,7 +50,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setSelectedFiles,
   ocrCost,
   basicAnalysisCost,
-  advancedAnalysisAddonCost, // MODIFIED: Destructure from props
+  advancedAnalysisAddonCost,
   showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
@@ -698,8 +698,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     disabled={uploading}
                   />
                   <span className="ml-2 text-purple-700">
-                    {t('perform_advanced_analysis')}
-                    {t('advanced_analysis_cost_and_available_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
+                    {t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
                     <Link to="/pricing" className="underline text-purple-700 hover:text-purple-900">{t('purchase_single_use_credits_or_upgrade')}</Link>
                   </span>
                 </label>
