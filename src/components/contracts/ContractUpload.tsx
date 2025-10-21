@@ -572,7 +572,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     key={`file-${file.name}-${file.size}`}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'file')}
-                    onDragOver={(e) => handleDropReorder(e, index, 'file')}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDropReorder(e, index, 'file')}
                     onDragEnd={handleDragEnd}
                     className={`relative group flex items-center p-2 border border-gray-300 rounded-md bg-white
                       ${draggedItemIndex === index && draggedItemType === 'file' ? 'opacity-50 border-blue-500' : ''}
@@ -596,7 +597,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     key={image.name}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'image')}
-                    onDragOver={(e) => handleDropReorder(e, index, 'image')}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDropReorder(e, index, 'image')}
                     onDragEnd={handleDragEnd}
                     className={`relative group
                       ${draggedItemIndex === index && draggedItemType === 'image' ? 'opacity-50 border-blue-500' : ''}
@@ -699,39 +701,38 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
                     )}
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* NEW: Advanced Analysis Options for Basic/Admin-Assigned Subscription Users */}
-        {isBasicSubscription && isAnyInputSelected && ( // Only show this section for basic subscription users
-          <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('advanced_analysis_options')}</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={performAdvancedAnalysis}
-                    onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                    disabled={uploading || !canPerformAdvancedAddon}
-                  />
-                  <span className="ml-2 text-gray-700">
-                    {t('perform_advanced_analysis')}
-                    {` (${advancedAnalysisAddonCost} ${t('credits')})`}
-                  </span>
-                </label>
-                {!canPerformAdvancedAddon && (
-                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* NEW: Advanced Analysis Options for Basic/Admin-Assigned Subscription Users */}
+            {isBasicSubscription && ( // Only show this section for basic subscription users
+              <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                <h3 className="text-md font-semibold text-gray-800 mb-3">{t('advanced_analysis_options')}</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-5 w-5 text-blue-600"
+                        checked={performAdvancedAnalysis}
+                        onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
+                        disabled={uploading || !canPerformAdvancedAddon}
+                      />
+                      <span className="ml-2 text-gray-700">
+                        {t('perform_advanced_analysis')}
+                        {` (${advancedAnalysisAddonCost} ${t('credits')})`}
+                      </span>
+                    </label>
+                    {!canPerformAdvancedAddon && (
+                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
-        {/* END NEW SECTION */}
 
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
