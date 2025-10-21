@@ -1585,5 +1585,6 @@
   "not_specified": "غير محدد",
   "advanced_analysis_optional": "تحليل متقدم (اختياري)",
   "credits_required": "رصيد مطلوب",
+  "advanced_analysis_credit_cost_and_available": "({cost} رصيد مطلوب. لديك {count} أرصدة متاحة.)",
   "purchase_single_use_credits_or_upgrade": "اشترِ أرصدة للاستخدام الفردي أو قم بالترقية"
 }
