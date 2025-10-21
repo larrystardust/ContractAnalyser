@@ -597,11 +597,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Processing Options */}
-        {showProcessingOptions && isAnyInputSelected && ( // MODIFIED: Conditionally render based on showProcessingOptions
+        {showProcessingOptions && isAnyInputSelected && (
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
-              {/* MODIFIED: Only show Perform Advanced Analysis checkbox for basic/admin-assigned subscriptions */}
+              {/* MODIFIED: Conditional rendering for Basic/Admin-Assigned Subscriptions */}
               {isBasicSubscription && (
                 <div>
                   <label className="inline-flex items-center">
@@ -610,22 +610,20 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       className="form-checkbox h-5 w-5 text-blue-600"
                       checked={performAdvancedAnalysis}
                       onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                      disabled={uploading || !performAnalysis || !canPerformAdvancedAddon} // Disabled if basic analysis is not selected or not enough credits
+                      disabled={uploading || !canPerformAdvancedAddon}
                     />
                     <span className="ml-2 text-gray-700">
                       {t('perform_advanced_analysis')}
-                      {` (${advancedAnalysisAddonCost} ${t('credits')})`} {/* Only show cost if not advanced sub */}
+                      {` (${advancedAnalysisAddonCost} ${t('credits')})`}
                     </span>
                   </label>
-                  {!performAnalysis && (
-                    <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
-                  )}
-                  {!isAdvancedSubscription && performAnalysis && !canPerformAdvancedAddon && ( // Only show this warning if basic analysis is selected
+                  {!canPerformAdvancedAddon && (
                     <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
                   )}
                 </div>
               )}
-              {/* For Single-Use Users, show all options */}
+
+              {/* MODIFIED: Conditional rendering for Single-Use Users */}
               {!isBasicSubscription && !isAdvancedSubscription && (
                 <>
                   {/* Perform OCR Checkbox */}
