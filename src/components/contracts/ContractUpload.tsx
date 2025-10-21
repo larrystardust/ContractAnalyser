@@ -702,6 +702,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     )}
                   </div>
                 </>
+                )}
               </div>
             )}
 
