@@ -628,110 +628,107 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
         {/* Conditional rendering for Processing Options section */}
         {isAnyInputSelected && (
-          // If NOT an advanced subscription
-          !isAdvancedSubscription ? (
-            // If it IS a basic subscription (Tiers 2 & 3)
-            isBasicSubscription ? (
-              // Render only the Advanced Analysis Options for Basic Subscription
-              <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-                <h3 className="text-md font-semibold text-gray-800 mb-3">{t('advanced_analysis_options')}</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        checked={performAdvancedAnalysis}
-                        onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                        disabled={uploading || !canPerformAdvancedAddon}
-                      />
-                      <span className="ml-2 text-gray-700">
-                        {t('perform_advanced_analysis')}
-                        {` (${advancedAnalysisAddonCost} ${t('credits')})`}
-                      </span>
-                    </label>
-                    {!canPerformAdvancedAddon && (
-                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
-                    )}
-                  </div>
+          // Render the appropriate section based on subscription type
+          // Single-use users (Tier 1)
+          (!isBasicSubscription && !isAdvancedSubscription) ? (
+            <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+              <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
+              <div className="space-y-3">
+                {/* Perform OCR Checkbox */}
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performOcr}
+                      onChange={(e) => setPerformOcr(e.target.checked)}
+                      disabled={uploading || !canPerformOcr || !hasImageInput}
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_ocr')} ({ocrCost} {t('credits')})
+                    </span>
+                  </label>
+                  {!canPerformOcr && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
+                  )}
+                  {!hasImageInput && (
+                    <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
+                  )}
+                </div>
+
+                {/* Perform Analysis Checkbox */}
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performAnalysis}
+                      onChange={(e) => {
+                        setPerformAnalysis(e.target.checked);
+                        if (!e.target.checked) {
+                          setPerformAdvancedAnalysis(false);
+                        }
+                      }}
+                      disabled={uploading || !canPerformBasicAnalysis}
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_analysis')} ({basicAnalysisCost} {t('credits')})
+                    </span>
+                  </label>
+                  {!canPerformBasicAnalysis && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis', { cost: basicAnalysisCost })}</p>
+                  )}
+                </div>
+
+                {/* Perform Advanced Analysis Checkbox for single-use */}
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performAdvancedAnalysis}
+                      onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
+                      disabled={uploading || !performAnalysis || !canPerformAdvancedAddon}
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_advanced_analysis')} ({advancedAnalysisAddonCost} {t('credits')})
+                    </span>
+                  </label>
+                  {!performAnalysis && (
+                    <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
+                  )}
+                  {performAnalysis && !canPerformAdvancedAddon && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                  )}
                 </div>
               </div>
-            ) : ( // If it's NOT a basic subscription (meaning it's a single-use user, as per showProcessingOptions logic)
-              // Render the full Processing Options for Single-Use Users
-              <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-                <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
-                <div className="space-y-3">
-                  {/* Perform OCR Checkbox */}
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        checked={performOcr}
-                        onChange={(e) => setPerformOcr(e.target.checked)}
-                        disabled={uploading || !canPerformOcr || !hasImageInput}
-                      />
-                      <span className="ml-2 text-gray-700">
-                        {t('perform_ocr')} ({ocrCost} {t('credits')})
-                      </span>
-                    </label>
-                    {!canPerformOcr && (
-                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
-                    )}
-                    {!hasImageInput && (
-                      <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
-                    )}
-                  </div>
-
-                  {/* Perform Analysis Checkbox */}
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        checked={performAnalysis}
-                        onChange={(e) => {
-                          setPerformAnalysis(e.target.checked);
-                          if (!e.target.checked) {
-                            setPerformAdvancedAnalysis(false);
-                          }
-                        }}
-                        disabled={uploading || !canPerformBasicAnalysis}
-                      />
-                      <span className="ml-2 text-gray-700">
-                        {t('perform_analysis')} ({basicAnalysisCost} {t('credits')})
-                      </span>
-                    </label>
-                    {!canPerformBasicAnalysis && (
-                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis', { cost: basicAnalysisCost })}</p>
-                    )}
-                  </div>
-
-                  {/* Perform Advanced Analysis Checkbox for single-use */}
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                        checked={performAdvancedAnalysis}
-                        onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                        disabled={uploading || !performAnalysis || !canPerformAdvancedAddon}
-                      />
-                      <span className="ml-2 text-gray-700">
-                        {t('perform_advanced_analysis')} ({advancedAnalysisAddonCost} {t('credits')})
-                      </span>
-                    </label>
-                    {!performAnalysis && (
-                      <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
-                    )}
-                    {performAnalysis && !canPerformAdvancedAddon && (
-                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
-                    )}
-                  </div>
+            </div>
+          ) : // Basic/Admin-Assigned Subscription Users (Tiers 2 & 3)
+          (isBasicSubscription && !isAdvancedSubscription) ? (
+            <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+              <h3 className="text-md font-semibold text-gray-800 mb-3">{t('advanced_analysis_options')}</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performAdvancedAnalysis}
+                      onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
+                      disabled={uploading || !canPerformAdvancedAddon}
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_advanced_analysis')}
+                      {` (${advancedAnalysisAddonCost} ${t('credits')})`}
+                    </span>
+                  </label>
+                  {!canPerformAdvancedAddon && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                  )}
                 </div>
               </div>
-            )
-          ) : null // If it IS an advanced subscription, render nothing for processing options
+            </div>
+          ) : null // Advanced Subscription Users (Tiers 4 & 5) or no input selected
         )}
 
         <div className="mt-4">
