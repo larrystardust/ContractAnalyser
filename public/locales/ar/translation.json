@@ -1582,5 +1582,8 @@
   "get_notified_before_contract_renewal_dates": "احصل على إشعارات قبل تواريخ تجديد العقد",
   "get_notified_before_contract_termination_dates": "احصل على إشعارات قبل تواريخ إنهاء العقد",
   "advanced_analysis_requires_basic": "يتطلب التحليل المتقدم تحديد التحليل الأساسي.",
-  "not_specified": "غير محدد"
+  "not_specified": "غير محدد",
+  "advanced_analysis_optional": "تحليل متقدم (اختياري)",
+  "credits_required": "رصيد مطلوب",
+  "purchase_single_use_credits_or_upgrade": "اشترِ أرصدة للاستخدام الفردي أو قم بالترقية"
 }
