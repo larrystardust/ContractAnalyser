@@ -36,7 +36,7 @@ interface ContractUploadProps {
   ocrCost: number;
   basicAnalysisCost: number;
   advancedAnalysisAddonCost: number;
-  showProcessingOptions: boolean;
+  showProcessingOptions: boolean; // This now controls visibility for single-use users
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
 }
@@ -51,7 +51,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   ocrCost,
   basicAnalysisCost,
   advancedAnalysisAddonCost,
-  showProcessingOptions,
+  showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
 }) => {
@@ -67,9 +67,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
-  const [performOcr, setPerformOcr] = useState(false);
-  const [performAnalysis, setPerformAnalysis] = useState(true);
-  const [performAdvancedAnalysis, setPerformAdvancedAnalysis] = useState(false);
+  // MODIFIED: Default performOcr and performAnalysis to true for subscription users
+  const [performOcr, setPerformOcr] = useState(isBasicSubscription || isAdvancedSubscription);
+  const [performAnalysis, setPerformAnalysis] = useState(isBasicSubscription || isAdvancedSubscription);
+  const [performAdvancedAnalysis, setPerformAdvancedAnalysis] = useState(isAdvancedSubscription); // Default to true for advanced subs
 
   const [draggedItemIndex, setDraggedItemIndex, ] = useState<number | null>(null);
   const [draggedItemType, setDraggedItemType] = useState<'file' | 'image' | null>(null);
@@ -110,14 +111,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setHasDocumentFiles(anyDocumentFile);
 
     // MODIFIED: Logic for setting initial performOcr, performAnalysis, performAdvancedAnalysis
+    // These are internal states that reflect what the backend should do, not necessarily what the user sees.
     if (isAdvancedSubscription) {
-      setPerformOcr(true); // Included
-      setPerformAnalysis(true); // Included
-      setPerformAdvancedAnalysis(true); // Included
+      setPerformOcr(true);
+      setPerformAnalysis(true);
+      setPerformAdvancedAnalysis(true);
     } else if (isBasicSubscription) {
-      setPerformOcr(true); // Included
-      setPerformAnalysis(true); // Included
-      setPerformAdvancedAnalysis(false); // Not included by default, can be selected
+      setPerformOcr(true);
+      setPerformAnalysis(true);
+      // For basic, advanced analysis is optional, so its state is controlled by the checkbox
+      // We don't reset it here if it was already checked by the user.
     } else { // Single-use user
       setPerformOcr(false);
       setPerformAnalysis(true);
@@ -163,41 +166,54 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     const currentSelectedDocumentFiles = selectedFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
     const currentCapturedImages = capturedImages;
 
+    // Determine if there are any existing image or document inputs
     const hasExistingImageInput = currentSelectedImageFiles.length > 0 || currentCapturedImages.length > 0;
     const hasExistingDocumentInput = currentSelectedDocumentFiles.length > 0;
 
+    // --- Validation Logic ---
+
+    // Scenario 1: New files contain both images and documents
     if (newImageFiles.length > 0 && newDocumentFiles.length > 0) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
+    // Scenario 2: New files are images, but existing inputs are documents
     if (newImageFiles.length > 0 && hasExistingDocumentInput) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
+    // Scenario 3: New files are documents, but existing inputs are images
     if (newDocumentFiles.length > 0 && hasExistingImageInput) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
+    // Scenario 4: Multiple document files in the new batch
     if (newDocumentFiles.length > 1) {
       alert(t('only_one_document_allowed'));
       return;
     }
 
+    // Scenario 5: A single document file is being added, but a document file already exists
     if (newDocumentFiles.length === 1 && hasExistingDocumentInput) {
       alert(t('only_one_document_allowed'));
       return;
     }
 
+    // --- Update State Based on Validated Input ---
+
     if (newDocumentFiles.length === 1) {
+      // If a single document is valid, it replaces everything else
       setSelectedFiles([newDocumentFiles[0]]);
-      setCapturedImages([]);
+      setCapturedImages([]); // Clear any captured images
     } else if (newImageFiles.length > 0) {
+      // If new images are valid, add them to existing selected images (if any)
       setSelectedFiles(prev => [...currentSelectedImageFiles, ...newImageFiles]);
-      setCapturedImages([]);
+      setCapturedImages([]); // Clear captured images if files are selected via input/drop
     } else if (supportedFiles.length > 0 && !hasExistingDocumentInput && !hasExistingImageInput) {
+      // This case handles adding images when no files were previously selected
       setSelectedFiles(supportedFiles);
       setCapturedImages([]);
     }
@@ -216,7 +232,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       processNewFiles(Array.from(e.target.files));
-      e.target.value = '';
+      e.target.value = ''; // Clear input to allow re-selection of same files
     }
   };
 
@@ -240,6 +256,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
+  // Helper function to extract text from file
   const extractTextFromFile = async (file: File): Promise<string> => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const arrayBuffer = await file.arrayBuffer();
@@ -247,7 +264,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (fileExtension === 'pdf') {
       const pdfjsLib = await loadPdfjs();
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
+      const pdf = await pdf.promise;
       let fullText = '';
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -268,6 +285,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     e.preventDefault();
 
     let currentCreditCost = 0;
+    // MODIFIED: Credit calculation logic based on subscription type
     if (!isAdvancedSubscription && !isBasicSubscription) { // Single-use user
       if (performOcr) currentCreditCost += ocrCost;
       if (performAnalysis) {
@@ -285,12 +303,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     // For AdvancedSubscription, currentCreditCost remains 0 as everything is included
 
 
-    if (!performOcr && !performAnalysis) {
-      alert(t('select_ocr_or_analysis'));
-      return;
-    }
-    // Only check credits for OCR/Basic Analysis if not on a subscription plan
-    if (!isAdvancedSubscription && !isBasicSubscription) {
+    // MODIFIED: Update credit checks for submission
+    // For single-use users, check all selected options
+    if (!isBasicSubscription && !isAdvancedSubscription) {
+      if (!performOcr && !performAnalysis) {
+        alert(t('select_ocr_or_analysis'));
+        return;
+      }
       if (performOcr && !canPerformOcr) {
         alert(t('not_enough_credits_for_ocr', { cost: ocrCost }));
         return;
@@ -299,11 +318,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         alert(t('not_enough_credits_for_analysis', { cost: basicAnalysisCost }));
         return;
       }
-    }
-    // Always check credits for Advanced Analysis if not on an Advanced Subscription
-    if (performAdvancedAnalysis && !isAdvancedSubscription && !canPerformAdvancedAddon) {
-      alert(t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost }));
-      return;
+    } else { // For basic/advanced subscription users, OCR and basic analysis are always performed
+      // Only check advanced analysis credits if it's a basic subscription and advanced is selected
+      if (isBasicSubscription && performAdvancedAnalysis && !canPerformAdvancedAddon) {
+        alert(t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost }));
+        return;
+      }
     }
 
 
@@ -324,16 +344,18 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let imageDatasToProcess: string[] = [];
 
       if (capturedImages.length > 0) {
+        // For captured images, OCR will happen on backend
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
         
+        // Convert captured image files to Base64 for the Edge Function
         for (const imageFile of capturedImages) {
           imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => {
               if (typeof reader.result === 'string') {
-                resolve(reader.result.split(',')[1]);
+                resolve(reader.result.split(',')[1]); // Extract Base64 part
               } else {
                 reject(new Error('Failed to read file as Base64.'));
               }
@@ -341,20 +363,23 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             reader.onerror = reject;
             reader.readAsDataURL(imageFile);
           }));
-          filesToUpload.push(imageFile);
+          filesToUpload.push(imageFile); // Add the actual File object to filesToUpload
         }
       } else if (selectedFiles.length > 0) {
+        // For uploaded files
+        // If multiple files, name them as "Multi-page Contract"
         fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type;
+        fileType = selectedFiles[0].type; // Take type of first file, or generalize
 
+        // Separate files into those needing OCR and those providing text directly
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                  resolve(reader.result.split(',')[1]);
+                  resolve(reader.result.split(',')[1]); // Extract Base64 part
                 } else {
                   reject(new Error('Failed to read file as Base64.'));
                 }
@@ -362,11 +387,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               reader.onerror = reject;
               reader.readAsDataURL(file);
             }));
-            filesToUpload.push(file);
+            filesToUpload.push(file); // Still upload image files to storage
           } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
+            // If it's a document and OCR is NOT selected, extract text locally
             contractText += await extractTextFromFile(file) + '\n\n';
             filesToUpload.push(file);
           } else {
+            // If it's a document and OCR IS selected, or other file types, upload it
             filesToUpload.push(file);
           }
         }
@@ -379,12 +406,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         fileSize,
         fileType,
         jurisdictions: selectedJurisdictions,
-        contractText,
+        contractText, // This will be empty if OCR is performed on backend
         sourceLanguage,
         outputLanguage,
-        performOcr: isAdvancedSubscription || isBasicSubscription ? true : performOcr,
-        performAnalysis: isAdvancedSubscription || isBasicSubscription ? true : performAnalysis,
-        performAdvancedAnalysis: isAdvancedSubscription ? true : performAdvancedAnalysis,
+        // CRITICAL: These flags must be set correctly based on subscription type
+        performOcr: isAdvancedSubscription || isBasicSubscription || performOcr, // Always true for subs, or user selection for single-use
+        performAnalysis: isAdvancedSubscription || isBasicSubscription || performAnalysis, // Always true for subs, or user selection for single-use
+        performAdvancedAnalysis: isAdvancedSubscription || performAdvancedAnalysis, // Always true for advanced subs, or user selection for basic/single-use
         creditCost: currentCreditCost,
       });
       
@@ -395,14 +423,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         navigate(`/dashboard?contractId=${newContractId}`);
       }
 
-      setSelectedFiles([]);
-      setCapturedImages([]);
+      setSelectedFiles([]); // Clear selected files
+      setCapturedImages([]); // Clear captured images
       setSelectedJurisdictions([]);
       setSourceLanguage('auto');
       setOutputLanguage('en');
-      setPerformOcr(false);
-      setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false);
+      setPerformOcr(false); // Reset OCR state
+      setPerformAnalysis(true); // Reset Analysis state
+      setPerformAdvancedAnalysis(false); // Reset advanced analysis state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -421,7 +449,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
   const hasImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+  // hasDocumentFiles is already calculated in useEffect
 
+  // Drag and Drop functions
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -596,36 +626,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           )}
         </div>
 
-        {/* Processing Options */}
-        {showProcessingOptions && isAnyInputSelected && (
-          <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
-            <div className="space-y-3">
-              {/* MODIFIED: Conditional rendering for Basic/Admin-Assigned Subscriptions */}
-              {isBasicSubscription && (
-                <div>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600"
-                      checked={performAdvancedAnalysis}
-                      onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                      disabled={uploading || !canPerformAdvancedAddon}
-                    />
-                    <span className="ml-2 text-gray-700">
-                      {t('perform_advanced_analysis')}
-                      {` (${advancedAnalysisAddonCost} ${t('credits')})`}
-                    </span>
-                  </label>
-                  {!canPerformAdvancedAddon && (
-                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
-                  )}
-                </div>
-              )}
-
-              {/* MODIFIED: Conditional rendering for Single-Use Users */}
-              {!isBasicSubscription && !isAdvancedSubscription && (
-                <>
+        {/* MODIFIED: Conditional rendering for Processing Options section */}
+        {isAnyInputSelected && (
+          <>
+            {/* Processing Options for Single-Use Users */}
+            {showProcessingOptions && ( // showProcessingOptions is true only for single-use users
+              <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
+                <div className="space-y-3">
                   {/* Perform OCR Checkbox */}
                   <div>
                     <label className="inline-flex items-center">
@@ -694,9 +702,36 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     )}
                   </div>
                 </>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+
+            {/* Advanced Analysis Options for Basic/Admin-Assigned Subscription Users */}
+            {isBasicSubscription && ( // Only show this section for basic subscription users
+              <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+                <h3 className="text-md font-semibold text-gray-800 mb-3">{t('advanced_analysis_options')}</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-5 w-5 text-blue-600"
+                        checked={performAdvancedAnalysis}
+                        onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
+                        disabled={uploading || !canPerformAdvancedAddon}
+                      />
+                      <span className="ml-2 text-gray-700">
+                        {t('perform_advanced_analysis')}
+                        {` (${advancedAnalysisAddonCost} ${t('credits')})`}
+                      </span>
+                    </label>
+                    {!canPerformAdvancedAddon && (
+                      <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div className="mt-4">
