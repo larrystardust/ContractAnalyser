@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import Button from '../components/ui/Button'; // ADDED: Import Button component
+import Button from '../components/ui/Button';
 
 // Define the structure for a captured image
 interface CapturedImage {
@@ -19,7 +19,7 @@ interface CapturedImage {
 const UploadPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
-  const [capturedImages, setCapturedImages] = useState<File[]>([]); // MODIFIED: Array of File objects
+  const [capturedImages, setCapturedImages] = useState<File[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { settings: appSettings, loading: loadingAppSettings, error: appSettingsError } = useAppSettings();
@@ -32,8 +32,8 @@ const UploadPage: React.FC = () => {
   }, [isUploading]);
 
   const OCR_COST = 3;
-  const BASIC_ANALYSIS_COST = 1; // MODIFIED: Renamed for clarity
-  const ADVANCED_ANALYSIS_ADDON_COST = 1; // ADDED: New constant for advanced feature cost
+  const BASIC_ANALYSIS_COST = 1;
+  const ADVANCED_ANALYSIS_ADDON_COST = 1;
 
 
   const availableCredits = getTotalSingleUseCredits();
@@ -41,32 +41,24 @@ const UploadPage: React.FC = () => {
   const maxAllowedFiles = subscription?.max_files || Infinity;
   const hasSubscriptionFileCapacity = hasSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles;
 
-  // ADDED: Determine if user has an advanced subscription plan (tier 4 or 5)
   const isAdvancedSubscription = subscription && (subscription.tier === 4 || subscription.tier === 5);
-  // ADDED: Determine if user has a basic/admin-assigned subscription plan (tier 2 or 3)
   const isBasicSubscription = subscription && (subscription.tier === 2 || subscription.tier === 3);
 
-  // MODIFIED: Update credit checks for new costs
-  // For single-use users, these costs apply. For subscription users, these are included.
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= OCR_COST;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= BASIC_ANALYSIS_COST;
-  // Advanced addon cost only applies if not on an advanced subscription plan
   const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
 
-  // MODIFIED: Determine if processing options should be shown based on subscription tier
-  // Visible for basic/admin-assigned subscriptions (tier 2 or 3)
-  // Not visible for single-use (tier 1) or advanced subscriptions (tier 4 or 5)
-  const showProcessingOptions = isBasicSubscription;
+  // MODIFIED: showProcessingOptions should be true for any subscription type (basic or advanced)
+  const showProcessingOptions = isBasicSubscription || isAdvancedSubscription;
 
 
   const handleUploadStatusChange = (status: boolean) => {
     setIsUploading(status);
   };
 
-  // MODIFIED: handleAddCapturedImage now accepts a File object
   const handleAddCapturedImage = (imageFile: File) => {
-    setSelectedFiles(prev => [...prev, imageFile]); // ADDED: Add captured image to selectedFiles
-    setCapturedImages(prev => [...prev, imageFile]); // Keep capturedImages state for reordering/display
+    setSelectedFiles(prev => [...prev, imageFile]);
+    setCapturedImages(prev => [...prev, imageFile]);
   };
 
   const handleDoneCapturing = () => {
@@ -75,11 +67,10 @@ const UploadPage: React.FC = () => {
 
   const handleCancelCamera = () => {
     setIsCameraMode(false);
-    setCapturedImages([]); // Clear captured images on cancel
-    setSelectedFiles(prev => prev.filter(file => !file.name.startsWith('scanned_image_'))); // Remove scanned images from selectedFiles
+    setCapturedImages([]);
+    setSelectedFiles(prev => prev.filter(file => !file.name.startsWith('scanned_image_')));
   };
 
-  // MODIFIED: removeCapturedImage now filters by file name
   const removeCapturedImage = (fileNameToRemove: string) => {
     setCapturedImages(prev => prev.filter(file => file.name !== fileNameToRemove));
     setSelectedFiles(prev => prev.filter(file => file.name !== fileNameToRemove));
@@ -147,7 +138,6 @@ const UploadPage: React.FC = () => {
                 <p className="text-sm">{t('credits_remaining_message', { count: availableCredits })}</p>
               </>
             )}
-            {/* MODIFIED: Update credit warning message */}
             {!hasSubscription && availableCredits < (OCR_COST + BASIC_ANALYSIS_COST) && (
               <p className="text-sm mt-2">
                 {t('not_enough_credits_for_ocr_analysis', { cost: (OCR_COST + BASIC_ANALYSIS_COST) })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
@@ -160,10 +150,10 @@ const UploadPage: React.FC = () => {
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
         <Button
-          variant={isCameraMode ? 'secondary' : 'primary'} // MODIFIED: Make prominent when active
-          onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }} // Clear selected files when switching to camera
+          variant={isCameraMode ? 'secondary' : 'primary'}
+          onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }}
           icon={<Camera className="w-4 h-4" />}
-          disabled={isUploading || !canPerformOcr} // Disable camera if not enough credits for OCR
+          disabled={isUploading || !canPerformOcr}
         >
           {t('scan_document')}
         </Button>
@@ -186,16 +176,15 @@ const UploadPage: React.FC = () => {
           setCapturedImages={setCapturedImages}
           selectedFiles={selectedFiles}
           setSelectedFiles={setSelectedFiles}
-          // MODIFIED: Pass new credit costs and checks
           canPerformOcr={canPerformOcr}
           canPerformBasicAnalysis={canPerformBasicAnalysis}
           canPerformAdvancedAddon={canPerformAdvancedAddon}
           ocrCost={OCR_COST}
           basicAnalysisCost={BASIC_ANALYSIS_COST}
           advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST}
-          showProcessingOptions={showProcessingOptions} // ADDED: Pass the new prop
-          isAdvancedSubscription={isAdvancedSubscription} // ADDED: Pass advanced subscription status
-          isBasicSubscription={isBasicSubscription} // ADDED: Pass basic subscription status
+          showProcessingOptions={showProcessingOptions}
+          isAdvancedSubscription={isAdvancedSubscription}
+          isBasicSubscription={isBasicSubscription}
         />
       )}
 
