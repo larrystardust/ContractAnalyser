@@ -643,7 +643,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                         className="form-checkbox h-5 w-5 text-blue-600"
                         checked={performAdvancedAnalysis}
                         onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                        disabled={uploading} 
+                        disabled={uploading}
                       />
                       <span className="ml-2 text-gray-700">
                         {t('perform_advanced_analysis')}
