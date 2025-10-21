@@ -702,9 +702,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     )}
                   </div>
                 </>
-               )}
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+        )}
 
             {/* Advanced Analysis Options for Basic/Admin-Assigned Subscription Users */}
             {isBasicSubscription && ( // Only show this section for basic subscription users
