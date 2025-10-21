@@ -48,8 +48,9 @@ const UploadPage: React.FC = () => {
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= BASIC_ANALYSIS_COST;
   const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
 
-  // MODIFIED: showProcessingOptions should be true for any subscription type (basic or advanced)
-  const showProcessingOptions = isBasicSubscription || isAdvancedSubscription;
+  // MODIFIED: showProcessingOptions should be true for single-use and basic subscriptions
+  // It should be false for advanced subscriptions (as everything is included)
+  const showProcessingOptions = !isAdvancedSubscription;
 
 
   const handleUploadStatusChange = (status: boolean) => {
