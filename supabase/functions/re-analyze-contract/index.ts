@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       // console.log('re-analyze-contract: Authorization header missing.'); // REMOVED
       return corsResponse({ error: 'Authorization header missing' }, 401);
     }
-    token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace('Bearer ', '');
     // console.log('re-analyze-contract: Token extracted.'); // REMOVED
 
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
@@ -164,19 +164,43 @@ Deno.serve(async (req) => {
 
     const { data: membershipData, error: membershipError } = await supabase
       .from('subscription_memberships')
-      .select('subscription_id')
+      .select('subscription_id, stripe_subscriptions(tier)') // MODIFIED: Select tier from related stripe_subscriptions
       .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle();
 
     let userSubscriptionId: string | null = null;
+    let userSubscriptionTier: number | null = null; // ADDED: To store user's subscription tier
     if (membershipError) {
       console.error(`re-analyze-contract: Error fetching membership for user ${userId}:`, membershipError);
     } else if (membershipData) {
       userSubscriptionId = membershipData.subscription_id;
+      userSubscriptionTier = membershipData.stripe_subscriptions?.tier || null; // Extract tier
+    } else {
+      // If no active membership, check for direct subscription (owner)
+      const { data: customerData, error: customerError } = await supabase
+        .from('stripe_customers')
+        .select('customer_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!customerError && customerData?.customer_id) {
+        const { data: directSubData, error: directSubError } = await supabase
+          .from('stripe_subscriptions')
+          .select('subscription_id, tier') // MODIFIED: Select tier
+          .eq('customer_id', customerData.customer_id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (!directSubError && directSubData) {
+          userSubscriptionId = directSubData.subscription_id;
+          userSubscriptionTier = directSubData.tier || null; // Extract tier
+        }
+      }
     }
 
-    if (!userSubscriptionId) { // Only check credits if no active subscription
+    // MODIFIED: Only check credits if user is NOT on an advanced subscription plan
+    if (!userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4)) { // If no subscription or basic/admin subscription
       const { data: customerData, error: customerError } = await supabase
         .from('stripe_customers')
         .select('customer_id')
