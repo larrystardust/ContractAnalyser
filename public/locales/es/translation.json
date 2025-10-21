@@ -1583,5 +1583,6 @@
   "not_specified": "No especificado",
   "advanced_analysis_optional": "Análisis Avanzado (Opcional)",
   "credits_required": "crédito requerido",
+  "advanced_analysis_credit_cost_and_available": "({cost} crédito requerido. Tienes {count} créditos disponibles.)",
   "purchase_single_use_credits_or_upgrade": "Compre créditos de un solo uso o actualice"
 }
