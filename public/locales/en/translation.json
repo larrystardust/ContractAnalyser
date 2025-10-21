@@ -1587,5 +1587,8 @@
   "get_notified_before_contract_renewal_dates": "Get notified before contract renewal dates",
   "get_notified_before_contract_termination_dates": "Get notified before contract termination dates",
   "advanced_analysis_requires_basic": "Advanced analysis requires basic analysis to be selected.",
-  "not_specified": "Not specified"
+  "not_specified": "Not specified",
+  "advanced_analysis_optional": "Advanced Analysis (Optional)",
+  "credits_required": "credit required",
+  "purchase_single_use_credits_or_upgrade": "Purchase Single Use credits or upgrade"
 }
