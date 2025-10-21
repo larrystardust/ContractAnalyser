@@ -1590,5 +1590,6 @@
   "not_specified": "Not specified",
   "advanced_analysis_optional": "Advanced Analysis (Optional)",
   "credits_required": "credit required",
+  "advanced_analysis_credit_cost_and_available": "({cost} credit required. You have {count} credits available.)",
   "purchase_single_use_credits_or_upgrade": "Purchase Single Use credits or upgrade"
 }
