@@ -135,7 +135,7 @@ const UploadPage: React.FC = () => {
                 {/* NEW: Display single-use credits for basic subscription users */}
                 {isBasicSubscription && (
                   <p className="text-sm mt-2">
-                    {t('basic_subscription_advanced_analysis_credits_message', { count: availableCredits, cost: ADVANCED_ANALYSIS_ADDON_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
+                    {t('advanced_analysis_credit_cost_and_available', { count: availableCredits, cost: ADVANCED_ANALYSIS_ADDON_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
                   </p>
                 )}
               </>
