@@ -6,8 +6,8 @@ import { Jurisdiction, AnalysisLanguage } from '../../types';
 import { useContracts } from '../../context/ContractContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
-import { useUserOrders } from '../../hooks/useUserOrders'; // ADDED: Import useUserOrders
+import { useSubscription } from '../../hooks/useSubscription';
+import { useUserOrders } from '../../hooks/useUserOrders';
 
 // Dynamically import pdfjs-dist and mammoth
 const loadPdfjs = async () => {
@@ -29,17 +29,16 @@ interface CapturedImage {
 interface ContractUploadProps {
   onUploadStatusChange: (status: boolean) => void;
   defaultJurisdictions: Jurisdiction[];
-  capturedImages: File[]; // MODIFIED: Array of File objects
-  setCapturedImages: (data: File[]) => void; // MODIFIED: Accepts array of File objects
+  capturedImages: File[];
+  setCapturedImages: (data: File[]) => void;
   selectedFiles: File[];
   setSelectedFiles: (files: File[]) => void;
-  // MODIFIED: Updated credit checks and costs
   ocrCost: number;
   basicAnalysisCost: number;
   advancedAnalysisAddonCost: number;
-  showProcessingOptions: boolean; // ADDED: New prop for visibility
-  isAdvancedSubscription: boolean; // ADDED: New prop for advanced subscription status
-  isBasicSubscription: boolean; // ADDED: New prop for basic subscription status
+  showProcessingOptions: boolean;
+  isAdvancedSubscription: boolean;
+  isBasicSubscription: boolean;
 }
 
 const ContractUpload: React.FC<ContractUploadProps> = ({
@@ -49,13 +48,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setCapturedImages,
   selectedFiles,
   setSelectedFiles,
-  // MODIFIED: Destructure new credit checks and costs
   ocrCost,
   basicAnalysisCost,
   advancedAnalysisAddonCost,
-  showProcessingOptions, // ADDED: Destructure new prop
-  isAdvancedSubscription, // ADDED: Destructure new prop
-  isBasicSubscription, // ADDED: Destructure new prop
+  showProcessingOptions,
+  isAdvancedSubscription,
+  isBasicSubscription,
 }) => {
   const { addContract, refetchContracts } = useContracts();
   const [isDragging, setIsDragging] = useState(false);
@@ -64,20 +62,18 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use subscription hook
-  const { getTotalSingleUseCredits } = useUserOrders(); // ADDED: Use user orders hook
+  const { subscription, loading: loadingSubscription } = useSubscription();
+  const { getTotalSingleUseCredits } = useUserOrders();
 
   const [sourceLanguage, setSourceLanguage] = useState<AnalysisLanguage>('auto');
   const [outputLanguage, setOutputLanguage] = useState<AnalysisLanguage>('en');
   const [performOcr, setPerformOcr] = useState(false);
   const [performAnalysis, setPerformAnalysis] = useState(true);
-  const [performAdvancedAnalysis, setPerformAdvancedAnalysis] = useState(false); // ADDED: New state for advanced analysis
+  const [performAdvancedAnalysis, setPerformAdvancedAnalysis] = useState(false);
 
-  // ADDED: State for managing drag and drop reordering
   const [draggedItemIndex, setDraggedItemIndex, ] = useState<number | null>(null);
   const [draggedItemType, setDraggedItemType] = useState<'file' | 'image' | null>(null);
 
-  // ADDED: State to track if any document files (pdf, docx, doc) are selected
   const [hasDocumentFiles, setHasDocumentFiles] = useState(false);
 
   const languageOptions = [
@@ -90,11 +86,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const availableCredits = getTotalSingleUseCredits();
 
-  // MODIFIED: Recalculate canPerformOcr, canPerformBasicAnalysis, canPerformAdvancedAddon based on new logic
-  // For single-use users, these costs apply. For subscription users, these are included.
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  // Advanced addon cost only applies if not on an advanced subscription plan
   const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
@@ -114,7 +107,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     const anyImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
     const anyDocumentFile = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
 
-    setHasDocumentFiles(anyDocumentFile); // Set the new state
+    setHasDocumentFiles(anyDocumentFile);
 
     // MODIFIED: Logic for setting initial performOcr, performAnalysis, performAdvancedAnalysis
     if (isAdvancedSubscription) {
@@ -130,7 +123,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       setPerformAnalysis(true);
       setPerformAdvancedAnalysis(false);
     }
-  }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]); // MODIFIED: Added isBasicSubscription to dependencies
+  }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -145,8 +138,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // Necessary to allow dropping
-    e.stopPropagation(); // Prevent propagation to parent elements
+    e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
   };
 
@@ -168,56 +161,43 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
     const currentSelectedImageFiles = selectedFiles.filter(f => f.type.startsWith('image/'));
     const currentSelectedDocumentFiles = selectedFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-    const currentCapturedImages = capturedImages; // These are always images
+    const currentCapturedImages = capturedImages;
 
-    // Determine if there are any existing image or document inputs
     const hasExistingImageInput = currentSelectedImageFiles.length > 0 || currentCapturedImages.length > 0;
     const hasExistingDocumentInput = currentSelectedDocumentFiles.length > 0;
 
-    // --- Validation Logic ---
-
-    // Scenario 1: New files contain both images and documents
     if (newImageFiles.length > 0 && newDocumentFiles.length > 0) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
-    // Scenario 2: New files are images, but existing inputs are documents
     if (newImageFiles.length > 0 && hasExistingDocumentInput) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
-    // Scenario 3: New files are documents, but existing inputs are images
     if (newDocumentFiles.length > 0 && hasExistingImageInput) {
       alert(t('cannot_mix_image_document_files'));
       return;
     }
 
-    // Scenario 4: Multiple document files in the new batch
     if (newDocumentFiles.length > 1) {
       alert(t('only_one_document_allowed'));
       return;
     }
 
-    // Scenario 5: A single document file is being added, but a document file already exists
     if (newDocumentFiles.length === 1 && hasExistingDocumentInput) {
       alert(t('only_one_document_allowed'));
       return;
     }
 
-    // --- Update State Based on Validated Input ---
-
     if (newDocumentFiles.length === 1) {
-      // If a single document is valid, it replaces everything else
       setSelectedFiles([newDocumentFiles[0]]);
-      setCapturedImages([]); // Clear any captured images
+      setCapturedImages([]);
     } else if (newImageFiles.length > 0) {
-      // If new images are valid, add them to existing selected images (if any)
       setSelectedFiles(prev => [...currentSelectedImageFiles, ...newImageFiles]);
-      setCapturedImages([]); // Clear captured images if files are selected via input/drop
+      setCapturedImages([]);
     } else if (supportedFiles.length > 0 && !hasExistingDocumentInput && !hasExistingImageInput) {
-      // This case handles adding images when no files were previously selected
       setSelectedFiles(supportedFiles);
       setCapturedImages([]);
     }
@@ -236,7 +216,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       processNewFiles(Array.from(e.target.files));
-      e.target.value = ''; // Clear input to allow re-selection of same files
+      e.target.value = '';
     }
   };
 
@@ -248,7 +228,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     if (type === 'file') {
       setSelectedFiles(prev => (Array.isArray(prev) ? prev.filter((file) => `${file.name}-${file.size}` !== idToRemove) : []));
     } else {
-      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.name !== idToRemove) : [])); // MODIFIED: Filter by image.name
+      setCapturedImages(prev => (Array.isArray(prev) ? prev.filter((image) => image.name !== idToRemove) : []));
     }
   };
 
@@ -260,7 +240,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
-  // Helper function to extract text from file
   const extractTextFromFile = async (file: File): Promise<string> => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const arrayBuffer = await file.arrayBuffer();
@@ -289,7 +268,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     e.preventDefault();
 
     let currentCreditCost = 0;
-    // MODIFIED: Credit calculation logic based on subscription type
     if (!isAdvancedSubscription && !isBasicSubscription) { // Single-use user
       if (performOcr) currentCreditCost += ocrCost;
       if (performAnalysis) {
@@ -307,7 +285,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     // For AdvancedSubscription, currentCreditCost remains 0 as everything is included
 
 
-    // MODIFIED: Update credit checks for submission
     if (!performOcr && !performAnalysis) {
       alert(t('select_ocr_or_analysis'));
       return;
@@ -330,7 +307,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
 
 
-    const allInputs = [...(Array.isArray(selectedFiles) ? selectedFiles : []), ...(Array.isArray(capturedImages) ? capturedImages : [])]; // Defensive spread
+    const allInputs = [...(Array.isArray(selectedFiles) ? selectedFiles : []), ...(Array.isArray(capturedImages) ? capturedImages : [])];
     if (allInputs.length === 0 || selectedJurisdictions.length === 0) {
       alert(t('select_file_and_jurisdiction_alert'));
       return;
@@ -347,18 +324,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let imageDatasToProcess: string[] = [];
 
       if (capturedImages.length > 0) {
-        // For captured images, OCR will happen on backend
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
         
-        // Convert captured image files to Base64 for the Edge Function
         for (const imageFile of capturedImages) {
           imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => {
               if (typeof reader.result === 'string') {
-                resolve(reader.result.split(',')[1]); // Extract Base64 part
+                resolve(reader.result.split(',')[1]);
               } else {
                 reject(new Error('Failed to read file as Base64.'));
               }
@@ -366,23 +341,20 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             reader.onerror = reject;
             reader.readAsDataURL(imageFile);
           }));
-          filesToUpload.push(imageFile); // Add the actual File object to filesToUpload
+          filesToUpload.push(imageFile);
         }
       } else if (selectedFiles.length > 0) {
-        // For uploaded files
-        // If multiple files, name them as "Multi-page Contract"
         fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type; // Take type of first file, or generalize
+        fileType = selectedFiles[0].type;
 
-        // Separate files into those needing OCR and those providing text directly
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                  resolve(reader.result.split(',')[1]); // Extract Base64 part
+                  resolve(reader.result.split(',')[1]);
                 } else {
                   reject(new Error('Failed to read file as Base64.'));
                 }
@@ -390,32 +362,30 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               reader.onerror = reject;
               reader.readAsDataURL(file);
             }));
-            filesToUpload.push(file); // Still upload image files to storage
+            filesToUpload.push(file);
           } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
-            // If it's a document and OCR is NOT selected, extract text locally
             contractText += await extractTextFromFile(file) + '\n\n';
             filesToUpload.push(file);
           } else {
-            // If it's a document and OCR IS selected, or other file types, upload it
             filesToUpload.push(file);
           }
         }
       }
 
       const newContractId = await addContract({
-        files: filesToUpload.length > 0 ? filesToUpload : undefined, // Pass files if available
-        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined, // Pass image data if available
+        files: filesToUpload.length > 0 ? filesToUpload : undefined,
+        imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined,
         fileName,
         fileSize,
         fileType,
         jurisdictions: selectedJurisdictions,
-        contractText, // This will be empty if OCR is performed on backend
+        contractText,
         sourceLanguage,
         outputLanguage,
-        performOcr: isAdvancedSubscription || isBasicSubscription ? true : performOcr, // MODIFIED: Always true for subs
-        performAnalysis: isAdvancedSubscription || isBasicSubscription ? true : performAnalysis, // MODIFIED: Always true for subs
-        performAdvancedAnalysis: isAdvancedSubscription ? true : performAdvancedAnalysis, // MODIFIED: Always true for advanced subs
-        creditCost: currentCreditCost, // Pass calculated credit cost
+        performOcr: isAdvancedSubscription || isBasicSubscription ? true : performOcr,
+        performAnalysis: isAdvancedSubscription || isBasicSubscription ? true : performAnalysis,
+        performAdvancedAnalysis: isAdvancedSubscription ? true : performAdvancedAnalysis,
+        creditCost: currentCreditCost,
       });
       
       alert(t('contract_uploaded_analysis_initiated'));
@@ -425,14 +395,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         navigate(`/dashboard?contractId=${newContractId}`);
       }
 
-      setSelectedFiles([]); // Clear selected files
-      setCapturedImages([]); // Clear captured images
+      setSelectedFiles([]);
+      setCapturedImages([]);
       setSelectedJurisdictions([]);
       setSourceLanguage('auto');
       setOutputLanguage('en');
-      setPerformOcr(false); // Reset OCR state
-      setPerformAnalysis(true); // Reset Analysis state
-      setPerformAdvancedAnalysis(false); // ADDED: Reset advanced analysis state
+      setPerformOcr(false);
+      setPerformAnalysis(true);
+      setPerformAdvancedAnalysis(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -451,9 +421,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
   const hasImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
-  // hasDocumentFiles is already calculated in useEffect
 
-  // Drag and Drop functions
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -465,27 +433,27 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     setDraggedItemIndex(index);
     setDraggedItemType(type);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', JSON.stringify({ index, type })); // MODIFIED: Store index and type
+    e.dataTransfer.setData('text/plain', JSON.stringify({ index, type }));
   };
 
   const handleDropReorder = (e: React.DragEvent, dropIndex: number, dropType: 'file' | 'image') => {
     e.preventDefault();
-    e.stopPropagation(); // Ensure event doesn't bubble to parent drop zone
+    e.stopPropagation();
 
     const data = e.dataTransfer.getData('text/plain');
-    if (!data) return; // No data means it's not our draggable item
+    if (!data) return;
 
-    const { index: draggedIndex, type: draggedType } = JSON.parse(data); // MODIFIED: Parse data
+    const { index: draggedIndex, type: draggedType } = JSON.parse(data);
 
     if (draggedIndex === null || draggedType === null || draggedType !== dropType) {
-      return; // Only reorder items of the same type
+      return;
     }
 
-    if (draggedType === 'file') { // MODIFIED: Use draggedType
-      const reorderedFiles = reorder(selectedFiles, draggedIndex, dropIndex); // MODIFIED: Use draggedIndex
+    if (draggedType === 'file') {
+      const reorderedFiles = reorder(selectedFiles, draggedIndex, dropIndex);
       setSelectedFiles(reorderedFiles);
-    } else if (draggedType === 'image') { // MODIFIED: Use draggedType
-      const reorderedImages = reorder(capturedImages, draggedIndex, dropIndex); // MODIFIED: Use draggedIndex
+    } else if (draggedType === 'image') {
+      const reorderedImages = reorder(capturedImages, draggedIndex, dropIndex);
       setCapturedImages(reorderedImages);
     }
 
@@ -525,7 +493,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
-          {/* MODIFIED: Condition for showing browse files button */}
           {!hasDocumentFiles ? (
             <>
               <Upload className="h-12 w-12 text-gray-400 mb-3" />
@@ -558,7 +525,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               </div>
             </>
           ) : (
-            // This block is shown if a document file is selected, hiding the browse button
             <div className="w-full text-center">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
               <p className="text-sm text-gray-700 font-medium">{t('document_selected_for_upload')}</p>
@@ -566,16 +532,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             </div>
           )}
 
-          {/* Display selected files and captured images for reordering */}
           {isAnyInputSelected && (
             <div className="w-full mt-6">
               <p className="text-sm text-gray-700 font-medium mb-3">{t('selected_files_for_upload')}:</p>
-              {/* ADDED: Re-ordering instruction message */}
               <p className="text-xs text-gray-500 mb-3">{t('reorder_pages_message')}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedFiles.map((file, index) => (
                   <div
-                    key={`file-${file.name}-${file.size}`} // Use file name and size for a more stable key
+                    key={`file-${file.name}-${file.size}`}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'file')}
                     onDragOver={handleDragOver}
@@ -590,7 +554,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     <span className="text-sm text-gray-700 truncate">{file.name}</span>
                     <button
                       type="button"
-                      onClick={() => removeInput(`${file.name}-${file.size}`, 'file')} // MODIFIED: Pass unique ID
+                      onClick={() => removeInput(`${file.name}-${file.size}`, 'file')}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_file')}
                     >
@@ -600,7 +564,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 ))}
                 {capturedImages.map((image, index) => (
                   <div
-                    key={image.name} // MODIFIED: Use image.name as key
+                    key={image.name}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, index, 'image')}
                     onDragOver={handleDragOver}
@@ -611,10 +575,10 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       cursor-grab
                     `}
                   >
-                    <img src={URL.createObjectURL(image)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Create object URL */}
+                    <img src={URL.createObjectURL(image)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
                     <button
                       type="button"
-                      onClick={() => removeInput(image.name, 'image')} // MODIFIED: Pass image.name
+                      onClick={() => removeInput(image.name, 'image')}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
@@ -623,7 +587,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   </div>
                 ))}
               </div>
-              {/* Only show this prompt if there are image inputs */}
               {(capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'))) && (
                 <p className="text-sm text-gray-500 mt-4">
                   {t('ensure_all_pages_scanned_uploaded')}
@@ -634,11 +597,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Processing Options */}
-        {showProcessingOptions && isAnyInputSelected && ( // MODIFIED: Conditionally render based on showProcessingOptions
+        {/* MODIFIED: Section visible for any subscription type, but not for single-use */}
+        {(isBasicSubscription || isAdvancedSubscription) && isAnyInputSelected && (
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
-              {/* MODIFIED: Only show Perform Advanced Analysis checkbox for basic/admin-assigned subscriptions */}
+              {/* Only show Perform Advanced Analysis checkbox for basic/admin-assigned subscriptions */}
               {isBasicSubscription && (
                 <div>
                   <label className="inline-flex items-center">
@@ -647,22 +611,104 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                       className="form-checkbox h-5 w-5 text-blue-600"
                       checked={performAdvancedAnalysis}
                       onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                      disabled={uploading || !performAnalysis || !canPerformAdvancedAddon} // Disabled if basic analysis is not selected or not enough credits
+                      disabled={uploading || !performAnalysis || !canPerformAdvancedAddon}
                     />
                     <span className="ml-2 text-gray-700">
                       {t('perform_advanced_analysis')}
-                      {!isAdvancedSubscription && ` (${advancedAnalysisAddonCost} ${t('credits')})`} {/* Only show cost if not advanced sub */}
+                      {` (${advancedAnalysisAddonCost} ${t('credits')})`}
                     </span>
                   </label>
                   {!performAnalysis && (
                     <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
                   )}
-                  {!isAdvancedSubscription && performAnalysis && !canPerformAdvancedAddon && ( // Only show this warning if basic analysis is selected
+                  {!isAdvancedSubscription && performAnalysis && !canPerformAdvancedAddon && (
                     <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
                   )}
                 </div>
               )}
-              {/* For Advanced Subscription, no checkboxes are shown here as everything is included */}
+
+              {/* Message for Advanced Subscription users */}
+              {isAdvancedSubscription && (
+                <p className="text-sm text-gray-700">
+                  {t('all_advanced_features_included_in_plan')}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODIFIED: Processing Options for Single-Use Users */}
+        {!isBasicSubscription && !isAdvancedSubscription && isAnyInputSelected && (
+          <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
+            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
+            <div className="space-y-3">
+              {/* Perform OCR Checkbox */}
+              <div>
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={performOcr}
+                    onChange={(e) => setPerformOcr(e.target.checked)}
+                    disabled={uploading || !canPerformOcr || !hasImageInput}
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {t('perform_ocr')} ({ocrCost} {t('credits')})
+                  </span>
+                </label>
+                {!canPerformOcr && (
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr', { cost: ocrCost })}</p>
+                )}
+                {!hasImageInput && (
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
+                )}
+              </div>
+
+              {/* Perform Analysis Checkbox */}
+              <div>
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={performAnalysis}
+                    onChange={(e) => {
+                      setPerformAnalysis(e.target.checked);
+                      if (!e.target.checked) {
+                        setPerformAdvancedAnalysis(false);
+                      }
+                    }}
+                    disabled={uploading || !canPerformBasicAnalysis}
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {t('perform_analysis')} ({basicAnalysisCost} {t('credits')})
+                  </span>
+                </label>
+                {!canPerformBasicAnalysis && (
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis', { cost: basicAnalysisCost })}</p>
+                )}
+              </div>
+
+              {/* Perform Advanced Analysis Checkbox for single-use */}
+              <div>
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={performAdvancedAnalysis}
+                    onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
+                    disabled={uploading || !performAnalysis || !canPerformAdvancedAddon}
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {t('perform_advanced_analysis')} ({advancedAnalysisAddonCost} {t('credits')})
+                  </span>
+                </label>
+                {!performAnalysis && (
+                  <p className="text-xs text-gray-500 ml-7">{t('advanced_analysis_requires_basic')}</p>
+                )}
+                {performAnalysis && !canPerformAdvancedAddon && (
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
+                )}
+              </div>
             </div>
           </div>
         )}
