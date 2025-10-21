@@ -1585,5 +1585,6 @@
   "credits_required": "crédito requerido",
   "advanced_analysis_credit_cost_and_available": "({cost} crédito requerido. Tienes {count} créditos disponibles.)",
   "advanced_analysis_cost_and_available_credits": "({cost} crédito requerido. Tienes {count} créditos disponibles.)",
-  "purchase_single_use_credits_or_upgrade": "Compre créditos de un solo uso o actualice"
+  "purchase_single_use_credits_or_upgrade": "Compre créditos de un solo uso o actualice",
+  "perform_advanced_analysis_with_credits": "Realizar análisis avanzado ({cost} crédito requerido. Tienes {count} créditos disponibles.)"
 }
