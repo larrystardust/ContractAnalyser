@@ -123,7 +123,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     } else { // Single-use user
       setPerformOcr(false);
       setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false); // Default to false for single-use, user can select
+      setPerformAdvancedAnalysis(false);
     }
   }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]);
 
@@ -695,7 +695,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   />
                   <span className="ml-2 text-purple-700">
                     {t('perform_advanced_analysis')}
-                    {t('advanced_analysis_credit_cost_and_available', { cost: advancedAnalysisAddonCost, count: availableCredits })}
+                    {t('advanced_analysis_cost_and_available_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
                     <Link to="/pricing" className="underline text-purple-700 hover:text-purple-900">{t('purchase_single_use_credits_or_upgrade')}</Link>
                   </span>
                 </label>
