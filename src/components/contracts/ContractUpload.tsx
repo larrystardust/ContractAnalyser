@@ -35,7 +35,7 @@ interface ContractUploadProps {
   setSelectedFiles: (files: File[]) => void;
   ocrCost: number;
   basicAnalysisCost: number;
-  advancedAnalysisAddonCost: number;
+  advancedAnalysisAddonCost: number; // MODIFIED: Added as prop
   showProcessingOptions: boolean; // This now controls visibility for single-use users
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
@@ -50,7 +50,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setSelectedFiles,
   ocrCost,
   basicAnalysisCost,
-  advancedAnalysisAddonCost,
+  advancedAnalysisAddonCost, // MODIFIED: Destructure from props
   showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
@@ -89,7 +89,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
