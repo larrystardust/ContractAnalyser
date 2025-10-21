@@ -35,24 +35,29 @@ const UploadPage: React.FC = () => {
   const BASIC_ANALYSIS_COST = 1; // MODIFIED: Renamed for clarity
   const ADVANCED_ANALYSIS_ADDON_COST = 1; // ADDED: New constant for advanced feature cost
 
-  // MODIFIED: Update cost calculations to include advanced addon
-  const OCR_AND_BASIC_ANALYSIS_COST = OCR_COST + BASIC_ANALYSIS_COST;
-  const OCR_BASIC_AND_ADVANCED_ANALYSIS_COST = OCR_COST + BASIC_ANALYSIS_COST + ADVANCED_ANALYSIS_ADDON_COST;
-  const BASIC_AND_ADVANCED_ANALYSIS_COST = BASIC_ANALYSIS_COST + ADVANCED_ANALYSIS_ADDON_COST;
-
 
   const availableCredits = getTotalSingleUseCredits();
   const hasSubscription = subscription && (subscription.status === 'active' || subscription.status === 'trialing');
   const maxAllowedFiles = subscription?.max_files || Infinity;
   const hasSubscriptionFileCapacity = hasSubscription && totalSubscriptionFiles !== null && totalSubscriptionFiles < maxAllowedFiles;
 
-  // MODIFIED: Update credit checks for new costs
-  const canPerformOcr = hasSubscription || availableCredits >= OCR_COST;
-  const canPerformBasicAnalysis = hasSubscription || availableCredits >= BASIC_ANALYSIS_COST;
-  const canPerformAdvancedAddon = hasSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST; // Check for the addon cost itself
+  // ADDED: Determine if user has an advanced subscription plan (tier 4 or 5)
+  const isAdvancedSubscription = subscription && (subscription.tier === 4 || subscription.tier === 5);
+  // ADDED: Determine if user has a basic/admin-assigned subscription plan (tier 2 or 3)
+  const isBasicSubscription = subscription && (subscription.tier === 2 || subscription.tier === 3);
 
-  // ADDED: Determine if processing options should be shown
-  const showProcessingOptions = !hasSubscription;
+  // MODIFIED: Update credit checks for new costs
+  // For single-use users, these costs apply. For subscription users, these are included.
+  const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= OCR_COST;
+  const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= BASIC_ANALYSIS_COST;
+  // Advanced addon cost only applies if not on an advanced subscription plan
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
+
+  // MODIFIED: Determine if processing options should be shown based on subscription tier
+  // Visible for basic/admin-assigned subscriptions (tier 2 or 3)
+  // Not visible for single-use (tier 1) or advanced subscriptions (tier 4 or 5)
+  const showProcessingOptions = isBasicSubscription;
+
 
   const handleUploadStatusChange = (status: boolean) => {
     setIsUploading(status);
@@ -143,9 +148,9 @@ const UploadPage: React.FC = () => {
               </>
             )}
             {/* MODIFIED: Update credit warning message */}
-            {!hasSubscription && availableCredits < OCR_AND_BASIC_ANALYSIS_COST && (
+            {!hasSubscription && availableCredits < (OCR_COST + BASIC_ANALYSIS_COST) && (
               <p className="text-sm mt-2">
-                {t('not_enough_credits_for_ocr_analysis', { cost: OCR_AND_BASIC_ANALYSIS_COST })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
+                {t('not_enough_credits_for_ocr_analysis', { cost: (OCR_COST + BASIC_ANALYSIS_COST) })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
               </p>
             )}
           </div>
@@ -189,6 +194,8 @@ const UploadPage: React.FC = () => {
           basicAnalysisCost={BASIC_ANALYSIS_COST}
           advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST}
           showProcessingOptions={showProcessingOptions} // ADDED: Pass the new prop
+          isAdvancedSubscription={isAdvancedSubscription} // ADDED: Pass advanced subscription status
+          isBasicSubscription={isBasicSubscription} // ADDED: Pass basic subscription status
         />
       )}
 
