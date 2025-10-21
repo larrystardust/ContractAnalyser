@@ -119,11 +119,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     } else if (isBasicSubscription) {
       setPerformOcr(true);
       setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false); // Set to false for basic subscriptions
+      setPerformAdvancedAnalysis(false); // Default to false for basic, user can select
     } else { // Single-use user
       setPerformOcr(false);
       setPerformAnalysis(true);
-      setPerformAdvancedAnalysis(false);
+      setPerformAdvancedAnalysis(false); // Default to false for single-use, user can select
     }
   }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]);
 
@@ -695,13 +695,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   />
                   <span className="ml-2 text-purple-700">
                     {t('perform_advanced_analysis')}
-                    {isBasicSubscription ? (
-                      // For basic subscription users, show available single-use credits
-                      t('advanced_analysis_cost_and_available_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })
-                    ) : (
-                      // For single-use users, show generic credit required message
-                      ` (${advancedAnalysisAddonCost} ${t('credits_required')})`
-                    )}
+                    {t('advanced_analysis_credit_cost_and_available', { cost: advancedAnalysisAddonCost, count: availableCredits })}
                     <Link to="/pricing" className="underline text-purple-700 hover:text-purple-900">{t('purchase_single_use_credits_or_upgrade')}</Link>
                   </span>
                 </label>
