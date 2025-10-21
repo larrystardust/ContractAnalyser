@@ -396,7 +396,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         outputLanguage,
         performOcr, // Pass OCR flag
         performAnalysis, // Pass Analysis flag
-        performAdvancedAnalysis, // ADDED: Pass new flag
+        performAdvancedAnalysis, // ADDED: Pass advanced analysis flag
         creditCost: currentCreditCost, // Pass calculated credit cost
       });
       
