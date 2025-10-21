@@ -119,8 +119,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     } else if (isBasicSubscription) {
       setPerformOcr(true);
       setPerformAnalysis(true);
-      // For basic, advanced analysis is optional, so its state is controlled by the checkbox
-      // We don't reset it here if it was already checked by the user.
+      setPerformAdvancedAnalysis(false); // ADDED: Set to false for basic subscriptions
     } else { // Single-use user
       setPerformOcr(false);
       setPerformAnalysis(true);
