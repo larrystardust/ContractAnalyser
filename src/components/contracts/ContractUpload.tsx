@@ -35,7 +35,7 @@ interface ContractUploadProps {
   setSelectedFiles: (files: File[]) => void;
   ocrCost: number;
   basicAnalysisCost: number;
-  advancedAnalysisAddonCost: number; // This is correctly in the interface
+  advancedAnalysisAddonCost: number;
   showProcessingOptions: boolean; // This now controls visibility for single-use users
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
@@ -51,7 +51,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setSelectedFiles,
   ocrCost,
   basicAnalysisCost,
-  advancedAnalysisAddonCost, // MODIFIED: Destructure advancedAnalysisAddonCost here
+  advancedAnalysisAddonCost,
   showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
@@ -91,7 +91,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || isBasicSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
@@ -303,6 +303,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
     // For AdvancedSubscription, currentCreditCost remains 0 as everything is included
 
+    console.log(`ContractUpload: DEBUG - Calculated currentCreditCost: ${currentCreditCost}`);
+    console.log(`ContractUpload: DEBUG - isAdvancedSubscription: ${isAdvancedSubscription}, isBasicSubscription: ${isBasicSubscription}, performAdvancedAnalysis: ${performAdvancedAnalysis}`);
 
     // MODIFIED: Update credit checks for submission
     // For single-use users, check all selected options
@@ -697,7 +699,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-purple-600"
                     checked={performAdvancedAnalysis}
                     onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                    disabled={uploading || loadingOrders} // MODIFIED: Disable if orders are loading
+                    disabled={uploading || loadingOrders}
                   />
                   <span className="ml-2 text-purple-700">
                     {t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
