@@ -326,16 +326,18 @@ Deno.serve(async (req) => {
   let consumedOrderId: number | null = null;
 
   // --- START: Authorization Logic & Credit Deduction ---
+  console.log(`contract-analyzer: DEBUG - User ${userId} (Tier: ${userSubscriptionTier}) requested analysis.`);
+  console.log(`contract-analyzer: DEBUG - performAdvancedAnalysis: ${performAdvancedAnalysis}, creditCost from frontend: ${creditCost}`);
+
   // MODIFIED: Only deduct credits if user is NOT on an advanced subscription plan
   if (!userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4)) { // If no subscription or basic/admin subscription
+    console.log(`contract-analyzer: DEBUG - User is NOT on an advanced plan (Tier < 4 or no subscription). Proceeding with credit deduction check.`);
+
     // If advanced analysis is requested and user is not on an advanced plan, ensure creditCost includes it
-    if (performAdvancedAnalysis && (userSubscriptionTier === null || userSubscriptionTier < 4)) {
-      // The creditCost from frontend should already include this, but we re-verify
-      // If the frontend sent 0 cost for advanced analysis for a basic user, we correct it here.
-      // For simplicity, we trust the frontend's `creditCost` for now, but a more robust system
-      // would recalculate it here based on `performOcr`, `performAnalysis`, `performAdvancedAnalysis`
-      // and the user's actual plan.
-    }
+    // The creditCost from frontend should already include this, but we re-verify
+    // For simplicity, we trust the frontend's `creditCost` for now, but a more robust system
+    // would recalculate it here based on `performOcr`, `performAnalysis`, `performAdvancedAnalysis`
+    // and the user's actual plan.
 
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
@@ -366,7 +368,10 @@ Deno.serve(async (req) => {
 
     let totalAvailableCredits = unconsumedOrders.reduce((sum, order) => sum + (order.credits_remaining || 0), 0);
 
+    console.log(`contract-analyzer: DEBUG - Customer ${customerId} has ${totalAvailableCredits} available credits. Required: ${creditCost}`);
+
     if (totalAvailableCredits < creditCost) {
+      console.warn(`contract-analyzer: DEBUG - Insufficient credits for user ${userId}. Available: ${totalAvailableCredits}, Required: ${creditCost}`);
       return corsResponse({ error: getTranslatedMessage('error_insufficient_credits_for_operation', userPreferredLanguage, { requiredCredits: creditCost, availableCredits: totalAvailableCredits }) }, 403);
     }
 
@@ -377,6 +382,8 @@ Deno.serve(async (req) => {
 
       const creditsInOrder = order.credits_remaining || 0;
       const deduction = Math.min(remainingCost, creditsInOrder);
+
+      console.log(`contract-analyzer: DEBUG - Deducting ${deduction} from order ${order.id} (Credits in order: ${creditsInOrder}). Remaining cost: ${remainingCost - deduction}`);
 
       const { error: deductError } = await supabase
         .from('stripe_orders')
@@ -390,6 +397,9 @@ Deno.serve(async (req) => {
       remainingCost -= deduction;
       consumedOrderId = order.id; // Keep track of the last order credits were consumed from
     }
+    console.log(`contract-analyzer: DEBUG - Credit deduction completed. Final remaining cost: ${remainingCost}`);
+  } else {
+    console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier >= 4). Skipping credit deduction.`);
   }
   // --- END: Authorization Logic & Credit Deduction ---
 
