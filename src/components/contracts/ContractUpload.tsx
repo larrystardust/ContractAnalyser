@@ -35,10 +35,11 @@ interface ContractUploadProps {
   setSelectedFiles: (files: File[]) => void;
   ocrCost: number;
   basicAnalysisCost: number;
-  advancedAnalysisAddonCost: number;
+  advancedAnalysisAddonCost: number; // This is correctly in the interface
   showProcessingOptions: boolean; // This now controls visibility for single-use users
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
+  loadingOrders: boolean; // MODIFIED: Added loadingOrders prop
 }
 
 const ContractUpload: React.FC<ContractUploadProps> = ({
@@ -50,10 +51,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setSelectedFiles,
   ocrCost,
   basicAnalysisCost,
-  advancedAnalysisAddonCost, // MODIFIED: Destructure from props
+  advancedAnalysisAddonCost, // MODIFIED: Destructure advancedAnalysisAddonCost here
   showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
+  loadingOrders, // MODIFIED: Destructure loadingOrders
 }) => {
   const { addContract, refetchContracts } = useContracts();
   const [isDragging, setIsDragging] = useState(false);
@@ -89,7 +91,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || isBasicSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
@@ -200,7 +202,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       alert(t('only_one_document_allowed'));
       return;
     }
-
+    
     // --- Update State Based on Validated Input ---
 
     if (newDocumentFiles.length === 1) {
@@ -695,7 +697,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-purple-600"
                     checked={performAdvancedAnalysis}
                     onChange={(e) => setPerformAdvancedAnalysis(e.target.checked)}
-                    disabled={uploading}
+                    disabled={uploading || loadingOrders} // MODIFIED: Disable if orders are loading
                   />
                   <span className="ml-2 text-purple-700">
                     {t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
