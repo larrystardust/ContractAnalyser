@@ -188,7 +188,7 @@ const UploadPage: React.FC = () => {
           canPerformAdvancedAddon={canPerformAdvancedAddon}
           ocrCost={OCR_COST}
           basicAnalysisCost={BASIC_ANALYSIS_COST}
-          advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST}
+          advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST} {/* MODIFIED: Pass as prop */}
           showProcessingOptions={showProcessingOptions}
           isAdvancedSubscription={isAdvancedSubscription}
           isBasicSubscription={isBasicSubscription}
