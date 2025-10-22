@@ -348,20 +348,21 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let fileType = '';
       let filesToUpload: File[] = [];
       let imageDatasToProcess: string[] = [];
+      let needsBackendOcr = false; // Flag to tell backend whether to perform OCR
 
+      // Process captured images first
       if (capturedImages.length > 0) {
-        // For captured images, OCR will happen on backend
         fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
+        needsBackendOcr = true; // Captured images always need OCR
         
-        // Convert captured image files to Base64 for the Edge Function
         for (const imageFile of capturedImages) {
           imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => {
               if (typeof reader.result === 'string') {
-                resolve(reader.result.split(',')[1]); // Extract Base64 part
+                resolve(reader.result.split(',')[1]);
               } else {
                 reject(new Error('Failed to read file as Base64.'));
               }
@@ -369,23 +370,22 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             reader.onerror = reject;
             reader.readAsDataURL(imageFile);
           }));
-          filesToUpload.push(imageFile); // Add the actual File object to filesToUpload
+          filesToUpload.push(imageFile);
         }
       } else if (selectedFiles.length > 0) {
-        // For uploaded files
-        // If multiple files, name them as "Multi-page Contract"
+        // Process uploaded files
         fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type; // Take type of first file, or generalize
+        fileType = selectedFiles[0].type;
 
-        // Separate files into those needing OCR and those providing text directly
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
+            needsBackendOcr = true; // Uploaded images always need OCR
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                  resolve(reader.result.split(',')[1]); // Extract Base64 part
+                  resolve(reader.result.split(',')[1]);
                 } else {
                   reject(new Error('Failed to read file as Base64.'));
                 }
@@ -393,17 +393,24 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               reader.onerror = reject;
               reader.readAsDataURL(file);
             }));
-            filesToUpload.push(file); // Still upload image files to storage
-          } else if (!performOcr && (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
-            // If it's a document and OCR is NOT selected, extract text locally
+            filesToUpload.push(file);
+          } else if (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+            // For text-selectable PDF/DOCX, always extract text locally.
             contractText += await extractTextFromFile(file) + '\n\n';
             filesToUpload.push(file);
+            // If contractText is populated, OCR is not needed on the backend for this file.
+            // needsBackendOcr will only be true if an image was also processed.
           } else {
-            // If it's a document and OCR IS selected, or other file types, upload it
+            // Other file types, just upload
             filesToUpload.push(file);
           }
         }
       }
+
+      // Final determination of performOcr flag for the backend
+      // OCR is needed if image data is present, OR if no contractText was extracted (meaning it's a non-selectable PDF/DOCX)
+      // AND either it's a subscription user (OCR is included) or a single-use user explicitly checked the OCR box.
+      const finalPerformOcrFlag = (imageDatasToProcess.length > 0) || (contractText === '' && (isBasicSubscription || isAdvancedSubscription || performOcr));
 
       const newContractId = await addContract({
         files: filesToUpload.length > 0 ? filesToUpload : undefined,
@@ -412,13 +419,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         fileSize,
         fileType,
         jurisdictions: selectedJurisdictions,
-        contractText, // This will be empty if OCR is performed on backend
+        contractText, // This will now contain text for PDF/DOCX if applicable
         sourceLanguage,
         outputLanguage,
-        // CRITICAL: These flags must be set correctly based on subscription type
-        performOcr: isAdvancedSubscription || isBasicSubscription ? true : performOcr, // Always true for subs, or user selection for single-use
-        performAnalysis: isAdvancedSubscription || isBasicSubscription ? true : performAnalysis, // Always true for subs, or user selection for single-use
-        performAdvancedAnalysis: isAdvancedSubscription ? true : performAdvancedAnalysis, // Always true for advanced subs, or user selection for basic/single-use
+        performOcr: finalPerformOcrFlag, // Use the new logic for backend OCR
+        performAnalysis: isAdvancedSubscription || isBasicSubscription ? true : performAnalysis,
+        performAdvancedAnalysis: isAdvancedSubscription ? true : performAdvancedAnalysis,
         creditCost: currentCreditCost,
       });
       
