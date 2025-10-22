@@ -50,7 +50,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   setSelectedFiles,
   ocrCost,
   basicAnalysisCost,
-  advancedAnalysisAddonCost,
+  advancedAnalysisAddonCost, // MODIFIED: Destructure from props
   showProcessingOptions, // This now controls visibility for single-use users
   isAdvancedSubscription,
   isBasicSubscription,
@@ -89,7 +89,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
@@ -496,7 +496,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   };
 
   // Debugging log for the translation key
-  const debugTranslation = t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits }); // MODIFIED: Use new key
+  const debugTranslation = t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits });
   console.log('DEBUG: perform_advanced_analysis_with_credits translation output:', debugTranslation);
 
 
