@@ -1592,8 +1592,8 @@
   "not_specified": "Non spécifié",
   "advanced_analysis_optional": "Analyse Avancée (Optionnel)",
   "credits_required": "crédit requis",
-  "advanced_analysis_credit_cost_and_available": "({cost} crédit requis. Vous avez {count} crédits disponibles.)",
-  "advanced_analysis_cost_and_available_credits": "({cost} crédit requis. Vous avez {count} crédits disponibles.)",
+  "advanced_analysis_credit_cost_and_available": "({{cost}} crédit requis. Vous avez {{count}} crédits disponibles.)",
+  "advanced_analysis_cost_and_available_credits": "({{cost}} crédit requis. Vous avez {{count}} crédits disponibles.)",
   "purchase_single_use_credits_or_upgrade": "Achetez des crédits à usage unique ou mettez à niveau",
-  "perform_advanced_analysis_with_credits": "Effectuer une analyse avancée ({cost} crédit requis. Vous avez {count} crédits disponibles.)"
+  "perform_advanced_analysis_with_credits": "Effectuer une analyse avancée ({{cost}} crédit requis. Vous avez {{count}} crédits disponibles.)"
 }
