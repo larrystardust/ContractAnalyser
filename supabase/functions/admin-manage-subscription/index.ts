@@ -230,6 +230,7 @@ Deno.serve(async (req) => {
       // Get max_users and max_files from the selectedProduct
       const maxUsers = selectedProduct.max_users ?? null;
       const maxFiles = selectedProduct.maxFiles ?? null;
+      const tier = selectedProduct.tier ?? null; // MODIFIED: Get tier from selectedProduct
 
       // First, cancel any existing Stripe subscriptions for this customer
       const { data: existingActiveStripeSubscription, error: existingStripeSubError } = await supabase
@@ -281,6 +282,7 @@ Deno.serve(async (req) => {
           status: 'active', // Always active for admin-assigned
           max_users: maxUsers,
           max_files: maxFiles,
+          tier: tier, // MODIFIED: Add tier here
         }, { onConflict: 'customer_id' }); // Update if customer already has a subscription
 
       if (upsertSubError) {
