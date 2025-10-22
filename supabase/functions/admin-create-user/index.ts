@@ -207,6 +207,7 @@ Deno.serve(async (req) => {
           const adminAssignedSubscriptionId = `admin_assigned_${newUser.user.id}_${Date.now()}`;
           const maxUsers = selectedProduct.max_users ?? null;
           const maxFiles = selectedProduct.maxFiles ?? null;
+          const tier = selectedProduct.tier ?? null; // MODIFIED: Get tier from selectedProduct
 
           // Upsert directly into stripe_subscriptions table
           const { error: upsertSubError } = await supabase
@@ -223,6 +224,7 @@ Deno.serve(async (req) => {
               status: 'active',
               max_users: maxUsers,
               max_files: maxFiles,
+              tier: tier, // MODIFIED: Add tier here
             }, { onConflict: 'customer_id' });
 
           if (upsertSubError) {
