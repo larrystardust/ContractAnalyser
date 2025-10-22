@@ -1588,5 +1588,9 @@
   "advanced_analysis_credit_cost_and_available": "({{cost}} رصيد مطلوب. لديك {{count}} أرصدة متاحة.)",
   "advanced_analysis_cost_and_available_credits": "(استمر في التحليل الأساسي. لإجراء تحليل متقدم، يلزم {{cost}} رصيد أو ترقية. لديك حاليًا {{count}} أرصدة متاحة). تحتاج إلى أرصدة اذهب إلى ",
   "purchase_single_use_credits_or_upgrade": "اشترِ أرصدة للاستخدام الفردي أو قم بالترقية",
+  "perform_ocr_with_cost": "إجراء التعرف الضوئي على الحروف ({{cost}} أرصدة)",
+  "not_enough_credits_for_ocr_with_cost": "أرصدة غير كافية للتعرف الضوئي على الحروف ({{cost}} أرصدة مطلوبة).",
+  "perform_analysis_with_cost": "إجراء التحليل ({{cost}} أرصدة)",
+  "not_enough_credits_for_analysis_with_cost": "أرصدة غير كافية للتحليل ({{cost}} أرصدة مطلوبة).",
   "perform_advanced_analysis_with_credits": "إجراء تحليل متقدم ({{cost}} رصيد مطلوب. لديك {{count}} أرصدة متاحة.)"
 }
