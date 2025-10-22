@@ -1593,5 +1593,9 @@
   "advanced_analysis_credit_cost_and_available": "({{cost}} credit required. You have {{count}} credits available.)",
   "advanced_analysis_cost_and_available_credits": "(Continue with the basic analysis. To perform an advanced analysis, {{cost}} credit or upgrade is required. You currently have {{count}} credits available). Need credits go to ",
   "purchase_single_use_credits_or_upgrade": "Purchase Single Use credits or upgrade",
+  "perform_ocr_with_cost": "Perform OCR ({{cost}} credits)",
+  "not_enough_credits_for_ocr_with_cost": "Not enough credits for OCR ({{cost}} credits required).",
+  "perform_analysis_with_cost": "Perform Analysis ({{cost}} credits)",
+  "not_enough_credits_for_analysis_with_cost": "Not enough credits for analysis ({{cost}} credits required).",
   "perform_advanced_analysis_with_credits": "Perform Advanced Analysis ({{cost}} credit required. You have {{count}} credits available.)"
 }
