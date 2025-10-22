@@ -91,7 +91,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || isBasicSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
@@ -652,14 +652,14 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     disabled={uploading || !canPerformOcr || !hasImageInput}
                   />
                   <span className="ml-2 text-gray-700">
-                    {t('perform_ocr')} ({{ocrCost}} {{t('credits')}})
+                    {t('perform_ocr_with_cost', { cost: ocrCost })}
                   </span>
                 </label>
                 {!canPerformOcr && (
-                  <p className="text-xs text-red-500 ml-7">{{t('not_enough_credits_for_ocr', { cost: ocrCost })}}</p>
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr_with_cost', { cost: ocrCost })}</p>
                 )}
                 {!hasImageInput && (
-                  <p className="text-xs text-gray-500 ml-7">{{t('ocr_only_for_images')}}</p>
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
                 )}
               </div>
 
@@ -679,11 +679,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     disabled={uploading || !canPerformBasicAnalysis}
                   />
                   <span className="ml-2 text-gray-700">
-                    {t('perform_analysis')} ({{basicAnalysisCost}} {{t('credits')}})
+                    {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
                   </span>
                 </label>
                 {!canPerformBasicAnalysis && (
-                  <p className="text-xs text-red-500 ml-7">{{t('not_enough_credits_for_analysis', { cost: basicAnalysisCost })}}</p>
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis_with_cost', { cost: basicAnalysisCost })}</p>
                 )}
               </div>
             </div>
@@ -693,7 +693,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         {/* NEW: Advanced Analysis (Optional) Section for Single Use and Basic/Admin-Assigned */}
         {isAnyInputSelected && !isAdvancedSubscription && (
           <div className="mt-6 p-4 border-l-4 border-purple-500 bg-purple-50 rounded-md">
-            <h3 className="text-md font-semibold text-purple-800 mb-3">{{t('advanced_analysis_optional')}}</h3>
+            <h3 className="text-md font-semibold text-purple-800 mb-3">{t('advanced_analysis_optional')}</h3>
             <div className="space-y-3">
               <div>
                 <label className="inline-flex items-center">
@@ -705,12 +705,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     disabled={uploading || loadingOrders}
                   />
                   <span className="ml-2 text-purple-700">
-                    {{t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}}
-                    <Link to="/pricing" className="underline text-purple-700 hover:text-purple-900">{{t('purchase_single_use_credits_or_upgrade')}}</Link>
+                    {t('advanced_analysis_cost_and_available_credits', { cost: advancedAnalysisAddonCost, count: availableCredits })}
+                    <Link to="/pricing" className="underline text-purple-700 hover:text-purple-900">{t('pricing_page')}</Link>
                   </span>
                 </label>
                 {!canPerformAdvancedAddon && (
-                  <p className="text-xs text-red-500 ml-7">{{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}}</p>
+                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost })}</p>
                 )}
               </div>
             </div>
@@ -719,7 +719,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {{t('select_jurisdictions')}}
+            {t('select_jurisdictions')}
           </label>
           <div className="flex flex-wrap gap-2">
             {getAllJurisdictions().map((jurisdiction) => (
@@ -734,7 +734,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                   }`}
                 disabled={uploading}
               >
-                {{t(getJurisdictionLabel(jurisdiction))}}
+                {t(getJurisdictionLabel(jurisdiction))}
               </button>
             ))}
           </div>
@@ -743,7 +743,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         {/* Document Language Selection */}
         <div className="mt-4">
           <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
-            {{t('document_language')}}
+            {t('document_language')}
           </label>
           <select
             id="sourceLanguage"
@@ -759,13 +759,13 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">{{t('document_language_hint')}}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('document_language_hint')}</p>
         </div>
 
         {/* Analysis Output Language Selection */}
         <div className="mt-4">
           <label htmlFor="outputLanguage" className="block text-sm font-medium text-gray-700 mb-2">
-            {{t('analysis_output_language')}}
+            {t('analysis_output_language')}
           </label>
           <select
             id="outputLanguage"
@@ -781,7 +781,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">{{t('analysis_output_language_hint')}}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('analysis_output_language_hint')}</p>
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -791,7 +791,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
             disabled={!isAnyInputSelected || selectedJurisdictions.length === 0 || uploading || (!performOcr && !performAnalysis)}
             icon={<Upload className="w-4 h-4" />}
           >
-            {uploading ? {{t('uploading')}} : {{t('upload_contract_button')}}}
+            {uploading ? t('uploading') : t('upload_contract_button')}
           </Button>
         </div>
       </form>
