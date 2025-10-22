@@ -1591,7 +1591,7 @@
   "advanced_analysis_optional": "Advanced Analysis (Optional)",
   "credits_required": "credit required",
   "advanced_analysis_credit_cost_and_available": "({{cost}} credit required. You have {{count}} credits available.)",
-  "advanced_analysis_cost_and_available_credits": "(Proceed with the normal contract analysis. However, to perform an advanced analysis, {{cost}} credit is required. You currently have {{count}} credits available). Need credits go to ",
+  "advanced_analysis_cost_and_available_credits": "(Continue with the normal analysis. To perform an advanced analysis, {{cost}} credit is required. You currently have {{count}} credits available). Need credits go to ",
   "purchase_single_use_credits_or_upgrade": "Purchase Single Use credits or upgrade",
   "perform_advanced_analysis_with_credits": "Perform Advanced Analysis ({{cost}} credit required. You have {{count}} credits available.)"
 }
