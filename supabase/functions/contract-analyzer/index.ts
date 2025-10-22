@@ -329,15 +329,15 @@ Deno.serve(async (req) => {
   console.log(`contract-analyzer: DEBUG - User ${userId} (Tier: ${userSubscriptionTier}) requested analysis.`);
   console.log(`contract-analyzer: DEBUG - performAdvancedAnalysis: ${performAdvancedAnalysis}, creditCost from frontend: ${creditCost}`);
 
-  // MODIFIED: Only deduct credits if user is NOT on an advanced subscription plan
-  if (!userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4)) { // If no subscription or basic/admin subscription
-    console.log(`contract-analyzer: DEBUG - User is NOT on an advanced plan (Tier < 4 or no subscription). Proceeding with credit deduction check.`);
+  // MODIFIED: Refined condition for credit deduction
+  // Deduct credits if:
+  // 1. There is no active subscription (userSubscriptionId is null)
+  // 2. The user has a subscription, but it's a basic/admin-assigned plan (tier < 4) AND advanced analysis is requested.
+  //    In this case, the base analysis is covered, but advanced analysis is an add-on.
+  const shouldDeductCredits = !userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4 && performAdvancedAnalysis);
 
-    // If advanced analysis is requested and user is not on an advanced plan, ensure creditCost includes it
-    // The creditCost from frontend should already include this, but we re-verify
-    // For simplicity, we trust the frontend's `creditCost` for now, but a more robust system
-    // would recalculate it here based on `performOcr`, `performAnalysis`, `performAdvancedAnalysis`
-    // and the user's actual plan.
+  if (shouldDeductCredits) {
+    console.log(`contract-analyzer: DEBUG - User is NOT on an advanced plan (Tier < 4 or no subscription) OR is on a basic plan requesting advanced analysis. Proceeding with credit deduction check.`);
 
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
@@ -399,7 +399,7 @@ Deno.serve(async (req) => {
     }
     console.log(`contract-analyzer: DEBUG - Credit deduction completed. Final remaining cost: ${remainingCost}`);
   } else {
-    console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier >= 4). Skipping credit deduction.`);
+    console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier >= 4) or a basic plan not requesting advanced analysis. Skipping credit deduction.`);
   }
   // --- END: Authorization Logic & Credit Deduction ---
 
