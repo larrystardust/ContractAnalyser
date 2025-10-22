@@ -1517,7 +1517,7 @@
   "advanced_analysis_addon_cost": "Coût du module complémentaire d'analyse avancée",
   "perform_advanced_analysis": "Effectuer une analyse avancée",
   "advanced_analysis_hint": "Active l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées pour ce contrat.",
-  "not_enough_credits_for_advanced_analysis": "Vous avez besoin de {{cost}} crédits pour l'analyse avancée.",
+  "not_enough_credits_for_advanced_analysis": "Vous avez besoin de {{cost}} crédit pour l'analyse avancée.",
   "select_advanced_analysis": "Sélectionner l'analyse avancée",
   "advanced_features_included": "Fonctionnalités avancées incluses",
   "advanced_features_not_included": "Fonctionnalités avancées non incluses",
