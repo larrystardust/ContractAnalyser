@@ -89,7 +89,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
 
 
   useEffect(() => {
@@ -496,8 +496,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   };
 
   // Debugging log for the translation key
-  const debugTranslation = t('advanced_analysis_cost_and_available_credits', { cost: advancedAnalysisAddonCost, count: availableCredits });
-  console.log('DEBUG: advanced_analysis_cost_and_available_credits translation output:', debugTranslation);
+  const debugTranslation = t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits }); // MODIFIED: Use new key
+  console.log('DEBUG: perform_advanced_analysis_with_credits translation output:', debugTranslation);
 
 
   return (
