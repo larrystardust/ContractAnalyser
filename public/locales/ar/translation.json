@@ -1510,7 +1510,7 @@
   "advanced_analysis_addon_cost": "تكلفة إضافة التحليل المتقدم",
   "perform_advanced_analysis": "إجراء تحليل متقدم",
   "advanced_analysis_hint": "يمكّن استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية لهذا العقد.",
-  "not_enough_credits_for_advanced_analysis": "تحتاج إلى {{cost}} رصيد للتحليل المتقدم.",
+  "not_enough_credits_for_advanced_analysis": "تحتاج إلى {{cost}} رصيد أو ترقية لإجراء تحليل متقدم.",
   "select_advanced_analysis": "تحديد التحليل المتقدم",
   "advanced_features_included": "الميزات المتقدمة متضمنة",
   "advanced_features_not_included": "الميزات المتقدمة غير متضمنة",
