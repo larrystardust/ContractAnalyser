@@ -1514,7 +1514,7 @@
   "advanced_analysis_addon_cost": "Advanced Analysis Add-on Cost",
   "perform_advanced_analysis": "Perform Advanced Analysis",
   "advanced_analysis_hint": "Enables advanced AI data extraction, enhanced search, and automated alerts for this contract.",
-  "not_enough_credits_for_advanced_analysis": "You need {{cost}} credit for Advanced Analysis.",
+  "not_enough_credits_for_advanced_analysis": "You need {{cost}} credit or upgrade for an Advanced Analysis.",
   "select_advanced_analysis": "Select Advanced Analysis",
   "advanced_features_included": "Advanced features included",
   "advanced_features_not_included": "Advanced features not included",
