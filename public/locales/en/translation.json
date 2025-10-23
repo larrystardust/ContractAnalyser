@@ -1432,7 +1432,7 @@
   "processing_options": "Processing Options",
   "perform_ocr": "Perform OCR",
   "credits": "credits",
-  "not_enough_credits_for_ocr": "Not enough credits for OCR ({{cost}} credits required). Get credits from the ",
+  "not_enough_credits_for_ocr": "Not enough credits for OCR ({{cost}} credits required). Get credits from the pricing page.",
   "ocr_not_needed_for_documents": "OCR not needed for this document type.",
   "perform_analysis": "Perform Analysis",
   "not_enough_credits_for_analysis": "Not enough credits for Analysis. Get credits from the pricing page.",
