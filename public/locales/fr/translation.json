@@ -1447,6 +1447,7 @@
   "ensure_all_pages_scanned_uploaded": "Veuillez vous assurer que toutes les pages de votre document ont été scannées ou téléchargées.",
   "ocr_only_for_images": "L'OCR n'est applicable que pour les fichiers image (JPG, PNG) ou les documents scannés.",
   "ocr_mandatory_for_images": "L'OCR est obligatoire pour les fichiers image.",
+  "analysis_mandatory_for_images": "L'analyse est obligatoire pour les fichiers image.",
   "no_input_provided_for_upload": "Aucun fichier, image ou texte de contrat fourni pour le téléchargement.",
   "error_no_image_data_for_ocr": "Aucune donnée d'image fournie pour le traitement OCR.",
   "upload_files": "Télécharger des fichiers",
