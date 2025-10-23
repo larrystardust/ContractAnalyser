@@ -643,7 +643,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Conditional rendering for Processing Options section (Single-Use Users Only) */}
-        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && hasImageInput && !hasDocumentFiles && (
+        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && showProcessingOptions && (
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
