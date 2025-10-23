@@ -1431,7 +1431,7 @@
   "not_enough_credits_for_ocr": "لا توجد أرصدة كافية للتعرف الضوئي على الحروف (مطلوب {{cost}} رصيد). احصل على أرصدة من ",
   "ocr_not_needed_for_documents": "التعرف الضوئي على الحروف غير مطلوب لهذا النوع من المستندات.",
   "perform_analysis": "إجراء التحليل",
-  "not_enough_credits_for_analysis": "لا توجد أرصدة كافية للتحليل (مطلوب {{cost}} رصيد). احصل على أرصدة من ",
+  "not_enough_credits_for_analysis": "أرصدة غير كافية للتحليل. احصل على أرصدة من صفحة الأسعار.",
   "select_ocr_or_analysis": "الرجاء تحديد خيار معالجة واحد على الأقل (OCR أو تحليل).",
   "scanned_document_prefix": "مستند ممسوح ضوئيًا",
   "not_applicable": "غير_متوفر",
