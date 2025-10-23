@@ -1446,6 +1446,7 @@
   "ensure_all_pages_scanned_uploaded": "Please ensure all pages of your document have been scanned or uploaded.",
   "ocr_only_for_images": "OCR is only applicable for image files (JPG, PNG) or scanned documents.",
   "ocr_mandatory_for_images": "OCR is mandatory for image files.",
+  "analysis_mandatory_for_images": "Analysis is mandatory for image files.",
   "no_input_provided_for_upload": "No file, image, or contract text provided for upload.",
   "error_no_image_data_for_ocr": "No image data provided for OCR processing.",
   "upload_files": "Upload Files",
