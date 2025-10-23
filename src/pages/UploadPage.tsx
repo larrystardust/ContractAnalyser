@@ -109,17 +109,32 @@ const UploadPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6 mt-16">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('upload_new_contract')}</h1>
       
-      <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
-        <div className="flex items-center">
-          <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
-          <div>
-            <p className="font-bold">{t('important_document_format')}</p>
-            <p className="text-sm">
-              {t('ocr_limitation_message')}
-            </p>
+      {/* MODIFIED: Conditional rendering for Important Document Format message */}
+      {(isAdvancedSubscription || isBasicSubscription) ? (
+        <div className="bg-blue-50 border-l-4 border-blue-300 text-blue-800 p-4 mb-6" role="alert">
+          <div className="flex items-center">
+            <FileText className="h-5 w-5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="font-bold">{t('important_document_format')}</p>
+              <p className="text-sm">
+                {t('important_document_format_subscription')}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 mr-3 flex-shrink-0" />
+            <div>
+              <p className="font-bold">{t('important_document_format')}</p>
+              <p className="text-sm">
+                {t('ocr_limitation_message')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Credit/Subscription Status Display */}
       <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
