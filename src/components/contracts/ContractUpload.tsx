@@ -105,7 +105,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   // Effect to determine processing options and document type
   useEffect(() => {
     const currentSelectedFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
-    const currentCapturedImages = Array.isArray(capturedImages) ? capturedImages : [];
+    const currentCapturedImages = Array.isArray(capturedImages) ? currentCapturedImages : [];
 
     const anyImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
     const anyDocumentFile = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
@@ -645,58 +645,62 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Conditional rendering for Processing Options section (Single-Use Users Only) */}
-        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && showProcessingOptions && (
+        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && ( // MODIFIED: Simplified outer condition
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
-              {/* Perform OCR Checkbox */}
-              <div>
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={performOcr}
-                    onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || hasImageInput}
-                  />
-                  <span className="ml-2 text-gray-700">
-                    {t('perform_ocr_with_cost', { cost: ocrCost })}
-                  </span>
-                </label>
-                {!canPerformOcr && (
-                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr_with_cost', { cost: ocrCost })}</p>
-                )}
-                {hasImageInput && (
-                  <p className="text-xs text-gray-500 ml-7">{t('ocr_mandatory_for_images')}</p>
-                )}
-              </div>
+              {/* Perform OCR Checkbox - Only visible if there's an image input */}
+              {hasImageInput && ( // MODIFIED: Only show OCR checkbox if there's an image input
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performOcr} // Controlled by useEffect (will be true if hasImageInput)
+                      onChange={(e) => setPerformOcr(e.target.checked)}
+                      disabled={uploading || hasImageInput} // MODIFIED: Disabled if uploading or if it's an image input (mandatory)
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_ocr_with_cost', { cost: ocrCost })}
+                    </span>
+                  </label>
+                  {!canPerformOcr && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr_with_cost', { cost: ocrCost })}</p>
+                  )}
+                  {hasImageInput && (
+                    <p className="text-xs text-gray-500 ml-7">{t('ocr_mandatory_for_images')}</p>
+                  )}
+                </div>
+              )}
 
               {/* Perform Analysis Checkbox */}
-              <div>
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={performAnalysis}
-                    onChange={(e) => {
-                      setPerformAnalysis(e.target.checked);
-                      if (!e.target.checked) {
-                        setPerformAdvancedAnalysis(false);
-                      }
-                    }}
-                    disabled={uploading || (!isAdvancedSubscription && !isBasicSubscription && isAnyInputSelected)} // MODIFIED: Always disabled for single-use if input selected
-                  />
-                  <span className="ml-2 text-gray-700">
-                    {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
-                  </span>
-                </label>
-                {!canPerformBasicAnalysis && (
-                  <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis_with_cost', { cost: basicAnalysisCost })}</p>
-                )}
-                {hasImageInput && (
-                  <p className="text-xs text-gray-500 ml-7">{t('analysis_mandatory_for_images')}</p>
-                )}
-              </div>
+              {isAnyInputSelected && ( // MODIFIED: Always show if any input is selected
+                <div>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      checked={performAnalysis} // Controlled by useEffect (will be true if isAnyInputSelected)
+                      onChange={(e) => {
+                        setPerformAnalysis(e.target.checked);
+                        if (!e.target.checked) {
+                          setPerformAdvancedAnalysis(false);
+                        }
+                      }}
+                      disabled={uploading || isAnyInputSelected} // MODIFIED: Always disabled for single-use when file selected
+                    />
+                    <span className="ml-2 text-gray-700">
+                      {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
+                    </span>
+                  </label>
+                  {!canPerformBasicAnalysis && (
+                    <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis_with_cost', { cost: basicAnalysisCost })}</p>
+                  )}
+                  {isAnyInputSelected && ( // MODIFIED: Message for mandatory analysis
+                    <p className="text-xs text-gray-500 ml-7">{t('analysis_mandatory_for_all_files')}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
