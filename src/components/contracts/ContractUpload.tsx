@@ -91,7 +91,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= ocrCost;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= basicAnalysisCost;
-  const canPerformAdvancedAddon = isAdvancedSubscription || isBasicSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
 
 
   useEffect(() => {
@@ -314,18 +314,19 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
     // MODIFIED: Update credit checks for submission
     // For single-use users, check all selected options
-    if (!isBasicSubscription && !isAdvancedSubscription) {
-      // For single-use users, performAnalysis is always true and mandatory, so we only need to check performOcr
-      if (performOcr && !canPerformOcr) {
-        alert(t('not_enough_credits_for_ocr', { cost: ocrCost }));
+    if (!isBasicSubscription && !isAdvancedSubscription) { // Single-use user
+      // Ensure at least OCR or Analysis is selected
+      if (!performOcr && !performAnalysis) {
+        alert(t('select_ocr_or_analysis'));
         return;
       }
-      // performAnalysis is always true, so basicAnalysisCost is always added to currentCreditCost
-      if (!canPerformBasicAnalysis) { // Check if they have enough credits for basic analysis
-        alert(t('not_enough_credits_for_analysis', { cost: basicAnalysisCost }));
+
+      // Perform a single, comprehensive credit check for single-use users
+      if (availableCredits < currentCreditCost) {
+        alert(t('not_enough_credits_for_operation', { requiredCredits: currentCreditCost, availableCredits: availableCredits }));
         return;
       }
-    } else { // For basic/advanced subscription users, OCR and basic analysis are always performed
+    } else { // For basic/advanced subscription users
       // Only check advanced analysis credits if it's a basic subscription and advanced is selected
       if (isBasicSubscription && performAdvancedAnalysis && !canPerformAdvancedAddon) {
         alert(t('not_enough_credits_for_advanced_analysis', { cost: advancedAnalysisAddonCost }));
@@ -644,7 +645,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Conditional rendering for Processing Options section (Single-Use Users Only) */}
-        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && hasImageInput && !hasDocumentFiles && (
+        {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && showProcessingOptions && (
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
             <div className="space-y-3">
@@ -656,7 +657,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || hasImageInput} // MODIFIED: Disable if hasImageInput
+                    disabled={uploading || !canPerformOcr || hasImageInput}
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr_with_cost', { cost: ocrCost })}
@@ -665,7 +666,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 {!canPerformOcr && (
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr_with_cost', { cost: ocrCost })}</p>
                 )}
-                {/* MODIFIED: New message for mandatory OCR */}
                 {hasImageInput && (
                   <p className="text-xs text-gray-500 ml-7">{t('ocr_mandatory_for_images')}</p>
                 )}
@@ -684,7 +684,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                         setPerformAdvancedAnalysis(false);
                       }
                     }}
-                    disabled={uploading || !canPerformBasicAnalysis || (!isAdvancedSubscription && !isBasicSubscription && isAnyInputSelected)} // MODIFIED: Always disabled for single-use if input selected
+                    disabled={uploading || (!isAdvancedSubscription && !isBasicSubscription && isAnyInputSelected)} // MODIFIED: Always disabled for single-use if input selected
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
@@ -693,7 +693,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 {!canPerformBasicAnalysis && (
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis_with_cost', { cost: basicAnalysisCost })}</p>
                 )}
-                {hasImageInput && ( // ADDED: Message for mandatory analysis
+                {hasImageInput && (
                   <p className="text-xs text-gray-500 ml-7">{t('analysis_mandatory_for_images')}</p>
                 )}
               </div>
