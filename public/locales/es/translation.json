@@ -1593,5 +1593,6 @@
   "not_enough_credits_for_ocr_with_cost": "Créditos insuficientes para OCR ({{cost}} créditos requeridos).",
   "perform_analysis_with_cost": "Realizar análisis ({{cost}} crédito)",
   "not_enough_credits_for_analysis_with_cost": "Créditos insuficientes para el análisis ({{cost}} crédito requeridos).",
+  "not_enough_credits_for_operation": "Créditos insuficientes para esta operación. {{requiredCredits}} créditos requeridos, {{availableCredits}} disponibles.",
   "perform_advanced_analysis_with_credits": "Realizar análisis avanzado ({{cost}} crédito requerido. Tienes {{count}} créditos disponibles.)"
 }
