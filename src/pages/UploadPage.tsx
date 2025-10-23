@@ -111,7 +111,7 @@ const UploadPage: React.FC = () => {
       
       {/* MODIFIED: Conditional rendering for Important Document Format message */}
       {(isAdvancedSubscription || isBasicSubscription) ? (
-        <div className="bg-blue-50 border-l-4 border-blue-300 text-blue-800 p-4 mb-6" role="alert">
+        <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
           <div className="flex items-center">
             <FileText className="h-5 w-5 mr-3 flex-shrink-0" />
             <div>
