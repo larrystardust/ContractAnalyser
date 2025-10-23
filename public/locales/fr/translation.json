@@ -1433,7 +1433,7 @@
   "processing_options": "Options de traitement",
   "perform_ocr": "Effectuer l'OCR",
   "credits": "crédits",
-  "not_enough_credits_for_ocr": "Crédits insuffisants pour l'OCR ({{cost}} crédits requis). Obtenez des crédits depuis la ",
+  "not_enough_credits_for_ocr": "Crédits insuffisants pour l'OCR ({{cost}} crédits requis). Obtenez des crédits sur la page des tarifs.",
   "ocr_not_needed_for_documents": "L'OCR n'est pas nécessaire pour ce type de document.",
   "perform_analysis": "Effectuer l'analyse",
   "not_enough_credits_for_analysis": "Crédits insuffisants pour l'analyse. Obtenez des crédits sur la page des tarifs.",
