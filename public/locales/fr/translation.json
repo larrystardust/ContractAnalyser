@@ -1598,7 +1598,7 @@
   "purchase_single_use_credits_or_upgrade": "Achetez des crédits à usage unique ou mettez à niveau",
   "perform_ocr_with_cost": "Effectuer l'OCR ({{cost}} crédits)",
   "not_enough_credits_for_ocr_with_cost": "Crédits insuffisants pour l'OCR ({{cost}} crédits requis).",
-  "perform_analysis_with_cost": "Effectuer l'analyse ({{cost}} crédits)",
-  "not_enough_credits_for_analysis_with_cost": "Crédits insuffisants pour l'analyse ({{cost}} crédits requis).",
+  "perform_analysis_with_cost": "Effectuer l'analyse ({{cost}} crédit)",
+  "not_enough_credits_for_analysis_with_cost": "Crédits insuffisants pour l'analyse ({{cost}} crédit requis).",
   "perform_advanced_analysis_with_credits": "Effectuer une analyse avancée ({{cost}} crédit requis. Vous avez {{count}} crédits disponibles.)"
 }
