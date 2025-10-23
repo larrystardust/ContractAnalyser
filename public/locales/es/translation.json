@@ -1438,6 +1438,7 @@
   "multi_page_contract_prefix": "Contrato de Varias Páginas",
   "ensure_all_pages_scanned_uploaded": "Por favor, asegúrese de que todas las páginas de su documento han sido escaneadas o cargadas.",
   "ocr_only_for_images": "El OCR solo es aplicable para archivos de imagen (JPG, PNG) o documentos escaneados.",
+  "ocr_mandatory_for_images": "El OCR es obligatorio para los archivos de imagen.",
   "no_input_provided_for_upload": "No se proporcionó ningún archivo, imagen o texto de contrato para cargar.",
   "error_no_image_data_for_ocr": "No se proporcionaron datos de imagen para el procesamiento OCR.",
   "upload_files": "Subir archivos",
