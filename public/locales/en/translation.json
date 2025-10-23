@@ -887,7 +887,7 @@
 
   "upload_new_contract": "Upload New Contract",
   "important_document_format": "Important: Document Format",
-  "ocr_limitation_message": "Upload files containing selectable (clear) text i.e. PDF, DOCX, DOC (1 credit for each contract analysis). However, if your document is a scan or an image, OCR (Optical Character Recognition) will be performed to extract text. This process may take longer and consume additional 3 credits. Use the 'Scan Document' camera to capture each page of your document or 'Browse Files (Drag and Drop)' to import your documents. Ensure to re-arrange your scan or image documents in its chronological order (page 1, 2, 3....) before uploading contract.",
+  "ocr_limitation_message": "Upload files containing selectable (clear) text i.e. PDF, DOCX, DOC (1 credit for each basic contract analysis). However, if your document is a scan or an image, OCR (Optical Character Recognition) will be performed to extract text. This process may take longer and consume additional 3 credits. Use the 'Scan Document' camera from your mobile phone to capture each page of your document or 'Browse Files (Drag and Drop)' to import your documents. Ensure to re-arrange your scan or image documents in its chronological order (page 1, 2, 3....) before uploading contract.",
   "important_document_format_subscription": "Upload selectable text and image files i.e. PDF, DOCX, DOC, JPG, PNG or scanned documents. Use the 'Scan Document' camera from your mobile phone to capture each page of your document or 'Browse Files (Drag and Drop)' to import your documents. Ensure to re-arrange your scan or image documents in its chronological order (page 1, 2, 3....) before uploading contract.",
 
   "search_your_contracts": "Search Your Contracts",
