@@ -1594,5 +1594,6 @@
   "perform_analysis_with_cost": "Realizar análisis ({{cost}} crédito)",
   "not_enough_credits_for_analysis_with_cost": "Créditos insuficientes para el análisis ({{cost}} crédito requeridos).",
   "not_enough_credits_for_operation": "Créditos insuficientes para esta operación. {{requiredCredits}} créditos requeridos, {{availableCredits}} disponibles.",
+  "analysis_mandatory_for_all_files": "El análisis es obligatorio para todos los tipos de archivos.",
   "perform_advanced_analysis_with_credits": "Realizar análisis avanzado ({{cost}} crédito requerido. Tienes {{count}} créditos disponibles.)"
 }
