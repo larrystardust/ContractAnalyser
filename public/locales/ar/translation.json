@@ -1442,6 +1442,7 @@
   "ensure_all_pages_scanned_uploaded": "يرجى التأكد من مسح جميع صفحات المستند ضوئيًا أو تحميلها.",
   "ocr_only_for_images": "التعرف الضوئي على الحروف (OCR) ينطبق فقط على ملفات الصور (JPG، PNG) أو المستندات الممسوحة ضوئيًا.",
   "ocr_mandatory_for_images": "التعرف الضوئي على الحروف (OCR) إلزامي لملفات الصور.",
+  "analysis_mandatory_for_images": "التحليل إلزامي لملفات الصور.",
   "no_input_provided_for_upload": "لم يتم توفير ملف أو صورة أو نص عقد للتحميل.",
   "error_no_image_data_for_ocr": "لم يتم توفير بيانات الصورة لمعالجة التعرف الضوئي على الحروف (OCR).",
   "upload_files": "تحميل الملفات",
