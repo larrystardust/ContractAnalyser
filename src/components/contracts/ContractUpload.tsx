@@ -657,7 +657,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || hasImageInput}
+                    disabled={uploading || !canPerformOcr || hasImageInput} // MODIFIED: Disable if hasImageInput
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr_with_cost', { cost: ocrCost })}
