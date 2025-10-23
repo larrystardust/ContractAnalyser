@@ -681,7 +681,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     checked={performAnalysis}
                     onChange={(e) => {
                       setPerformAnalysis(e.target.checked);
-                      if (e.target.checked) {
+                      if (!e.target.checked) {
                         setPerformAdvancedAnalysis(false);
                       }
                     }}
