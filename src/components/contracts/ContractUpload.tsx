@@ -123,9 +123,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       setPerformAnalysis(true);
       setPerformAdvancedAnalysis(false); // Default to false for basic, user can select
     } else { // Single-use user
-      // If there are image inputs, OCR is mandatory and should be reflected in the state
+      // If there are image inputs, OCR and Analysis are mandatory and should be reflected in the state
       setPerformOcr(anyImageInput); // <-- MODIFIED: Set performOcr to true if any image input
-      setPerformAnalysis(true);
+      setPerformAnalysis(anyImageInput); // <-- ADDED: Set performAnalysis to true if any image input
       setPerformAdvancedAnalysis(false);
     }
   }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]); // MODIFIED: Removed hasImageInput from dependencies as it's derived here
@@ -644,7 +644,6 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </div>
 
         {/* Conditional rendering for Processing Options section (Single-Use Users Only) */}
-        {/* MODIFIED: Added condition `hasImageInput && !hasDocumentFiles` */}
         {isAnyInputSelected && !isBasicSubscription && !isAdvancedSubscription && hasImageInput && !hasDocumentFiles && (
           <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
             <h3 className="text-md font-semibold text-gray-800 mb-3">{t('processing_options')}</h3>
@@ -685,7 +684,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                         setPerformAdvancedAnalysis(false);
                       }
                     }}
-                    disabled={uploading || !canPerformBasicAnalysis}
+                    disabled={uploading || !canPerformBasicAnalysis || hasImageInput} // ADDED: Disable if hasImageInput
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
@@ -693,6 +692,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 </label>
                 {!canPerformBasicAnalysis && (
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_analysis_with_cost', { cost: basicAnalysisCost })}</p>
+                )}
+                {hasImageInput && ( // ADDED: Message for mandatory analysis
+                  <p className="text-xs text-gray-500 ml-7">{t('analysis_mandatory_for_images')}</p>
                 )}
               </div>
             </div>
