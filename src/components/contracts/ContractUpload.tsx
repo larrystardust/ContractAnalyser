@@ -105,7 +105,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   // Effect to determine processing options and document type
   useEffect(() => {
     const currentSelectedFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
-    const currentCapturedImages = Array.isArray(capturedImages) ? currentCapturedImages : [];
+    // FIX: Corrected the self-referencing variable to use the prop directly
+    const currentCapturedImages = Array.isArray(capturedImages) ? capturedImages : [];
 
     const anyImageInput = currentCapturedImages.length > 0 || currentSelectedFiles.some(f => f.type.startsWith('image/'));
     const anyDocumentFile = currentSelectedFiles.some(f => f.type === 'application/pdf' || f.name.endsWith('.docx') || f.name.endsWith('.doc'));
