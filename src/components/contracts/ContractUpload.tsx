@@ -684,7 +684,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                         setPerformAdvancedAnalysis(false);
                       }
                     }}
-                    disabled={uploading || !canPerformBasicAnalysis}
+                    disabled={uploading || canPerformBasicAnalysis} // MODIFIED: Disable if canPerformBasicAnalysis
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_analysis_with_cost', { cost: basicAnalysisCost })}
