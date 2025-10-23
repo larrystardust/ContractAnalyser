@@ -313,16 +313,15 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     // MODIFIED: Update credit checks for submission
     // For single-use users, check all selected options
     if (!isBasicSubscription && !isAdvancedSubscription) {
+      // Ensure at least OCR or Analysis is selected
       if (!performOcr && !performAnalysis) {
         alert(t('select_ocr_or_analysis'));
         return;
       }
-      if (performOcr && !canPerformOcr) {
-        alert(t('not_enough_credits_for_ocr', { cost: ocrCost }));
-        return;
-      }
-      if (performAnalysis && !canPerformBasicAnalysis) {
-        alert(t('not_enough_credits_for_analysis', { cost: basicAnalysisCost }));
+
+      // Perform a single, comprehensive credit check for single-use users
+      if (availableCredits < currentCreditCost) {
+        alert(t('not_enough_credits_for_operation', { requiredCredits: currentCreditCost, availableCredits: availableCredits }));
         return;
       }
     } else { // For basic/advanced subscription users, OCR and basic analysis are always performed
