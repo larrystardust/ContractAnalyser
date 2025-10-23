@@ -1428,7 +1428,7 @@
   "not_enough_credits_for_ocr": "Créditos insuficientes para OCR ({{cost}} créditos requeridos). Obtenga créditos de la ",
   "ocr_not_needed_for_documents": "OCR no necesario para este tipo de documento.",
   "perform_analysis": "Realizar análisis",
-  "not_enough_credits_for_analysis": "Créditos insuficientes para el análisis ({{cost}} créditos requeridos). Obtenga créditos de la ",
+  "not_enough_credits_for_analysis": "Créditos insuficientes para el análisis. Obtenga créditos en la página de precios.",
   "select_ocr_or_analysis": "Por favor, seleccione al menos una opción de procesamiento (OCR o Análisis).",
   "scanned_document_prefix": "Documento Escaneado",
   "not_applicable": "N/A",
