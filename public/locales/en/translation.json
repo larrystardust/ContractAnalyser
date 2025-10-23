@@ -1596,7 +1596,7 @@
   "purchase_single_use_credits_or_upgrade": "Purchase Single Use credits or upgrade",
   "perform_ocr_with_cost": "Perform OCR ({{cost}} credits)",
   "not_enough_credits_for_ocr_with_cost": "Not enough credits for OCR ({{cost}} credits required).",
-  "perform_analysis_with_cost": "Perform Analysis ({{cost}} credits)",
-  "not_enough_credits_for_analysis_with_cost": "Not enough credits for analysis ({{cost}} credits required).",
+  "perform_analysis_with_cost": "Perform Analysis ({{cost}} credit)",
+  "not_enough_credits_for_analysis_with_cost": "Not enough credits for analysis ({{cost}} credit required).",
   "perform_advanced_analysis_with_credits": "Perform Advanced Analysis ({{cost}} credit required. You have {{count}} credits available.)"
 }
