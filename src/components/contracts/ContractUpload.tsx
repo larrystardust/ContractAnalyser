@@ -123,11 +123,12 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       setPerformAnalysis(true);
       setPerformAdvancedAnalysis(false); // Default to false for basic, user can select
     } else { // Single-use user
-      setPerformOcr(false);
+      // If there are image inputs, OCR is mandatory and should be reflected in the state
+      setPerformOcr(anyImageInput); // <-- MODIFIED: Set performOcr to true if any image input
       setPerformAnalysis(true);
       setPerformAdvancedAnalysis(false);
     }
-  }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]);
+  }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]); // MODIFIED: Removed hasImageInput from dependencies as it's derived here
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -288,7 +289,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     let currentCreditCost = 0;
     // MODIFIED: Credit calculation logic based on subscription type
     if (!isAdvancedSubscription && !isBasicSubscription) { // Single-use user
-      if (performOcr) currentCreditCost += ocrCost;
+      if (performOcr) currentCreditCost += ocrCost; // <-- This now correctly uses the updated performOcr state
       if (performAnalysis) {
         currentCreditCost += basicAnalysisCost;
         if (performAdvancedAnalysis) {
@@ -655,7 +656,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                     className="form-checkbox h-5 w-5 text-blue-600"
                     checked={performOcr}
                     onChange={(e) => setPerformOcr(e.target.checked)}
-                    disabled={uploading || !canPerformOcr || !hasImageInput}
+                    disabled={uploading || !canPerformOcr || hasImageInput} // MODIFIED: Disable if hasImageInput
                   />
                   <span className="ml-2 text-gray-700">
                     {t('perform_ocr_with_cost', { cost: ocrCost })}
@@ -664,8 +665,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
                 {!canPerformOcr && (
                   <p className="text-xs text-red-500 ml-7">{t('not_enough_credits_for_ocr_with_cost', { cost: ocrCost })}</p>
                 )}
-                {!hasImageInput && (
-                  <p className="text-xs text-gray-500 ml-7">{t('ocr_only_for_images')}</p>
+                {/* MODIFIED: New message for mandatory OCR */}
+                {hasImageInput && (
+                  <p className="text-xs text-gray-500 ml-7">{t('ocr_mandatory_for_images')}</p>
                 )}
               </div>
 
