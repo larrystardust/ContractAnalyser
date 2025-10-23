@@ -1597,5 +1597,6 @@
   "perform_analysis_with_cost": "إجراء التحليل ({{cost}} أرصدة)",
   "not_enough_credits_for_analysis_with_cost": "أرصدة غير كافية للتحليل ({{cost}} أرصدة مطلوبة).",
   "not_enough_credits_for_operation": "أرصدة غير كافية لهذه العملية. مطلوب {{requiredCredits}} رصيد، متوفر {{availableCredits}}.",
+  "analysis_mandatory_for_all_files": "التحليل إلزامي لجميع أنواع الملفات.",
   "perform_advanced_analysis_with_credits": "إجراء تحليل متقدم ({{cost}} رصيد مطلوب. لديك {{count}} أرصدة متاحة.)"
 }
