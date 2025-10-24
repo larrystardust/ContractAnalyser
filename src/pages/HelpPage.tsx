@@ -55,6 +55,31 @@ const HelpPage: React.FC = () => {
           "@type": "Answer",
           "text": t('how_long_retained_a')
         }
+      },
+      // ADDED: New FAQ entries for Advanced Features
+      {
+        "@type": "Question",
+        "name": t('what_are_advanced_features_q'),
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": t('what_are_advanced_features_a')
+        }
+      },
+      {
+        "@type": "Question",
+        "name": t('how_do_advanced_features_benefit_q'),
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": t('how_do_advanced_features_benefit_a')
+        }
+      },
+      {
+        "@type": "Question",
+        "name": t('how_to_access_advanced_features_q'),
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": t('how_to_access_advanced_features_a')
+        }
       }
     ]
   };
@@ -155,6 +180,23 @@ const HelpPage: React.FC = () => {
           <li>
             <strong>{t('what_is_data_protection_impact_q')}</strong>
             <p className="ml-4">{t('what_is_data_protection_impact_a')}</p>
+          </li>
+        </ul>
+
+        {/* ADDED: New section for Advanced Features */}
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('advanced_features_section_title')}</h2>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 mb-6 space-y-2">
+          <li>
+            <strong>{t('what_are_advanced_features_q')}</strong>
+            <p className="ml-4">{t('what_are_advanced_features_a')}</p>
+          </li>
+          <li>
+            <strong>{t('how_do_advanced_features_benefit_q')}</strong>
+            <p className="ml-4">{t('how_do_advanced_features_benefit_a')}</p>
+          </li>
+          <li>
+            <strong>{t('how_to_access_advanced_features_q')}</strong>
+            <p className="ml-4">{t('how_to_access_advanced_features_a')}</p>
           </li>
         </ul>
 
