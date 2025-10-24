@@ -1572,6 +1572,8 @@
   "loading_contracts": "Loading contracts...",
   "no_contracts_found_matching_search": "No contracts found matching your search criteria.",
 
+  "advanced_features_section_title": "Advanced Features",
+  "advanced_features_disabled_message": "This feature is available only for Advanced subscription plans.",
   "key_date_notifications": "Key Date Notifications",
   "notify_before_renewal": "Notify me X days before contract renewal",
   "notify_before_renewal_hint": "Receive notifications X days before a contract's renewal date. Set to 0 to disable.",
