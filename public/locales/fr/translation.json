@@ -1575,6 +1575,8 @@
   "loading_contracts": "Chargement des contrats...",
   "no_contracts_found_matching_search": "Aucun contrat trouvé correspondant à vos critères de recherche.",
 
+  "advanced_features_section_title": "Fonctionnalités Avancées",
+  "advanced_features_disabled_message": "Cette fonctionnalité est disponible uniquement pour les plans d'abonnement Avancés.",
   "key_date_notifications": "Notifications de Dates Clés",
   "notify_before_renewal": "Me notifier X jours avant le renouvellement du contrat",
   "notify_before_renewal_hint": "Recevoir des notifications X jours avant la date de renouvellement d'un contrat. Mettre à 0 pour désactiver.",
