@@ -5,6 +5,14 @@ import { stripeProducts } from '../../../supabase/functions/_shared/stripe_produ
 import PricingCard from './PricingCard';
 import StructuredData from '../StructuredData';
 import { useTranslation } from 'react-i18next';
+import { StripeProduct } from '../../../supabase/functions/_shared/stripe_product_types'; // ADDED
+
+// ADDED: Interface for grouping products into sections
+interface PricingSectionGroup {
+  type: 'single' | 'professional' | 'enterprise';
+  products: StripeProduct[];
+  wrapperClasses?: string;
+}
 
 const LandingPagePricingSection: React.FC = () => {
   // console.log('LandingPagePricingSection component rendered'); // REMOVED
@@ -16,25 +24,39 @@ const LandingPagePricingSection: React.FC = () => {
     product.mode === 'payment' || product.mode === 'subscription'
   );
 
-  // Group products for rendering
-  const groupedProducts = [];
-  for (let i = 0; i < publicProducts.length; i++) {
-    const product = publicProducts[i];
-    if (product.id === 'prod_AdvancedProfessional' || product.id === 'prod_AdvancedEnterprise') {
-      // These will be handled when their base product is encountered
-      continue;
-    }
-    
-    const group = [product];
-    // Check for corresponding advanced product
-    if (product.id === 'prod_T2cJ7cQzgeS3Ku') { // Professional Use
-      const advancedProduct = publicProducts.find(p => p.id === 'prod_AdvancedProfessional');
-      if (advancedProduct) group.push(advancedProduct);
-    } else if (product.id === 'prod_T2cLOwJZatHP03') { // Enterprise Use
-      const advancedProduct = publicProducts.find(p => p.id === 'prod_AdvancedEnterprise');
-      if (advancedProduct) group.push(advancedProduct);
-    }
-    groupedProducts.push(group);
+  // MODIFIED: Group products into sections with specific styling
+  const pricingSections: PricingSectionGroup[] = [];
+
+  // Single Use Product
+  const singleUseProduct = publicProducts.find(p => p.id === 'prod_T2cDZNI5VjVdp5');
+  if (singleUseProduct) {
+    pricingSections.push({ type: 'single', products: [singleUseProduct] });
+  }
+
+  // Professional Group
+  const professionalBase = publicProducts.find(p => p.id === 'prod_T2cJ7cQzgeS3Ku');
+  const professionalAdvanced = publicProducts.find(p => p.id === 'prod_AdvancedProfessional');
+  if (professionalBase) {
+    const professionalGroup: StripeProduct[] = [professionalBase];
+    if (professionalAdvanced) professionalGroup.push(professionalAdvanced);
+    pricingSections.push({
+      type: 'professional',
+      products: professionalGroup,
+      wrapperClasses: "border-4 border-yellow-500 p-4 rounded-lg"
+    });
+  }
+
+  // Enterprise Group
+  const enterpriseBase = publicProducts.find(p => p.id === 'prod_T2cLOwJZatHP03');
+  const enterpriseAdvanced = publicProducts.find(p => p.id === 'prod_AdvancedEnterprise');
+  if (enterpriseBase) {
+    const enterpriseGroup: StripeProduct[] = [enterpriseBase];
+    if (enterpriseAdvanced) enterpriseGroup.push(enterpriseAdvanced);
+    pricingSections.push({
+      type: 'enterprise',
+      products: enterpriseGroup,
+      wrapperClasses: "border-4 border-blue-500 p-4 rounded-lg"
+    });
   }
 
   // Generate Product schema for each public product
@@ -131,23 +153,28 @@ const LandingPagePricingSection: React.FC = () => {
             </div>
           </div>
 
+          {/* MODIFIED: Render pricing sections */}
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
-            {groupedProducts.map((group, index) => (
-              <React.Fragment key={index}>
-                {group.length === 1 ? (
+            {pricingSections.map((section, sectionIndex) => (
+              <React.Fragment key={section.type}>
+                {section.type === 'single' ? (
                   <PricingCard
-                    product={group[0]}
+                    product={section.products[0]}
                     billingPeriod={billingPeriod}
+                    unauthenticatedRedirectPath="/signup" // MODIFIED: Pass unauthenticatedRedirectPath
                   />
                 ) : (
-                  <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {group.map(product => (
-                      <PricingCard
-                        key={product.id}
-                        product={product}
-                        billingPeriod={billingPeriod}
-                      />
-                    ))}
+                  <div className={`lg:col-span-2 ${section.wrapperClasses || ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {section.products.map(product => (
+                        <PricingCard
+                          key={product.id}
+                          product={product}
+                          billingPeriod={billingPeriod}
+                          unauthenticatedRedirectPath="/signup" // MODIFIED: Pass unauthenticatedRedirectPath
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
               </React.Fragment>
