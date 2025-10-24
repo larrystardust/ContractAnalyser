@@ -182,6 +182,21 @@ const SearchPage: React.FC = () => {
             />
           </div>
 
+          {/* Contract Value */}
+          <div>
+            <label htmlFor="contractValueFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              {t('contract_value')}
+            </label>
+            <input
+              type="text"
+              id="contractValueFilter"
+              value={contractValueFilter}
+              onChange={(e) => setContractValueFilter(e.target.value)}
+              placeholder={t('e_g_100000_usd')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+          
           {/* Parties */}
           <div>
             <label htmlFor="partiesFilter" className="block text-sm font-medium text-gray-700 mb-1">
@@ -322,21 +337,6 @@ const SearchPage: React.FC = () => {
               value={confidentialityFilter}
               onChange={(e) => setConfidentialityFilter(e.target.value)}
               placeholder={t('e_g_non_disclosure')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-
-          {/* ADDED: Contract Value Filter */}
-          <div>
-            <label htmlFor="contractValueFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              {t('contract_value')}
-            </label>
-            <input
-              type="text"
-              id="contractValueFilter"
-              value={contractValueFilter}
-              onChange={(e) => setContractValueFilter(e.target.value)}
-              placeholder={t('e_g_100000_usd')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
