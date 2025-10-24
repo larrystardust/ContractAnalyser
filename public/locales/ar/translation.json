@@ -1569,6 +1569,8 @@
   "loading_contracts": "جاري تحميل العقود...",
   "no_contracts_found_matching_search": "لم يتم العثور على عقود مطابقة لمعايير البحث الخاصة بك.",
 
+  "advanced_features_section_title": "الميزات المتقدمة",
+  "advanced_features_disabled_message": "هذه الميزة متاحة فقط لخطط الاشتراك المتقدمة.",
   "key_date_notifications": "إشعارات التواريخ الرئيسية",
   "notify_before_renewal": "إشعاري قبل X يومًا من تجديد العقد",
   "notify_before_renewal_hint": "تلقي إشعارات قبل X يومًا من تاريخ تجديد العقد. اضبط على 0 للتعطيل.",
