@@ -25,11 +25,12 @@ const SearchPage: React.FC = () => {
   const [liabilityCapFilter, setLiabilityCapFilter] = useState('');
   const [indemnificationFilter, setIndemnificationFilter] = useState('');
   const [confidentialityFilter, setConfidentialityFilter] = useState('');
+  const [contractValueFilter, setContractValueFilter] = useState(''); // ADDED: New state for contract value filter
 
   useEffect(() => {
     // ADDED: Console logs for debugging
     console.log('SearchPage: Contracts data:', contracts);
-    console.log('SearchPage: Filter values:', { searchTerm, contractTypeFilter, partiesFilter, effectiveDateStart, effectiveDateEnd, terminationDateStart, terminationDateEnd, renewalDateStart, renewalDateEnd, liabilityCapFilter, indemnificationFilter, confidentialityFilter });
+    console.log('SearchPage: Filter values:', { searchTerm, contractTypeFilter, partiesFilter, effectiveDateStart, effectiveDateEnd, terminationDateStart, terminationDateEnd, renewalDateStart, renewalDateEnd, liabilityCapFilter, indemnificationFilter, confidentialityFilter, contractValueFilter }); // MODIFIED: Added contractValueFilter
 
     let results = contracts;
 
@@ -55,6 +56,7 @@ const SearchPage: React.FC = () => {
       const lowercasedLiabilityCapFilter = liabilityCapFilter.toLowerCase();
       const lowercasedIndemnificationFilter = indemnificationFilter.toLowerCase();
       const lowercasedConfidentialityFilter = confidentialityFilter.toLowerCase();
+      const lowercasedContractValueFilter = contractValueFilter.toLowerCase(); // ADDED: Lowercased contract value filter
 
       // Contract Type Filter
       if (contractTypeFilter && ar.contractType && !ar.contractType.toLowerCase().includes(lowercasedContractTypeFilter)) {
@@ -105,6 +107,11 @@ const SearchPage: React.FC = () => {
         return false;
       }
 
+      // ADDED: Contract Value Filter
+      if (contractValueFilter && ar.contractValue && !ar.contractValue.toLowerCase().includes(lowercasedContractValueFilter)) {
+        return false;
+      }
+
       return true;
     });
 
@@ -123,6 +130,7 @@ const SearchPage: React.FC = () => {
     liabilityCapFilter,
     indemnificationFilter,
     confidentialityFilter,
+    contractValueFilter, // ADDED: Add contractValueFilter to dependencies
   ]);
 
   const toggleAdvancedFilters = () => {
@@ -314,6 +322,21 @@ const SearchPage: React.FC = () => {
               value={confidentialityFilter}
               onChange={(e) => setConfidentialityFilter(e.target.value)}
               placeholder={t('e_g_non_disclosure')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+
+          {/* ADDED: Contract Value Filter */}
+          <div>
+            <label htmlFor="contractValueFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              {t('contract_value')}
+            </label>
+            <input
+              type="text"
+              id="contractValueFilter"
+              value={contractValueFilter}
+              onChange={(e) => setContractValueFilter(e.target.value)}
+              placeholder={t('e_g_100000_usd')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
