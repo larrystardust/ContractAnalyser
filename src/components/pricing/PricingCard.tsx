@@ -13,6 +13,7 @@ interface PricingCardProps {
   userSubscription?: Subscription | null;
   userMembership?: SubscriptionMembership | null;
   isDataLoading?: boolean;
+  unauthenticatedRedirectPath?: string; // ADDED: New prop
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -22,6 +23,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   userSubscription,
   userMembership,
   isDataLoading = false,
+  unauthenticatedRedirectPath, // ADDED: Destructure new prop
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { t } = useTranslation();
@@ -141,9 +143,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
     } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: Block invited members from purchasing yearly
       return;
     } else if (product.mode === 'payment') {
-      createCheckoutSession(currentPricingOption.priceId, 'payment');
+      createCheckoutSession(currentPricingOption.priceId, 'payment', unauthenticatedRedirectPath); // MODIFIED: Pass unauthenticatedRedirectPath
     } else if (product.mode === 'subscription') {
-      createCheckoutSession(currentPricingOption.priceId, 'subscription');
+      createCheckoutSession(currentPricingOption.priceId, 'subscription', unauthenticatedRedirectPath); // MODIFIED: Pass unauthenticatedRedirectPath
     }
   };
 
