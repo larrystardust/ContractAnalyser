@@ -1560,6 +1560,7 @@
   "notification_message_analysis_complete": "Votre analyse de contrat pour {{contractName}} est terminée.",
 
   "advanced_filters": "Filtres Avancés",
+  "e_g_100000_usd": "ex: 100 000 USD",
   "e_g_service_agreement": "ex: Contrat de Service",
   "e_g_acme_corp": "ex: Acme Corp",
   "effective_date_start": "Date d'Effet (Début)",
