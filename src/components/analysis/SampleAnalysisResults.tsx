@@ -36,6 +36,22 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
+  // Helper to check if any advanced field has meaningful data
+  const hasAdvancedAnalysisData = () => {
+    const notSpecified = t('not_specified');
+    return (
+      (analysisResult.effectiveDate && analysisResult.effectiveDate !== notSpecified) ||
+      (analysisResult.terminationDate && analysisResult.terminationDate !== notSpecified) ||
+      (analysisResult.renewalDate && analysisResult.renewalDate !== notSpecified) ||
+      (analysisResult.contractType && analysisResult.contractType !== notSpecified) ||
+      (analysisResult.contractValue && analysisResult.contractValue !== notSpecified) ||
+      (analysisResult.parties && analysisResult.parties.length > 0 && analysisResult.parties[0] !== notSpecified) ||
+      (analysisResult.liabilityCapSummary && analysisResult.liabilityCapSummary !== notSpecified) ||
+      (analysisResult.indemnificationClauseSummary && analysisResult.indemnificationClauseSummary !== notSpecified) ||
+      (analysisResult.confidentialityObligationsSummary && analysisResult.confidentialityObligationsSummary !== notSpecified)
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -98,37 +114,35 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
       </div>
       
       {/* MODIFIED: Conditional rendering for Advanced Analysis Details Section for Sample */}
-      {(analysisResult.effectiveDate || analysisResult.terminationDate || analysisResult.renewalDate ||
-       analysisResult.contractType || analysisResult.contractValue || (analysisResult.parties && analysisResult.parties.length > 0) ||
-       analysisResult.liabilityCapSummary || analysisResult.indemnificationClauseSummary || analysisResult.confidentialityObligationsSummary) ? (
+      {hasAdvancedAnalysisData() ? (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('advanced_analysis_details')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            {analysisResult.effectiveDate && (
+            {analysisResult.effectiveDate && analysisResult.effectiveDate !== t('not_specified') && (
               <p><strong>{t('effective_date')}:</strong> {t(analysisResult.effectiveDate)}</p>
             )}
-            {analysisResult.terminationDate && (
+            {analysisResult.terminationDate && analysisResult.terminationDate !== t('not_specified') && (
               <p><strong>{t('termination_date')}:</strong> {t(analysisResult.terminationDate)}</p>
             )}
-            {analysisResult.renewalDate && (
+            {analysisResult.renewalDate && analysisResult.renewalDate !== t('not_specified') && (
               <p><strong>{t('renewal_date')}:</strong> {t(analysisResult.renewalDate)}</p>
             )}
-            {analysisResult.contractType && (
+            {analysisResult.contractType && analysisResult.contractType !== t('not_specified') && (
               <p><strong>{t('contract_type')}:</strong> {t(analysisResult.contractType)}</p>
             )}
-            {analysisResult.contractValue && (
+            {analysisResult.contractValue && analysisResult.contractValue !== t('not_specified') && (
               <p><strong>{t('contract_value')}:</strong> {t(analysisResult.contractValue)}</p>
             )}
-            {analysisResult.parties && analysisResult.parties.length > 0 && (
+            {analysisResult.parties && analysisResult.parties.length > 0 && analysisResult.parties[0] !== t('not_specified') && (
               <p><strong>{t('parties')}:</strong> {analysisResult.parties.map(p => t(p)).join(', ')}</p>
             )}
-            {analysisResult.liabilityCapSummary && (
+            {analysisResult.liabilityCapSummary && analysisResult.liabilityCapSummary !== t('not_specified') && (
               <p className="md:col-span-2"><strong>{t('liability_cap_summary')}:</strong> {t(analysisResult.liabilityCapSummary)}</p>
             )}
-            {analysisResult.indemnificationClauseSummary && (
+            {analysisResult.indemnificationClauseSummary && analysisResult.indemnificationClauseSummary !== t('not_specified') && (
               <p className="md:col-span-2"><strong>{t('indemnification_clause_summary')}:</strong> {t(analysisResult.indemnificationClauseSummary)}</p>
             )}
-            {analysisResult.confidentialityObligationsSummary && (
+            {analysisResult.confidentialityObligationsSummary && analysisResult.confidentialityObligationsSummary !== t('not_specified') && (
               <p className="md:col-span-2"><strong>{t('confidentiality_obligations_summary')}:</strong> {t(analysisResult.confidentialityObligationsSummary)}</p>
             )}
           </div>
