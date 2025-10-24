@@ -1566,6 +1566,8 @@
   "loading_contracts": "Cargando contratos...",
   "no_contracts_found_matching_search": "No se encontraron contratos que coincidan con sus criterios de búsqueda.",
 
+  "advanced_features_section_title": "Funciones Avanzadas",
+  "advanced_features_disabled_message": "Esta función solo está disponible para planes de suscripción Avanzados.",
   "key_date_notifications": "Notificaciones de Fechas Clave",
   "notify_before_renewal": "Notificarme X días antes de la renovación del contrato",
   "notify_before_renewal_hint": "Recibir notificaciones X días antes de la fecha de renovación de un contrato. Establecer en 0 para deshabilitar.",
