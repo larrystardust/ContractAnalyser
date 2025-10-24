@@ -97,10 +97,10 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
         </div>
       </div>
       
-      {/* ADDED: Advanced Analysis Details Section for Sample */}
-      {analysisResult.effectiveDate || analysisResult.terminationDate || analysisResult.renewalDate ||
-       analysisResult.contractType || analysisResult.contractValue || analysisResult.parties ||
-       analysisResult.liabilityCapSummary || analysisResult.indemnificationClauseSummary || analysisResult.confidentialityObligationsSummary ? (
+      {/* MODIFIED: Conditional rendering for Advanced Analysis Details Section for Sample */}
+      {(analysisResult.effectiveDate || analysisResult.terminationDate || analysisResult.renewalDate ||
+       analysisResult.contractType || analysisResult.contractValue || (analysisResult.parties && analysisResult.parties.length > 0) ||
+       analysisResult.liabilityCapSummary || analysisResult.indemnificationClauseSummary || analysisResult.confidentialityObligationsSummary) ? (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('advanced_analysis_details')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
