@@ -26,7 +26,7 @@ export function useStripe() {
 
 
   const createCheckoutSession = useCallback(
-    async (priceId: string, mode: 'subscription' | 'payment') => {
+    async (priceId: string, mode: 'subscription' | 'payment', unauthenticatedRedirectPath: string = '/login') => { // MODIFIED: Added unauthenticatedRedirectPath with default
       try {
         const {
           data: { session: currentSession },
@@ -34,7 +34,7 @@ export function useStripe() {
         } = await supabase.auth.getSession();
 
         if (error || !currentSession) {
-          navigate('/login');
+          navigate(unauthenticatedRedirectPath); // MODIFIED: Use unauthenticatedRedirectPath
           throw new Error(t('error_must_be_logged_in_to_purchase')); // MODIFIED
         }
 
