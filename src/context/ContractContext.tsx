@@ -69,7 +69,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           parties,
           liability_cap_summary,
           indemnification_clause_summary,
-          confidentiality_obligations_summary
+          confidentiality_obligations_summary,
+          performed_advanced_analysis // ADDED: Select the new column
         )
       `)
       .eq('user_id', session.user.id)
@@ -135,6 +136,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             liabilityCapSummary: analysisResultData.liability_cap_summary,
             indemnificationClauseSummary: analysisResultData.indemnification_clause_summary,
             confidentialityObligationsSummary: analysisResultData.confidentiality_obligations_summary,
+            performedAdvancedAnalysis: analysisResultData.performed_advanced_analysis, // ADDED: Map the new flag
           } : undefined,
         };
       });
