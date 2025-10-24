@@ -306,14 +306,14 @@ Deno.serve(async (req) => {
       if (!customerError && customerData?.customer_id) {
         const { data: directSubData, error: directSubError } = await supabase
           .from('stripe_subscriptions')
-          .select('subscription_id, tier')
+          .select('subscription_id, tier') // MODIFIED: Select tier
           .eq('customer_id', customerData.customer_id)
           .eq('status', 'active')
           .maybeSingle();
 
         if (!directSubError && directSubData) {
           userSubscriptionId = directSubData.subscription_id;
-          userSubscriptionTier = directSubData.tier || null;
+          userSubscriptionTier = directSubData.tier || null; // Extract tier
         }
       }
     }
@@ -810,6 +810,7 @@ NOTES FOR ADVANCED ANALYSIS:
         liability_cap_summary: processedLiabilityCapSummary,
         indemnification_clause_summary: processedIndemnificationClauseSummary,
         confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
+        performed_advanced_analysis: performAdvancedAnalysis, // ADDED: Store the flag
       })
       .select()
       .single();
