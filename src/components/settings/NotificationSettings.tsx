@@ -250,6 +250,12 @@ const NotificationSettings: React.FC = () => {
                       disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
                     />
                   </div>
+                  {/* ADDED: Red text message for disabled advanced features */}
+                  {isDisabled && (
+                    <div className="col-span-3 text-xs text-red-500 mt-1">
+                      {t('advanced_features_disabled_message')}
+                    </div>
+                  )}
                 </div>
               );
             })}
