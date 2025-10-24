@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Globe, Palette, FileText, Mail, Smartphone, CalendarDays } from 'lucide-react'; // ADDED CalendarDays
+import { Settings, Globe, Palette, FileText, Mail, Smartphone, CalendarDays } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { getAllJurisdictions, getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -8,17 +8,22 @@ import { Jurisdiction } from '../../types';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
+import { useSubscription } from '../../hooks/useSubscription'; // ADDED
 
 const ApplicationPreferences: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { t, i18n } = useTranslation();
+  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED
+
+  // ADDED: Determine if user is on an advanced plan
+  const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
 
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [emailReportsEnabled, setEmailReportsEnabled] = useState(false);
   const [autoStartAnalysisEnabled, setAutoStartAnalysisEnabled] = useState(true);
-  const [selectedDefaultJurisdictions, setSelectedDefaultJurisdictions] = useState<Jurisdiction[]>([]); // ADDED: New state for default jurisdictions
+  const [selectedDefaultJurisdictions, setSelectedDefaultJurisdictions] = useState<Jurisdiction[]>([]);
   // ADDED: New states for date-based notification preferences
   const [renewalNotificationDaysBefore, setRenewalNotificationDaysBefore] = useState(30);
   const [terminationNotificationDaysBefore, setTerminationNotificationDaysBefore] = useState(30);
@@ -66,7 +71,7 @@ const ApplicationPreferences: React.FC = () => {
 
       setEmailReportsEnabled(data?.email_reports_enabled || false);
       setAutoStartAnalysisEnabled(data?.auto_start_analysis_enabled || false);
-      setSelectedDefaultJurisdictions((data?.default_jurisdictions as Jurisdiction[]) || []); // ADDED: Set default jurisdictions
+      setSelectedDefaultJurisdictions((data?.default_jurisdictions as Jurisdiction[]) || []);
       // ADDED: Set new notification preferences
       setRenewalNotificationDaysBefore(data?.renewal_notification_days_before || 30);
       setTerminationNotificationDaysBefore(data?.termination_notification_days_before || 30);
@@ -179,7 +184,7 @@ const ApplicationPreferences: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || loadingSubscription) { // MODIFIED: Add loadingSubscription
     return (
       <Card>
         <CardBody className="text-center py-8">
@@ -348,9 +353,12 @@ const ApplicationPreferences: React.FC = () => {
               onChange={(e) => setRenewalNotificationDaysBefore(parseInt(e.target.value))}
               min="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              disabled={isSaving}
+              disabled={isSaving || !isAdvancedPlan} // MODIFIED: Disable if not advanced plan
             />
             <p className="text-xs text-gray-500 mt-1">{t('notify_before_renewal_hint')}</p>
+            {!isAdvancedPlan && ( // ADDED: Message if advanced features are disabled
+              <p className="text-xs text-red-500 mt-1">{t('advanced_features_disabled_message')}</p>
+            )}
           </div>
           {/* Termination Notification Days Before */}
           <div className="py-3 border-t border-gray-200">
@@ -365,9 +373,12 @@ const ApplicationPreferences: React.FC = () => {
               onChange={(e) => setTerminationNotificationDaysBefore(parseInt(e.target.value))}
               min="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              disabled={isSaving}
+              disabled={isSaving || !isAdvancedPlan} // MODIFIED: Disable if not advanced plan
             />
             <p className="text-xs text-gray-500 mt-1">{t('notify_before_termination_hint')}</p>
+            {!isAdvancedPlan && ( // ADDED: Message if advanced features are disabled
+              <p className="text-xs text-red-500 mt-1">{t('advanced_features_disabled_message')}</p>
+            )}
           </div>
         </CardBody>
       </Card>
