@@ -70,7 +70,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           liability_cap_summary,
           indemnification_clause_summary,
           confidentiality_obligations_summary,
-          performed_advanced_analysis // ADDED: Select the new column
+          performed_advanced_analysis 
         )
       `)
       .eq('user_id', session.user.id)
