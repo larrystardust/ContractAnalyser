@@ -1,14 +1,14 @@
 import React from 'react';
 import { useContracts } from '../context/ContractContext';
 import Card, { CardBody, CardHeader } from '../components/ui/Card';
-import { FileText, CheckCircle, Clock, AlertTriangle, Sparkles, CalendarDays, AlertTriangle as AlertIcon, Users, Briefcase } from 'lucide-react'; // MODIFIED: Added CalendarDays, AlertTriangle as AlertIcon, Users, Briefcase
+import { FileText, CheckCircle, Clock, AlertTriangle, Sparkles, CalendarDays, AlertTriangle as AlertIcon, Users, Briefcase } from 'lucide-react';
 import { getRiskLevelLabel } from '../utils/riskUtils';
 import { useSubscription } from '../hooks/useSubscription';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { sampleContracts } from '../data/sampleData';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { RiskLevel } from '../types'; // ADDED: Import RiskLevel type
+import { RiskLevel } from '../types';
 
 const ReportsPage: React.FC = () => {
   // console.log('ReportsPage component rendered'); // COMMENTED OUT
@@ -17,6 +17,9 @@ const ReportsPage: React.FC = () => {
   
   const { subscription, membership, loading: loadingSubscription } = useSubscription();
   const { hasAvailableSingleUse, loading: loadingOrders } = useUserOrders();
+
+  // ADDED: Determine if user is on an advanced plan
+  const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
 
   const isPayingCustomer = (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) ||
                            (membership && membership.status === 'active') ||
@@ -31,7 +34,6 @@ const ReportsPage: React.FC = () => {
   const analyzingContracts = contractsToDisplay.filter(c => c.status === 'analyzing').length;
   const pendingContracts = contractsToDisplay.filter(c => c.status === 'pending').length;
 
-  // MODIFIED: Changed type assertion to Record<RiskLevel, number>
   const aggregatedRiskCounts = contractsToDisplay.reduce((acc, contract) => {
     if (contract.status === 'completed' && contract.analysisResult) {
       contract.analysisResult.findings.forEach(finding => {
@@ -39,12 +41,12 @@ const ReportsPage: React.FC = () => {
       });
     }
     return acc;
-  }, { high: 0, medium: 0, low: 0, none: 0 } as Record<RiskLevel, number>); // MODIFIED
+  }, { high: 0, medium: 0, low: 0, none: 0 } as Record<RiskLevel, number>);
 
-  // ADDED: Logic for upcoming renewals and terminations
+  // ADDED: Logic for upcoming renewals and terminations (only if advanced plan)
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const upcomingRenewals = contractsToDisplay.filter(contract => {
+  const upcomingRenewals = isAdvancedPlan ? contractsToDisplay.filter(contract => { // MODIFIED: Conditional filter
     if (contract.status === 'completed' && contract.analysisResult?.renewalDate) {
       const renewalDate = new Date(contract.analysisResult.renewalDate);
       renewalDate.setHours(0, 0, 0, 0);
@@ -57,9 +59,9 @@ const ReportsPage: React.FC = () => {
     const dateA = new Date(a.analysisResult?.renewalDate || 0).getTime();
     const dateB = new Date(b.analysisResult?.renewalDate || 0).getTime();
     return dateA - dateB;
-  });
+  }) : []; // MODIFIED: Empty array if not advanced plan
 
-  const upcomingTerminations = contractsToDisplay.filter(contract => {
+  const upcomingTerminations = isAdvancedPlan ? contractsToDisplay.filter(contract => { // MODIFIED: Conditional filter
     if (contract.status === 'completed' && contract.analysisResult?.terminationDate) {
       const terminationDate = new Date(contract.analysisResult.terminationDate);
       terminationDate.setHours(0, 0, 0, 0);
@@ -72,25 +74,25 @@ const ReportsPage: React.FC = () => {
     const dateA = new Date(a.analysisResult?.terminationDate || 0).getTime();
     const dateB = new Date(b.analysisResult?.terminationDate || 0).getTime();
     return dateA - dateB;
-  });
+  }) : []; // MODIFIED: Empty array if not advanced plan
 
-  // ADDED: Logic for Contracts by Type and Parties
-  const contractsByType = contractsToDisplay.reduce((acc, contract) => {
+  // ADDED: Logic for Contracts by Type and Parties (only if advanced plan)
+  const contractsByType = isAdvancedPlan ? contractsToDisplay.reduce((acc, contract) => { // MODIFIED: Conditional reduce
     if (contract.status === 'completed' && contract.analysisResult?.contractType) {
       const type = contract.analysisResult.contractType;
       acc[type] = (acc[type] || 0) + 1;
     }
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) : {}; // MODIFIED: Empty object if not advanced plan
 
-  const contractsByParty = contractsToDisplay.reduce((acc, contract) => {
+  const contractsByParty = isAdvancedPlan ? contractsToDisplay.reduce((acc, contract) => { // MODIFIED: Conditional reduce
     if (contract.status === 'completed' && contract.analysisResult?.parties) {
       contract.analysisResult.parties.forEach(party => {
         acc[party] = (acc[party] || 0) + 1;
       });
     }
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) : {}; // MODIFIED: Empty object if not advanced plan
 
 
   if (loadingData) {
@@ -187,79 +189,85 @@ const ReportsPage: React.FC = () => {
             ))}
           </div>
 
-          {/* ADDED: Upcoming Renewals Widget */}
-          {upcomingRenewals.length > 0 && (
+          {/* ADDED: Advanced Features Section */}
+          {isAdvancedPlan && (
             <>
-              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
-                <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {upcomingRenewals.map(contract => (
-                  <Card key={contract.id}>
-                    <CardBody>
-                      <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
-                      <p className="text-xs text-gray-600 mt-1">{t('renewal_date')}: {contract.analysisResult?.renewalDate}</p>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">{t('advanced_features_section_title')}</h2>
+              {/* Upcoming Renewals Widget */}
+              {upcomingRenewals.length > 0 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                    <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {upcomingRenewals.map(contract => (
+                      <Card key={contract.id}>
+                        <CardBody>
+                          <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
+                          <p className="text-xs text-gray-600 mt-1">{t('renewal_date')}: {contract.analysisResult?.renewalDate}</p>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
 
-          {/* ADDED: Upcoming Terminations Widget */}
-          {upcomingTerminations.length > 0 && (
-            <>
-              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
-                <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {upcomingTerminations.map(contract => (
-                  <Card key={contract.id}>
-                    <CardBody>
-                      <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
-                      <p className="text-xs text-gray-600 mt-1">{t('termination_date')}: {contract.analysisResult?.terminationDate}</p>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+              {/* Upcoming Terminations Widget */}
+              {upcomingTerminations.length > 0 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                    <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {upcomingTerminations.map(contract => (
+                      <Card key={contract.id}>
+                        <CardBody>
+                          <p className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</p>
+                          <p className="text-xs text-gray-600 mt-1">{t('termination_date')}: {contract.analysisResult?.terminationDate}</p>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
 
-          {/* ADDED: Contracts by Type Widget */}
-          {Object.keys(contractsByType).length > 0 && (
-            <>
-              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
-                <Briefcase className="h-5 w-5 mr-2 text-purple-600" /> {t('contracts_by_type')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.entries(contractsByType).map(([type, count]) => (
-                  <Card key={type}>
-                    <CardBody>
-                      <p className="text-sm font-medium text-gray-900">{type}</p>
-                      <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+              {/* Contracts by Type Widget */}
+              {Object.keys(contractsByType).length > 0 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                    <Briefcase className="h-5 w-5 mr-2 text-purple-600" /> {t('contracts_by_type')}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Object.entries(contractsByType).map(([type, count]) => (
+                      <Card key={type}>
+                        <CardBody>
+                          <p className="text-sm font-medium text-gray-900">{type}</p>
+                          <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
 
-          {/* ADDED: Contracts by Party Widget */}
-          {Object.keys(contractsByParty).length > 0 && (
-            <>
-              <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4 flex items-center">
-                <Users className="h-5 w-5 mr-2 text-orange-600" /> {t('contracts_by_party')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.entries(contractsByParty).map(([party, count]) => (
-                  <Card key={party}>
-                    <CardBody>
-                      <p className="text-sm font-medium text-gray-900">{party}</p>
-                      <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
+              {/* Contracts by Party Widget */}
+              {Object.keys(contractsByParty).length > 0 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                    <Users className="h-5 w-5 mr-2 text-orange-600" /> {t('contracts_by_party')}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Object.entries(contractsByParty).map(([party, count]) => (
+                      <Card key={party}>
+                        <CardBody>
+                          <p className="text-sm font-medium text-gray-900">{party}</p>
+                          <p className="text-xs text-gray-600 mt-1">{t('count')}: {count}</p>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </>
