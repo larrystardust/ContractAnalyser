@@ -1554,6 +1554,7 @@
   "notification_message_analysis_complete": "تحليل عقدك لـ {{contractName}} قد اكتمل.",
 
   "advanced_filters": "فلاتر متقدمة",
+  "e_g_100000_usd": "مثال: 100,000 دولار أمريكي",
   "e_g_service_agreement": "مثال: اتفاقية خدمة",
   "e_g_acme_corp": "مثال: شركة Acme",
   "effective_date_start": "تاريخ السريان (البداية)",
