@@ -5,6 +5,7 @@ import Card, { CardBody, CardHeader } from '../ui/Card';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { Database } from '../../types/supabase';
 import { useTranslation } from 'react-i18next';
+import { useSubscription } from '../../hooks/useSubscription'; // ADDED
 
 // Define the structure for the default settings (including display info)
 const notificationTypes = {
@@ -51,6 +52,10 @@ const NotificationSettings: React.FC = () => {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { t } = useTranslation();
+  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED
+
+  // ADDED: Determine if user is on an advanced plan
+  const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
 
   // State to hold the actual user preferences (only email/inApp status)
   const [preferences, setPreferences] = useState<Record<string, { email: boolean; inApp: boolean }>>(() => {
@@ -173,7 +178,7 @@ const NotificationSettings: React.FC = () => {
     </button>
   );
 
-  if (isLoading) {
+  if (isLoading || loadingSubscription) { // MODIFIED: Add loadingSubscription
     return (
       <Card>
         <CardBody className="text-center py-8">
@@ -221,6 +226,10 @@ const NotificationSettings: React.FC = () => {
               const typeInfo = notificationTypes[id as keyof typeof notificationTypes];
               if (!typeInfo) return null;
 
+              // ADDED: Determine if the current notification type is an advanced feature
+              const isAdvancedNotification = id === 'renewal-alerts' || id === 'termination-alerts';
+              const isDisabled = isAdvancedNotification && !isAdvancedPlan;
+
               return (
                 <div key={id} className="grid grid-cols-3 gap-4 items-center py-3">
                   <div>
@@ -231,12 +240,14 @@ const NotificationSettings: React.FC = () => {
                     <ToggleSwitch
                       checked={pref.email}
                       onChange={(checked) => updatePreference(id, 'email', checked)}
+                      disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
                     />
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
                       checked={pref.inApp}
                       onChange={(checked) => updatePreference(id, 'inApp', checked)}
+                      disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
                     />
                   </div>
                 </div>
