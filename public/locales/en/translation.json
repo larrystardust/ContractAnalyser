@@ -1557,6 +1557,7 @@
   "notification_message_analysis_complete": "Your contract analysis for {{contractName}} is complete.",
 
   "advanced_filters": "Advanced Filters",
+  "e_g_100000_usd": "e.g., 100,000 USD",
   "e_g_service_agreement": "e.g., Service Agreement",
   "e_g_acme_corp": "e.g., Acme Corp",
   "effective_date_start": "Effective Date (Start)",
