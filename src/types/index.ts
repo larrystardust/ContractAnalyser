@@ -55,6 +55,7 @@ export interface AnalysisResult {
   liabilityCapSummary?: string | null;
   indemnificationClauseSummary?: string | null;
   confidentialityObligationsSummary?: string | null;
+  performedAdvancedAnalysis?: boolean; // ADDED: New flag for advanced analysis
 }
 
 export interface JurisdictionSummary {
