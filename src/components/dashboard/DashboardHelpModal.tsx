@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
-import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle, Camera } from 'lucide-react'; // MODIFIED: Added Camera icon
+import { LifeBuoy, BookOpen, Lightbulb, Bug, XCircle, Camera, BarChart, Search, CalendarDays } from 'lucide-react'; // MODIFIED: Added BarChart, Search, CalendarDays icons
 import Modal from '../ui/Modal';
 import SupportTicketForm from '../forms/SupportTicketForm';
 import { Link, useNavigate } from 'react-router-dom';
@@ -146,6 +146,31 @@ const DashboardHelpModal: React.FC<DashboardHelpModalProps> = () => {
             **{t('jurisdiction_summaries_modal')}**: {t('jurisdiction_summaries_desc_modal')}
           </li>
         </ul>
+
+        {/* ADDED: New section for Advanced Features in DashboardHelpModal */}
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center mb-3">
+          <BarChart className="h-5 w-5 mr-2 text-purple-600" /> {t('advanced_features_modal_title')}
+        </h3>
+        <p className="text-gray-700 dark:text-gray-200 mb-4">
+          {t('advanced_features_modal_desc')}
+        </p>
+        <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2 mb-6">
+          <li>
+            **{t('key_date_tracking_modal')}**: {t('key_date_tracking_desc_modal')}
+          </li>
+          <li>
+            **{t('detailed_party_analysis_modal')}**: {t('detailed_party_analysis_desc_modal')}
+          </li>
+          <li>
+            **{t('advanced_search_filters_modal')}**: {t('advanced_search_filters_desc_modal')}
+          </li>
+          <li>
+            **{t('comprehensive_reports_modal')}**: {t('comprehensive_reports_desc_modal')}
+          </li>
+        </ul>
+        <p className="text-gray-700 dark:text-gray-200 mb-6">
+          {t('advanced_features_access_modal')} <Link to="/pricing" className="text-blue-600 hover:underline">{t('pricing_page')}</Link>.
+        </p>
 
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center mb-3"> {/* MODIFIED */}
           <LifeBuoy className="h-5 w-5 mr-2 text-green-600" /> {t('need_more_help_modal')}
