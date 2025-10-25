@@ -222,7 +222,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
     // 3. Fetch product metadata (unchanged)
     const { data: productMetadata, error: metadataError } = await supabase
       .from('stripe_product_metadata')
-      .select('max_users, max_files')
+      .select('max_users, max_files, tier') // MODIFIED: Select 'tier'
       .eq('price_id', priceId)
       .maybeSingle();
 
@@ -232,6 +232,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
 
     const maxUsers = productMetadata?.max_users ?? null;
     const maxFiles = productMetadata?.max_files ?? null;
+    const tier = productMetadata?.tier ?? null; // ADDED: Get tier from productMetadata
 
     // Get the user_id associated with this customer_id
     if (!userId) { // If userId was not found earlier, try to fetch it now
@@ -311,6 +312,7 @@ async function syncCustomerFromStripe(customerId: string, userId: string | null,
         status: stripeSubscription.status,
         max_users: maxUsers,
         max_files: maxFiles,
+        tier: tier, // ADDED: Include tier in the upsert operation
       },
       {
         onConflict: 'customer_id',
