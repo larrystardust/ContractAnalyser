@@ -1638,5 +1638,7 @@
   "product_name_professional_use_advanced": "Uso Profesional (Avanzado)",
   "product_desc_professional_use_advanced": "Plan de suscripción profesional con funciones avanzadas (para hasta dos usuarios)",
   "product_name_enterprise_use_advanced": "Uso Empresarial (Avanzado)",
-  "product_desc_enterprise_use_advanced": "Plan de suscripción empresarial con funciones avanzadas (para usuarios ilimitados)"
+  "product_desc_enterprise_use_advanced": "Plan de suscripción empresarial con funciones avanzadas (para usuarios ilimitados)",
+  "included_in_your_plan": "Incluido en su plan",
+  "included_in_your_advanced_plan": "Incluido en su plan avanzado"
 }
