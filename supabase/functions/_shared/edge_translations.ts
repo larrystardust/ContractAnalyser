@@ -231,6 +231,11 @@ export const edgeTranslations = {
     indemnification_clause_summary: "Indemnification Clause Summary",
     confidentiality_obligations_summary: "Confidentiality Obligations Summary",
     not_specified: "Not specified",
+
+    product_name_professional_use_advanced: "Professional Use (Advanced)",
+    product_desc_professional_use_advanced: "Professional Subscription Plan with Advanced Features (For up to two users)",
+    product_name_enterprise_use_advanced: "Enterprise Use (Advanced)",
+    product_desc_enterprise_use_advanced: "Enterprise Subscription Plan with Advanced Features (For unlimited users)",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
