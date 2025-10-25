@@ -21,6 +21,7 @@ async function populateStripeProductMetadata() {
                 max_users: product.max_users || null, // MODIFIED: Use product.max_users directly
                 max_files: product.maxFiles || null, // MODIFIED: Use product.maxFiles directly
                 credits: product.credits || null,
+                tier: product.tier || null, // ADDED: Include tier
             });
         }
         if (product.pricing.yearly) {
@@ -30,6 +31,7 @@ async function populateStripeProductMetadata() {
                 max_users: product.max_users || null, // MODIFIED: Use product.max_users directly
                 max_files: product.maxFiles || null, // MODIFIED: Use product.maxFiles directly
                 credits: product.credits || null,
+                tier: product.tier || null, // ADDED: Include tier
             });
         }
         if (product.pricing.one_time) {
@@ -39,6 +41,7 @@ async function populateStripeProductMetadata() {
                 max_users: null, // One-time products don't have max_users
                 max_files: null, // One-time products don't have max_files
                 credits: product.credits || null,
+                tier: product.tier || null, // ADDED: Include tier
             });
         }
         for (const data of productData) {
