@@ -28,14 +28,16 @@ const LandingPagePricingSection: React.FC = () => {
   const pricingSections: PricingSectionGroup[] = [];
 
   // Single Use Product
-  const singleUseProduct = publicProducts.find(p => p.id === 'prod_T2cDZNI5VjVdp5');
+  // MODIFIED: Identify by tier instead of hardcoded ID
+  const singleUseProduct = publicProducts.find(p => p.tier === 1);
   if (singleUseProduct) {
     pricingSections.push({ type: 'single', products: [singleUseProduct] });
   }
 
   // Professional Group
-  const professionalBase = publicProducts.find(p => p.id === 'prod_T2cJ7cQzgeS3Ku');
-  const professionalAdvanced = publicProducts.find(p => p.id === 'prod_AdvancedProfessional');
+  // MODIFIED: Identify by tier instead of hardcoded ID
+  const professionalBase = publicProducts.find(p => p.tier === 2);
+  const professionalAdvanced = publicProducts.find(p => p.tier === 4);
   if (professionalBase) {
     const professionalGroup: StripeProduct[] = [professionalBase];
     if (professionalAdvanced) professionalGroup.push(professionalAdvanced);
@@ -47,8 +49,9 @@ const LandingPagePricingSection: React.FC = () => {
   }
 
   // Enterprise Group
-  const enterpriseBase = publicProducts.find(p => p.id === 'prod_T2cLOwJZatHP03');
-  const enterpriseAdvanced = publicProducts.find(p => p.id === 'prod_AdvancedEnterprise');
+  // MODIFIED: Identify by tier instead of hardcoded ID
+  const enterpriseBase = publicProducts.find(p => p.tier === 3);
+  const enterpriseAdvanced = publicProducts.find(p => p.tier === 5);
   if (enterpriseBase) {
     const enterpriseGroup: StripeProduct[] = [enterpriseBase];
     if (enterpriseAdvanced) enterpriseGroup.push(enterpriseAdvanced);
