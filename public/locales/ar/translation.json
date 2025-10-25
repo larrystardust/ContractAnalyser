@@ -1641,5 +1641,7 @@
   "product_name_professional_use_advanced": "الاستخدام الاحترافي (متقدم)",
   "product_desc_professional_use_advanced": "خطة الاشتراك الاحترافي مع الميزات المتقدمة (لمستخدمين اثنين كحد أقصى)",
   "product_name_enterprise_use_advanced": "الاستخدام المؤسسي (متقدم)",
-  "product_desc_enterprise_use_advanced": "خطة الاشتراك المؤسسي مع الميزات المتقدمة (لعدد غير محدود من المستخدمين)"
+  "product_desc_enterprise_use_advanced": "خطة الاشتراك المؤسسي مع الميزات المتقدمة (لعدد غير محدود من المستخدمين)",
+  "included_in_your_plan": "مشمول في خطتك",
+  "included_in_your_advanced_plan": "مشمول في خطتك المتقدمة"
 }
