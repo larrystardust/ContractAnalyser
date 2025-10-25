@@ -1642,5 +1642,10 @@
   "advanced_search_filters_desc_modal": "Utilisez des capacités de recherche puissantes pour filtrer les contrats par dates clés, parties, type de contrat et résumés de clauses spécifiques.",
   "comprehensive_reports_modal": "Rapports et Analyses Complets",
   "comprehensive_reports_desc_modal": "Accédez à des rapports approfondis sur les types de contrats, les parties et les dates clés à venir pour obtenir une vue d'ensemble holistique de votre portefeuille.",
-  "advanced_features_access_modal": "Pour débloquer ces fonctionnalités avancées, veuillez visiter notre"
+  "advanced_features_access_modal": "Pour débloquer ces fonctionnalités avancées, veuillez visiter notre",
+
+  "product_name_professional_use_advanced": "Utilisation Professionnelle (Avancé)",
+  "product_desc_professional_use_advanced": "Plan d'abonnement professionnel avec fonctionnalités avancées (pour deux utilisateurs maximum)",
+  "product_name_enterprise_use_advanced": "Utilisation Entreprise (Avancé)",
+  "product_desc_enterprise_use_advanced": "Plan d'abonnement entreprise avec fonctionnalités avancées (pour un nombre illimité d'utilisateurs)"
 }
