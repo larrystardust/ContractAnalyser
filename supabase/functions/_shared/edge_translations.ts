@@ -705,6 +705,11 @@ export const edgeTranslations = {
     indemnification_clause_summary: "Résumé de la clause d'indemnisation",
     confidentiality_obligations_summary: "Résumé des obligations de confidentialité",
     not_specified: "Non spécifié",
+
+    product_name_professional_use_advanced: "Utilisation Professionnelle (Avancé)",
+    product_desc_professional_use_advanced: "Plan d'abonnement professionnel avec fonctionnalités avancées (pour deux utilisateurs maximum)",
+    product_name_enterprise_use_advanced: "Utilisation Entreprise (Avancé)",
+    product_desc_enterprise_use_advanced: "Plan d'abonnement entreprise avec fonctionnalités avancées (pour un nombre illimité d'utilisateurs)",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
