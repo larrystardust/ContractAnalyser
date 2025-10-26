@@ -13,7 +13,7 @@ interface PricingCardProps {
   userSubscription?: Subscription | null;
   userMembership?: SubscriptionMembership | null;
   isDataLoading?: boolean;
-  unauthenticatedRedirectPath?: string;
+  unauthenticatedRedirectPath?: string; // ADDED: New prop
 }
 
 const PricingCard: React.FC<PricingCardProps> = ({
@@ -23,7 +23,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
   userSubscription,
   userMembership,
   isDataLoading = false,
-  unauthenticatedRedirectPath,
+  unauthenticatedRedirectPath, // ADDED: Destructure new prop
 }) => {
   const { createCheckoutSession, createCustomerPortalSession } = useStripe();
   const { t } = useTranslation();
@@ -36,106 +36,116 @@ const PricingCard: React.FC<PricingCardProps> = ({
     return null;
   }
 
-  // Helper function to get a comparable "level" for each tier
-  // This defines the desired upgrade hierarchy:
-  // Single Use (1) < Professional Basic (2) < Professional Advanced (4) < Enterprise Basic (3) < Enterprise Advanced (5)
-  const getPlanLevel = (tier: number | undefined | null): number => {
-    if (tier === 1) return 1; // Single Use
-    if (tier === 2) return 2; // Professional Basic
-    if (tier === 4) return 3; // Professional Advanced
-    if (tier === 3) return 4; // Enterprise Basic
-    if (tier === 5) return 5; // Enterprise Advanced
-    return 0; // Unknown or no tier
-  };
+  const usersCurrentProduct = userSubscription
+    ? stripeProducts.find(p =>
+        p.pricing.monthly?.priceId === userSubscription.price_id ||
+        p.pricing.yearly?.priceId === userSubscription.price_id ||
+        p.pricing.one_time?.priceId === userSubscription.price_id
+      )
+    : null;
 
-  // Helper flags and values
+  const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
+  const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 4 || userSubscription.tier === 5); // ADDED
+  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 3); // ADDED
+
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
-  const isUserOnSubscription = !!userSubscription;
-  const isUserOwner = userMembership?.role === 'owner';
-  const isUserMember = userMembership?.role === 'member' || userMembership?.status === 'invited';
-  
-  const usersCurrentTier = userSubscription?.tier;
-  const productTier = product.tier;
 
-  const usersCurrentPlanLevel = getPlanLevel(usersCurrentTier);
-  const productPlanLevel = getPlanLevel(productTier);
+  const isDowngradeOption = usersCurrentProduct &&
+                            product.mode === 'subscription' &&
+                            usersCurrentProduct.mode === 'subscription' &&
+                            product.tier < usersCurrentProduct.tier;
 
-  // This refers to plans that include single-use credits (Tier 4 and 5)
-  const isUsersCurrentPlanAdvancedFeatureSet = userSubscription && (userSubscription.tier === 4 || userSubscription.tier === 5);
+  // MODIFIED: isDisabledForSubscribers logic
+  let isDisabledForSubscribers = false;
+  if (product.mode === 'payment') { // Single-use credits
+    if (isUsersCurrentPlanAdvanced) { // Advanced plan users don't need single-use credits
+      isDisabledForSubscribers = true;
+    }
+  } else if (product.mode === 'subscription') { // Subscription plans
+    if (isUsersCurrentPlanAdvanced && (product.tier === 4 || product.tier === 5)) { // Already on an advanced plan
+      isDisabledForSubscribers = true;
+    } else if (isUsersCurrentPlanBasic && (product.tier === 2 || product.tier === 3) && isCurrentPlan) { // Already on this basic plan
+      isDisabledForSubscribers = true;
+    }
+  }
 
-  let shouldBeDisabled = isDataLoading;
+
+  let shouldBeDisabled = isDataLoading; 
+
+  if (!shouldBeDisabled) { 
+    if (isCurrentPlan) {
+      shouldBeDisabled = true;
+    } else if (isDisabledForSubscribers) { // MODIFIED: Use the new isDisabledForSubscribers
+      shouldBeDisabled = true;
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && product.mode === 'payment') { // Admin assigned users can buy single use credits
+      shouldBeDisabled = false;
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 4 || product.tier === 5)) { // Admin assigned users can upgrade to advanced
+      shouldBeDisabled = false;
+    } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan) { // Admin assigned users cannot buy other basic plans
+      shouldBeDisabled = true;
+    } else if (isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
+      shouldBeDisabled = true;
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
+      shouldBeDisabled = true;
+    } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Specific condition for Professional Use yearly
+      shouldBeDisabled = true;
+    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: This condition is now redundant if the above covers all non-owner members for yearly plans. Keeping it for now, but the new one is more specific.
+      shouldBeDisabled = true;
+    }
+  }
+
   let buttonText: string;
-  let infoMessage: string | null = null;
-
-  // --- Determine button state and text ---
-
-  if (!currentSessionUserId) { // User is not logged in
-    buttonText = t('purchase_button');
-    shouldBeDisabled = false;
-  } else if (isCurrentPlan) {
-    shouldBeDisabled = true;
+  if (isCurrentPlan) {
     buttonText = t('current_plan_button');
-  } else if (product.mode === 'payment') { // Single-use credits (Tier 1)
-    if (isUsersCurrentPlanAdvancedFeatureSet) { // Advanced plans (Tier 4 or 5) include single-use
-      shouldBeDisabled = true;
-      buttonText = t('included_in_your_plan');
-      infoMessage = t('included_in_your_advanced_plan');
-    } else {
-      shouldBeDisabled = false;
-      buttonText = t('purchase_button');
-    }
-  } else if (product.mode === 'subscription') { // Subscription plans (Tiers 2, 3, 4, 5)
-    if (!isUserOnSubscription) { // User has no current subscription
-      shouldBeDisabled = false;
-      buttonText = t('purchase_button');
-    } else if (isUserMember) { // User is a member, not an owner
-      shouldBeDisabled = true;
-      buttonText = t('owner_only_button');
-      infoMessage = t('only_owner_can_manage_subscription');
-    } else if (isUserOwner) { // User is an owner and wants to change their subscription
-      if (productPlanLevel > usersCurrentPlanLevel) {
-        shouldBeDisabled = false;
-        buttonText = t('upgrade_button');
-      } else if (productPlanLevel < usersCurrentPlanLevel) {
-        shouldBeDisabled = false;
-        buttonText = t('downgrade_button');
-      } else { // Same plan level, but different billing period (e.g., monthly to yearly of same plan)
-        shouldBeDisabled = false;
-        buttonText = t('change_plan_button');
-      }
-    }
-  } else if (product.mode === 'admin_assigned') { // Admin assigned plans
-    shouldBeDisabled = true;
+  } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users cannot purchase single-use
+    buttonText = t('included_in_your_plan');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && product.mode === 'payment') { // Admin assigned users can buy single use credits
+    buttonText = t('purchase_button');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 4 || product.tier === 5)) { // Admin assigned users can upgrade to advanced
+    buttonText = t('upgrade_button');
+  } else if (isUsersCurrentPlanAdminAssigned && !isCurrentPlan) { // Admin assigned users cannot buy other basic plans
     buttonText = t('zero_payment');
-    infoMessage = t('admin_assigned_plan_info');
+  } else if (isDowngradeOption) {
+    buttonText = t('downgrade_button');
+    if (userMembership?.role === 'member' || userMembership?.status === 'invited') {
+      buttonText = t('owner_only_button');
+    }
+  } else if (product.name === 'product_name_enterprise_use') {
+    buttonText = (userMembership?.role === 'member' || userMembership?.status === 'invited') ? t('owner_only_upgrade_enterprise_button') : t('upgrade_button');
+  } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Specific button text for Professional Use yearly
+    buttonText = t('invited_members_cannot_purchase_yearly');
+  } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: This condition is now redundant if the above covers all non-owner members for yearly plans. Keeping it for now, but the new one is more specific.
+    buttonText = t('invited_members_cannot_purchase_yearly'); // MODIFIED
+  } else {
+    buttonText = t('purchase_button');
   }
 
   const handlePurchase = () => {
     if (!currentPricingOption) return;
 
-    if (!currentSessionUserId) { // Not logged in, redirect to signup/login
-      createCheckoutSession(currentPricingOption.priceId, product.mode, unauthenticatedRedirectPath);
-      return;
-    }
-
     if (isCurrentPlan) {
       if (product.mode === 'subscription') {
-        createCustomerPortalSession(); // Manage billing period for current plan
+        createCustomerPortalSession();
       }
       return;
     }
 
-    // For owners changing subscription plans
-    if (isUserOwner && product.mode === 'subscription') {
-      if (productPlanLevel < usersCurrentPlanLevel) { // Downgrade
-        createCustomerPortalSession(); // Downgrades are handled via portal
-      } else { // Upgrade or same level different billing period
-        createCheckoutSession(currentPricingOption.priceId, 'subscription', unauthenticatedRedirectPath);
-      }
-    } else if (product.mode === 'payment') { // One-time purchase
-      createCheckoutSession(currentPricingOption.priceId, 'payment', unauthenticatedRedirectPath);
-    } else if (product.mode === 'subscription') { // First-time subscription purchase
-      createCheckoutSession(currentPricingOption.priceId, 'subscription', unauthenticatedRedirectPath);
+    // If it's a downgrade option, direct to customer portal
+    if (isDowngradeOption) {
+      createCustomerPortalSession();
+    } else if (product.mode === 'payment' && isUsersCurrentPlanAdvanced) { // MODIFIED: Advanced plan users cannot purchase single-use
+      return;
+    } else if (product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) {
+      // 🚫 Block member from purchasing Enterprise Use
+      return;
+    } else if (product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited')) { // ADDED: Block Professional Use yearly for members
+      return;
+    } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: Block invited members from purchasing yearly
+      return;
+    } else if (product.mode === 'payment') {
+      createCheckoutSession(currentPricingOption.priceId, 'payment', unauthenticatedRedirectPath); // MODIFIED: Pass unauthenticatedRedirectPath
+    } else if (product.mode === 'subscription') {
+      createCheckoutSession(currentPricingOption.priceId, 'subscription', unauthenticatedRedirectPath); // MODIFIED: Pass unauthenticatedRedirectPath
     }
   };
 
@@ -159,7 +169,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
           {product.maxFiles && (
             <>
               <br />
-              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_collectively')}.
+              <span className="font-semibold">{t('file_limit')}:</span> {t('up_to')} {product.maxFiles} {t('files_collectively')}. {/* MODIFIED: Clarify collective limit */}
             </>
           )}
         </p>
@@ -174,9 +184,34 @@ const PricingCard: React.FC<PricingCardProps> = ({
       >
         {buttonText}
       </Button>
-      {infoMessage && (
+      {isDisabledForSubscribers && product.mode === 'payment' && ( // MODIFIED: Use new isDisabledForSubscribers
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-          {infoMessage}
+          {t('included_in_your_advanced_plan')} {/* MODIFIED: New translation key */}
+        </p>
+      )}
+      {isUsersCurrentPlanAdminAssigned && !isCurrentPlan && (product.tier === 2 || product.tier === 3) && ( // MODIFIED: Admin assigned users cannot buy other basic plans
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+          {t('no_payment_needed_admin_assigned')}
+        </p>
+      )}
+      {isDowngradeOption && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+          {t('only_owner_manage_downgrades')}
+        </p>
+      )}
+      {product.name === 'product_name_enterprise_use' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+          {t('only_owner_upgrade_enterprise')}
+        </p>
+      )}
+      {product.name === 'product_name_professional_use' && billingPeriod === 'yearly' && (userMembership?.role === 'member' || userMembership?.status === 'invited') && ( // ADDED: Specific message for Professional Use yearly
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+          {t('invited_members_cannot_purchase_yearly_message')}
+        </p>
+      )}
+      {billingPeriod === 'yearly' && userMembership?.status === 'invited' && ( // MODIFIED
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+          {t('invited_members_cannot_purchase_yearly_message')}
         </p>
       )}
     </div>
