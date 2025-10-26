@@ -46,7 +46,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
   const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 3 || userSubscription.tier === 5); // ADDED
-  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 4); // ADDED
+  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2); // ADDED
 
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
