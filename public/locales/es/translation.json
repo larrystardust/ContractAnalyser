@@ -1636,5 +1636,9 @@
   "advanced_features_access_modal": "Para desbloquear estas funciones avanzadas, visite nuestra",
 
   "included_in_your_plan": "Incluido en su plan",
-  "included_in_your_advanced_plan": "Incluido en su plan avanzado"
+  "included_in_your_advanced_plan": "Incluido en su plan avanzado",
+  "no_upcoming_renewals": "No se encontraron renovaciones próximas.",
+  "no_upcoming_terminations": "No se encontraron terminaciones próximas.",
+  "no_contracts_by_type": "No se encontraron contratos por tipo.",
+  "no_contracts_by_party": "No se encontraron contratos por parte."
 }
