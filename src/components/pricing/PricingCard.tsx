@@ -45,7 +45,6 @@ const PricingCard: React.FC<PricingCardProps> = ({
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  // MODIFIED: Corrected isUsersCurrentPlanAdvanced to only include Tier 4 and 5
   const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 4 || userSubscription.tier === 5);
   const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 3);
 
@@ -64,9 +63,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
       isDisabledForSubscribers = true;
     }
   } else if (product.mode === 'subscription') { // Subscription plans
-    if (isUsersCurrentPlanAdvanced && (product.tier === 4 || product.tier === 5)) { // Already on an advanced plan
-      isDisabledForSubscribers = true;
-    } else if (isUsersCurrentPlanBasic && (product.tier === 2 || product.tier === 3) && isCurrentPlan) { // Already on this basic plan
+    // Only disable if the user is already on THIS specific plan (current plan)
+    if (isCurrentPlan) {
       isDisabledForSubscribers = true;
     }
   }
@@ -119,7 +117,13 @@ const PricingCard: React.FC<PricingCardProps> = ({
   } else if (billingPeriod === 'yearly' && userMembership?.status === 'invited') { // MODIFIED: This condition is now redundant if the above covers all non-owner members for yearly plans. Keeping it for now, but the new one is more specific.
     buttonText = t('invited_members_cannot_purchase_yearly'); // MODIFIED
   } else {
-    buttonText = t('purchase_button');
+    // This is the general case for purchase/upgrade
+    // If user is on a subscription and the current product is a higher tier, it's an upgrade
+    if (userSubscription && product.tier > userSubscription.tier) {
+      buttonText = t('upgrade_button');
+    } else {
+      buttonText = t('purchase_button');
+    }
   }
 
   const handlePurchase = () => {
