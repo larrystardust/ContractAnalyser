@@ -11,6 +11,7 @@ import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import Analysis
 import SampleAnalysisResults from '../analysis/SampleAnalysisResults'; // ADDED: Import SampleAnalysisResults
 import JurisdictionSummary from '../analysis/JurisdictionSummary'; // ADDED: Import JurisdictionSummary
 import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
+import Card, { CardBody } from '../ui/Card'; // ADDED: Import Card and CardBody
 
 const LandingPageSampleDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -77,24 +78,27 @@ const LandingPageSampleDashboard: React.FC = () => {
               )}
             </>
           ) : (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                {t('no_completed_sample_contract_selected_sidebar')}
-              </h2>
-              <p className="text-gray-600 mb-6">
-                {t('select_completed_sample_contract_to_view_analysis')}
-              </p>
-              <Link to="/signup">
-                <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
-                  {t('upgrade_to_analyze_own_contracts_button')}
-                </Button>
-              </Link>
-            </div>
+            // MODIFIED: Replaced div with Card and CardBody
+            <Card>
+              <CardBody className="text-center py-8">
+                <div className="mx-auto w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  {t('no_completed_sample_contract_selected_sidebar')}
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  {t('select_completed_sample_contract_to_view_analysis')}
+                </p>
+                <Link to="/signup">
+                  <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
+                    {t('upgrade_to_analyze_own_contracts_button')}
+                  </Button>
+                </Link>
+              </CardBody>
+            </Card>
           )}
         </div>
 
