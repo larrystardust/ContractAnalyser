@@ -1645,5 +1645,9 @@
   "advanced_features_access_modal": "Pour débloquer ces fonctionnalités avancées, veuillez visiter notre",
 
   "included_in_your_plan": "Inclus dans votre forfait",
-  "included_in_your_advanced_plan": "Inclus dans votre forfait avancé"
+  "included_in_your_advanced_plan": "Inclus dans votre forfait avancé",
+  "no_upcoming_renewals": "Aucun renouvellement à venir trouvé.",
+  "no_upcoming_terminations": "Aucune résiliation à venir trouvée.",
+  "no_contracts_by_type": "Aucun contrat trouvé par type.",
+  "no_contracts_by_party": "Aucun contrat trouvé par partie."
 }
