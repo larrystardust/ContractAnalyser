@@ -1643,5 +1643,9 @@
   "advanced_features_access_modal": "To unlock these advanced features, please visit our",
 
   "included_in_your_plan": "Included in your plan",
-  "included_in_your_advanced_plan": "Included in your advanced plan"
+  "included_in_your_advanced_plan": "Included in your advanced plan",
+  "no_upcoming_renewals": "No upcoming renewals found.",
+  "no_upcoming_terminations": "No upcoming terminations found.",
+  "no_contracts_by_type": "No contracts found by type.",
+  "no_contracts_by_party": "No contracts found by party."
 }
