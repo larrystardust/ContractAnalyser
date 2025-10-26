@@ -232,10 +232,10 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "Confidentiality Obligations Summary",
     not_specified: "Not specified",
 
-    product_name_professional_use_advanced: "Professional Use (Advanced)",
-    product_desc_professional_use_advanced: "Professional Subscription Plan with Advanced Features (For up to two users)",
-    product_name_enterprise_use_advanced: "Enterprise Use (Advanced)",
-    product_desc_enterprise_use_advanced: "Enterprise Subscription Plan with Advanced Features (For unlimited users)",
+    product_name_professional_use_advanced: "ContractAnalyser Professional Use (Advanced)",
+    product_desc_professional_use_advanced: "Includes all Professional Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
+    product_name_enterprise_use_advanced: "ContractAnalyser Enterprise Use (Advanced)",
+    product_desc_enterprise_use_advanced: "Includes all Enterprise Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
