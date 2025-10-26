@@ -1639,5 +1639,9 @@
   "advanced_features_access_modal": "لفتح هذه الميزات المتقدمة، يرجى زيارة صفحة",
 
   "included_in_your_plan": "مشمول في خطتك",
-  "included_in_your_advanced_plan": "مشمول في خطتك المتقدمة"
+  "included_in_your_advanced_plan": "مشمول في خطتك المتقدمة",
+  "no_upcoming_renewals": "لم يتم العثور على تجديدات قادمة.",
+  "no_upcoming_terminations": "لم يتم العثور على إنهاءات قادمة.",
+  "no_contracts_by_type": "لم يتم العثور على عقود حسب النوع.",
+  "no_contracts_by_party": "لم يتم العثور على عقود حسب الطرف."
 }
