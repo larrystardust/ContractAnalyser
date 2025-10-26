@@ -50,10 +50,14 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
+  // MODIFIED: Adjusted isDowngradeOption to exclude the specific case where
+  // a user on Tier 4 (Professional Advanced) is viewing a Tier 3 (Enterprise Basic) product.
+  // This ensures Tier 3 is not treated as a downgrade from Tier 4.
   const isDowngradeOption = usersCurrentProduct &&
                             product.mode === 'subscription' &&
                             usersCurrentProduct.mode === 'subscription' &&
-                            product.tier < usersCurrentProduct.tier;
+                            (product.tier < usersCurrentProduct.tier) &&
+                            !(usersCurrentProduct.tier === 4 && product.tier === 3); // Exclude Tier 4 -> Tier 3 as a downgrade
 
   // MODIFIED: isDisabledForSubscribers logic
   let isDisabledForSubscribers = false;
