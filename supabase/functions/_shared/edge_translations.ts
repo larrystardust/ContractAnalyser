@@ -706,10 +706,10 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "Résumé des obligations de confidentialité",
     not_specified: "Non spécifié",
 
-    product_name_professional_use_advanced: "Utilisation Professionnelle (Avancé)",
-    product_desc_professional_use_advanced: "Plan d'abonnement professionnel avec fonctionnalités avancées (pour deux utilisateurs maximum)",
-    product_name_enterprise_use_advanced: "Utilisation Entreprise (Avancé)",
-    product_desc_enterprise_use_advanced: "Plan d'abonnement entreprise avec fonctionnalités avancées (pour un nombre illimité d'utilisateurs)",
+    product_name_professional_use_advanced: "ContractAnalyser Utilisation Professionnelle (Avancée)",
+    product_desc_professional_use_advanced: "Comprend toutes les fonctionnalités d'utilisation professionnelle plus l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées.",
+    product_name_enterprise_use_advanced: "ContractAnalyser Utilisation Entreprise (Avancée)",
+    product_desc_enterprise_use_advanced: "Comprend toutes les fonctionnalités d'utilisation entreprise plus l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
