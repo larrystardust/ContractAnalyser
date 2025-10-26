@@ -14,6 +14,7 @@ import { Loader2, CalendarDays, AlertTriangle as AlertIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next';
 import AnalysisModal from '../analysis/AnalysisModal'; // ADDED: Import AnalysisModal
 import { useIsMobile } from '../../hooks/useIsMobile'; // ADDED: Import useIsMobile
+import Card, { CardBody } from '../ui/Card'; // ADDED: Import Card and CardBody
 
 const Dashboard: React.FC = () => {
   const { contracts, loadingContracts, errorContracts } = useContracts();
