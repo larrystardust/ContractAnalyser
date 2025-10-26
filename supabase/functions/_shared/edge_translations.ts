@@ -943,10 +943,10 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "ملخص التزامات السرية",
     not_specified: "غير محدد",
 
-    product_name_professional_use_advanced: "الاستخدام الاحترافي (متقدم)",
-    product_desc_professional_use_advanced: "خطة الاشتراك الاحترافي مع الميزات المتقدمة (لمستخدمين اثنين كحد أقصى)",
-    product_name_enterprise_use_advanced: "الاستخدام المؤسسي (متقدم)",
-    product_desc_enterprise_use_advanced: "خطة الاشتراك المؤسسي مع الميزات المتقدمة (لعدد غير محدود من المستخدمين)",
+    product_name_professional_use_advanced: "ContractAnalyser الاستخدام الاحترافي (متقدم)",
+    product_desc_professional_use_advanced: "يتضمن جميع ميزات الاستخدام الاحترافي بالإضافة إلى استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية.",
+    product_name_enterprise_use_advanced: "ContractAnalyser الاستخدام المؤسسي (متقدم)",
+    product_desc_enterprise_use_advanced: "يتضمن جميع ميزات الاستخدام المؤسسي بالإضافة إلى استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية.",
   }
 };
 
