@@ -194,11 +194,12 @@ const ReportsPage: React.FC = () => {
             <>
               <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">{t('advanced_features_section_title')}</h2>
               {/* Upcoming Renewals Widget */}
-              {upcomingRenewals.length > 0 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
-                    <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
-                  </h3>
+              {/* MODIFIED: Always render if on advanced plan */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                  <CalendarDays className="h-5 w-5 mr-2 text-blue-600" /> {t('upcoming_renewals')}
+                </h3>
+                {upcomingRenewals.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {upcomingRenewals.map(contract => (
                       <Card key={contract.id}>
@@ -209,15 +210,22 @@ const ReportsPage: React.FC = () => {
                       </Card>
                     ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <Card>
+                    <CardBody className="text-center py-4">
+                      <p className="text-gray-500 text-sm">{t('no_upcoming_renewals')}</p>
+                    </CardBody>
+                  </Card>
+                )}
+              </div>
 
               {/* Upcoming Terminations Widget */}
-              {upcomingTerminations.length > 0 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
-                    <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
-                  </h3>
+              {/* MODIFIED: Always render if on advanced plan */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                  <AlertIcon className="h-5 w-5 mr-2 text-red-600" /> {t('upcoming_terminations')}
+                </h3>
+                {upcomingTerminations.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {upcomingTerminations.map(contract => (
                       <Card key={contract.id}>
@@ -228,15 +236,22 @@ const ReportsPage: React.FC = () => {
                       </Card>
                     ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <Card>
+                    <CardBody className="text-center py-4">
+                      <p className="text-gray-500 text-sm">{t('no_upcoming_terminations')}</p>
+                    </CardBody>
+                  </Card>
+                )}
+              </div>
 
               {/* Contracts by Type Widget */}
-              {Object.keys(contractsByType).length > 0 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
-                    <Briefcase className="h-5 w-5 mr-2 text-purple-600" /> {t('contracts_by_type')}
-                  </h3>
+              {/* MODIFIED: Always render if on advanced plan */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                  <Briefcase className="h-5 w-5 mr-2 text-purple-600" /> {t('contracts_by_type')}
+                </h3>
+                {Object.keys(contractsByType).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Object.entries(contractsByType).map(([type, count]) => (
                       <Card key={type}>
@@ -247,15 +262,22 @@ const ReportsPage: React.FC = () => {
                       </Card>
                     ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <Card>
+                    <CardBody className="text-center py-4">
+                      <p className="text-gray-500 text-sm">{t('no_contracts_by_type')}</p>
+                    </CardBody>
+                  </Card>
+                )}
+              </div>
 
               {/* Contracts by Party Widget */}
-              {Object.keys(contractsByParty).length > 0 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-orange-600" /> {t('contracts_by_party')}
-                  </h3>
+              {/* MODIFIED: Always render if on advanced plan */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-4 flex items-center">
+                  <Users className="h-5 w-5 mr-2 text-orange-600" /> {t('contracts_by_party')}
+                </h3>
+                {Object.keys(contractsByParty).length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Object.entries(contractsByParty).map(([party, count]) => (
                       <Card key={party}>
@@ -266,8 +288,14 @@ const ReportsPage: React.FC = () => {
                       </Card>
                     ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <Card>
+                    <CardBody className="text-center py-4">
+                      <p className="text-gray-500 text-sm">{t('no_contracts_by_party')}</p>
+                    </CardBody>
+                  </Card>
+                )}
+              </div>
             </>
           )}
         </>
