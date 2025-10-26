@@ -45,14 +45,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
     : null;
 
   const isUsersCurrentPlanAdminAssigned = usersCurrentProduct?.mode === 'admin_assigned';
-  const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 3 || userSubscription.tier === 5); // ADDED
-  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 3); // ADDED
+  // MODIFIED: Corrected isUsersCurrentPlanAdvanced to only include Tier 4 and 5
+  const isUsersCurrentPlanAdvanced = userSubscription && (userSubscription.tier === 4 || userSubscription.tier === 5);
+  const isUsersCurrentPlanBasic = userSubscription && (userSubscription.tier === 2 || userSubscription.tier === 3);
 
   const isCurrentPlan = userSubscription?.price_id === currentPricingOption.priceId;
 
-  // MODIFIED: Adjusted isDowngradeOption to exclude the specific case where
-  // a user on Tier 4 (Professional Advanced) is viewing a Tier 3 (Enterprise Basic) product.
-  // This ensures Tier 3 is not treated as a downgrade from Tier 4.
   const isDowngradeOption = usersCurrentProduct &&
                             product.mode === 'subscription' &&
                             usersCurrentProduct.mode === 'subscription' &&
