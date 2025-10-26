@@ -42,8 +42,8 @@ export const stripeProducts: StripeProduct[] = [
   // ADDED: New Advanced Subscription Plans - Professional Use (Advanced)
   {
     id: 'prod_TIeiCbtx4Hg7xk',
-    name: 'product_name_professional_use_advanced',
-    description: 'product_desc_professional_use_advanced',
+    name: 'product_name_professional_use_advanced', // MODIFIED: Changed to translation key
+    description: 'product_desc_professional_use_advanced', // MODIFIED: Changed to translation key
     mode: 'subscription',
     fileRetentionPolicy: 'file_retention_policy_subscription_desc',
     maxFiles: 200,
@@ -87,8 +87,8 @@ export const stripeProducts: StripeProduct[] = [
   // ADDED: New Advanced Subscription Plans - Enterprise Use (Advanced)
   {
     id: 'prod_TIekueXHffn0wz',
-    name: 'product_name_enterprise_use_advanced',
-    description: 'product_desc_enterprise_use_advanced',
+    name: 'product_name_enterprise_use_advanced', // MODIFIED: Changed to translation key
+    description: 'product_desc_enterprise_use_advanced', // MODIFIED: Changed to translation key
     mode: 'subscription',
     fileRetentionPolicy: 'file_retention_policy_subscription_desc',
     maxFiles: 1000,
