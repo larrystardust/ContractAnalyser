@@ -236,6 +236,11 @@ export const edgeTranslations = {
     product_desc_professional_use_advanced: "Includes all Professional Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
     product_name_enterprise_use_advanced: "ContractAnalyser Enterprise Use (Advanced)",
     product_desc_enterprise_use_advanced: "Includes all Enterprise Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
+
+    "file_retention_policy_subscription_desc": "Files are retained for the duration of your active subscription plus a 30 day grace period.",
+    "product_desc_admin_free_professional": "Admin-assigned Professional Plan (Free)",
+    "file_retention_policy_admin_assigned_desc": "Files are retained as long as the admin-assigned plan is active.",
+    "product_desc_admin_free_enterprise": "Admin-assigned Enterprise Plan (Free)",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -473,6 +478,11 @@ export const edgeTranslations = {
     product_desc_professional_use_advanced: "Incluye todas las funciones de uso profesional más extracción avanzada de datos por IA, búsqueda mejorada y alertas automatizadas.",
     product_name_enterprise_use_advanced: "ContractAnalyser Uso Empresarial (Avanzado)",
     product_desc_enterprise_use_advanced: "Incluye todas las funciones de uso empresarial más extracción avanzada de datos por IA, búsqueda mejorada y alertas automatizadas.",
+
+    "file_retention_policy_subscription_desc": "Los archivos se conservan durante la duración de su suscripción activa más un período de gracia de 30 días.",
+    "product_desc_admin_free_professional": "Plan profesional asignado por el administrador (Gratis)",
+    "file_retention_policy_admin_assigned_desc": "Los archivos se conservan mientras el plan asignado por el administrador esté activo.",
+    "product_desc_admin_free_enterprise": "Plan empresarial asignado por el administrador (Gratis)",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -710,6 +720,11 @@ export const edgeTranslations = {
     product_desc_professional_use_advanced: "Comprend toutes les fonctionnalités d'utilisation professionnelle plus l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées.",
     product_name_enterprise_use_advanced: "ContractAnalyser Utilisation Entreprise (Avancée)",
     product_desc_enterprise_use_advanced: "Comprend toutes les fonctionnalités d'utilisation entreprise plus l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées.",
+
+    "file_retention_policy_subscription_desc": "Les fichiers sont conservés pendant la durée de votre abonnement actif plus une période de grâce de 30 jours.",
+    "product_desc_admin_free_professional": "Plan professionnel attribué par l'administrateur (Gratuit)",
+    "file_retention_policy_admin_assigned_desc": "Les fichiers sont conservés tant que le plan attribué par l'administrateur est actif.",
+    "product_desc_admin_free_enterprise": "Plan entreprise attribué par l'administrateur (Gratuit)",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -947,6 +962,11 @@ export const edgeTranslations = {
     product_desc_professional_use_advanced: "يتضمن جميع ميزات الاستخدام الاحترافي بالإضافة إلى استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية.",
     product_name_enterprise_use_advanced: "ContractAnalyser الاستخدام المؤسسي (متقدم)",
     product_desc_enterprise_use_advanced: "يتضمن جميع ميزات الاستخدام المؤسسي بالإضافة إلى استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية.",
+
+    "file_retention_policy_subscription_desc": "يتم الاحتفاظ بالملفات طوال مدة اشتراكك النشط بالإضافة إلى فترة سماح مدتها 30 يومًا.",
+    "product_desc_admin_free_professional": "خطة احترافية معينة من قبل المسؤول (مجانية)",
+    "file_retention_policy_admin_assigned_desc": "يتم الاحتفاظ بالملفات طالما أن الخطة المعينة من قبل المسؤول نشطة.",
+    "product_desc_admin_free_enterprise": "خطة مؤسسية معينة من قبل المسؤول (مجانية)",
   }
 };
 
