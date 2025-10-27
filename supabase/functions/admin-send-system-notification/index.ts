@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -68,29 +69,66 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
-    // Fetch all user IDs from the profiles table
-    const { data: userIds, error: fetchUsersError } = await supabase
+    // Fetch all user IDs, emails, full names, and notification settings from the profiles table
+    const { data: usersData, error: fetchUsersError } = await supabase
       .from('profiles')
-      .select('id');
+      .select('id, full_name, email, language_preference, notification_settings'); // MODIFIED: Select email, full_name, language_preference, notification_settings
 
     if (fetchUsersError) {
       console.error('Error fetching user IDs for system notification:', fetchUsersError);
       return corsResponse({ error: 'Failed to fetch user list for notification.' }, 500);
     }
 
-    const notificationsToInsert = userIds.map(profile => ({
-      user_id: profile.id,
-      title: title,
-      message: message,
-      type: 'info',
-    }));
+    const notificationsToInsert = [];
+    for (const userData of usersData) {
+      const userId = userData.id;
+      const userEmail = userData.email;
+      const userName = userData.full_name || userEmail;
+      const userPreferredLanguage = userData.language_preference || 'en';
+      const notificationSettings = userData.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {};
 
-    // Insert notifications in batches if there are many users
-    const { error: insertError } = await supabase.from('notifications').insert(notificationsToInsert);
+      // Always insert in-app notification
+      notificationsToInsert.push({
+        user_id: userId,
+        title: title,
+        message: message,
+        type: 'info',
+      });
 
-    if (insertError) {
-      console.error('Error inserting system notifications:', insertError);
-      return corsResponse({ error: 'Failed to send system notifications.' }, 500);
+      // Check if email notification for system updates is enabled
+      const systemUpdatesEmailEnabled = notificationSettings['system-updates']?.email;
+
+      if (systemUpdatesEmailEnabled && userEmail) {
+        const emailSubject = getTranslatedMessage('email_subject_system_update', userPreferredLanguage, { title: title });
+        const emailHtmlBody = `
+          <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: userName })}</p>
+          <p>${getTranslatedMessage('email_system_update_body_p1', userPreferredLanguage, { title: title })}</p>
+          <p>${message}</p>
+          <p>${getTranslatedMessage('email_system_update_body_p2', userPreferredLanguage)}</p>
+          <p>${getTranslatedMessage('email_team', userPreferredLanguage)}</p>
+        `;
+
+        await supabase.functions.invoke('send-generic-notification-email', {
+          body: {
+            recipientEmail: userEmail,
+            recipientName: userName,
+            subject: emailSubject,
+            htmlBody: emailHtmlBody,
+            userPreferredLanguage: userPreferredLanguage,
+          },
+        });
+        console.log(`admin-send-system-notification: Sent email system update to user ${userId}.`);
+      }
+    }
+
+    // Insert all in-app notifications
+    if (notificationsToInsert.length > 0) {
+      const { error: insertError } = await supabase.from('notifications').insert(notificationsToInsert);
+
+      if (insertError) {
+        console.error('Error inserting system notifications:', insertError);
+        return corsResponse({ error: 'Failed to send system notifications.' }, 500);
+      }
     }
 
     // Log the admin action
@@ -99,7 +137,7 @@ Deno.serve(async (req) => {
       user.id,
       'ADMIN_SYSTEM_NOTIFICATION_SENT',
       `Admin ${user.email} sent a system notification: "${title}"`,
-      { notification_title: title, notification_message: message, recipient_count: notificationsToInsert.length }
+      { notification_title: title, notification_message: message, recipient_count: usersData.length }
     );
 
     return corsResponse({ message: 'System notification sent successfully to all users.' });
