@@ -1656,5 +1656,11 @@
   "error_invalid_alert_type": "Invalid alert type specified.",
   "message_email_sent_successfully": "Email sent successfully.",
   "email_key_date_alert_body_renewal": "Your contract '{{contractName}}' is due for renewal in {{days}} days. Please review your contract terms and take appropriate action.",
-  "email_key_date_alert_body_termination": "Your contract '{{contractName}}' is due for termination in {{days}} days. Please review your contract terms and prepare for its conclusion."
+  "email_key_date_alert_body_termination": "Your contract '{{contractName}}' is due for termination in {{days}} days. Please review your contract terms and prepare for its conclusion.",
+
+  "notification_title_plan_assigned": "Plan Assigned!",
+  "notification_message_admin_assigned_plan": "An administrator has assigned you the {{productName}} plan.",
+  "notification_title_subscription_removed": "Subscription Removed",
+  "notification_message_subscription_removed": "Your subscription has been removed by an administrator.",
+  "notification_message_admin_assigned_stripe_plan": "An administrator has assigned you to the {{productName}} plan with role {{role}}.",
 }
