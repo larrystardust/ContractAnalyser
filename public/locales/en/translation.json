@@ -1662,5 +1662,5 @@
   "notification_message_admin_assigned_plan": "An administrator has assigned you the {{productName}} plan.",
   "notification_title_subscription_removed": "Subscription Removed",
   "notification_message_subscription_removed": "Your subscription has been removed by an administrator.",
-  "notification_message_admin_assigned_stripe_plan": "An administrator has assigned you to the {{productName}} plan with role {{role}}.",
+  "notification_message_admin_assigned_stripe_plan": "An administrator has assigned you to the {{productName}} plan with role {{role}}."
 }
