@@ -125,7 +125,6 @@ export const edgeTranslations = {
     "product_name_enterprise_use": "Enterprise Use",
     "product_name_admin_free_professional": "Professional Use (Admin Free)",
     "product_name_admin_free_enterprise": "Enterprise Use (Admin Free)",
-    "previous_plan": "Previous Plan",
 
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `Your one-time payment for ${productName} has been processed successfully.`,
@@ -136,6 +135,8 @@ export const edgeTranslations = {
     credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you a single-use credit for ${productName}.`,
     notification_title_subscription_active: "Subscription Active!",
     notification_title_subscription_plan_changed: "Subscription Plan Changed",
+    notification_title_subscription_alert: "Subscription Alert!",
+    notification_title_payment_successful: "Payment Successful!",
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Subscription Removed",
@@ -389,7 +390,6 @@ export const edgeTranslations = {
     "product_name_enterprise_use": "Uso Empresarial",
     "product_name_admin_free_professional": "Uso Profesional (Asignado por Admin)",
     "product_name_admin_free_enterprise": "Uso Empresarial (Asignado por Admin)",
-    "previous_plan": "Plan Anterior",
 
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `Su pago único para ${productName} ha sido procesado con éxito.`,
@@ -400,6 +400,8 @@ export const edgeTranslations = {
     credit_granted_message: ({ productName }: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${productName}.`,
     notification_title_subscription_active: "¡Suscripción Activa!",
     notification_title_subscription_plan_changed: "Plan de Suscripción Cambiado",
+    notification_title_subscription_alert: "¡Alerta de Suscripción!",
+    notification_title_payment_successful: "¡Pago Exitoso!",
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Suscripción Eliminada",
@@ -653,7 +655,6 @@ export const edgeTranslations = {
     "product_name_enterprise_use": "Usage Entreprise",
     "product_name_admin_free_professional": "Usage Professionnel (Assigné par Admin)",
     "product_name_admin_free_enterprise": "Usage Entreprise (Assigné par Admin)",
-    "previous_plan": "Plan Précédent",
 
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `Votre paiement unique pour ${productName} a été traité avec succès.`,
@@ -664,6 +665,8 @@ export const edgeTranslations = {
     credit_granted_message: ({ productName }: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`,
     notification_title_subscription_active: "Abonnement Actif !",
     notification_title_subscription_plan_changed: "Plan d'Abonnement Modifié",
+    notification_title_subscription_alert: "Alerte Abonnement !",
+    notification_title_payment_successful: "Paiement Réussi !",
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Abonnement Supprimé",
@@ -917,7 +920,6 @@ export const edgeTranslations = {
     "product_name_enterprise_use": "استخدام الشركات",
     "product_name_admin_free_professional": "استخدام احترافي (بواسطة المسؤول)",
     "product_name_admin_free_enterprise": "استخدام الشركات (بواسطة المسؤول)",
-    "previous_plan": "الخطة السابقة",
 
     // ADDED: Notification message templates
     payment_successful_message: ({ productName }: { productName: string }) => `تمت معالجة دفعتك لمرة واحدة لـ ${productName} بنجاح.`,
@@ -928,6 +930,8 @@ export const edgeTranslations = {
     credit_granted_message: ({ productName }: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${productName}.`,
     notification_title_subscription_active: "الاشتراك نشط!",
     notification_title_subscription_plan_changed: "تم تغيير خطة الاشتراك",
+    notification_title_subscription_alert: "تنبيه الاشتراك!",
+    notification_title_payment_successful: "تم الدفع بنجاح!",
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "تمت إزالة الاشتراك",
