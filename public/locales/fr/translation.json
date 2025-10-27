@@ -1649,5 +1649,12 @@
   "no_upcoming_renewals": "Aucun renouvellement à venir trouvé.",
   "no_upcoming_terminations": "Aucune résiliation à venir trouvée.",
   "no_contracts_by_type": "Aucun contrat trouvé par type.",
-  "no_contracts_by_party": "Aucun contrat trouvé par partie."
+  "no_contracts_by_party": "Aucun contrat trouvé par partie.",
+
+  "email_subject_renewal_alert": "Alerte de Renouvellement de Contrat Prochain : {{contractName}} dans {{days}} jours",
+  "email_subject_termination_alert": "Alerte de Résiliation de Contrat Prochaine : {{contractName}} dans {{days}} jours",
+  "email_key_date_alert_body_p1": "Ceci est une notification automatique de ContractAnalyser concernant une date clé importante pour l'un de vos contrats.",
+  "email_key_date_alert_body_p2": "Veuillez vous connecter à votre tableau de bord ContractAnalyser pour plus de détails et pour prendre les mesures nécessaires.",
+  "error_invalid_alert_type": "Type d'alerte spécifié invalide.",
+  "message_email_sent_successfully": "E-mail envoyé avec succès."
 }
