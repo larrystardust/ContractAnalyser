@@ -1652,5 +1652,11 @@
   "error_invalid_alert_type": "نوع التنبيه المحدد غير صالح.",
   "message_email_sent_successfully": "تم إرسال البريد الإلكتروني بنجاح.",
   "email_key_date_alert_body_renewal": "عقدك '{{contractName}}' مستحق للتجديد خلال {{days}} يومًا. يرجى مراجعة شروط عقدك واتخاذ الإجراءات المناسبة.",
-  "email_key_date_alert_body_termination": "عقدك '{{contractName}}' مستحق للإنهاء خلال {{days}} يومًا. يرجى مراجعة شروط عقدك والاستعداد لإنهاءه."
+  "email_key_date_alert_body_termination": "عقدك '{{contractName}}' مستحق للإنهاء خلال {{days}} يومًا. يرجى مراجعة شروط عقدك والاستعداد لإنهاءه.",
+
+  "notification_title_plan_assigned": "تم تخصيص الخطة!",
+  "notification_message_admin_assigned_plan": "قام المسؤول بتخصيص خطة {{productName}} لك.",
+  "notification_title_subscription_removed": "تمت إزالة الاشتراك",
+  "notification_message_subscription_removed": "تمت إزالة اشتراكك بواسطة المسؤول.",
+  "notification_message_admin_assigned_stripe_plan": "قام المسؤول بتخصيص خطة {{productName}} لك بدور {{role}}."
 }
