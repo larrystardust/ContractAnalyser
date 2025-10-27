@@ -1649,5 +1649,11 @@
   "error_invalid_alert_type": "Tipo de alerta especificado no válido.",
   "message_email_sent_successfully": "Correo electrónico enviado con éxito.",
   "email_key_date_alert_body_renewal": "Su contrato '{{contractName}}' vence para renovación en {{days}} días. Por favor, revise los términos de su contrato y tome las medidas adecuadas.",
-  "email_key_date_alert_body_termination": "Su contrato '{{contractName}}' vence para terminación en {{days}} días. Por favor, revise los términos de su contrato y prepárese para su finalización."
+  "email_key_date_alert_body_termination": "Su contrato '{{contractName}}' vence para terminación en {{days}} días. Por favor, revise los términos de su contrato y prepárese para su finalización.",
+
+  "notification_title_plan_assigned": "¡Plan Asignado!",
+  "notification_message_admin_assigned_plan": "Un administrador le ha asignado el plan {{productName}}.",
+  "notification_title_subscription_removed": "Suscripción Eliminada",
+  "notification_message_subscription_removed": "Su suscripción ha sido eliminada por un administrador.",
+  "notification_message_admin_assigned_stripe_plan": "Un administrador le ha asignado al plan {{productName}} con el rol {{role}}."
 }
