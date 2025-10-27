@@ -42,6 +42,9 @@ const Dashboard: React.FC = () => {
   const [upcomingRenewals, setUpcomingRenewals] = useState<Contract[]>([]);
   const [upcomingTerminations, setUpcomingTerminations] = useState<Contract[]>([]);
 
+  // ADDED: State for pinned contract ID
+  const [pinnedContractId, setPinnedContractId] = useState<string | null>(null);
+
 
   // Temporary log for debugging
   useEffect(() => {
@@ -59,6 +62,7 @@ const Dashboard: React.FC = () => {
 
     if (contractIdFromUrl) {
       setSelectedContractId(contractIdFromUrl);
+      setPinnedContractId(contractIdFromUrl); // ADDED: Pin contract from URL
     } else if (selectedContractId) {
       // If there's a selectedContractId but no URL param, keep it
     } else if (contracts.length > 0) {
@@ -66,13 +70,16 @@ const Dashboard: React.FC = () => {
       const firstCompleted = contracts.find(c => c.status === 'completed');
       if (firstCompleted) {
         setSelectedContractId(firstCompleted.id);
+        setPinnedContractId(firstCompleted.id); // ADDED: Pin first completed
       } else {
         // If no completed contracts, select the first analyzing/pending one
         const firstProcessing = contracts.find(c => c.status === 'analyzing' || c.status === 'pending');
         if (firstProcessing) {
           setSelectedContractId(firstProcessing.id);
+          setPinnedContractId(firstProcessing.id); // ADDED: Pin first processing
         } else {
           setSelectedContractId(null); // No contracts to display
+          setPinnedContractId(null); // ADDED: No contracts, no pin
         }
       }
     }
@@ -149,6 +156,7 @@ const Dashboard: React.FC = () => {
   const handleViewAnalysis = (contract: Contract) => {
     // MODIFIED: Update the URL search parameter to reflect the newly selected contract
     navigate(`/dashboard?contractId=${contract.id}`); 
+    setPinnedContractId(contract.id); // ADDED: Pin the selected contract
     
     // The rest of the logic for mobile modal can remain, but it will now be consistent
     // with the URL and the useEffect's behavior.
@@ -168,7 +176,7 @@ const Dashboard: React.FC = () => {
     if (contractForModal) { // Use contractForModal for re-analysis context
       setContractIdBeingAnalyzed(contractForModal.id);
     } else if (selectedContract) { // Fallback to selectedContract if modal context is missing
-      setContractIdBeingAnalyzed(selectedContract.id);
+      setContractIdBeingAnalyized(selectedContract.id);
     }
   };
 
@@ -296,7 +304,7 @@ const Dashboard: React.FC = () => {
               </Card>
             )}
 
-            <ContractList isSample={false} onViewAnalysis={handleViewAnalysis} /> {/* MODIFIED: Pass onViewAnalysis */}
+            <ContractList isSample={false} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> {/* MODIFIED: Pass onViewAnalysis and pinnedContractId */}
           </div>
           
           {/* Main Content Area */}
