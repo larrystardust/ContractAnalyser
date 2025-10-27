@@ -257,6 +257,7 @@ export const edgeTranslations = {
     email_subject_system_update: "Important Update from ContractAnalyser: {title}",
     email_system_update_body_p1: "We have an important update regarding: {title}",
     email_system_update_body_p2: "Please visit your dashboard for more information.",
+    previous_plan: "Previous Plan",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -515,6 +516,7 @@ export const edgeTranslations = {
     email_subject_system_update: "Actualización Importante de ContractAnalyser: {title}",  
     email_system_update_body_p1: "Tenemos una actualización importante sobre: {title}", 
     email_system_update_body_p2: "Visite su panel de control para obtener más información.",
+    previous_plan: "Plan Anterior",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -773,6 +775,7 @@ export const edgeTranslations = {
     email_subject_system_update: "Mise à Jour Importante de ContractAnalyser : {title}", 
     email_system_update_body_p1: "Nous avons une mise à jour importante concernant : {title}", 
     email_system_update_body_p2: "Veuillez visiter votre tableau de bord pour plus d'informations.",
+    previous_plan: "Plan Précédent",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -1031,6 +1034,7 @@ export const edgeTranslations = {
     email_subject_system_update: "تحديث هام من ContractAnalyser: {title}",   
     email_system_update_body_p1: "لدينا تحديث هام بخصوص: {title}",  
     email_system_update_body_p2: "يرجى زيارة لوحة التحكم الخاصة بك لمزيد من المعلومات.",
+    previous_plan: "الخطة السابقة",
   }
 };
 
