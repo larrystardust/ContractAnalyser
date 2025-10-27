@@ -1647,5 +1647,12 @@
   "no_upcoming_renewals": "No upcoming renewals found.",
   "no_upcoming_terminations": "No upcoming terminations found.",
   "no_contracts_by_type": "No contracts found by type.",
-  "no_contracts_by_party": "No contracts found by party."
+  "no_contracts_by_party": "No contracts found by party.",
+
+  "email_subject_renewal_alert": "Upcoming Contract Renewal Alert: {{contractName}} in {{days}} days",
+  "email_subject_termination_alert": "Upcoming Contract Termination Alert: {{contractName}} in {{days}} days",
+  "email_key_date_alert_body_p1": "This is an automated notification from ContractAnalyser regarding an important key date for one of your contracts.",
+  "email_key_date_alert_body_p2": "Please log in to your ContractAnalyser dashboard for more details and to take any necessary action.",
+  "error_invalid_alert_type": "Invalid alert type specified.",
+  "message_email_sent_successfully": "Email sent successfully."
 }
