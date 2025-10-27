@@ -41,7 +41,6 @@ Deno.serve(async (req) => {
     return corsResponse({ error: 'Method not allowed' }, 405);
   }
 
-  // --- START MODIFICATION ---
   const cronSecret = req.headers.get('X-Cron-Secret');
   const expectedSecret = Deno.env.get('CRON_SECRET_KEY');
 
@@ -49,15 +48,14 @@ Deno.serve(async (req) => {
     console.warn('schedule-alerts: Unauthorized access attempt - Invalid or missing X-Cron-Secret.');
     return corsResponse({ error: 'Unauthorized: Invalid or missing secret' }, 401);
   }
-  // --- END MODIFICATION ---
 
   try {
     console.log('schedule-alerts: Starting scheduled alerts check...');
 
-    // Fetch all users with their notification preferences for key dates
+    // Fetch all users with their notification preferences for key dates and weekly reports
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, language_preference, email, renewal_notification_days_before, termination_notification_days_before, notification_settings'); // MODIFIED: Added 'email' to select
+      .select('id, full_name, language_preference, email, renewal_notification_days_before, termination_notification_days_before, notification_settings');
 
     if (profilesError) {
       console.error('schedule-alerts: Error fetching profiles:', profilesError);
@@ -67,9 +65,13 @@ Deno.serve(async (req) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize to start of day
 
+    // Determine if it's Monday (or your chosen day for weekly reports)
+    const isMonday = today.getDay() === 1; // Monday is 1, Sunday is 0
+
     for (const profile of profiles) {
       const userId = profile.id;
-      const userEmail = profile.email; // MODIFIED: Get user email
+      const userEmail = profile.email;
+      const userName = profile.full_name || userEmail;
       const userPreferredLanguage = profile.language_preference || 'en';
       const renewalDays = profile.renewal_notification_days_before || 0;
       const terminationDays = profile.termination_notification_days_before || 0;
@@ -77,120 +79,178 @@ Deno.serve(async (req) => {
 
       // Check if renewal alerts are enabled for this user
       const renewalAlertsEnabledInApp = notificationSettings['renewal-alerts']?.inApp;
-      const renewalAlertsEnabledEmail = notificationSettings['renewal-alerts']?.email; // MODIFIED: Check email preference
+      const renewalAlertsEnabledEmail = notificationSettings['renewal-alerts']?.email;
       // Check if termination alerts are enabled for this user
       const terminationAlertsEnabledInApp = notificationSettings['termination-alerts']?.inApp;
-      const terminationAlertsEnabledEmail = notificationSettings['termination-alerts']?.email; // MODIFIED: Check email preference
+      const terminationAlertsEnabledEmail = notificationSettings['termination-alerts']?.email;
+      // Check if weekly reports email is enabled
+      const weeklyReportsEnabledEmail = notificationSettings['weekly-reports']?.email;
 
-      if (!renewalAlertsEnabledInApp && !renewalAlertsEnabledEmail && !terminationAlertsEnabledInApp && !terminationAlertsEnabledEmail) {
-        // console.log(`schedule-alerts: User ${userId} has no key date alerts enabled. Skipping.`);
-        continue;
-      }
+      // --- Key Date Alerts (Renewal & Termination) ---
+      if (renewalAlertsEnabledInApp || renewalAlertsEnabledEmail || terminationAlertsEnabledInApp || terminationAlertsEnabledEmail) {
+        const { data: contracts, error: contractsError } = await supabase
+          .from('contracts')
+          .select(`
+            id,
+            name,
+            translated_name,
+            analysis_results (
+              effective_date,
+              termination_date,
+              renewal_date
+            )
+          `)
+          .eq('user_id', userId)
+          .eq('status', 'completed');
 
-      // Fetch contracts for this user that have analysis results with key dates
-      const { data: contracts, error: contractsError } = await supabase
-        .from('contracts')
-        .select(`
-          id,
-          name,
-          translated_name,
-          analysis_results (
-            effective_date,
-            termination_date,
-            renewal_date
-          )
-        `)
-        .eq('user_id', userId)
-        .eq('status', 'completed'); // Only check completed contracts
+        if (contractsError) {
+          console.error(`schedule-alerts: Error fetching contracts for user ${userId}:`, contractsError);
+          continue;
+        }
 
-      if (contractsError) {
-        console.error(`schedule-alerts: Error fetching contracts for user ${userId}:`, contractsError);
-        continue;
-      }
+        for (const contract of contracts) {
+          const contractName = contract.translated_name || contract.name;
+          const analysisResult = contract.analysis_results?.[0];
 
-      for (const contract of contracts) {
-        const contractName = contract.translated_name || contract.name;
-        const analysisResult = contract.analysis_results?.[0]; // Assuming one analysis result per contract
+          if (!analysisResult) continue;
 
-        if (!analysisResult) continue;
+          // Check for Renewal Alerts
+          if (analysisResult.renewal_date) {
+            const renewalDate = new Date(analysisResult.renewal_date);
+            renewalDate.setHours(0, 0, 0, 0);
+            const diffTime = renewalDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // --- Check for Renewal Alerts ---
-        if (analysisResult.renewal_date) {
-          const renewalDate = new Date(analysisResult.renewal_date);
-          renewalDate.setHours(0, 0, 0, 0);
-          const diffTime = renewalDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays === renewalDays) {
+              const notificationMessage = getTranslatedMessage('notification_message_contract_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
+              
+              if (renewalAlertsEnabledInApp) {
+                await insertNotification(
+                  userId,
+                  'notification_title_contract_renewal_alert',
+                  notificationMessage,
+                  'info'
+                );
+                console.log(`schedule-alerts: Sent in-app renewal alert for contract ${contract.id} to user ${userId}.`);
+              }
 
-          if (diffDays === renewalDays) {
-            const notificationMessage = getTranslatedMessage('notification_message_contract_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
-            
-            if (renewalAlertsEnabledInApp) { // MODIFIED: Check in-app preference
-              await insertNotification(
-                userId,
-                'notification_title_contract_renewal_alert',
-                notificationMessage,
-                'info'
-              );
-              console.log(`schedule-alerts: Sent in-app renewal alert for contract ${contract.id} to user ${userId}.`);
+              if (renewalAlertsEnabledEmail && userEmail) {
+                const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
+                await supabase.functions.invoke('send-key-date-alert-email', {
+                  body: {
+                    recipientEmail: userEmail,
+                    subject: emailSubject,
+                    message: notificationMessage,
+                    userPreferredLanguage: userPreferredLanguage,
+                    alertType: 'renewal',
+                    contractName: contractName,
+                    days: renewalDays,
+                  },
+                });
+                console.log(`schedule-alerts: Sent email renewal alert for contract ${contract.id} to user ${userId}.`);
+              }
             }
+          }
 
-            if (renewalAlertsEnabledEmail && userEmail) { // MODIFIED: Check email preference and if email exists
-              const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
-              await supabase.functions.invoke('send-key-date-alert-email', {
-                body: {
-                  recipientEmail: userEmail,
-                  subject: emailSubject,
-                  message: notificationMessage, // Use the same message for email body
-                  userPreferredLanguage: userPreferredLanguage,
-                  alertType: 'renewal',
-                  contractName: contractName,
-                  days: renewalDays,
-                },
-                // No Authorization header needed for internal service role function call
-              });
-              console.log(`schedule-alerts: Sent email renewal alert for contract ${contract.id} to user ${userId}.`);
+          // Check for Termination Alerts
+          if (analysisResult.termination_date) {
+            const terminationDate = new Date(analysisResult.termination_date);
+            terminationDate.setHours(0, 0, 0, 0);
+            const diffTime = terminationDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === terminationDays) {
+              const notificationMessage = getTranslatedMessage('notification_message_contract_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
+              
+              if (terminationAlertsEnabledInApp) {
+                await insertNotification(
+                  userId,
+                  'notification_title_contract_termination_alert',
+                  notificationMessage,
+                  'warning'
+                );
+                console.log(`schedule-alerts: Sent in-app termination alert for contract ${contract.id} to user ${userId}.`);
+              }
+
+              if (terminationAlertsEnabledEmail && userEmail) {
+                const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
+                await supabase.functions.invoke('send-key-date-alert-email', {
+                  body: {
+                    recipientEmail: userEmail,
+                    subject: emailSubject,
+                    message: notificationMessage,
+                    userPreferredLanguage: userPreferredLanguage,
+                    alertType: 'termination',
+                    contractName: contractName,
+                    days: terminationDays,
+                  },
+                });
+                console.log(`schedule-alerts: Sent email termination alert for contract ${contract.id} to user ${userId}.`);
+              }
             }
           }
         }
+      }
 
-        // --- Check for Termination Alerts ---
-        if (analysisResult.termination_date) {
-          const terminationDate = new Date(analysisResult.termination_date);
-          terminationDate.setHours(0, 0, 0, 0);
-          const diffTime = terminationDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // --- Weekly Reports Email ---
+      if (isMonday && weeklyReportsEnabledEmail && userEmail) {
+        console.log(`schedule-alerts: Generating weekly report for user ${userId}.`);
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
 
-          if (diffDays === terminationDays) {
-            const notificationMessage = getTranslatedMessage('notification_message_contract_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
-            
-            if (terminationAlertsEnabledInApp) { // MODIFIED: Check in-app preference
-              await insertNotification(
-                userId,
-                'notification_title_contract_termination_alert',
-                notificationMessage,
-                'warning'
-              );
-              console.log(`schedule-alerts: Sent in-app termination alert for contract ${contract.id} to user ${userId}.`);
-            }
+        const { data: weeklyContracts, error: weeklyContractsError } = await supabase
+          .from('contracts')
+          .select(`
+            id,
+            name,
+            translated_name,
+            status,
+            analysis_results (
+              compliance_score,
+              findings (risk_level)
+            )
+          `)
+          .eq('user_id', userId)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .lte('created_at', today.toISOString());
 
-            if (terminationAlertsEnabledEmail && userEmail) { // MODIFIED: Check email preference and if email exists
-              const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: days });
-              await supabase.functions.invoke('send-key-date-alert-email', {
-                body: {
-                  recipientEmail: userEmail,
-                  subject: emailSubject,
-                  message: notificationMessage, // Use the same message for email body
-                  userPreferredLanguage: userPreferredLanguage,
-                  alertType: 'termination',
-                  contractName: contractName,
-                  days: terminationDays,
-                },
-                // No Authorization header needed for internal service role function call
-              });
-              console.log(`schedule-alerts: Sent email termination alert for contract ${contract.id} to user ${userId}.`);
-            }
-          }
+        if (weeklyContractsError) {
+          console.error(`schedule-alerts: Error fetching weekly contracts for user ${userId}:`, weeklyContractsError);
+          continue;
         }
+
+        let newContractsCount = 0;
+        let completedAnalysesCount = 0;
+        let highRiskFindingsCount = 0;
+        let mediumRiskFindingsCount = 0;
+
+        weeklyContracts.forEach(contract => {
+          newContractsCount++;
+          if (contract.status === 'completed' && contract.analysis_results && contract.analysis_results.length > 0) {
+            completedAnalysesCount++;
+            contract.analysis_results[0].findings.forEach(finding => {
+              if (finding.risk_level === 'high') highRiskFindingsCount++;
+              if (finding.risk_level === 'medium') mediumRiskFindingsCount++;
+            });
+          }
+        });
+
+        const weeklyReportSummary = getTranslatedMessage('email_weekly_report_summary_content', userPreferredLanguage, {
+          newContracts: newContractsCount,
+          completedAnalyses: completedAnalysesCount,
+          highRiskFindings: highRiskFindingsCount,
+          mediumRiskFindings: mediumRiskFindingsCount,
+        });
+
+        await supabase.functions.invoke('send-weekly-report-email', {
+          body: {
+            recipientEmail: userEmail,
+            recipientName: userName,
+            weeklyReportSummary: weeklyReportSummary,
+            userPreferredLanguage: userPreferredLanguage,
+          },
+        });
+        console.log(`schedule-alerts: Sent weekly report email to user ${userId}.`);
       }
     }
 
