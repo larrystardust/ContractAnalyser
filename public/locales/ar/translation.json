@@ -1643,5 +1643,12 @@
   "no_upcoming_renewals": "لم يتم العثور على تجديدات قادمة.",
   "no_upcoming_terminations": "لم يتم العثور على إنهاءات قادمة.",
   "no_contracts_by_type": "لم يتم العثور على عقود حسب النوع.",
-  "no_contracts_by_party": "لم يتم العثور على عقود حسب الطرف."
+  "no_contracts_by_party": "لم يتم العثور على عقود حسب الطرف.",
+
+  "email_subject_renewal_alert": "تنبيه تجديد العقد القادم: {{contractName}} خلال {{days}} يومًا",
+  "email_subject_termination_alert": "تنبيه إنهاء العقد القادم: {{contractName}} خلال {{days}} يومًا",
+  "email_key_date_alert_body_p1": "هذا إشعار آلي من ContractAnalyser بخصوص تاريخ رئيسي مهم لأحد عقودك.",
+  "email_key_date_alert_body_p2": "يرجى تسجيل الدخول إلى لوحة تحكم ContractAnalyser الخاصة بك للحصول على مزيد من التفاصيل واتخاذ أي إجراء ضروري.",
+  "error_invalid_alert_type": "نوع التنبيه المحدد غير صالح.",
+  "message_email_sent_successfully": "تم إرسال البريد الإلكتروني بنجاح."
 }
