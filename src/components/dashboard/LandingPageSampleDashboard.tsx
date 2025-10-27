@@ -18,19 +18,23 @@ const LandingPageSampleDashboard: React.FC = () => {
   const isMobile = useIsMobile(); // ADDED: Use the hook
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [contractForModal, setContractForModal] = useState<Contract | null>(null);
+  const [pinnedContractId, setPinnedContractId] = useState<string | null>(null); // ADDED: State for pinned contract ID
 
   useEffect(() => {
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
       setContractForModal(firstCompletedSample);
+      setPinnedContractId(firstCompletedSample.id); // ADDED: Pin first completed sample
     } else if (sampleContracts.length > 0) {
       setContractForModal(sampleContracts[0]);
+      setPinnedContractId(sampleContracts[0].id); // ADDED: Pin first sample
     }
   }, []);
 
   // Handle viewing analysis in modal for sample contracts
   const handleViewAnalysis = (contract: Contract) => {
     setContractForModal(contract);
+    setPinnedContractId(contract.id); // ADDED: Pin the selected contract
     if (isMobile) {
       setIsAnalysisModalOpen(true);
     }
@@ -53,7 +57,7 @@ const LandingPageSampleDashboard: React.FC = () => {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} />
+          <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> {/* MODIFIED: Pass pinnedContractId */}
         </div>
         
         {/* Main Content - Placeholder when modal is closed */}
