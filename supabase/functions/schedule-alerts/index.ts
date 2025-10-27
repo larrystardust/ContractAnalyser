@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     // Fetch all users with their notification preferences for key dates
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, language_preference, renewal_notification_days_before, termination_notification_days_before, notification_settings');
+      .select('id, language_preference, email, renewal_notification_days_before, termination_notification_days_before, notification_settings'); // MODIFIED: Added 'email' to select
 
     if (profilesError) {
       console.error('schedule-alerts: Error fetching profiles:', profilesError);
@@ -69,17 +69,20 @@ Deno.serve(async (req) => {
 
     for (const profile of profiles) {
       const userId = profile.id;
+      const userEmail = profile.email; // MODIFIED: Get user email
       const userPreferredLanguage = profile.language_preference || 'en';
       const renewalDays = profile.renewal_notification_days_before || 0;
       const terminationDays = profile.termination_notification_days_before || 0;
       const notificationSettings = profile.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {};
 
       // Check if renewal alerts are enabled for this user
-      const renewalAlertsEnabled = notificationSettings['renewal-alerts']?.inApp || notificationSettings['renewal-alerts']?.email;
+      const renewalAlertsEnabledInApp = notificationSettings['renewal-alerts']?.inApp;
+      const renewalAlertsEnabledEmail = notificationSettings['renewal-alerts']?.email; // MODIFIED: Check email preference
       // Check if termination alerts are enabled for this user
-      const terminationAlertsEnabled = notificationSettings['termination-alerts']?.inApp || notificationSettings['termination-alerts']?.email;
+      const terminationAlertsEnabledInApp = notificationSettings['termination-alerts']?.inApp;
+      const terminationAlertsEnabledEmail = notificationSettings['termination-alerts']?.email; // MODIFIED: Check email preference
 
-      if (!renewalAlertsEnabled && !terminationAlertsEnabled) {
+      if (!renewalAlertsEnabledInApp && !renewalAlertsEnabledEmail && !terminationAlertsEnabledInApp && !terminationAlertsEnabledEmail) {
         // console.log(`schedule-alerts: User ${userId} has no key date alerts enabled. Skipping.`);
         continue;
       }
@@ -112,7 +115,7 @@ Deno.serve(async (req) => {
         if (!analysisResult) continue;
 
         // --- Check for Renewal Alerts ---
-        if (renewalAlertsEnabled && analysisResult.renewal_date) {
+        if (analysisResult.renewal_date) {
           const renewalDate = new Date(analysisResult.renewal_date);
           renewalDate.setHours(0, 0, 0, 0);
           const diffTime = renewalDate.getTime() - today.getTime();
@@ -120,18 +123,38 @@ Deno.serve(async (req) => {
 
           if (diffDays === renewalDays) {
             const notificationMessage = getTranslatedMessage('notification_message_contract_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
-            await insertNotification(
-              userId,
-              'notification_title_contract_renewal_alert',
-              notificationMessage,
-              'info'
-            );
-            console.log(`schedule-alerts: Sent renewal alert for contract ${contract.id} to user ${userId}.`);
+            
+            if (renewalAlertsEnabledInApp) { // MODIFIED: Check in-app preference
+              await insertNotification(
+                userId,
+                'notification_title_contract_renewal_alert',
+                notificationMessage,
+                'info'
+              );
+              console.log(`schedule-alerts: Sent in-app renewal alert for contract ${contract.id} to user ${userId}.`);
+            }
+
+            if (renewalAlertsEnabledEmail && userEmail) { // MODIFIED: Check email preference and if email exists
+              const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
+              await supabase.functions.invoke('send-key-date-alert-email', {
+                body: {
+                  recipientEmail: userEmail,
+                  subject: emailSubject,
+                  message: notificationMessage, // Use the same message for email body
+                  userPreferredLanguage: userPreferredLanguage,
+                  alertType: 'renewal',
+                  contractName: contractName,
+                  days: renewalDays,
+                },
+                // No Authorization header needed for internal service role function call
+              });
+              console.log(`schedule-alerts: Sent email renewal alert for contract ${contract.id} to user ${userId}.`);
+            }
           }
         }
 
         // --- Check for Termination Alerts ---
-        if (terminationAlertsEnabled && analysisResult.termination_date) {
+        if (analysisResult.termination_date) {
           const terminationDate = new Date(analysisResult.termination_date);
           terminationDate.setHours(0, 0, 0, 0);
           const diffTime = terminationDate.getTime() - today.getTime();
@@ -139,13 +162,33 @@ Deno.serve(async (req) => {
 
           if (diffDays === terminationDays) {
             const notificationMessage = getTranslatedMessage('notification_message_contract_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
-            await insertNotification(
-              userId,
-              'notification_title_contract_termination_alert',
-              notificationMessage,
-              'warning'
-            );
-            console.log(`schedule-alerts: Sent termination alert for contract ${contract.id} to user ${userId}.`);
+            
+            if (terminationAlertsEnabledInApp) { // MODIFIED: Check in-app preference
+              await insertNotification(
+                userId,
+                'notification_title_contract_termination_alert',
+                notificationMessage,
+                'warning'
+              );
+              console.log(`schedule-alerts: Sent in-app termination alert for contract ${contract.id} to user ${userId}.`);
+            }
+
+            if (terminationAlertsEnabledEmail && userEmail) { // MODIFIED: Check email preference and if email exists
+              const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: days });
+              await supabase.functions.invoke('send-key-date-alert-email', {
+                body: {
+                  recipientEmail: userEmail,
+                  subject: emailSubject,
+                  message: notificationMessage, // Use the same message for email body
+                  userPreferredLanguage: userPreferredLanguage,
+                  alertType: 'termination',
+                  contractName: contractName,
+                  days: terminationDays,
+                },
+                // No Authorization header needed for internal service role function call
+              });
+              console.log(`schedule-alerts: Sent email termination alert for contract ${contract.id} to user ${userId}.`);
+            }
           }
         }
       }
