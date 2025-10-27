@@ -18,24 +18,29 @@ const SampleDashboardContent: React.FC = () => {
   const isMobile = useIsMobile(); // ADDED: Use the hook
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [contractForModal, setContractForModal] = useState<Contract | null>(null);
+  const [pinnedContractId, setPinnedContractId] = useState<string | null>(null); // ADDED: State for pinned contract ID
 
   useEffect(() => {
     const firstCompletedSample = sampleContracts.find(c => c.status === 'completed');
     if (firstCompletedSample) {
       setContractForModal(firstCompletedSample);
+      setPinnedContractId(firstCompletedSample.id); // ADDED: Pin first completed sample
     } else if (sampleContracts.length > 0) {
       setContractForModal(sampleContracts[0]);
+      setPinnedContractId(sampleContracts[0].id); // ADDED: Pin first sample
     }
   }, []);
 
   useEffect(() => {
     if (contractForModal) {
+      setPinnedContractId(contractForModal.id); // ADDED: Pin the contract when contractForModal changes
       if (isMobile) {
         setIsAnalysisModalOpen(true);
       } else {
         setIsAnalysisModalOpen(false);
       }
     } else {
+      setPinnedContractId(null); // ADDED: Unpin if no contract selected
       setIsAnalysisModalOpen(false);
     }
   }, [contractForModal, isMobile]); // MODIFIED: Added isMobile to dependencies
@@ -44,11 +49,13 @@ const SampleDashboardContent: React.FC = () => {
   const handleSelectContract = (contractId: string) => {
     const contract = sampleContracts.find(c => c.id === contractId);
     setContractForModal(contract || null);
+    setPinnedContractId(contractId); // ADDED: Pin the selected contract
   };
 
   // ADDED: Handle viewing analysis (for both mobile and desktop)
   const handleViewAnalysis = (contract: Contract) => {
     setContractForModal(contract);
+    setPinnedContractId(contract.id); // ADDED: Pin the selected contract
     if (isMobile) {
       setIsAnalysisModalOpen(true);
     }
@@ -72,7 +79,7 @@ const SampleDashboardContent: React.FC = () => {
             </Button>
           </Link>
         </div>
-        <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} />
+        <SampleContractList contractsToDisplay={sampleContracts} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> {/* MODIFIED: Pass pinnedContractId */}
       </div>
       
       {/* Main Content - Placeholder when modal is closed */}
