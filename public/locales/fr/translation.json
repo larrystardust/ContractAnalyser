@@ -1656,5 +1656,7 @@
   "email_key_date_alert_body_p1": "Ceci est une notification automatique de ContractAnalyser concernant une date clé importante pour l'un de vos contrats.",
   "email_key_date_alert_body_p2": "Veuillez vous connecter à votre tableau de bord ContractAnalyser pour plus de détails et pour prendre les mesures nécessaires.",
   "error_invalid_alert_type": "Type d'alerte spécifié invalide.",
-  "message_email_sent_successfully": "E-mail envoyé avec succès."
+  "message_email_sent_successfully": "E-mail envoyé avec succès.",
+  "email_key_date_alert_body_renewal": "Votre contrat '{{contractName}}' est dû pour un renouvellement dans {{days}} jours. Veuillez examiner les termes de votre contrat et prendre les mesures appropriées.",
+  "email_key_date_alert_body_termination": "Votre contrat '{{contractName}}' est dû pour une résiliation dans {{days}} jours. Veuillez examiner les termes de votre contrat et vous préparer à sa conclusion."
 }
