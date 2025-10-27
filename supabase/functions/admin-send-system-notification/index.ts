@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
-import { getTranslatedMessage } from '../_shared/edge_translations.ts'; // ADDED
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -69,20 +69,30 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Forbidden: User is not an administrator' }, 403);
     }
 
-    // Fetch all user IDs, emails, full names, and notification settings from the profiles table
-    const { data: usersData, error: fetchUsersError } = await supabase
+    // Fetch all user profiles (excluding email, as it's not in this table)
+    const { data: profilesData, error: fetchProfilesError } = await supabase
       .from('profiles')
-      .select('id, full_name, email, language_preference, notification_settings'); // MODIFIED: Select email, full_name, language_preference, notification_settings
+      .select('id, full_name, language_preference, notification_settings');
 
-    if (fetchUsersError) {
-      console.error('Error fetching user IDs for system notification:', fetchUsersError);
+    if (fetchProfilesError) {
+      console.error('Error fetching user profiles for system notification:', fetchProfilesError);
       return corsResponse({ error: 'Failed to fetch user list for notification.' }, 500);
     }
 
+    // Fetch all auth.users to get their emails
+    const { data: authUsersData, error: fetchAuthUsersError } = await supabase.auth.admin.listUsers();
+
+    if (fetchAuthUsersError) {
+      console.error('Error fetching auth users for system notification:', fetchAuthUsersError);
+      return corsResponse({ error: 'Failed to fetch user emails for notification.' }, 500);
+    }
+
+    const authUsersMap = new Map(authUsersData.users.map(u => [u.id, u.email]));
+
     const notificationsToInsert = [];
-    for (const userData of usersData) {
+    for (const userData of profilesData) { // Iterate through profilesData
       const userId = userData.id;
-      const userEmail = userData.email;
+      const userEmail = authUsersMap.get(userId); // Get email from the map
       const userName = userData.full_name || userEmail;
       const userPreferredLanguage = userData.language_preference || 'en';
       const notificationSettings = userData.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {};
@@ -95,7 +105,7 @@ Deno.serve(async (req) => {
         type: 'info',
       });
 
-      // Check if email notification for system updates is enabled
+      // Check if email notification for system updates is enabled and email is available
       const systemUpdatesEmailEnabled = notificationSettings['system-updates']?.email;
 
       if (systemUpdatesEmailEnabled && userEmail) {
@@ -137,7 +147,7 @@ Deno.serve(async (req) => {
       user.id,
       'ADMIN_SYSTEM_NOTIFICATION_SENT',
       `Admin ${user.email} sent a system notification: "${title}"`,
-      { notification_title: title, notification_message: message, recipient_count: usersData.length }
+      { notification_title: title, notification_message: message, recipient_count: profilesData.length }
     );
 
     return corsResponse({ message: 'System notification sent successfully to all users.' });
