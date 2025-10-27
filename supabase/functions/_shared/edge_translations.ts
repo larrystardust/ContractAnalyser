@@ -247,6 +247,8 @@ export const edgeTranslations = {
     "email_key_date_alert_body_p2": "Please log in to your ContractAnalyser dashboard for more details and to take any necessary action.",
     "error_invalid_alert_type": "Invalid alert type specified.",
     "message_email_sent_successfully": "Email sent successfully.",
+    "email_key_date_alert_body_renewal": "Your contract '{{contractName}}' is due for renewal in {{days}} days. Please review your contract terms and take appropriate action.",
+    "email_key_date_alert_body_termination": "Your contract '{{contractName}}' is due for termination in {{days}} days. Please review your contract terms and prepare for its conclusion.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
