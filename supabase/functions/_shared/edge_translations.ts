@@ -118,7 +118,6 @@ export const edgeTranslations = {
     "message_unauthorized": "Unauthorized: Invalid or missing user token",
     "message_forbidden": "Forbidden: User is not an administrator",
     "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Server error: ${errorMessage}`,
-    "email_accept_invitation_button": "Accept Invitation",
 
     // ADDED: Product name keys
     "product_name_single_use": "Single Use",
@@ -242,12 +241,12 @@ export const edgeTranslations = {
     "file_retention_policy_admin_assigned_desc": "Files are retained as long as the admin-assigned plan is active.",
     "product_desc_admin_free_enterprise": "Admin-assigned Enterprise Plan (Free)",
 
-    email_subject_renewal_alert: "Upcoming Contract Renewal Alert: {{contractName}} in {{days}} days",
-    email_subject_termination_alert: "Upcoming Contract Termination Alert: {{contractName}} in {{days}} days",
-    email_key_date_alert_body_p1: "This is an automated notification from ContractAnalyser regarding an important key date for one of your contracts.",
-    email_key_date_alert_body_p2: "Please log in to your ContractAnalyser dashboard for more details and to take any necessary action.",
-    error_invalid_alert_type: "Invalid alert type specified.",
-    message_email_sent_successfully: "Email sent successfully.",
+    "email_subject_renewal_alert": "Upcoming Contract Renewal Alert: {{contractName}} in {{days}} days",
+    "email_subject_termination_alert": "Upcoming Contract Termination Alert: {{contractName}} in {{days}} days",
+    "email_key_date_alert_body_p1": "This is an automated notification from ContractAnalyser regarding an important key date for one of your contracts.",
+    "email_key_date_alert_body_p2": "Please log in to your ContractAnalyser dashboard for more details and to take any necessary action.",
+    "error_invalid_alert_type": "Invalid alert type specified.",
+    "message_email_sent_successfully": "Email sent successfully.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -368,7 +367,6 @@ export const edgeTranslations = {
     "message_unauthorized": "No autorizado: Token de usuario inválido o faltante",
     "message_forbidden": "Prohibido: El usuario no es un administrador",
     "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Error del servidor: ${errorMessage}`,
-    "email_accept_invitation_button": "Aceptar Invitación",
 
     // ADDED: Product name keys
     "product_name_single_use": "Uso Único",
@@ -491,12 +489,12 @@ export const edgeTranslations = {
     "file_retention_policy_admin_assigned_desc": "Los archivos se conservan mientras el plan asignado por el administrador esté activo.",
     "product_desc_admin_free_enterprise": "Plan empresarial asignado por el administrador (Gratis)",
 
-    email_subject_renewal_alert: "Alerta de Próxima Renovación de Contrato: {{contractName}} en {{days}} días",
-    email_subject_termination_alert: "Alerta de Próxima Terminación de Contrato: {{contractName}} en {{days}} días",
-    email_key_date_alert_body_p1: "Esta es una notificación automática de ContractAnalyser sobre una fecha clave importante para uno de sus contratos.",
-    email_key_date_alert_body_p2: "Inicie sesión en su panel de control de ContractAnalyser para obtener más detalles y tomar las medidas necesarias.",
-    error_invalid_alert_type: "Tipo de alerta especificado no válido.",
-    message_email_sent_successfully: "Correo electrónico enviado con éxito.",
+    "email_subject_renewal_alert": "Alerta de Próxima Renovación de Contrato: {{contractName}} en {{days}} días",
+    "email_subject_termination_alert": "Alerta de Próxima Terminación de Contrato: {{contractName}} en {{days}} días",
+    "email_key_date_alert_body_p1": "Esta es una notificación automática de ContractAnalyser sobre una fecha clave importante para uno de sus contratos.",
+    "email_key_date_alert_body_p2": "Inicie sesión en su panel de control de ContractAnalyser para obtener más detalles y tomar las medidas necesarias.",
+    "error_invalid_alert_type": "Tipo de alerta especificado no válido.",
+    "message_email_sent_successfully": "Correo electrónico enviado con éxito.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -617,7 +615,6 @@ export const edgeTranslations = {
     "message_unauthorized": "Non autorisé : Jeton utilisateur invalide ou manquant",
     "message_forbidden": "Interdit : L'utilisateur n'est pas un administrateur",
     "message_server_error": ({ errorMessage }: { errorMessage: string }) => `Erreur du serveur : ${errorMessage}`,
-    "email_accept_invitation_button": "Accepter l'invitation",
 
     // ADDED: Product name keys
     "product_name_single_use": "Usage Unique",
@@ -740,12 +737,12 @@ export const edgeTranslations = {
     "file_retention_policy_admin_assigned_desc": "Les fichiers sont conservés tant que le plan attribué par l'administrateur est actif.",
     "product_desc_admin_free_enterprise": "Plan entreprise attribué par l'administrateur (Gratuit)",
 
-    email_subject_renewal_alert: "Alerte de Renouvellement de Contrat Prochain : {{contractName}} dans {{days}} jours",
-    email_subject_termination_alert: "Alerte de Résiliation de Contrat Prochaine : {{contractName}} dans {{days}} jours",
-    email_key_date_alert_body_p1: "Ceci est une notification automatique de ContractAnalyser concernant une date clé importante pour l'un de vos contrats.",
-    email_key_date_alert_body_p2: "Veuillez vous connecter à votre tableau de bord ContractAnalyser pour plus de détails et pour prendre les mesures nécessaires.",
-    error_invalid_alert_type: "Type d'alerte spécifié invalide.",
-    message_email_sent_successfully: "E-mail envoyé avec succès.",
+    "email_subject_renewal_alert": "Alerte de Renouvellement de Contrat Prochain : {{contractName}} dans {{days}} jours",
+    "email_subject_termination_alert": "Alerte de Résiliation de Contrat Prochaine : {{contractName}} dans {{days}} jours",
+    "email_key_date_alert_body_p1": "Ceci est une notification automatique de ContractAnalyser concernant une date clé importante pour l'un de vos contrats.",
+    "email_key_date_alert_body_p2": "Veuillez vous connecter à votre tableau de bord ContractAnalyser pour plus de détails et pour prendre les mesures nécessaires.",
+    "error_invalid_alert_type": "Type d'alerte spécifié invalide.",
+    "message_email_sent_successfully": "E-mail envoyé avec succès.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -866,7 +863,6 @@ export const edgeTranslations = {
     "message_unauthorized": "غير مصرح به: رمز المستخدم غير صالح أو مفقود",
     "message_forbidden": "ممنوع: المستخدم ليس مسؤولاً",
     "message_server_error": ({ errorMessage }: { errorMessage: string }) => `خطأ في الخادم: ${errorMessage}`,
-    "email_accept_invitation_button": "قبول الدعوة",
 
     // ADDED: Product name keys
     "product_name_single_use": "استخدام فردي",
@@ -989,12 +985,12 @@ export const edgeTranslations = {
     "file_retention_policy_admin_assigned_desc": "يتم الاحتفاظ بالملفات طالما أن الخطة المعينة من قبل المسؤول نشطة.",
     "product_desc_admin_free_enterprise": "خطة مؤسسية معينة من قبل المسؤول (مجانية)",
 
-    email_subject_renewal_alert: "تنبيه تجديد العقد القادم: {{contractName}} خلال {{days}} يومًا",
-    email_subject_termination_alert: "تنبيه إنهاء العقد القادم: {{contractName}} خلال {{days}} يومًا",
-    email_key_date_alert_body_p1: "هذا إشعار آلي من ContractAnalyser بخصوص تاريخ رئيسي مهم لأحد عقودك.",
-    email_key_date_alert_body_p2: "يرجى تسجيل الدخول إلى لوحة تحكم ContractAnalyser الخاصة بك للحصول على مزيد من التفاصيل واتخاذ أي إجراء ضروري.",
-    error_invalid_alert_type: "نوع التنبيه المحدد غير صالح.",
-    message_email_sent_successfully: "تم إرسال البريد الإلكتروني بنجاح.",
+    "email_subject_renewal_alert": "تنبيه تجديد العقد القادم: {{contractName}} خلال {{days}} يومًا",
+    "email_subject_termination_alert": "تنبيه إنهاء العقد القادم: {{contractName}} خلال {{days}} يومًا",
+    "email_key_date_alert_body_p1": "هذا إشعار آلي من ContractAnalyser بخصوص تاريخ رئيسي مهم لأحد عقودك.",
+    "email_key_date_alert_body_p2": "يرجى تسجيل الدخول إلى لوحة تحكم ContractAnalyser الخاصة بك للحصول على مزيد من التفاصيل واتخاذ أي إجراء ضروري.",
+    "error_invalid_alert_type": "نوع التنبيه المحدد غير صالح.",
+    "message_email_sent_successfully": "تم إرسال البريد الإلكتروني بنجاح.",
   }
 };
 
