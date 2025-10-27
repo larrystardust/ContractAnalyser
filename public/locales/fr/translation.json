@@ -1658,5 +1658,11 @@
   "error_invalid_alert_type": "Type d'alerte spécifié invalide.",
   "message_email_sent_successfully": "E-mail envoyé avec succès.",
   "email_key_date_alert_body_renewal": "Votre contrat '{{contractName}}' est dû pour un renouvellement dans {{days}} jours. Veuillez examiner les termes de votre contrat et prendre les mesures appropriées.",
-  "email_key_date_alert_body_termination": "Votre contrat '{{contractName}}' est dû pour une résiliation dans {{days}} jours. Veuillez examiner les termes de votre contrat et vous préparer à sa conclusion."
+  "email_key_date_alert_body_termination": "Votre contrat '{{contractName}}' est dû pour une résiliation dans {{days}} jours. Veuillez examiner les termes de votre contrat et vous préparer à sa conclusion.",
+
+  "notification_title_plan_assigned": "Plan Attribué !",
+  "notification_message_admin_assigned_plan": "Un administrateur vous a attribué le plan {{productName}}.",
+  "notification_title_subscription_removed": "Abonnement Supprimé",
+  "notification_message_subscription_removed": "Votre abonnement a été supprimé par un administrateur.",
+  "notification_message_admin_assigned_stripe_plan": "Un administrateur vous a attribué au plan {{productName}} avec le rôle {{role}}."
 }
