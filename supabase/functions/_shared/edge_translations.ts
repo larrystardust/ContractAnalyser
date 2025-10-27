@@ -134,6 +134,8 @@ export const edgeTranslations = {
     subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Your ${productName} subscription status is now ${status}. Please check your billing details.`,
     subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Your ${productName} subscription has been cancelled and will end on ${endDate}.`,
     credit_granted_message: ({ productName }: { productName: string }) => `An administrator has granted you a single-use credit for ${productName}.`,
+    notification_title_subscription_active: "Subscription Active!",
+    notification_title_subscription_plan_changed: "Subscription Plan Changed",
     
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Subscription Removed",
@@ -396,6 +398,9 @@ export const edgeTranslations = {
     subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `El estado de su suscripción a ${productName} es ahora ${status}. Por favor, revise sus detalles de facturación.`,
     subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Su suscripción a ${productName} ha sido cancelada y finalizará el ${endDate}.`,
     credit_granted_message: ({ productName }: { productName: string }) => `Un administrador le ha concedido un crédito de un solo uso para ${productName}.`,
+    notification_title_subscription_active: "¡Suscripción Activa!",
+    notification_title_subscription_plan_changed: "Plan de Suscripción Cambiado",
+    
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Suscripción Eliminada",
     notification_message_subscription_removed: "Su acceso a la suscripción ha sido eliminado por un administrador.",
@@ -657,6 +662,9 @@ export const edgeTranslations = {
     subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `Le statut de votre abonnement ${productName} est maintenant ${status}. Veuillez vérifier vos détails de facturation.`,
     subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `Votre abonnement ${productName} a été annulé et se terminera le ${endDate}.`,
     credit_granted_message: ({ productName }: { productName: string }) => `Un administrateur vous a accordé un crédit à usage unique pour ${productName}.`,
+    notification_title_subscription_active: "Abonnement Actif !",
+    notification_title_subscription_plan_changed: "Plan d'Abonnement Modifié",
+    
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "Abonnement Supprimé",
     notification_message_subscription_removed: "Votre accès à l'abonnement a été supprimé par un administrateur.",
@@ -918,6 +926,9 @@ export const edgeTranslations = {
     subscription_alert_message: ({ productName, status }: { productName: string; status: string }) => `حالة اشتراكك في ${productName} هي الآن ${status}. يرجى التحقق من تفاصيل الفواتير الخاصة بك.`,
     subscription_canceled_at_period_end_message: ({ productName, endDate }: { productName: string; endDate: string }) => `تم إلغاء اشتراكك في ${productName} وسينتهي في ${endDate}.`,
     credit_granted_message: ({ productName }: { productName: string }) => `لقد منحك المسؤول رصيدًا لمرة واحدة لـ ${productName}.`,
+    notification_title_subscription_active: "الاشتراك نشط!",
+    notification_title_subscription_plan_changed: "تم تغيير خطة الاشتراك",
+    
     // NEW: Admin-manage-subscription messages
     notification_title_subscription_removed: "تمت إزالة الاشتراك",
     notification_message_subscription_removed: "تمت إزالة وصولك إلى الاشتراك بواسطة مسؤول.",
