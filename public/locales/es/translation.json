@@ -1640,5 +1640,12 @@
   "no_upcoming_renewals": "No se encontraron renovaciones próximas.",
   "no_upcoming_terminations": "No se encontraron terminaciones próximas.",
   "no_contracts_by_type": "No se encontraron contratos por tipo.",
-  "no_contracts_by_party": "No se encontraron contratos por parte."
+  "no_contracts_by_party": "No se encontraron contratos por parte.",
+
+  "email_subject_renewal_alert": "Alerta de Próxima Renovación de Contrato: {{contractName}} en {{days}} días",
+  "email_subject_termination_alert": "Alerta de Próxima Terminación de Contrato: {{contractName}} en {{days}} días",
+  "email_key_date_alert_body_p1": "Esta es una notificación automática de ContractAnalyser sobre una fecha clave importante para uno de sus contratos.",
+  "email_key_date_alert_body_p2": "Inicie sesión en su panel de control de ContractAnalyser para obtener más detalles y tomar las medidas necesarias.",
+  "error_invalid_alert_type": "Tipo de alerta especificado no válido.",
+  "message_email_sent_successfully": "Correo electrónico enviado con éxito."
 }
