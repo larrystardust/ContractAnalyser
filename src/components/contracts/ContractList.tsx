@@ -14,15 +14,26 @@ interface ContractListProps {
   onSelectContract?: (contractId: string) => void;
   isSample?: boolean;
   onViewAnalysis?: (contract: Contract) => void; // ADDED: New prop for viewing analysis
+  pinnedContractId?: string | null; // ADDED: New prop for pinning
 }
 
-const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract, isSample = false, onViewAnalysis }) => {
+const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelectContract, isSample = false, onViewAnalysis, pinnedContractId }) => {
   const { contracts, deleteContract } = useContracts();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
   const { t } = useTranslation();
 
-  const contractsToRender = contractsToDisplay || contracts;
+  // MODIFIED: Implement pinning logic
+  let contractsToRender = contractsToDisplay || contracts;
+  if (pinnedContractId) {
+    const pinnedContract = contractsToRender.find(c => c.id === pinnedContractId);
+    if (pinnedContract) {
+      contractsToRender = [
+        pinnedContract,
+        ...contractsToRender.filter(c => c.id !== pinnedContractId)
+      ];
+    }
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -174,7 +185,7 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                     navigate(`/dashboard?contractId=${contract.id}`);
                   }
                 }}
-                className={`transition-all duration-200 border border-gray-100`}
+                className={`transition-all duration-200 border border-gray-100 ${contract.id === pinnedContractId ? 'order-first border-blue-500 shadow-lg' : ''}`} // ADDED: Pinning styles
               >
                 <CardBody className="flex justify-between items-center">
                   <div className="flex items-center">
