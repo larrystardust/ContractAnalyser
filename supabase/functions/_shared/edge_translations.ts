@@ -249,6 +249,14 @@ export const edgeTranslations = {
     message_email_sent_successfully: "Email sent successfully.",
     email_key_date_alert_body_renewal: "Your contract '{contractName}' is due for renewal in {days} days. Please review your contract terms and take appropriate action.",
     email_key_date_alert_body_termination: "Your contract '{contractName}' is due for termination in {days} days. Please review your contract terms and prepare for its conclusion.",
+
+    email_subject_weekly_report: "Your Weekly ContractAnalyser Report",
+    email_weekly_report_body_p1: "Here's a summary of your activity on ContractAnalyser for the past week:",
+    email_weekly_report_body_p2: "Log in to your dashboard to view full details and manage your contracts.",
+    email_weekly_report_summary_content: "During the last week, you uploaded {newContracts} new contracts, completed {completedAnalyses} analyses, and identified {highRiskFindings} high-risk and {mediumRiskFindings} medium-risk findings.",
+    email_subject_system_update: "Important Update from ContractAnalyser: {title}",
+    email_system_update_body_p1: "We have an important update regarding: {title}",
+    email_system_update_body_p2: "Please visit your dashboard for more information.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -499,6 +507,14 @@ export const edgeTranslations = {
     message_email_sent_successfully: "Correo electrónico enviado con éxito.",
     email_key_date_alert_body_renewal: "Su contrato '{contractName}' vence para renovación en {days} días. Por favor, revise los términos de su contrato y tome las medidas adecuadas.",
     email_key_date_alert_body_termination: "Su contrato '{contractName}' vence para terminación en {days} días. Por favor, revise los términos de su contrato y prepárese para su finalización.",
+
+    email_subject_weekly_report: "Su Informe Semanal de ContractAnalyser",
+    email_weekly_report_body_p1: "Aquí tiene un resumen de su actividad en ContractAnalyser durante la última semana:", 
+    email_weekly_report_body_p2: "Inicie sesión en su panel de control para ver todos los detalles y administrar sus contratos.", 
+    email_weekly_report_summary_content: "Durante la última semana, subió {newContracts} nuevos contratos, completó {completedAnalyses} análisis e identificó {highRiskFindings} hallazgos de alto riesgo y {mediumRiskFindings} de riesgo medio.", 
+    email_subject_system_update: "Actualización Importante de ContractAnalyser: {title}",  
+    email_system_update_body_p1: "Tenemos una actualización importante sobre: {title}", 
+    email_system_update_body_p2: "Visite su panel de control para obtener más información.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -749,6 +765,14 @@ export const edgeTranslations = {
     message_email_sent_successfully: "E-mail envoyé avec succès.",
     email_key_date_alert_body_renewal: "Votre contrat '{contractName}' est dû pour un renouvellement dans {days} jours. Veuillez examiner les termes de votre contrat et prendre les mesures appropriées.",
     email_key_date_alert_body_termination: "Votre contrat '{contractName}' est dû pour une résiliation dans {days} jours. Veuillez examiner les termes de votre contrat et vous préparer à sa conclusion.",
+
+    email_subject_weekly_report: "Votre Rapport Hebdomadaire ContractAnalyser", 
+    email_weekly_report_body_p1: "Voici un résumé de votre activité sur ContractAnalyser pour la semaine passée :", 
+    email_weekly_report_body_p2: "Connectez-vous à votre tableau de bord pour voir tous les détails et gérer vos contrats.",
+    email_weekly_report_summary_content: "Au cours de la dernière semaine, vous avez téléchargé {newContracts} nouveaux contrats, complété {completedAnalyses} analyses, et identifié {highRiskFindings} constats à risque élevé et {mediumRiskFindings} à risque moyen.", 
+    email_subject_system_update: "Mise à Jour Importante de ContractAnalyser : {title}", 
+    email_system_update_body_p1: "Nous avons une mise à jour importante concernant : {title}", 
+    email_system_update_body_p2: "Veuillez visiter votre tableau de bord pour plus d'informations.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -999,6 +1023,14 @@ export const edgeTranslations = {
     message_email_sent_successfully: "تم إرسال البريد الإلكتروني بنجاح.",
     email_key_date_alert_body_renewal: "عقدك '{contractName}' مستحق للتجديد خلال {days} يومًا. يرجى مراجعة شروط عقدك واتخاذ الإجراءات المناسبة.",
     email_key_date_alert_body_termination: "عقدك '{contractName}' مستحق للإنهاء خلال {days} يومًا. يرجى مراجعة شروط عقدك والاستعداد لإنهاءه.",
+
+    email_subject_weekly_report: "تقريرك الأسبوعي من ContractAnalyser", 
+    email_weekly_report_body_p1: "إليك ملخص لنشاطك على ContractAnalyser للأسبوع الماضي:", 
+    email_weekly_report_body_p2: "سجل الدخول إلى لوحة التحكم الخاصة بك لعرض التفاصيل الكاملة وإدارة عقودك.", 
+    email_weekly_report_summary_content: "خلال الأسبوع الماضي، قمت بتحميل {newContracts} عقود جديدة، وأكملت {completedAnalyses} تحليلات، وحددت {highRiskFindings} نتائج عالية الخطورة و {mediumRiskFindings} نتائج متوسطة الخطورة.", 
+    email_subject_system_update: "تحديث هام من ContractAnalyser: {title}",   
+    email_system_update_body_p1: "لدينا تحديث هام بخصوص: {title}",  
+    email_system_update_body_p2: "يرجى زيارة لوحة التحكم الخاصة بك لمزيد من المعلومات.",
   }
 };
 
