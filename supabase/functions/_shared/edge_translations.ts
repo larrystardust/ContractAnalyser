@@ -991,6 +991,8 @@ export const edgeTranslations = {
     "email_key_date_alert_body_p2": "يرجى تسجيل الدخول إلى لوحة تحكم ContractAnalyser الخاصة بك للحصول على مزيد من التفاصيل واتخاذ أي إجراء ضروري.",
     "error_invalid_alert_type": "نوع التنبيه المحدد غير صالح.",
     "message_email_sent_successfully": "تم إرسال البريد الإلكتروني بنجاح.",
+    "email_key_date_alert_body_renewal": "عقدك '{{contractName}}' مستحق للتجديد خلال {{days}} يومًا. يرجى مراجعة شروط عقدك واتخاذ الإجراءات المناسبة.",
+    "email_key_date_alert_body_termination": "عقدك '{{contractName}}' مستحق للإنهاء خلال {{days}} يومًا. يرجى مراجعة شروط عقدك والاستعداد لإنهاءه.",
   }
 };
 
