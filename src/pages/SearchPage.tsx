@@ -6,6 +6,7 @@ import { Search as SearchIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import { useSubscription } from '../hooks/useSubscription'; // ADDED
+import { useNavigate } from 'react-router-dom'; // ADDED: Import useNavigate
 
 const SearchPage: React.FC = () => {
   const { contracts, loadingContracts } = useContracts();
@@ -13,6 +14,7 @@ const SearchPage: React.FC = () => {
   const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
   const { t } = useTranslation();
   const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED
+  const navigate = useNavigate(); // ADDED: Initialize useNavigate
 
   // State for advanced filters
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -28,6 +30,9 @@ const SearchPage: React.FC = () => {
   const [indemnificationFilter, setIndemnificationFilter] = useState('');
   const [confidentialityFilter, setConfidentialityFilter] = useState('');
   const [contractValueFilter, setContractValueFilter] = useState('');
+
+  // ADDED: State for pinned contract ID
+  const [pinnedContractId, setPinnedContractId] = useState<string | null>(null);
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
@@ -142,6 +147,12 @@ const SearchPage: React.FC = () => {
 
   const toggleAdvancedFilters = () => {
     setShowAdvancedFilters(prev => !prev);
+  };
+
+  // ADDED: handleViewAnalysis function to update pinnedContractId and navigate
+  const handleViewAnalysis = (contract: Contract) => {
+    setPinnedContractId(contract.id);
+    navigate(`/dashboard?contractId=${contract.id}`);
   };
 
   if (loadingSubscription) { // ADDED: Loading state for subscription
@@ -384,7 +395,7 @@ const SearchPage: React.FC = () => {
           <p className="text-gray-500 mt-2">{t('loading_contracts')}</p>
         </div>
       ) : (
-        <ContractList contractsToDisplay={filteredContracts} />
+        <ContractList contractsToDisplay={filteredContracts} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> {/* MODIFIED: Pass onViewAnalysis and pinnedContractId */}
       )}
 
       {!loadingContracts && filteredContracts.length === 0 && (searchTerm !== '' || showAdvancedFilters) && (
