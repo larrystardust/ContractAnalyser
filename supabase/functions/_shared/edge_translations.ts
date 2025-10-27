@@ -495,6 +495,8 @@ export const edgeTranslations = {
     "email_key_date_alert_body_p2": "Inicie sesión en su panel de control de ContractAnalyser para obtener más detalles y tomar las medidas necesarias.",
     "error_invalid_alert_type": "Tipo de alerta especificado no válido.",
     "message_email_sent_successfully": "Correo electrónico enviado con éxito.",
+    "email_key_date_alert_body_renewal": "Su contrato '{{contractName}}' vence para renovación en {{days}} días. Por favor, revise los términos de su contrato y tome las medidas adecuadas.",
+    "email_key_date_alert_body_termination": "Su contrato '{{contractName}}' vence para terminación en {{days}} días. Por favor, revise los términos de su contrato y prepárese para su finalización.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
