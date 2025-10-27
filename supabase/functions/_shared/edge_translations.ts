@@ -231,6 +231,7 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "Confidentiality Obligations Summary",
     not_specified: "Not specified",
 
+    product_desc_professional_use: "Professional Subscription Plan (For up to 2 users)", 
     product_name_professional_use_advanced: "ContractAnalyser Professional Use (Advanced)",
     product_desc_professional_use_advanced: "Includes all Professional Use features plus advanced AI data extraction, enhanced search, and automated alerts.",
     product_name_enterprise_use_advanced: "ContractAnalyser Enterprise Use (Advanced)",
@@ -490,6 +491,7 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "Resumen de las obligaciones de confidencialidad",
     not_specified: "No especificado",
 
+    product_desc_professional_use: "Plan de Suscripción Profesional (Hasta 2 usuarios)",
     product_name_professional_use_advanced: "ContractAnalyser Uso Profesional (Avanzado)",
     product_desc_professional_use_advanced: "Incluye todas las funciones de uso profesional más extracción avanzada de datos por IA, búsqueda mejorada y alertas automatizadas.",
     product_name_enterprise_use_advanced: "ContractAnalyser Uso Empresarial (Avanzado)",
@@ -749,6 +751,7 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "Résumé des obligations de confidentialité",
     not_specified: "Non spécifié",
 
+    product_desc_professional_use: "Plan d'abonnement Professionnel (Jusqu'à 2 utilisateurs)",
     product_name_professional_use_advanced: "ContractAnalyser Utilisation Professionnelle (Avancée)",
     product_desc_professional_use_advanced: "Comprend toutes les fonctionnalités d'utilisation professionnelle plus l'extraction avancée de données par IA, la recherche améliorée et les alertes automatisées.",
     product_name_enterprise_use_advanced: "ContractAnalyser Utilisation Entreprise (Avancée)",
@@ -1008,6 +1011,7 @@ export const edgeTranslations = {
     confidentiality_obligations_summary: "ملخص التزامات السرية",
     not_specified: "غير محدد",
 
+    product_desc_professional_use: "خطة الاشتراك الاحترافية (لحد أقصى 2 مستخدمين)",
     product_name_professional_use_advanced: "ContractAnalyser الاستخدام الاحترافي (متقدم)",
     product_desc_professional_use_advanced: "يتضمن جميع ميزات الاستخدام الاحترافي بالإضافة إلى استخراج البيانات المتقدم بالذكاء الاصطناعي، والبحث المحسن، والتنبيهات التلقائية.",
     product_name_enterprise_use_advanced: "ContractAnalyser الاستخدام المؤسسي (متقدم)",
