@@ -395,7 +395,7 @@ const SearchPage: React.FC = () => {
           <p className="text-gray-500 mt-2">{t('loading_contracts')}</p>
         </div>
       ) : (
-        <ContractList contractsToDisplay={filteredContracts} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> {/* MODIFIED: Pass onViewAnalysis and pinnedContractId */}
+        <ContractList contractsToDisplay={filteredContracts} onViewAnalysis={handleViewAnalysis} pinnedContractId={pinnedContractId} /> 
       )}
 
       {!loadingContracts && filteredContracts.length === 0 && (searchTerm !== '' || showAdvancedFilters) && (
