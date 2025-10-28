@@ -1664,5 +1664,7 @@
   "notification_message_admin_assigned_plan": "Un administrateur vous a attribué le plan {{productName}}.",
   "notification_title_subscription_removed": "Abonnement Supprimé",
   "notification_message_subscription_removed": "Votre abonnement a été supprimé par un administrateur.",
-  "notification_message_admin_assigned_stripe_plan": "Un administrateur vous a attribué au plan {{productName}} avec le rôle {{role}}."
+  "notification_message_admin_assigned_stripe_plan": "Un administrateur vous a attribué au plan {{productName}} avec le rôle {{role}}.",
+  "on_or_after_this_date": "À partir de cette date",
+  "on_or_before_this_date": "Jusqu'à cette date"
 }
