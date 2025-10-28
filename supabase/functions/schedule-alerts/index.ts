@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     // Fetch all users with their notification preferences for key dates and weekly reports
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, full_name, language_preference, email, renewal_notification_days_before, termination_notification_days_before, notification_settings');
+      .select('id, full_name, language_preference, renewal_notification_days_before, termination_notification_days_before, notification_settings, users(email)'); // MODIFIED: Fetch email from users table
 
     if (profilesError) {
       console.error('schedule-alerts: Error fetching profiles:', profilesError);
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
 
     for (const profile of profiles) {
       const userId = profile.id;
-      const userEmail = profile.email;
+      const userEmail = profile.users?.email; // MODIFIED: Access email from nested users object
       const userName = profile.full_name || userEmail;
       const userPreferredLanguage = profile.language_preference || 'en';
       const renewalDays = profile.renewal_notification_days_before || 0;
