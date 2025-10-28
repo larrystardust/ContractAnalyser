@@ -55,10 +55,30 @@ Deno.serve(async (req) => {
     // For this scenario, we'll assume it's called internally by schedule-alerts, which is already authenticated.
     // No direct user authentication is needed here, but a check for a service role key or internal token could be added for robustness.
 
+    // ADDED: Fetch recipient's full name
+    let recipientFullName = recipientEmail; // Default to email if name not found
+    const { data: authUsers, error: authUsersError } = await supabase.auth.admin.listUsers({ email: recipientEmail, page: 1, perPage: 1 });
+    if (authUsersError) {
+      console.warn('send-key-date-alert-email: Error fetching auth user by email:', authUsersError);
+    } else if (authUsers.users.length > 0) {
+      const recipientUserId = authUsers.users[0].id;
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', recipientUserId)
+        .maybeSingle();
+      if (profileError) {
+        console.warn('send-key-date-alert-email: Error fetching recipient profile for full_name:', profileError);
+      } else if (profileData?.full_name) {
+        recipientFullName = profileData.full_name;
+      }
+    }
+    // END ADDED
+
     let emailHtmlBody = '';
     if (alertType === 'renewal') {
       emailHtmlBody = `
-        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
+        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientFullName })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p1', userPreferredLanguage)}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_renewal', userPreferredLanguage, { contractName: contractName, days: days })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p2', userPreferredLanguage)}</p>
@@ -66,7 +86,7 @@ Deno.serve(async (req) => {
       `;
     } else if (alertType === 'termination') {
       emailHtmlBody = `
-        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
+        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientFullName })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p1', userPreferredLanguage)}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_termination', userPreferredLanguage, { contractName: contractName, days: days })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p2', userPreferredLanguage)}</p>
