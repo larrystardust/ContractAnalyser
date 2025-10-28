@@ -1655,5 +1655,7 @@
   "notification_message_admin_assigned_plan": "Un administrador le ha asignado el plan {{productName}}.",
   "notification_title_subscription_removed": "Suscripción Eliminada",
   "notification_message_subscription_removed": "Su suscripción ha sido eliminada por un administrador.",
-  "notification_message_admin_assigned_stripe_plan": "Un administrador le ha asignado al plan {{productName}} con el rol {{role}}."
+  "notification_message_admin_assigned_stripe_plan": "Un administrador le ha asignado al plan {{productName}} con el rol {{role}}.",
+  "on_or_after_this_date": "En o después de esta fecha",
+  "on_or_before_this_date": "En o antes de esta fecha"
 }
