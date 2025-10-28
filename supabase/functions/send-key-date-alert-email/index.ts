@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     let emailHtmlBody = '';
     if (alertType === 'renewal') {
       emailHtmlBody = `
-        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientName })}</p>
+        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p1', userPreferredLanguage)}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_renewal', userPreferredLanguage, { contractName: contractName, days: days })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p2', userPreferredLanguage)}</p>
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       `;
     } else if (alertType === 'termination') {
       emailHtmlBody = `
-        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientName })}</p>
+        <p>${getTranslatedMessage('email_hello', userPreferredLanguage, { recipientName: recipientEmail })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p1', userPreferredLanguage)}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_termination', userPreferredLanguage, { contractName: contractName, days: days })}</p>
         <p>${getTranslatedMessage('email_key_date_alert_body_p2', userPreferredLanguage)}</p>
