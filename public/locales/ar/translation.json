@@ -1658,5 +1658,7 @@
   "notification_message_admin_assigned_plan": "قام المسؤول بتخصيص خطة {{productName}} لك.",
   "notification_title_subscription_removed": "تمت إزالة الاشتراك",
   "notification_message_subscription_removed": "تمت إزالة اشتراكك بواسطة المسؤول.",
-  "notification_message_admin_assigned_stripe_plan": "قام المسؤول بتخصيص خطة {{productName}} لك بدور {{role}}."
+  "notification_message_admin_assigned_stripe_plan": "قام المسؤول بتخصيص خطة {{productName}} لك بدور {{role}}.",
+  "on_or_after_this_date": "في أو بعد هذا التاريخ",
+  "on_or_before_this_date": "في أو قبل هذا التاريخ"
 }
