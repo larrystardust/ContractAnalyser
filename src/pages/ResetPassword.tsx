@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; // ADDED useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Scale, Eye, EyeOff } from 'lucide-react';
@@ -20,8 +20,8 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // MODIFIED: Change type from NodeJS.Timeout to number | null
-  const sessionTimerRef = useRef<number | null>(null);
+  // MODIFIED: Change type from number | null to NodeJS.Timeout | null
+  const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Set global password reset flow state and block modals
   useEffect(() => {
