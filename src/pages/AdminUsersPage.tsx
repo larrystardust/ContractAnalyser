@@ -133,18 +133,36 @@ const AdminUsersPage: React.FC = () => {
       key: 'subscription_details',
       header: t('subscription_label'), // MODIFIED
       render: (item: AdminProfile) => {
-        // Prioritize active subscription details
+        let subscriptionPlanString = '';
+        let singleUseCreditsString = '';
+
+        // Check for active subscription details
         if (item.subscription_details && (item.subscription_details.status === 'active' || item.subscription_details.status === 'trialing')) {
           const sub = allSubscriptions.find(s => s.subscription_id === item.subscription_details?.subscription_id);
-          return `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`;
+          subscriptionPlanString = `${t(sub?.product_name || 'unknown_product')} (${t('status_' + item.subscription_details.status)})`;
         }
-        // If no active subscription, check for single-use credits
-        // MODIFIED: Display single_use_credits
+
+        // Check for single-use credits
         if (item.single_use_credits > 0) {
-          return t('single_use_credits_display', { credits: item.single_use_credits });
+          singleUseCreditsString = t('single_use_credits_display', { credits: item.single_use_credits });
         }
-        // If neither, display 'None'
-        return t('none');
+
+        // Combine or return based on what's available
+        if (subscriptionPlanString && singleUseCreditsString) {
+          return (
+            <>
+              {subscriptionPlanString}
+              <br />
+              {singleUseCreditsString}
+            </>
+          );
+        } else if (subscriptionPlanString) {
+          return subscriptionPlanString;
+        } else if (singleUseCreditsString) {
+          return singleUseCreditsString;
+        } else {
+          return t('none');
+        }
       },
     },
     {
