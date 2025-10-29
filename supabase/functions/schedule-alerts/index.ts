@@ -73,8 +73,6 @@ Deno.serve(async (req) => {
       const userEmail = profile.users?.email; // MODIFIED: Access email from nested users object
       const userName = profile.full_name || userEmail;
       const userPreferredLanguage = profile.language_preference || 'en';
-      const renewalDays = profile.renewal_notification_days_before || 0;
-      const terminationDays = profile.termination_notification_days_before || 0;
       const notificationSettings = profile.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {};
 
       // Check if renewal alerts are enabled for this user
@@ -95,6 +93,8 @@ Deno.serve(async (req) => {
             name,
             translated_name,
             analysis_results (
+              compliance_score,
+              findings (risk_level),
               effective_date,
               termination_date,
               renewal_date
@@ -136,7 +136,8 @@ Deno.serve(async (req) => {
 
               if (renewalAlertsEnabledEmail && userEmail) {
                 const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
-                await supabase.functions.invoke('send-key-date-alert-email', {
+                // MODIFIED: Add logging for the invocation result
+                const { data: emailFnData, error: emailFnInvokeError } = await supabase.functions.invoke('send-key-date-alert-email', {
                   body: {
                     recipientEmail: userEmail,
                     subject: emailSubject,
@@ -147,6 +148,11 @@ Deno.serve(async (req) => {
                     days: renewalDays,
                   },
                 });
+                if (emailFnInvokeError) {
+                  console.error(`schedule-alerts: Error invoking send-key-date-alert-email for renewal alert to ${userEmail}:`, emailFnInvokeError);
+                } else {
+                  console.log(`schedule-alerts: Invoked send-key-date-alert-email for renewal alert to ${userEmail}. Response:`, emailFnData);
+                }
                 console.log(`schedule-alerts: Sent email renewal alert for contract ${contract.id} to user ${userId}.`);
               }
             }
@@ -174,7 +180,8 @@ Deno.serve(async (req) => {
 
               if (terminationAlertsEnabledEmail && userEmail) {
                 const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
-                await supabase.functions.invoke('send-key-date-alert-email', {
+                // MODIFIED: Add logging for the invocation result
+                const { data: emailFnData, error: emailFnInvokeError } = await supabase.functions.invoke('send-key-date-alert-email', {
                   body: {
                     recipientEmail: userEmail,
                     subject: emailSubject,
@@ -185,6 +192,11 @@ Deno.serve(async (req) => {
                     days: terminationDays,
                   },
                 });
+                if (emailFnInvokeError) {
+                  console.error(`schedule-alerts: Error invoking send-key-date-alert-email for termination alert to ${userEmail}:`, emailFnInvokeError);
+                } else {
+                  console.log(`schedule-alerts: Invoked send-key-date-alert-email for termination alert to ${userEmail}. Response:`, emailFnData);
+                }
                 console.log(`schedule-alerts: Sent email termination alert for contract ${contract.id} to user ${userId}.`);
               }
             }
