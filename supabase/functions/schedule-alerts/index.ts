@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     // Fetch all users with their notification preferences for key dates and weekly reports
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, full_name, language_preference, renewal_notification_days_before, termination_notification_days_before, notification_settings, users(email)'); // MODIFIED: Fetch email from users table
+      .select('id, full_name, language_preference, renewal_notification_days_before, termination_notification_days_before, notification_settings, users(email)');
 
     if (profilesError) {
       console.error('schedule-alerts: Error fetching profiles:', profilesError);
@@ -70,10 +70,14 @@ Deno.serve(async (req) => {
 
     for (const profile of profiles) {
       const userId = profile.id;
-      const userEmail = profile.users?.email; // MODIFIED: Access email from nested users object
+      const userEmail = profile.users?.email;
       const userName = profile.full_name || userEmail;
       const userPreferredLanguage = profile.language_preference || 'en';
       const notificationSettings = profile.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {};
+
+      // Extract notification days from profile
+      const renewalDaysBefore = profile.renewal_notification_days_before ?? 30; // Default to 30 days
+      const terminationDaysBefore = profile.termination_notification_days_before ?? 30; // Default to 30 days
 
       // Check if renewal alerts are enabled for this user
       const renewalAlertsEnabledInApp = notificationSettings['renewal-alerts']?.inApp;
@@ -121,8 +125,8 @@ Deno.serve(async (req) => {
             const diffTime = renewalDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            if (diffDays === renewalDays) {
-              const notificationMessage = getTranslatedMessage('notification_message_contract_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
+            if (diffDays === renewalDaysBefore) { // MODIFIED: Use renewalDaysBefore
+              const notificationMessage = getTranslatedMessage('notification_message_contract_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDaysBefore });
               
               if (renewalAlertsEnabledInApp) {
                 await insertNotification(
@@ -135,8 +139,7 @@ Deno.serve(async (req) => {
               }
 
               if (renewalAlertsEnabledEmail && userEmail) {
-                const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDays });
-                // MODIFIED: Add logging for the invocation result
+                const emailSubject = getTranslatedMessage('email_subject_renewal_alert', userPreferredLanguage, { contractName: contractName, days: renewalDaysBefore });
                 const { data: emailFnData, error: emailFnInvokeError } = await supabase.functions.invoke('send-key-date-alert-email', {
                   body: {
                     recipientEmail: userEmail,
@@ -145,7 +148,7 @@ Deno.serve(async (req) => {
                     userPreferredLanguage: userPreferredLanguage,
                     alertType: 'renewal',
                     contractName: contractName,
-                    days: renewalDays,
+                    days: renewalDaysBefore,
                   },
                 });
                 if (emailFnInvokeError) {
@@ -165,8 +168,8 @@ Deno.serve(async (req) => {
             const diffTime = terminationDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            if (diffDays === terminationDays) {
-              const notificationMessage = getTranslatedMessage('notification_message_contract_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
+            if (diffDays === terminationDaysBefore) { // MODIFIED: Use terminationDaysBefore
+              const notificationMessage = getTranslatedMessage('notification_message_contract_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDaysBefore });
               
               if (terminationAlertsEnabledInApp) {
                 await insertNotification(
@@ -179,8 +182,7 @@ Deno.serve(async (req) => {
               }
 
               if (terminationAlertsEnabledEmail && userEmail) {
-                const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDays });
-                // MODIFIED: Add logging for the invocation result
+                const emailSubject = getTranslatedMessage('email_subject_termination_alert', userPreferredLanguage, { contractName: contractName, days: terminationDaysBefore });
                 const { data: emailFnData, error: emailFnInvokeError } = await supabase.functions.invoke('send-key-date-alert-email', {
                   body: {
                     recipientEmail: userEmail,
@@ -189,7 +191,7 @@ Deno.serve(async (req) => {
                     userPreferredLanguage: userPreferredLanguage,
                     alertType: 'termination',
                     contractName: contractName,
-                    days: terminationDays,
+                    days: terminationDaysBefore,
                   },
                 });
                 if (emailFnInvokeError) {
