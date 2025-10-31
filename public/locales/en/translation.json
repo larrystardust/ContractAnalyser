@@ -1664,5 +1664,13 @@
   "notification_message_subscription_removed": "Your subscription has been removed by an administrator.",
   "notification_message_admin_assigned_stripe_plan": "An administrator has assigned you to the {{productName}} plan with role {{role}}.",
   "on_or_after_this_date": "On or after this date",
-  "on_or_before_this_date": "On or before this date"
+  "on_or_before_this_date": "On or before this date",
+
+  "scan_document_options": "Scan Document Options",
+  "quicker_more_accurate_scanning_message": "For quicker and more accurate scanning, use your smartphone camera.",
+  "scan_with_smartphone": "Scan with a smartphone",
+  "scan_with_device_camera": "Scan with the camera of this device",
+  "scan_qr_code_to_upload": "Scan this QR code with your smartphone to open the upload page.",
+  "qr_code_link_description": "This will open the upload page on your smartphone, allowing you to capture documents directly.",
+  "back_to_options": "Back to Options"
 }
