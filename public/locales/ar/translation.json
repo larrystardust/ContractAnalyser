@@ -1660,5 +1660,13 @@
   "notification_message_subscription_removed": "تمت إزالة اشتراكك بواسطة المسؤول.",
   "notification_message_admin_assigned_stripe_plan": "قام المسؤول بتخصيص خطة {{productName}} لك بدور {{role}}.",
   "on_or_after_this_date": "في أو بعد هذا التاريخ",
-  "on_or_before_this_date": "في أو قبل هذا التاريخ"
+  "on_or_before_this_date": "في أو قبل هذا التاريخ",
+
+  "scan_document_options": "خيارات مسح المستندات",
+  "quicker_more_accurate_scanning_message": "للحصول على مسح أسرع وأكثر دقة، استخدم كاميرا هاتفك الذكي.",
+  "scan_with_smartphone": "المسح باستخدام هاتف ذكي",
+  "scan_with_device_camera": "المسح باستخدام كاميرا هذا الجهاز",
+  "scan_qr_code_to_upload": "امسح رمز الاستجابة السريعة هذا بهاتفك الذكي لفتح صفحة التحميل.",
+  "qr_code_link_description": "سيؤدي هذا إلى فتح صفحة التحميل على هاتفك الذكي، مما يتيح لك التقاط المستندات مباشرة.",
+  "back_to_options": "العودة إلى الخيارات"
 }
