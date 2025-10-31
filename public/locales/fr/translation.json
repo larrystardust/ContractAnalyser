@@ -1666,5 +1666,13 @@
   "notification_message_subscription_removed": "Votre abonnement a été supprimé par un administrateur.",
   "notification_message_admin_assigned_stripe_plan": "Un administrateur vous a attribué au plan {{productName}} avec le rôle {{role}}.",
   "on_or_after_this_date": "À partir de cette date",
-  "on_or_before_this_date": "Jusqu'à cette date"
+  "on_or_before_this_date": "Jusqu'à cette date",
+
+  "scan_document_options": "Options de numérisation de document",
+  "quicker_more_accurate_scanning_message": "Pour une numérisation plus rapide et plus précise, utilisez l'appareil photo de votre smartphone.",
+  "scan_with_smartphone": "Numériser avec un smartphone",
+  "scan_with_device_camera": "Numériser avec l'appareil photo de cet appareil",
+  "scan_qr_code_to_upload": "Scannez ce code QR avec votre smartphone pour ouvrir la page de téléchargement.",
+  "qr_code_link_description": "Cela ouvrira la page de téléchargement sur votre smartphone, vous permettant de capturer des documents directement.",
+  "back_to_options": "Retour aux options"
 }
