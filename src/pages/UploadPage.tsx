@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ContractUpload from '../components/contracts/ContractUpload';
 import CameraCapture from '../components/CameraCapture';
-import { Loader2, AlertTriangle, Camera, FileText } from 'lucide-react';
+import { Loader2, AlertTriangle, Camera, FileText, Smartphone } from 'lucide-react'; // MODIFIED: Added Smartphone icon
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,9 @@ import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal'; // ADDED: Import Modal
+import { useIsMobile } from '../hooks/useIsMobile'; // ADDED: Import useIsMobile
+import QRCode from 'qrcode.react'; // ADDED: Import QRCode
 
 // Define the structure for a captured image
 interface CapturedImage {
@@ -26,6 +29,9 @@ const UploadPage: React.FC = () => {
   const { t } = useTranslation();
   const { getTotalSingleUseCredits, loading: loadingOrders } = useUserOrders();
   const { subscription, loading: loadingSubscription, totalSubscriptionFiles } = useSubscription();
+  const isMobileDevice = useIsMobile(); // ADDED: Use the useIsMobile hook
+  const [showScanOptionModal, setShowScanOptionModal] = useState(false); // ADDED: State for the new modal
+  const [showQrCode, setShowQrCode] = useState(false); // ADDED: State to show QR code
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -79,6 +85,29 @@ const UploadPage: React.FC = () => {
 
   const removeSelectedFile = (indexToRemove: number) => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // ADDED: New handler for "Scan Document" button
+  const handleScanDocumentClick = () => {
+    if (isMobileDevice) {
+      setIsCameraMode(true);
+      setSelectedFiles([]);
+    } else {
+      setShowScanOptionModal(true);
+      setShowQrCode(false); // Hide QR code initially
+    }
+  };
+
+  // ADDED: Handler for "Scan with the camera of this device"
+  const handleScanWithDeviceCamera = () => {
+    setShowScanOptionModal(false);
+    setIsCameraMode(true);
+    setSelectedFiles([]);
+  };
+
+  // ADDED: Handler for "Scan with a smartphone"
+  const handleScanWithSmartphone = () => {
+    setShowQrCode(true);
   };
 
   if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription) {
@@ -173,7 +202,7 @@ const UploadPage: React.FC = () => {
       <div className="flex space-x-4 mb-6">
         <Button
           variant={isCameraMode ? 'secondary' : 'primary'}
-          onClick={() => { setIsCameraMode(true); setSelectedFiles([]); }}
+          onClick={handleScanDocumentClick} // MODIFIED: Use new handler
           icon={<Camera className="w-4 h-4" />}
           disabled={isUploading || !canPerformOcr}
         >
@@ -207,6 +236,7 @@ const UploadPage: React.FC = () => {
           showProcessingOptions={showProcessingOptions}
           isAdvancedSubscription={isAdvancedSubscription}
           isBasicSubscription={isBasicSubscription}
+          loadingOrders={loadingOrders}
         />
       )}
 
@@ -218,6 +248,55 @@ const UploadPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ADDED: Scan Option Modal */}
+      <Modal
+        isOpen={showScanOptionModal}
+        onClose={() => { setShowScanOptionModal(false); setShowQrCode(false); }}
+        title={t('scan_document_options')}
+      >
+        <div className="text-center space-y-6">
+          <p className="text-gray-700 text-lg">
+            {t('quicker_more_accurate_scanning_message')}
+          </p>
+          {!showQrCode ? (
+            <div className="space-y-4">
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full"
+                onClick={handleScanWithSmartphone}
+                icon={<Smartphone className="w-5 h-5 mr-2" />}
+              >
+                {t('scan_with_smartphone')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full"
+                onClick={handleScanWithDeviceCamera}
+                icon={<Camera className="w-5 h-5 mr-2" />}
+              >
+                {t('scan_with_device_camera')}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-gray-600">{t('scan_qr_code_to_upload')}</p>
+              <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
+                <QRCode value={window.location.href} size={256} level="H" />
+              </div>
+              <p className="text-sm text-gray-500">{t('qr_code_link_description')}</p>
+              <Button
+                variant="outline"
+                onClick={() => setShowQrCode(false)}
+              >
+                {t('back_to_options')}
+              </Button>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };
