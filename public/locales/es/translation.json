@@ -1657,5 +1657,13 @@
   "notification_message_subscription_removed": "Su suscripción ha sido eliminada por un administrador.",
   "notification_message_admin_assigned_stripe_plan": "Un administrador le ha asignado al plan {{productName}} con el rol {{role}}.",
   "on_or_after_this_date": "En o después de esta fecha",
-  "on_or_before_this_date": "En o antes de esta fecha"
+  "on_or_before_this_date": "En o antes de esta fecha",
+
+  "scan_document_options": "Opciones de escaneo de documentos",
+  "quicker_more_accurate_scanning_message": "Para un escaneo más rápido y preciso, use la cámara de su smartphone.",
+  "scan_with_smartphone": "Escanear con un smartphone",
+  "scan_with_device_camera": "Escanear con la cámara de este dispositivo",
+  "scan_qr_code_to_upload": "Escanee este código QR con su smartphone para abrir la página de carga.",
+  "qr_code_link_description": "Esto abrirá la página de carga en su smartphone, permitiéndole capturar documentos directamente.",
+  "back_to_options": "Volver a las opciones"
 }
