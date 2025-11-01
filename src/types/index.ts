@@ -105,3 +105,14 @@ export interface StripeProduct {
 
 // ADDED: New type for analysis languages
 export type AnalysisLanguage = 'en' | 'fr' | 'es' | 'ar' | 'auto';
+
+// ADDED: Interface for real-time scan session messages
+export interface ScanSessionMessage {
+  type: 'image_captured' | 'session_ended' | 'error';
+  payload?: {
+    imageUrl?: string; // URL to the temporary image in Supabase Storage
+    imageName?: string;
+    imageSize?: number;
+    errorMessage?: string;
+  };
+}
