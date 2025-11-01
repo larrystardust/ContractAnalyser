@@ -167,7 +167,7 @@ const UploadPage: React.FC = () => {
 
   const canPerformOcr = isAdvancedSubscription || isBasicSubscription || availableCredits >= OCR_COST;
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= BASIC_ANALYSIS_COST;
-  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= advancedAnalysisAddonCost;
+  const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
 
   // MODIFIED: showProcessingOptions should be true for single-use users only.
   // For basic/admin-assigned, a separate section will be shown. For advanced, nothing.
