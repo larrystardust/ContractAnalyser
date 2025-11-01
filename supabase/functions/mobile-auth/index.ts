@@ -86,19 +86,24 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    // Generate a short-lived sign-in token for the user
-    const { data: { properties }, error: generateTokenError } = await supabase.auth.admin.generateLink({
-      type: 'token', // Use 'token' type to get a direct sign-in token
+    // Generate a magic link. The redirectTo URL is crucial here.
+    // It should point to a new client-side route that will handle the session.
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+    const mobileRedirectUrl = `${appBaseUrl}/mobile-camera-redirect?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+
+    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink', // Use 'magiclink' type
       email: userEmail,
+      redirectTo: mobileRedirectUrl, // Supabase will redirect here after processing the magic link
     });
 
-    if (generateTokenError || !properties?.token) {
-      console.error('mobile-auth: Failed to generate sign-in token:', generateTokenError);
+    if (generateLinkError || !properties?.action_link) {
+      console.error('mobile-auth: Failed to generate magic link:', generateLinkError);
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // Return the sign-in token to the mobile client
-    return corsResponse({ sign_in_token: properties.token });
+    // Return the magic link URL to the mobile client
+    return corsResponse({ magicLinkUrl: properties.action_link });
 
   } catch (error: any) {
     console.error('mobile-auth: Unhandled error:', error);
