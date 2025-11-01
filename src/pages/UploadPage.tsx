@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ContractUpload from '../components/contracts/ContractUpload';
-import CameraCapture from '../components/CameraCapture';
+import ContractUpload from './../components/contracts/ContractUpload';
+import CameraCapture from './../components/CameraCapture';
 import { Loader2, AlertTriangle, Camera, FileText, Smartphone, XCircle } from 'lucide-react'; // MODIFIED: Added XCircle
-import { useUserProfile } from '../hooks/useUserProfile';
-import { useAppSettings } from '../hooks/useAppSettings';
+import { useUserProfile } from './../hooks/useUserProfile';
+import { useAppSettings } from './../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
-import { useUserOrders } from '../hooks/useUserOrders';
-import { useSubscription } from '../hooks/useSubscription';
+import { useUserOrders } from './../hooks/useUserOrders';
+import { useSubscription } from './../hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import Button from '../components/ui/Button';
-import Modal from '../components/ui/Modal';
-import { useIsMobile } from '../hooks/useIsMobile';
+import Button from './../components/ui/Button';
+import Modal from './../components/ui/Modal';
+import { useIsMobile } from './../hooks/useIsMobile';
 import QRCode from 'qrcode.react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
 import { RealtimeChannel } from '@supabase/supabase-js'; // ADDED: Import RealtimeChannel
-import { ScanSessionMessage } from '../types'; // ADDED: Import ScanSessionMessage
+import { ScanSessionMessage } from './../types'; // ADDED: Import ScanSessionMessage
 
 // Define the structure for a captured image
 interface CapturedImage {
@@ -72,7 +72,7 @@ const UploadPage: React.FC = () => {
 
     newChannel
       .on('broadcast', { event: 'mobile_ready' }, async (payload) => {
-        console.log('UploadPage: Mobile ready signal received:', payload);
+        console.log('UploadPage: Desktop ready signal received:', payload);
         setMobileScanStatus('connected');
         // Send desktop ready signal back to mobile
         await newChannel.send({
