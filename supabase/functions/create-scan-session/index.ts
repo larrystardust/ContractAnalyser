@@ -2,6 +2,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import { logActivity } from '../_shared/logActivity.ts';
 import { getTranslatedMessage } from '../_shared/edge_translations.ts';
+import * as jose from 'npm:jose@5.2.3'; // ADDED: Import jose
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -74,15 +75,26 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: 'Failed to create scan session.' }) }, 500);
     }
 
+    const scanSessionId = sessionData.id;
+
+    // ADDED: Generate a short-lived JWT for mobile authentication
+    const jwtSecret = new TextEncoder().encode(Deno.env.get('JWT_SECRET')); // Ensure JWT_SECRET is set in your .env
+    const auth_token = await new jose.SignJWT({ 'user_id': userId, 'scan_session_id': scanSessionId })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('15m') // Token valid for 15 minutes, matching session expiry
+      .sign(jwtSecret);
+
     await logActivity(
       supabase,
       userId,
       'SCAN_SESSION_CREATED',
-      `User ${userEmail} created scan session: ${sessionData.id}`,
-      { scan_session_id: sessionData.id }
+      `User ${userEmail} created scan session: ${scanSessionId}`,
+      { scan_session_id: scanSessionId }
     );
 
-    return corsResponse({ scanSessionId: sessionData.id });
+    // MODIFIED: Return auth_token along with scanSessionId
+    return corsResponse({ scanSessionId: scanSessionId, auth_token: auth_token });
 
   } catch (error: any) {
     console.error('create-scan-session: Unhandled error:', error);
