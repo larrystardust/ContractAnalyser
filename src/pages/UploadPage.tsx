@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ContractUpload from './../components/contracts/ContractUpload';
-import CameraCapture from './../components/CameraCapture';
+import ContractUpload from '../components/contracts/ContractUpload';
+import CameraCapture from '../components/CameraCapture';
 import { Loader2, AlertTriangle, Camera, FileText, Smartphone, XCircle } from 'lucide-react';
-import { useUserProfile } from './../hooks/useUserProfile';
-import { useAppSettings } from './../hooks/useAppSettings';
+import { useUserProfile } from '../hooks/useUserProfile';
+import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
-import { useUserOrders } from './../hooks/useUserOrders';
-import { useSubscription } from './../hooks/useSubscription';
+import { useUserOrders } from '../hooks/useUserOrders';
+import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import Button from './../components/ui/Button';
-import Modal from './../components/ui/Modal';
-import { useIsMobile } from './../hooks/useIsMobile';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import { useIsMobile } from '../hooks/useIsMobile';
 import QRCode from 'qrcode.react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { ScanSessionMessage } from './../types';
+import { ScanSessionMessage } from '../types';
 
 // Define the structure for a captured image
 interface CapturedImage {
