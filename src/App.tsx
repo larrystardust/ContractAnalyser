@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react'; // MODIFIED: Added lazy, Suspense
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 // REMOVED: Direct imports for page components
 
@@ -52,6 +52,7 @@ const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
 const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
+const MobileCameraRedirect = lazy(() => import('./pages/MobileCameraRedirect')); // ADDED: Lazy load MobileCameraRedirect
 
 function App() {
   // REMOVED: isDashboardHelpModalOpen state
@@ -89,6 +90,7 @@ function App() {
       '/blog',
       '/blog/:slug',
       '/mobile-camera', // ADDED: Mobile camera app is a public path
+      '/mobile-camera-redirect', // ADDED: Mobile camera redirect is a public path
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -140,6 +142,7 @@ function App() {
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* ADDED: New route for mobile camera app */}
+              <Route path="/mobile-camera-redirect" element={<MobileCameraRedirect />} /> {/* ADDED: New route for mobile camera redirect */}
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
