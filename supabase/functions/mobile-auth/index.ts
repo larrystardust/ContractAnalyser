@@ -1,0 +1,115 @@
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import * as jose from 'npm:jose@5.2.3';
+import { getTranslatedMessage } from '../_shared/edge_translations.ts';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+// Helper for CORS responses
+function corsResponse(body: string | object | null, status = 200, origin: string | null = null) {
+  const allowedOrigins = [
+    'https://www.contractanalyser.com',
+    'https://contractanalyser.com'
+  ];
+  
+  let accessControlAllowOrigin = '*'; // Default to wildcard for development/safety if origin is not allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    accessControlAllowOrigin = origin;
+  }
+
+  const headers = {
+    'Access-Control-Allow-Origin': accessControlAllowOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+    'Content-Type': 'application/json',
+  };
+  if (status === 204) {
+    return new Response(null, { status, headers });
+  }
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return corsResponse(null, 204);
+  }
+
+  if (req.method !== 'POST') {
+    return corsResponse({ error: getTranslatedMessage('message_method_not_allowed', 'en') }, 405);
+  }
+
+  try {
+    const { auth_token } = await req.json();
+
+    if (!auth_token) {
+      return corsResponse({ error: getTranslatedMessage('message_missing_auth_token', 'en') }, 400);
+    }
+
+    const jwtSecret = new TextEncoder().encode(Deno.env.get('JWT_SECRET'));
+    let payload;
+    try {
+      const { payload: verifiedPayload } = await jose.jwtVerify(auth_token, jwtSecret);
+      payload = verifiedPayload;
+    } catch (jwtError) {
+      console.error('mobile-auth: JWT verification failed:', jwtError);
+      return corsResponse({ error: getTranslatedMessage('message_invalid_or_expired_auth_token', 'en') }, 401);
+    }
+
+    const userId = payload.user_id as string;
+    const scanSessionId = payload.scan_session_id as string;
+
+    if (!userId || !scanSessionId) {
+      return corsResponse({ error: getTranslatedMessage('message_invalid_token_payload', 'en') }, 400);
+    }
+
+    // Verify the scan session is still active and belongs to the user
+    const { data: scanSession, error: fetchSessionError } = await supabase
+      .from('scan_sessions')
+      .select('id, user_id, expires_at, status')
+      .eq('id', scanSessionId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (fetchSessionError || !scanSession || scanSession.status !== 'active' || new Date(scanSession.expires_at) < new Date()) {
+      console.error('mobile-auth: Scan session invalid or expired:', fetchSessionError?.message || 'Session not found/active/expired');
+      return corsResponse({ error: getTranslatedMessage('message_scan_session_invalid_or_expired', 'en') }, 401);
+    }
+
+    // Generate a sign-in link for the user. This will create a new session for the mobile device.
+    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: (await supabase.auth.admin.getUserById(userId)).data.user?.email!, // Get user email from admin client
+    });
+
+    if (generateLinkError || !properties?.hashed_token) {
+      console.error('mobile-auth: Failed to generate sign-in link:', generateLinkError);
+      return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_link', 'en') }, 500);
+    }
+
+    // The generated link is a magic link. We need to extract the access_token and refresh_token from it.
+    // This is a bit of a workaround as generateLink doesn't directly return tokens.
+    // We'll simulate the magic link flow to get the session.
+    const { data: { session }, error: signInError } = await supabase.auth.signInWithOtp({
+      email: (await supabase.auth.admin.getUserById(userId)).data.user?.email!,
+      token: properties.hashed_token,
+    });
+
+    if (signInError || !session) {
+      console.error('mobile-auth: Failed to sign in with generated link:', signInError);
+      return corsResponse({ error: getTranslatedMessage('message_failed_to_authenticate_mobile_device', 'en') }, 500);
+    }
+
+    return corsResponse({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      user: session.user,
+    });
+
+  } catch (error: any) {
+    console.error('mobile-auth: Unhandled error:', error);
+    return corsResponse({ error: getTranslatedMessage('message_server_error', 'en', { errorMessage: error.message }) }, 500);
+  }
+});
