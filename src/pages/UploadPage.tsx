@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ContractUpload from './../components/contracts/ContractUpload';
-import CameraCapture from './../components/CameraCapture';
-import { Loader2, AlertTriangle, Camera, FileText, Smartphone, XCircle } from 'lucide-react';
-import { useUserProfile } from './../hooks/useUserProfile';
-import { useAppSettings } from './../hooks/useAppSettings';
+import ContractUpload from '../components/contracts/ContractUpload';
+import CameraCapture from '../components/CameraCapture';
+import { Loader2, AlertTriangle, Camera, FileText, Smartphone, XCircle } from 'lucide-react'; // MODIFIED: Added XCircle
+import { useUserProfile } from '../hooks/useUserProfile';
+import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
-import { useUserOrders } from './../hooks/useUserOrders';
-import { useSubscription } from './../hooks/useSubscription';
+import { useUserOrders } from '../hooks/useUserOrders';
+import { useSubscription } from '../hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import Button from './../components/ui/Button';
-import Modal from './../components/ui/Modal';
-import { useIsMobile } from './../hooks/useIsMobile';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import { useIsMobile } from '../hooks/useIsMobile';
 import QRCode from 'qrcode.react';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { ScanSessionMessage } from './../types';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED: Import useSession
+import { RealtimeChannel } from '@supabase/supabase-js'; // ADDED: Import RealtimeChannel
+import { ScanSessionMessage } from '../types'; // ADDED: Import ScanSessionMessage
 
 // Define the structure for a captured image
 interface CapturedImage {
@@ -23,8 +23,8 @@ interface CapturedImage {
 }
 
 const UploadPage: React.FC = () => {
-  const supabase = useSupabaseClient();
-  const session = useSession();
+  const supabase = useSupabaseClient(); // ADDED
+  const session = useSession(); // ADDED
   const { t } = useTranslation();
 
   const [isUploading, setIsUploading] = useState(false);
@@ -39,7 +39,7 @@ const UploadPage: React.FC = () => {
   const [showScanOptionModal, setShowScanOptionModal] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
 
-  // States for mobile scan session
+  // ADDED: States for mobile scan session
   const [scanSessionId, setScanSessionId] = useState<string | null>(null);
   const [mobileScanStatus, setMobileScanStatus] = useState<'idle' | 'connecting' | 'connected' | 'error' | 'ended'>('idle');
   const [mobileScanError, setMobileScanError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ const UploadPage: React.FC = () => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
   }, [isUploading]);
 
-  // Effect for mobile scan session management
+  // ADDED: Effect for mobile scan session management
   useEffect(() => {
     if (!scanSessionId || !session?.user?.id) return;
 
@@ -72,7 +72,7 @@ const UploadPage: React.FC = () => {
 
     newChannel
       .on('broadcast', { event: 'mobile_ready' }, async (payload) => {
-        console.log('MobileCameraApp: Desktop ready signal received:', payload);
+        console.log('UploadPage: Mobile ready signal received:', payload);
         setMobileScanStatus('connected');
         // Send desktop ready signal back to mobile
         await newChannel.send({
@@ -83,7 +83,7 @@ const UploadPage: React.FC = () => {
       })
       .on('broadcast', { event: 'image_data' }, async (payload: { payload: ScanSessionMessage }) => {
         const message = payload.payload;
-        console.log('MobileCameraApp: Image data message received:', message);
+        console.log('UploadPage: Image data message received:', message);
 
         if (message.type === 'image_captured' && message.payload?.imageUrl) {
           try {
@@ -149,7 +149,8 @@ const UploadPage: React.FC = () => {
       setMobileScanStatus('idle');
       setMobileScanError(null);
     };
-  }, [scanSessionId, supabase, session?.user?.id, t]); // MISSING CLOSING BRACE HERE
+  }, [scanSessionId, supabase, session?.user?.id, t]);
+
 
   const OCR_COST = 3;
   const BASIC_ANALYSIS_COST = 1;
@@ -369,14 +370,14 @@ const UploadPage: React.FC = () => {
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
         <Button
-          variant={isCameraMode || mobileScanStatus !== 'idle' ? 'secondary' : 'primary'}
+          variant={isCameraMode || mobileScanStatus !== 'idle' ? 'secondary' : 'primary'} // MODIFIED
           onClick={handleScanDocumentClick}
           icon={<Camera className="w-4 h-4" />}
-          disabled={isUploading || !canPerformOcr || mobileScanStatus === 'connecting' || mobileScanStatus === 'connected'}
+          disabled={isUploading || !canPerformOcr || mobileScanStatus === 'connecting' || mobileScanStatus === 'connected'} // MODIFIED
         >
           {t('scan_document')}
         </Button>
-        {mobileScanStatus === 'connected' && (
+        {mobileScanStatus === 'connected' && ( // ADDED: End mobile scan session button
           <Button
             variant="danger"
             onClick={handleEndMobileScanSession}
@@ -388,7 +389,7 @@ const UploadPage: React.FC = () => {
         )}
       </div>
 
-      {/* Mobile Scan Status Display */}
+      {/* ADDED: Mobile Scan Status Display */}
       {mobileScanStatus === 'connected' && (
         <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
           <div className="flex items-center">
@@ -426,7 +427,7 @@ const UploadPage: React.FC = () => {
 
       {isCameraMode ? (
         <CameraCapture
-          onCapture={handleAddCapturedImage}
+          onCapture={handleAddCapturedImage} // MODIFIED: Renamed prop
           onDoneCapturing={handleDoneCapturing}
           onCancel={handleCancelCamera}
           isLoading={isUploading}
@@ -466,7 +467,7 @@ const UploadPage: React.FC = () => {
       {/* MODIFIED: Scan Option Modal for Desktop */}
       <Modal
         isOpen={showScanOptionModal}
-        onClose={handleEndMobileScanSession}
+        onClose={handleEndMobileScanSession} // MODIFIED: Close modal also ends session
         title={t('scan_document_options')}
       >
         <div className="text-center space-y-6">
@@ -481,7 +482,7 @@ const UploadPage: React.FC = () => {
                 className="w-full"
                 onClick={handleScanWithSmartphone}
                 icon={<Smartphone className="w-5 h-5 mr-2" />}
-                disabled={mobileScanStatus === 'connecting'}
+                disabled={mobileScanStatus === 'connecting'} // Disable if session is being created
               >
                 {mobileScanStatus === 'connecting' ? t('upload_page_creating_session') : t('scan_with_smartphone')}
               </Button>
@@ -517,7 +518,7 @@ const UploadPage: React.FC = () => {
               )}
               <Button
                 variant="outline"
-                onClick={handleEndMobileScanSession}
+                onClick={handleEndMobileScanSession} // MODIFIED: End session
               >
                 {t('upload_page_end_mobile_scan_session')}
               </Button>
@@ -525,6 +526,7 @@ const UploadPage: React.FC = () => {
           )}
         </div>
       </Modal>
+      </div>
     </div>
   );
 };
