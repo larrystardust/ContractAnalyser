@@ -3,22 +3,17 @@ import Button from './ui/Button';
 import { Camera, X, Loader2, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-// Define the structure for a captured image
-interface CapturedImage {
-  id: string;
-  data: string; // Base64 string
-}
-
 interface CameraCaptureProps {
-  onAddImage: (imageFile: File) => void; // MODIFIED: Accepts a File object
+  onCapture: (imageFile: File) => void; // MODIFIED: Renamed from onAddImage
   onDoneCapturing: () => void;
   onCancel: () => void;
   isLoading: boolean;
-  capturedImages: File[]; // MODIFIED: Array of File objects
-  removeCapturedImage: (id: string) => void; // MODIFIED: Accepts id to remove
+  capturedImages: File[];
+  removeCapturedImage: (id: string) => void;
+  facingMode?: 'user' | 'environment'; // ADDED: Option to choose camera
 }
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturing, onCancel, isLoading, capturedImages, removeCapturedImage }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturing, onCancel, isLoading, capturedImages, removeCapturedImage, facingMode = 'environment' }) => { // MODIFIED: Added facingMode prop
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -40,7 +35,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: facingMode }, // MODIFIED: Use facingMode prop
       });
       mediaStreamRef.current = mediaStream;
       if (videoRef.current) {
@@ -62,7 +57,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
       console.error('Error accessing camera:', err);
       setCameraError(t('camera_access_denied_or_unavailable'));
     }
-  }, [t, stopCamera]);
+  }, [t, stopCamera, facingMode]); // MODIFIED: Added facingMode to dependencies
 
   useEffect(() => {
     startCamera();
@@ -86,7 +81,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
           if (blob) {
             const uniqueId = crypto.randomUUID();
             const imageFile = new File([blob], `scanned_image_${uniqueId}.jpeg`, { type: 'image/jpeg' });
-            onAddImage(imageFile); // MODIFIED: Pass the File object
+            onCapture(imageFile); // MODIFIED: Call onCapture
           }
         }, 'image/jpeg', 0.9);
       }
@@ -132,12 +127,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onAddImage, onDoneCapturi
             <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
               <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {capturedImages.map((imageFile, index) => ( // MODIFIED: Iterate over File objects
-                  <div key={imageFile.name} className="relative group"> {/* MODIFIED: Use imageFile.name as key */}
-                    <img src={URL.createObjectURL(imageFile)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" /> {/* MODIFIED: Create object URL */}
+                {capturedImages.map((imageFile, index) => (
+                  <div key={imageFile.name} className="relative group">
+                    <img src={URL.createObjectURL(imageFile)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
                     <button
                       type="button"
-                      onClick={() => removeCapturedImage(imageFile.name)} // MODIFIED: Pass imageFile.name
+                      onClick={() => removeCapturedImage(imageFile.name)}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       title={t('remove_image')}
                     >
