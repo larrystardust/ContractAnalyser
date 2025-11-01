@@ -4,7 +4,6 @@ import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Button from '../components/ui/Button';
-import Card, { CardBody } from '../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import { ScanSessionMessage } from '../types';
 
@@ -27,7 +26,7 @@ const MobileCameraApp: React.FC = () => {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // --- Camera Logic (reused from CameraCapture, adapted) ---
+  // --- Camera Logic ---
   const stopCamera = useCallback(() => {
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(track => track.stop());
@@ -307,14 +306,15 @@ const MobileCameraApp: React.FC = () => {
 
   // Once connected and camera is playing, show the camera view
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4">
-      <h1 className="text-2xl font-bold mb-4">{t('mobile_scan_capture_documents')}</h1>
-      <p className="text-gray-300 mb-6">{t('mobile_scan_captured_count', { count: capturedImagesCount })}</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-0"> {/* Removed padding */}
+      {/* Camera feed takes full screen */}
+      <video ref={videoRef} className="w-full h-full object-cover absolute inset-0" playsInline autoPlay muted />
+      <canvas ref={canvasRef} className="hidden" />
 
-      <div className="relative w-full max-w-lg bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-        <video ref={videoRef} className="w-full h-auto rounded-lg" playsInline autoPlay muted />
-        <canvas ref={canvasRef} className="hidden" />
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {/* Controls overlaid on top of the camera feed */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent flex flex-col items-center justify-center">
+        <p className="text-gray-300 mb-4">{t('mobile_scan_captured_count', { count: capturedImagesCount })}</p>
+        <div className="flex space-x-4">
           <Button
             type="button"
             variant="primary"
@@ -334,9 +334,8 @@ const MobileCameraApp: React.FC = () => {
             {t('mobile_scan_done')}
           </Button>
         </div>
+        <Button onClick={handleDone} variant="text" className="mt-4 text-white/80 hover:text-white">{t('mobile_scan_cancel_session')}</Button>
       </div>
-
-      <Button onClick={handleDone} variant="outline" className="mt-8">{t('mobile_scan_cancel_session')}</Button>
     </div>
   );
 };
