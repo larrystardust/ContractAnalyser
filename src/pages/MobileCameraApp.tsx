@@ -85,14 +85,86 @@ const MobileCameraApp: React.FC = () => {
     }
     setScanSessionId(id);
 
-    // Check if session is already established (e.g., after redirect from MobileCameraRedirect)
-    if (session?.user?.id) {
-      // If session exists, proceed to connect to Realtime
-      connectToRealtime(id, session.user.id);
-    } else {
-      // If no session, initiate authentication via Edge Function to get magic link
-      initiateMobileAuth(id, authToken);
-    }
+    const authenticateAndConnect = async () => {
+      setIsConnecting(true);
+      setConnectionError(null);
+
+      let currentSession = session;
+
+      // If no session or session is invalid, try to authenticate via Edge Function
+      if (!currentSession || currentSession.expires_at! < Date.now() / 1000) {
+        if (authToken) {
+          try {
+            // Call mobile-auth Edge Function to get the magic link URL
+            const { data, error } = await supabase.functions.invoke('mobile-auth', {
+              body: { auth_token: authToken },
+            });
+
+            if (error) throw error;
+            if (!data?.magicLinkUrl) throw new Error(t('mobile_scan_failed_to_get_magic_link'));
+
+            // Programmatically navigate to the magic link URL
+            // This will trigger Supabase's auth flow and redirect to /mobile-camera-redirect
+            window.location.replace(data.magicLinkUrl);
+            return; // Exit here, the page will reload/redirect
+          } catch (err: any) {
+            console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
+            setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+            setIsConnecting(false);
+            return;
+          }
+        } else {
+          setConnectionError(t('mobile_scan_not_authenticated_desc'));
+          setIsConnecting(false);
+          return;
+        }
+      }
+
+      // If we reach here, a valid session should exist (either initially or after magic link redirect)
+      if (!currentSession?.user?.id) {
+        setConnectionError(t('mobile_scan_not_authenticated_desc'));
+        setIsConnecting(false);
+        return;
+      }
+
+      // Proceed to connect to Realtime
+      const newChannel = supabase.channel(`scan-session-${id}`, {
+        config: {
+          presence: {
+            key: currentSession.user.id,
+          },
+        },
+      });
+
+      newChannel
+        .on('broadcast', { event: 'desktop_ready' }, (payload) => {
+          console.log('MobileCameraApp: Desktop ready signal received:', payload);
+          setIsConnecting(false); // Desktop is ready, can start capturing
+        })
+        .on('broadcast', { event: 'desktop_disconnected' }, () => {
+          setConnectionError(t('mobile_scan_desktop_disconnected'));
+          setIsConnecting(false);
+          stopCamera();
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('MobileCameraApp: Subscribed to scan session channel.');
+            // Broadcast that mobile is ready
+            await newChannel.send({
+              type: 'broadcast',
+              event: 'mobile_ready',
+              payload: { userId: currentSession!.user.id },
+            });
+          } else if (status === 'CHANNEL_ERROR') {
+            setConnectionError(t('mobile_scan_channel_error'));
+            setIsConnecting(false);
+          }
+        });
+
+      channelRef.current = newChannel;
+    };
+
+    authenticateAndConnect();
 
     return () => {
       if (channelRef.current) {
@@ -102,70 +174,6 @@ const MobileCameraApp: React.FC = () => {
       stopCamera();
     };
   }, [searchParams, supabase, session, t, stopCamera]);
-
-  const initiateMobileAuth = useCallback(async (id: string, authToken: string) => {
-    setIsConnecting(true);
-    setConnectionError(null);
-
-    try {
-      // Call mobile-auth Edge Function to get the magic link URL
-      const { data, error } = await supabase.functions.invoke('mobile-auth', {
-        body: { auth_token: authToken },
-      });
-
-      if (error) throw error;
-      if (!data?.magicLinkUrl) throw new Error(t('mobile_scan_failed_to_get_magic_link'));
-
-      // Programmatically navigate to the magic link URL
-      // This will trigger Supabase's auth flow and redirect to /mobile-camera-redirect
-      window.location.replace(data.magicLinkUrl);
-
-    } catch (err: any) {
-      console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
-      setConnectionError(err.message || t('mobile_scan_authentication_failed'));
-      setIsConnecting(false);
-    }
-  }, [supabase, t]);
-
-  const connectToRealtime = useCallback(async (id: string, userId: string) => {
-    setIsConnecting(true);
-    setConnectionError(null);
-
-    const newChannel = supabase.channel(`scan-session-${id}`, {
-      config: {
-        presence: {
-          key: userId,
-        },
-      },
-    });
-
-    newChannel
-      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
-        console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // Desktop is ready, can start capturing
-      })
-      .on('broadcast', { event: 'desktop_disconnected' }, () => {
-        setConnectionError(t('mobile_scan_desktop_disconnected'));
-        setIsConnecting(false);
-        stopCamera();
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('MobileCameraApp: Subscribed to scan session channel.');
-          // Broadcast that mobile is ready
-          await newChannel.send({
-            type: 'broadcast',
-            event: 'mobile_ready',
-            payload: { userId: userId },
-          });
-        } else if (status === 'CHANNEL_ERROR') {
-          setConnectionError(t('mobile_scan_channel_error'));
-          setIsConnecting(false);
-        }
-      });
-
-    channelRef.current = newChannel;
-  }, [supabase, t, stopCamera]);
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
@@ -266,53 +274,40 @@ const MobileCameraApp: React.FC = () => {
     navigate('/upload', { replace: true }); // Redirect back to upload page
   };
 
-  if (isConnecting) {
+  // Render a full-screen black background with minimal UI for loading/errors
+  if (isConnecting || connectionError || cameraError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
-          <CardBody className="text-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('mobile_scan_connecting_title')}</h2>
-            <p className="text-gray-600">{t('mobile_scan_connecting_desc')}</p>
-            {connectionError && <p className="text-red-500 mt-2">{connectionError}</p>}
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
-
-  if (connectionError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
-          <CardBody className="text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
+        {isConnecting && (
+          <>
+            <Loader2 className="h-12 w-12 text-blue-400 animate-spin mx-auto mb-4" />
+            <p className="text-lg">{t('mobile_scan_connecting_title')}</p>
+            <p className="text-sm text-gray-400">{t('mobile_scan_connecting_desc')}</p>
+          </>
+        )}
+        {connectionError && (
+          <>
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('mobile_scan_connection_error_title')}</h2>
-            <p className="text-gray-600 mb-4">{connectionError}</p>
-            <Button onClick={() => navigate('/upload')} variant="primary">{t('back_to_upload')}</Button>
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
-
-  if (cameraError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
-          <CardBody className="text-center">
+            <p className="text-lg font-bold">{t('mobile_scan_connection_error_title')}</p>
+            <p className="text-sm text-gray-400 mb-4">{connectionError}</p>
+            <Button onClick={() => navigate('/upload')} variant="outline">{t('back_to_upload')}</Button>
+          </>
+        )}
+        {cameraError && (
+          <>
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('mobile_scan_camera_error_title')}</h2>
-            <p className="text-gray-600 mb-4">{cameraError}</p>
-            <Button onClick={() => navigate('/upload')} variant="primary">{t('back_to_upload')}</Button>
-          </CardBody>
-        </Card>
+            <p className="text-lg font-bold">{t('mobile_scan_camera_error_title')}</p>
+            <p className="text-sm text-gray-400 mb-4">{cameraError}</p>
+            <Button onClick={() => navigate('/upload')} variant="outline">{t('back_to_upload')}</Button>
+          </>
+        )}
       </div>
     );
   }
 
+  // Once connected and camera is playing, show the camera view
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4">
       <h1 className="text-2xl font-bold mb-4">{t('mobile_scan_capture_documents')}</h1>
       <p className="text-gray-300 mb-6">{t('mobile_scan_captured_count', { count: capturedImagesCount })}</p>
 
