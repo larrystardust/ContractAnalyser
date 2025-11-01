@@ -51,6 +51,7 @@ const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
+const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
 
 function App() {
   // REMOVED: isDashboardHelpModalOpen state
@@ -87,6 +88,7 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
+      '/mobile-camera', // ADDED: Mobile camera app is a public path
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -137,6 +139,7 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* ADDED: New route for mobile camera app */}
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
