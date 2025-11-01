@@ -17,6 +17,7 @@ const MobileCameraApp: React.FC = () => {
 
   const [scanSessionId, setScanSessionId] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
+  const connectionStatusRef = useRef<'idle' | 'connecting' | 'connected' | 'error' | 'ended'>('idle'); // Use ref for connection status
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [capturedImagesCount, setCapturedImagesCount] = useState(0);
@@ -76,7 +77,7 @@ const MobileCameraApp: React.FC = () => {
   // --- Realtime Session Management & Authentication ---
   useEffect(() => {
     const id = searchParams.get('scanSessionId');
-    const authToken = searchParams.get('auth_token'); // ADDED: Get auth_token from URL
+    const authToken = searchParams.get('auth_token');
 
     if (!id) {
       setConnectionError(t('mobile_scan_session_id_missing'));
@@ -88,41 +89,44 @@ const MobileCameraApp: React.FC = () => {
     const authenticateAndConnect = async () => {
       setIsConnecting(true);
       setConnectionError(null);
+      connectionStatusRef.current = 'connecting';
 
       let currentSession = session;
 
-      // ADDED: If no session or session is invalid, try to authenticate using auth_token
+      // If no session or session is invalid, try to authenticate using auth_token
       if (!currentSession || currentSession.expires_at! < Date.now() / 1000) {
         if (authToken) {
           try {
+            // Call mobile-auth Edge Function to exchange custom JWT for Supabase sign-in token
             const { data, error } = await supabase.functions.invoke('mobile-auth', {
               body: { auth_token: authToken },
             });
 
             if (error) throw error;
-            if (!data?.access_token || !data?.refresh_token) throw new Error(t('mobile_scan_failed_to_get_session_tokens'));
+            if (!data?.sign_in_token) throw new Error(t('mobile_scan_failed_to_get_sign_in_token'));
 
-            // Set the session on the mobile device
-            const { error: setSessionError } = await supabase.auth.setSession({
-              access_token: data.access_token,
-              refresh_token: data.refresh_token,
+            // Use the sign_in_token to establish a Supabase session on the mobile device
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithToken({
+              provider: 'token', // Specify provider as 'token'
+              token: data.sign_in_token,
             });
 
-            if (setSessionError) throw setSessionError;
+            if (signInError) throw signInError;
+            if (!signInData.session) throw new Error(t('mobile_scan_failed_to_establish_session'));
 
-            // Update the local session state
-            const { data: { session: newSession } } = await supabase.auth.getSession();
-            currentSession = newSession;
+            currentSession = signInData.session; // Update currentSession with the newly established session
 
           } catch (err: any) {
             console.error('MobileCameraApp: Error during mobile authentication:', err);
             setConnectionError(err.message || t('mobile_scan_authentication_failed'));
             setIsConnecting(false);
+            connectionStatusRef.current = 'error';
             return;
           }
         } else {
-          setConnectionError(t('mobile_scan_not_authenticated_desc')); // No auth_token, so user is genuinely not authenticated
+          setConnectionError(t('mobile_scan_not_authenticated_desc'));
           setIsConnecting(false);
+          connectionStatusRef.current = 'error';
           return;
         }
       }
@@ -130,6 +134,7 @@ const MobileCameraApp: React.FC = () => {
       if (!currentSession?.user?.id) {
         setConnectionError(t('mobile_scan_not_authenticated_desc'));
         setIsConnecting(false);
+        connectionStatusRef.current = 'error';
         return;
       }
 
@@ -146,10 +151,12 @@ const MobileCameraApp: React.FC = () => {
         .on('broadcast', { event: 'desktop_ready' }, (payload) => {
           console.log('MobileCameraApp: Desktop ready signal received:', payload);
           setIsConnecting(false); // Desktop is ready, can start capturing
+          connectionStatusRef.current = 'connected';
         })
         .on('broadcast', { event: 'desktop_disconnected' }, () => {
           setConnectionError(t('mobile_scan_desktop_disconnected'));
           setIsConnecting(false);
+          connectionStatusRef.current = 'ended';
           stopCamera();
         })
         .subscribe(async (status) => {
@@ -164,6 +171,7 @@ const MobileCameraApp: React.FC = () => {
           } else if (status === 'CHANNEL_ERROR') {
             setConnectionError(t('mobile_scan_channel_error'));
             setIsConnecting(false);
+            connectionStatusRef.current = 'error';
           }
         });
 
@@ -179,7 +187,7 @@ const MobileCameraApp: React.FC = () => {
       }
       stopCamera();
     };
-  }, [searchParams, supabase, session, t, stopCamera]); // MODIFIED: Added session to dependencies
+  }, [searchParams, supabase, session, t, stopCamera]);
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
@@ -280,8 +288,6 @@ const MobileCameraApp: React.FC = () => {
     navigate('/upload', { replace: true }); // Redirect back to upload page
   };
 
-  // MODIFIED: Remove the "Not Authenticated" card and directly show connection status
-  // The authentication is now handled automatically by the useEffect
   if (isConnecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
