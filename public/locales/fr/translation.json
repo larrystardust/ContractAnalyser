@@ -1708,5 +1708,6 @@
   "mobile_scan_cancel_session": "Annuler la session",
   "mobile_scan_desktop_disconnected": "Le bureau s'est déconnecté de la session. Fin de la session mobile.",
   "mobile_scan_camera_error_title": "Erreur d'accès à la caméra",
-  "back_to_upload": "Retour à la page de téléchargement"
+  "back_to_upload": "Retour à la page de téléchargement",
+  "upload_page_mobile_connected_qr": "Appareil mobile connecté. Commencez à scanner !"
 }
