@@ -1706,5 +1706,6 @@
   "mobile_scan_cancel_session": "Cancel Session",
   "mobile_scan_desktop_disconnected": "Desktop disconnected from session. Ending mobile session.",
   "mobile_scan_camera_error_title": "Camera Access Error",
-  "back_to_upload": "Back to Upload Page"
+  "back_to_upload": "Back to Upload Page",
+  "upload_page_mobile_connected_qr": "Mobile device connected. Start scanning!"
 }
