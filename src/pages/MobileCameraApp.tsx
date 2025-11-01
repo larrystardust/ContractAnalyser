@@ -17,7 +17,6 @@ const MobileCameraApp: React.FC = () => {
 
   const [scanSessionId, setScanSessionId] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
-  const connectionStatusRef = useRef<'idle' | 'connecting' | 'connected' | 'error' | 'ended'>('idle'); // Use ref for connection status
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [capturedImagesCount, setCapturedImagesCount] = useState(0);
@@ -79,106 +78,21 @@ const MobileCameraApp: React.FC = () => {
     const id = searchParams.get('scanSessionId');
     const authToken = searchParams.get('auth_token');
 
-    if (!id) {
+    if (!id || !authToken) {
       setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
       return;
     }
     setScanSessionId(id);
 
-    const authenticateAndConnect = async () => {
-      setIsConnecting(true);
-      setConnectionError(null);
-      connectionStatusRef.current = 'connecting';
-
-      let currentSession = session;
-
-      // If no session or session is invalid, try to authenticate using auth_token
-      if (!currentSession || currentSession.expires_at! < Date.now() / 1000) {
-        if (authToken) {
-          try {
-            // Call mobile-auth Edge Function to exchange custom JWT for Supabase sign-in token
-            const { data, error } = await supabase.functions.invoke('mobile-auth', {
-              body: { auth_token: authToken },
-            });
-
-            if (error) throw error;
-            if (!data?.sign_in_token) throw new Error(t('mobile_scan_failed_to_get_sign_in_token'));
-
-            // Use the sign_in_token to establish a Supabase session on the mobile device
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithToken({
-              provider: 'token', // Specify provider as 'token'
-              token: data.sign_in_token,
-            });
-
-            if (signInError) throw signInError;
-            if (!signInData.session) throw new Error(t('mobile_scan_failed_to_establish_session'));
-
-            currentSession = signInData.session; // Update currentSession with the newly established session
-
-          } catch (err: any) {
-            console.error('MobileCameraApp: Error during mobile authentication:', err);
-            setConnectionError(err.message || t('mobile_scan_authentication_failed'));
-            setIsConnecting(false);
-            connectionStatusRef.current = 'error';
-            return;
-          }
-        } else {
-          setConnectionError(t('mobile_scan_not_authenticated_desc'));
-          setIsConnecting(false);
-          connectionStatusRef.current = 'error';
-          return;
-        }
-      }
-
-      if (!currentSession?.user?.id) {
-        setConnectionError(t('mobile_scan_not_authenticated_desc'));
-        setIsConnecting(false);
-        connectionStatusRef.current = 'error';
-        return;
-      }
-
-      // Subscribe to the specific session channel
-      const newChannel = supabase.channel(`scan-session-${id}`, {
-        config: {
-          presence: {
-            key: currentSession.user.id,
-          },
-        },
-      });
-
-      newChannel
-        .on('broadcast', { event: 'desktop_ready' }, (payload) => {
-          console.log('MobileCameraApp: Desktop ready signal received:', payload);
-          setIsConnecting(false); // Desktop is ready, can start capturing
-          connectionStatusRef.current = 'connected';
-        })
-        .on('broadcast', { event: 'desktop_disconnected' }, () => {
-          setConnectionError(t('mobile_scan_desktop_disconnected'));
-          setIsConnecting(false);
-          connectionStatusRef.current = 'ended';
-          stopCamera();
-        })
-        .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('MobileCameraApp: Subscribed to scan session channel.');
-            // Broadcast that mobile is ready
-            await newChannel.send({
-              type: 'broadcast',
-              event: 'mobile_ready',
-              payload: { userId: currentSession!.user.id },
-            });
-          } else if (status === 'CHANNEL_ERROR') {
-            setConnectionError(t('mobile_scan_channel_error'));
-            setIsConnecting(false);
-            connectionStatusRef.current = 'error';
-          }
-        });
-
-      channelRef.current = newChannel;
-    };
-
-    authenticateAndConnect();
+    // Check if session is already established (e.g., after redirect from MobileCameraRedirect)
+    if (session?.user?.id) {
+      // If session exists, proceed to connect to Realtime
+      connectToRealtime(id, session.user.id);
+    } else {
+      // If no session, initiate authentication via Edge Function to get magic link
+      initiateMobileAuth(id, authToken);
+    }
 
     return () => {
       if (channelRef.current) {
@@ -188,6 +102,70 @@ const MobileCameraApp: React.FC = () => {
       stopCamera();
     };
   }, [searchParams, supabase, session, t, stopCamera]);
+
+  const initiateMobileAuth = useCallback(async (id: string, authToken: string) => {
+    setIsConnecting(true);
+    setConnectionError(null);
+
+    try {
+      // Call mobile-auth Edge Function to get the magic link URL
+      const { data, error } = await supabase.functions.invoke('mobile-auth', {
+        body: { auth_token: authToken },
+      });
+
+      if (error) throw error;
+      if (!data?.magicLinkUrl) throw new Error(t('mobile_scan_failed_to_get_magic_link'));
+
+      // Programmatically navigate to the magic link URL
+      // This will trigger Supabase's auth flow and redirect to /mobile-camera-redirect
+      window.location.replace(data.magicLinkUrl);
+
+    } catch (err: any) {
+      console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
+      setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+      setIsConnecting(false);
+    }
+  }, [supabase, t]);
+
+  const connectToRealtime = useCallback(async (id: string, userId: string) => {
+    setIsConnecting(true);
+    setConnectionError(null);
+
+    const newChannel = supabase.channel(`scan-session-${id}`, {
+      config: {
+        presence: {
+          key: userId,
+        },
+      },
+    });
+
+    newChannel
+      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
+        console.log('MobileCameraApp: Desktop ready signal received:', payload);
+        setIsConnecting(false); // Desktop is ready, can start capturing
+      })
+      .on('broadcast', { event: 'desktop_disconnected' }, () => {
+        setConnectionError(t('mobile_scan_desktop_disconnected'));
+        setIsConnecting(false);
+        stopCamera();
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('MobileCameraApp: Subscribed to scan session channel.');
+          // Broadcast that mobile is ready
+          await newChannel.send({
+            type: 'broadcast',
+            event: 'mobile_ready',
+            payload: { userId: userId },
+          });
+        } else if (status === 'CHANNEL_ERROR') {
+          setConnectionError(t('mobile_scan_channel_error'));
+          setIsConnecting(false);
+        }
+      });
+
+    channelRef.current = newChannel;
+  }, [supabase, t, stopCamera]);
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
