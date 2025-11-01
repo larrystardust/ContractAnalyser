@@ -78,35 +78,27 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_scan_session_invalid_or_expired', 'en') }, 401);
     }
 
-    // Generate a sign-in link for the user. This will create a new session for the mobile device.
-    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: (await supabase.auth.admin.getUserById(userId)).data.user?.email!, // Get user email from admin client
+    // Get user email from admin client
+    const { data: userData, error: getUserError } = await supabase.auth.admin.getUserById(userId);
+    if (getUserError || !userData?.user?.email) {
+      console.error('mobile-auth: Failed to get user email:', getUserError);
+      return corsResponse({ error: getTranslatedMessage('message_failed_to_get_user_email', 'en') }, 500);
+    }
+    const userEmail = userData.user.email;
+
+    // Generate a short-lived sign-in token for the user
+    const { data: { properties }, error: generateTokenError } = await supabase.auth.admin.generateLink({
+      type: 'token', // Use 'token' type to get a direct sign-in token
+      email: userEmail,
     });
 
-    if (generateLinkError || !properties?.hashed_token) {
-      console.error('mobile-auth: Failed to generate sign-in link:', generateLinkError);
-      return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_link', 'en') }, 500);
+    if (generateTokenError || !properties?.token) {
+      console.error('mobile-auth: Failed to generate sign-in token:', generateTokenError);
+      return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // The generated link is a magic link. We need to extract the access_token and refresh_token from it.
-    // This is a bit of a workaround as generateLink doesn't directly return tokens.
-    // We'll simulate the magic link flow to get the session.
-    const { data: { session }, error: signInError } = await supabase.auth.signInWithOtp({
-      email: (await supabase.auth.admin.getUserById(userId)).data.user?.email!,
-      token: properties.hashed_token,
-    });
-
-    if (signInError || !session) {
-      console.error('mobile-auth: Failed to sign in with generated link:', signInError);
-      return corsResponse({ error: getTranslatedMessage('message_failed_to_authenticate_mobile_device', 'en') }, 500);
-    }
-
-    return corsResponse({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      user: session.user,
-    });
+    // Return the sign-in token to the mobile client
+    return corsResponse({ sign_in_token: properties.token });
 
   } catch (error: any) {
     console.error('mobile-auth: Unhandled error:', error);
