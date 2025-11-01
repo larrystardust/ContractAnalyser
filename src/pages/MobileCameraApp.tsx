@@ -6,7 +6,7 @@ import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody } from '../components/ui/Card';
 import { useTranslation } from 'react-i18next';
-import { ScanSessionMessage } from '../types'; // Import the new type
+import { ScanSessionMessage } from '../types';
 
 const MobileCameraApp: React.FC = () => {
   const supabase = useSupabaseClient();
@@ -73,9 +73,11 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // --- Realtime Session Management ---
+  // --- Realtime Session Management & Authentication ---
   useEffect(() => {
     const id = searchParams.get('scanSessionId');
+    const authToken = searchParams.get('auth_token'); // ADDED: Get auth_token from URL
+
     if (!id) {
       setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
@@ -83,41 +85,92 @@ const MobileCameraApp: React.FC = () => {
     }
     setScanSessionId(id);
 
-    // Subscribe to the specific session channel
-    const newChannel = supabase.channel(`scan-session-${id}`, {
-      config: {
-        presence: {
-          key: session?.user?.id || 'anonymous', // Use user ID if available, otherwise anonymous
-        },
-      },
-    });
+    const authenticateAndConnect = async () => {
+      setIsConnecting(true);
+      setConnectionError(null);
 
-    newChannel
-      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
-        console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // Desktop is ready, can start capturing
-      })
-      .on('broadcast', { event: 'desktop_disconnected' }, () => {
-        setConnectionError(t('mobile_scan_desktop_disconnected'));
-        setIsConnecting(false);
-        stopCamera();
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('MobileCameraApp: Subscribed to scan session channel.');
-          // Broadcast that mobile is ready
-          await newChannel.send({
-            type: 'broadcast',
-            event: 'mobile_ready',
-            payload: { userId: session?.user?.id },
-          });
-        } else if (status === 'CHANNEL_ERROR') {
-          setConnectionError(t('mobile_scan_channel_error'));
+      let currentSession = session;
+
+      // ADDED: If no session or session is invalid, try to authenticate using auth_token
+      if (!currentSession || currentSession.expires_at! < Date.now() / 1000) {
+        if (authToken) {
+          try {
+            const { data, error } = await supabase.functions.invoke('mobile-auth', {
+              body: { auth_token: authToken },
+            });
+
+            if (error) throw error;
+            if (!data?.access_token || !data?.refresh_token) throw new Error(t('mobile_scan_failed_to_get_session_tokens'));
+
+            // Set the session on the mobile device
+            const { error: setSessionError } = await supabase.auth.setSession({
+              access_token: data.access_token,
+              refresh_token: data.refresh_token,
+            });
+
+            if (setSessionError) throw setSessionError;
+
+            // Update the local session state
+            const { data: { session: newSession } } = await supabase.auth.getSession();
+            currentSession = newSession;
+
+          } catch (err: any) {
+            console.error('MobileCameraApp: Error during mobile authentication:', err);
+            setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+            setIsConnecting(false);
+            return;
+          }
+        } else {
+          setConnectionError(t('mobile_scan_not_authenticated_desc')); // No auth_token, so user is genuinely not authenticated
           setIsConnecting(false);
+          return;
         }
+      }
+
+      if (!currentSession?.user?.id) {
+        setConnectionError(t('mobile_scan_not_authenticated_desc'));
+        setIsConnecting(false);
+        return;
+      }
+
+      // Subscribe to the specific session channel
+      const newChannel = supabase.channel(`scan-session-${id}`, {
+        config: {
+          presence: {
+            key: currentSession.user.id,
+          },
+        },
       });
 
-    channelRef.current = newChannel;
+      newChannel
+        .on('broadcast', { event: 'desktop_ready' }, (payload) => {
+          console.log('MobileCameraApp: Desktop ready signal received:', payload);
+          setIsConnecting(false); // Desktop is ready, can start capturing
+        })
+        .on('broadcast', { event: 'desktop_disconnected' }, () => {
+          setConnectionError(t('mobile_scan_desktop_disconnected'));
+          setIsConnecting(false);
+          stopCamera();
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('MobileCameraApp: Subscribed to scan session channel.');
+            // Broadcast that mobile is ready
+            await newChannel.send({
+              type: 'broadcast',
+              event: 'mobile_ready',
+              payload: { userId: currentSession!.user.id },
+            });
+          } else if (status === 'CHANNEL_ERROR') {
+            setConnectionError(t('mobile_scan_channel_error'));
+            setIsConnecting(false);
+          }
+        });
+
+      channelRef.current = newChannel;
+    };
+
+    authenticateAndConnect();
 
     return () => {
       if (channelRef.current) {
@@ -126,7 +179,7 @@ const MobileCameraApp: React.FC = () => {
       }
       stopCamera();
     };
-  }, [searchParams, supabase, session?.user?.id, t, stopCamera]);
+  }, [searchParams, supabase, session, t, stopCamera]); // MODIFIED: Added session to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
@@ -227,21 +280,8 @@ const MobileCameraApp: React.FC = () => {
     navigate('/upload', { replace: true }); // Redirect back to upload page
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="max-w-md w-full">
-          <CardBody className="text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('mobile_scan_not_authenticated_title')}</h2>
-            <p className="text-gray-600 mb-4">{t('mobile_scan_not_authenticated_desc')}</p>
-            <Button onClick={() => navigate('/login')} variant="primary">{t('login')}</Button>
-          </CardBody>
-        </Card>
-      </div>
-    );
-  }
-
+  // MODIFIED: Remove the "Not Authenticated" card and directly show connection status
+  // The authentication is now handled automatically by the useEffect
   if (isConnecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
