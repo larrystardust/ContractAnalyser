@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     console.log(`cleanup-scan-sessions: Finished cleanup. Successful: ${successfulCleanups}, Failed: ${failedCleanups}`);
 
     return corsResponse({
-      message: `Cleanup process completed. ${successfulCleanups} sessions cleaned up, ${failedCleanups} failed.`,
+      message: `Deletion process completed. ${successfulCleanups} sessions cleaned up, ${failedCleanups} failed.`,
       results: cleanupResults,
     });
 
