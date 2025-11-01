@@ -1699,5 +1699,6 @@
   "mobile_scan_cancel_session": "Cancelar sesión",
   "mobile_scan_desktop_disconnected": "El escritorio se desconectó de la sesión. Finalizando la sesión móvil.",
   "mobile_scan_camera_error_title": "Error de acceso a la cámara",
-  "back_to_upload": "Volver a la página de carga"
+  "back_to_upload": "Volver a la página de carga",
+  "upload_page_mobile_connected_qr": "Dispositivo móvil conectado. ¡Empiece a escanear!"
 }
