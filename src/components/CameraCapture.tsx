@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Button from './ui/Button';
 import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED: Import Supabase hooks
-import { RealtimeChannel } from '@supabase/supabase-js'; // ADDED: Import RealtimeChannel
-import { ScanSessionMessage } from '../types'; // ADDED: Import ScanSessionMessage
+import { SupabaseClient, Session } from '@supabase/supabase-js'; // MODIFIED: Import SupabaseClient and Session types
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { ScanSessionMessage } from '../types';
 
 interface CameraCaptureProps {
   onCapture: (imageFile: File) => void;
@@ -20,6 +20,9 @@ interface CameraCaptureProps {
   mobileScanStatus: 'idle' | 'connecting' | 'connected' | 'error' | 'ended';
   setMobileScanStatus: (status: 'idle' | 'connecting' | 'connected' | 'error' | 'ended') => void;
   setMobileScanError: (error: string | null) => void;
+  // ADDED: Supabase client and session props
+  supabase: SupabaseClient;
+  session: Session | null;
 }
 
 const CameraCapture: React.FC<CameraCaptureProps> = ({
@@ -36,16 +39,17 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   mobileScanStatus,
   setMobileScanStatus,
   setMobileScanError,
+  // ADDED: Destructure supabase and session
+  supabase,
+  session,
 }) => {
-  const supabase = useSupabaseClient(); // ADDED: Initialize Supabase client
-  const session = useSession(); // ADDED: Get session
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const { t } = useTranslation();
-  const channelRef = useRef<RealtimeChannel | null>(null); // ADDED: Realtime channel ref
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const stopCamera = useCallback(() => {
     if (mediaStreamRef.current) {
@@ -169,7 +173,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   }, [scanSessionId, mobileAuthToken, session, supabase, t, stopCamera, setMobileScanStatus, setMobileScanError, mobileScanStatus]);
 
 
-  const handleCapture = async () => { // MODIFIED: Made async
+  const handleCapture = async () => {
     if (videoRef.current && canvasRef.current) {
       const videoElement = videoRef.current;
       const canvas = canvasRef.current;
@@ -180,7 +184,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         canvas.height = videoElement.videoHeight;
         context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
         
-        canvas.toBlob(async (blob) => { // MODIFIED: Added async
+        canvas.toBlob(async (blob) => {
           if (blob) {
             const uniqueId = crypto.randomUUID();
             const fileName = `scanned_image_${uniqueId}.jpeg`;
