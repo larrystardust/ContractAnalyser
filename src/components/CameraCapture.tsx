@@ -367,7 +367,6 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
             </Button>
           </div>
         </>
-      )}
     </div>
   );
 };
