@@ -12,13 +12,13 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useIsMobile } from '../hooks/useIsMobile';
 import QRCode from 'qrcode.react';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: useSessionContext
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
 
 const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
-  const session = useSession();
+  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: useSessionContext
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
 
@@ -192,7 +192,7 @@ const UploadPage: React.FC = () => {
   };
 
 
-  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription) {
+  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading) { // MODIFIED: Add isSessionLoading
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -275,7 +275,7 @@ const UploadPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex space-x-4 mb-6">
         <Button
@@ -344,6 +344,7 @@ const UploadPage: React.FC = () => {
           // Pass supabase and session for internal Realtime management
           supabase={supabase}
           session={session}
+          isSessionLoading={isSessionLoading} // MODIFIED: Pass isSessionLoading
           // Pass scanSessionId and mobileAuthToken to CameraCapture
           scanSessionId={scanSessionId}
           mobileAuthToken={mobileAuthToken}
