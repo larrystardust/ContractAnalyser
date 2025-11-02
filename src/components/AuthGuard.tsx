@@ -18,10 +18,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- IMMEDIATE mobile camera flow detection ---
-  // This runs synchronously on every render to detect mobile camera flow
   const detectMobileCameraFlow = () => {
     const searchParams = new URLSearchParams(location.search);
     return location.pathname === '/upload' && 
@@ -29,35 +27,89 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
            searchParams.has('auth_token');
   };
 
-  // Store mobile camera flow state in ref for immediate access
   const mobileCameraFlowActive = detectMobileCameraFlow();
 
-  // Effect to persist mobile camera flow state
+  // Effect to handle mobile camera flow state and base URL redirection
+  useEffect(() => {
+    // Store current state if in mobile camera flow
+    if (mobileCameraFlowActive) {
+      sessionStorage.setItem('mobileCameraFlowActive', 'true');
+      sessionStorage.setItem('originalUploadUrl', window.location.href);
+      
+      // Also store in localStorage as backup for cross-tab persistence
+      localStorage.setItem('mobileCameraFlowActive', 'true');
+    } else {
+      // Only clear if we're not in mobile flow AND not on base URL redirect
+      const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true';
+      if (!wasMobileCameraFlowActive || location.pathname !== '/') {
+        sessionStorage.removeItem('mobileCameraFlowActive');
+        sessionStorage.removeItem('originalUploadUrl');
+        localStorage.removeItem('mobileCameraFlowActive');
+      }
+    }
+  }, [location.pathname, mobileCameraFlowActive]);
+
+  // --- Redirect back to upload page if mobile flow was active ---
+  useEffect(() => {
+    const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true' || 
+                                     localStorage.getItem('mobileCameraFlowActive') === 'true';
+    
+    if (wasMobileCameraFlowActive && !mobileCameraFlowActive) {
+      // If we were in mobile flow but now we're not on upload page, redirect back
+      if (location.pathname !== '/upload') {
+        const originalUploadUrl = sessionStorage.getItem('originalUploadUrl');
+        if (originalUploadUrl) {
+          // Use hard redirect to prevent any React Router interference
+          console.log('Redirecting back to upload page from:', location.pathname);
+          window.location.replace(originalUploadUrl);
+          return;
+        } else {
+          // Fallback: reconstruct upload URL from sessionStorage params
+          const scanSessionId = sessionStorage.getItem('scanSessionId');
+          const authToken = sessionStorage.getItem('authToken');
+          if (scanSessionId && authToken) {
+            const fallbackUrl = `/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`;
+            window.location.replace(fallbackUrl);
+            return;
+          }
+        }
+      }
+    }
+  }, [location.pathname, mobileCameraFlowActive]);
+
+  // --- Store URL parameters for fallback redirect ---
   useEffect(() => {
     if (mobileCameraFlowActive) {
-      setIsMobileCameraFlowActive(true);
-      sessionStorage.setItem('mobileCameraFlowActive', 'true');
-    } else {
-      setIsMobileCameraFlowActive(false);
-      sessionStorage.removeItem('mobileCameraFlowActive');
+      const searchParams = new URLSearchParams(location.search);
+      const scanSessionId = searchParams.get('scanSessionId');
+      const authToken = searchParams.get('auth_token');
+      
+      if (scanSessionId) sessionStorage.setItem('scanSessionId', scanSessionId);
+      if (authToken) sessionStorage.setItem('authToken', authToken);
     }
-  }, [mobileCameraFlowActive]);
-
-  // Check sessionStorage on initial load
-  useEffect(() => {
-    const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true';
-    if (wasMobileCameraFlowActive && detectMobileCameraFlow()) {
-      setIsMobileCameraFlowActive(true);
-    }
-  }, []);
+  }, [location.search, mobileCameraFlowActive]);
 
   // --- CRITICAL: Mobile camera flow takes ABSOLUTE priority ---
-  // This check happens FIRST before any other logic
-  if (mobileCameraFlowActive || isMobileCameraFlowActive) {
+  if (mobileCameraFlowActive) {
     return <Outlet />;
   }
 
-  // --- Only run the rest of the auth logic if NOT in mobile camera flow ---
+  // --- Show loading while we might be redirecting ---
+  const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true' || 
+                                   localStorage.getItem('mobileCameraFlowActive') === 'true';
+  
+  if (wasMobileCameraFlowActive && !mobileCameraFlowActive && location.pathname !== '/upload') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting back to upload page...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Only run normal auth logic if NOT in mobile camera flow ---
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
