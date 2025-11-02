@@ -1,25 +1,51 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Button from './ui/Button';
-import { Camera, X, Loader2, CheckCircle } from 'lucide-react';
+import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react'; // ADDED: Import Supabase hooks
+import { RealtimeChannel } from '@supabase/supabase-js'; // ADDED: Import RealtimeChannel
+import { ScanSessionMessage } from '../types'; // ADDED: Import ScanSessionMessage
 
 interface CameraCaptureProps {
-  onCapture: (imageFile: File) => void; // MODIFIED: Renamed from onAddImage
+  onCapture: (imageFile: File) => void;
   onDoneCapturing: () => void;
   onCancel: () => void;
   isLoading: boolean;
   capturedImages: File[];
   removeCapturedImage: (id: string) => void;
-  facingMode?: 'user' | 'environment'; // ADDED: Option to choose camera
+  facingMode?: 'user' | 'environment';
+  // ADDED: Props for mobile scan session management
+  scanSessionId: string | null;
+  mobileAuthToken: string | null;
+  mobileScanStatus: 'idle' | 'connecting' | 'connected' | 'error' | 'ended';
+  setMobileScanStatus: (status: 'idle' | 'connecting' | 'connected' | 'error' | 'ended') => void;
+  setMobileScanError: (error: string | null) => void;
 }
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturing, onCancel, isLoading, capturedImages, removeCapturedImage, facingMode = 'environment' }) => { // MODIFIED: Added facingMode prop
+const CameraCapture: React.FC<CameraCaptureProps> = ({
+  onCapture,
+  onDoneCapturing,
+  onCancel,
+  isLoading,
+  capturedImages,
+  removeCapturedImage,
+  facingMode = 'environment',
+  // ADDED: Destructure new props
+  scanSessionId,
+  mobileAuthToken,
+  mobileScanStatus,
+  setMobileScanStatus,
+  setMobileScanError,
+}) => {
+  const supabase = useSupabaseClient(); // ADDED: Initialize Supabase client
+  const session = useSession(); // ADDED: Get session
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const { t } = useTranslation();
+  const channelRef = useRef<RealtimeChannel | null>(null); // ADDED: Realtime channel ref
 
   const stopCamera = useCallback(() => {
     if (mediaStreamRef.current) {
@@ -35,7 +61,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturin
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode }, // MODIFIED: Use facingMode prop
+        video: { facingMode: facingMode },
       });
       mediaStreamRef.current = mediaStream;
       if (videoRef.current) {
@@ -45,19 +71,19 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturin
           setIsPlaying(true);
         } catch (err: any) {
           if (err.name === 'AbortError') {
-            console.warn('Video play() was aborted, likely due to rapid component changes or unmount. This is often non-critical.', err);
+            console.warn('CameraCapture: Video play() was aborted, likely due to rapid component changes or unmount. This is often non-critical.', err);
           } else {
-            console.error('Error playing video stream:', err);
+            console.error('CameraCapture: Error playing video stream:', err);
             setCameraError(t('camera_access_denied_or_unavailable'));
             stopCamera();
           }
         }
       }
     } catch (err: any) {
-      console.error('Error accessing camera:', err);
+      console.error('CameraCapture: Error accessing camera:', err);
       setCameraError(t('camera_access_denied_or_unavailable'));
     }
-  }, [t, stopCamera, facingMode]); // MODIFIED: Added facingMode to dependencies
+  }, [t, stopCamera, facingMode]);
 
   useEffect(() => {
     startCamera();
@@ -66,7 +92,84 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturin
     };
   }, [startCamera]);
 
-  const handleCapture = () => {
+  // ADDED: Realtime Session Management for CameraCapture
+  useEffect(() => {
+    if (!scanSessionId || !mobileAuthToken) {
+      // If no session ID or auth token, this is a local camera capture, no Realtime needed
+      setMobileScanStatus('idle');
+      return;
+    }
+
+    // If session is not yet loaded, wait
+    if (!session) {
+      setMobileScanStatus('connecting');
+      return;
+    }
+
+    // Cleanup previous channel if it exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    setMobileScanStatus('connecting');
+    setMobileScanError(null);
+
+    const newChannel = supabase.channel(`scan-session-${scanSessionId}`, {
+      config: {
+        presence: {
+          key: session.user.id,
+        },
+      },
+    });
+
+    newChannel
+      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
+        console.log('CameraCapture: Desktop ready signal received:', payload);
+        setMobileScanStatus('connected'); // Desktop is ready, can start capturing
+      })
+      .on('broadcast', { event: 'desktop_disconnected' }, () => {
+        setMobileScanError(t('mobile_scan_desktop_disconnected'));
+        setMobileScanStatus('ended'); // Desktop disconnected, end session
+        stopCamera();
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('CameraCapture: Subscribed to scan session channel.');
+          // Broadcast that mobile is ready
+          await newChannel.send({
+            type: 'broadcast',
+            event: 'mobile_ready',
+            payload: { userId: session.user.id },
+          });
+        } else if (status === 'CHANNEL_ERROR') {
+          setMobileScanError(t('mobile_scan_channel_error'));
+          setMobileScanStatus('error');
+        }
+      });
+
+    channelRef.current = newChannel;
+
+    return () => {
+      if (channelRef.current) {
+        // Notify desktop that mobile is disconnecting
+        if (mobileScanStatus === 'connected') {
+          channelRef.current.send({
+            type: 'broadcast',
+            event: 'mobile_disconnected',
+            payload: { userId: session.user.id },
+          });
+        }
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      setMobileScanStatus('idle');
+      setMobileScanError(null);
+    };
+  }, [scanSessionId, mobileAuthToken, session, supabase, t, stopCamera, setMobileScanStatus, setMobileScanError, mobileScanStatus]);
+
+
+  const handleCapture = async () => { // MODIFIED: Made async
     if (videoRef.current && canvasRef.current) {
       const videoElement = videoRef.current;
       const canvas = canvasRef.current;
@@ -77,16 +180,105 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturin
         canvas.height = videoElement.videoHeight;
         context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
         
-        canvas.toBlob((blob) => {
+        canvas.toBlob(async (blob) => { // MODIFIED: Added async
           if (blob) {
             const uniqueId = crypto.randomUUID();
-            const imageFile = new File([blob], `scanned_image_${uniqueId}.jpeg`, { type: 'image/jpeg' });
-            onCapture(imageFile); // MODIFIED: Call onCapture
+            const fileName = `scanned_image_${uniqueId}.jpeg`;
+            const imageFile = new File([blob], fileName, { type: 'image/jpeg' });
+            onCapture(imageFile);
+
+            // ADDED: If in mobile scan session, upload to temp storage and notify desktop
+            if (scanSessionId && session?.user?.id && channelRef.current && mobileScanStatus === 'connected') {
+              try {
+                const filePath = `${session.user.id}/${scanSessionId}/${fileName}`;
+                // Upload image to temporary storage
+                const { data, error: uploadError } = await supabase.storage
+                  .from('temp_scans')
+                  .upload(filePath, blob, {
+                    contentType: 'image/jpeg',
+                    upsert: false,
+                  });
+
+                if (uploadError) {
+                  throw uploadError;
+                }
+
+                // Get public URL for the uploaded image
+                const { data: publicUrlData } = supabase.storage
+                  .from('temp_scans')
+                  .getPublicUrl(filePath);
+
+                if (!publicUrlData?.publicUrl) {
+                  throw new Error(t('mobile_scan_failed_to_get_public_url'));
+                }
+
+                // Send message to desktop via Realtime
+                const message: ScanSessionMessage = {
+                  type: 'image_captured',
+                  payload: {
+                    imageUrl: publicUrlData.publicUrl,
+                    imageName: fileName,
+                    imageSize: blob.size,
+                  },
+                };
+                await channelRef.current.send({
+                  type: 'broadcast',
+                  event: 'image_data',
+                  payload: message,
+                });
+                console.log('CameraCapture: Image captured and sent to desktop:', fileName);
+
+              } catch (err: any) {
+                console.error('CameraCapture: Error uploading or sending image to desktop:', err);
+                setMobileScanError(err.message || t('mobile_scan_failed_to_send_image'));
+                // Also send error message to desktop
+                const errorMessage: ScanSessionMessage = {
+                  type: 'error',
+                  payload: { errorMessage: err.message || t('mobile_scan_failed_to_send_image') },
+                };
+                await channelRef.current.send({
+                  type: 'broadcast',
+                  event: 'image_data',
+                  payload: errorMessage,
+                });
+              }
+            }
           }
         }, 'image/jpeg', 0.9);
       }
     }
   };
+
+  // ADDED: Render loading/error states for mobile scan session
+  if (scanSessionId && mobileAuthToken && (mobileScanStatus === 'connecting' || mobileScanStatus === 'error' || !session)) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
+        {mobileScanStatus === 'connecting' && (
+          <>
+            <Loader2 className="h-12 w-12 text-blue-400 animate-spin mx-auto mb-4" />
+            <p className="text-lg">{t('mobile_scan_connecting_title')}</p>
+            <p className="text-sm text-gray-400">{t('mobile_scan_connecting_desc')}</p>
+          </>
+        )}
+        {mobileScanStatus === 'error' && (
+          <>
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-lg font-bold">{t('mobile_scan_connection_error_title')}</p>
+            <p className="text-sm text-gray-400 mb-4">{mobileScanError || t('mobile_scan_generic_connection_error')}</p>
+            <Button onClick={onCancel} variant="outline">{t('back_to_upload')}</Button>
+          </>
+        )}
+        {!session && (
+          <>
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-lg font-bold">{t('mobile_scan_not_authenticated_title')}</p>
+            <p className="text-sm text-gray-400 mb-4">{t('mobile_scan_not_authenticated_desc')}</p>
+            <Button onClick={onCancel} variant="outline">{t('back_to_upload')}</Button>
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -106,7 +298,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onDoneCapturin
                 type="button"
                 variant="primary"
                 onClick={handleCapture}
-                disabled={!mediaStreamRef.current || isLoading || !isPlaying}
+                disabled={!mediaStreamRef.current || isLoading || !isPlaying || (scanSessionId && mobileScanStatus !== 'connected')}
                 icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
               >
                 {isLoading ? t('capturing') : t('capture_page')}
