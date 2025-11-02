@@ -15,7 +15,7 @@ import QRCode from 'qrcode.react';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
-import { useToast } from '../context/ToastContext'; // ADDED: Import useToast
+import { useToast } from '../context/ToastContext';
 
 const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
@@ -23,7 +23,7 @@ const UploadPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { addToast } = useToast(); // ADDED: Initialize useToast
+  const { addToast } = useToast();
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -45,10 +45,11 @@ const UploadPage: React.FC = () => {
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
   const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false);
 
-  // ADDED: Nuclear option to trap user on this page during mobile camera flow
+  // MODIFIED: Removed the problematic useEffect that tried to reassign window.location.reload and window.history methods.
+  // Keeping only the window.onbeforeunload event listener.
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // Only trap if in camera mode and a scan session is active
+      // Only prompt if in camera mode and a scan session is active
       if (isCameraMode && scanSessionId) {
         event.preventDefault();
         event.returnValue = ''; // Required for Chrome to show the prompt
@@ -56,49 +57,12 @@ const UploadPage: React.FC = () => {
       }
     };
 
-    // Store original functions
-    const originalReload = window.location.reload;
-    const originalGo = window.history.go;
-    const originalBack = window.history.back;
-    const originalForward = window.history.forward;
-
-    if (isCameraMode && scanSessionId) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-
-      // OVERRIDE: Nuclear option to prevent programmatic reloads and history navigation
-      window.location.reload = () => {
-        console.warn("Reload attempt blocked during mobile scan session.");
-        addToast(t('reload_blocked_during_scan'), 'warning');
-      };
-      window.history.go = (delta?: number) => {
-        console.warn(`History go(${delta}) attempt blocked during mobile scan session.`);
-        addToast(t('navigation_blocked_during_scan'), 'warning');
-      };
-      window.history.back = () => {
-        console.warn("History back attempt blocked during mobile scan session.");
-        addToast(t('navigation_blocked_during_scan'), 'warning');
-      };
-      window.history.forward = () => {
-        console.warn("History forward attempt blocked during mobile scan session.");
-        addToast(t('navigation_blocked_during_scan'), 'warning');
-      };
-    } else {
-      // Restore original functions if not in camera mode
-      window.location.reload = originalReload;
-      window.history.go = originalGo;
-      window.history.back = originalBack;
-      window.history.forward = originalForward;
-    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Always restore on unmount
-      window.location.reload = originalReload;
-      window.history.go = originalGo;
-      window.history.back = originalBack;
-      window.history.forward = originalForward;
     };
-  }, [isCameraMode, scanSessionId, addToast, t]); // Depend on these states and addToast/t
+  }, [isCameraMode, scanSessionId]); // Depend on these states
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
@@ -135,7 +99,7 @@ const UploadPage: React.FC = () => {
           // isMobileAuthProcessing will be set to false after the redirect, or if an error occurs.
           // If redirect happens, this finally might not execute before page unload.
           // If error, we need to stop loading.
-          if (mobileScanStatus !== 'error') { // Only set to false if not already in error state
+          if (mobileScanStatus !== 'error') {
             setIsMobileAuthProcessing(false);
           }
         });
@@ -144,7 +108,7 @@ const UploadPage: React.FC = () => {
 
       // Case 2: Mobile device lands on /upload with scanSessionId and auth_token, and HAS Supabase tokens in the hash.
       // This happens AFTER the magic link redirect.
-      if (!session && location.hash) { 
+      if (!session && location.hash) {
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -170,7 +134,7 @@ const UploadPage: React.FC = () => {
         }
       }
     }
-  }, [searchParams, session, supabase, location.hash, t, isSessionLoading, mobileScanStatus]); // Added isSessionLoading to dependencies
+  }, [searchParams, session, supabase, location.hash, t, isSessionLoading, mobileScanStatus]);
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -482,7 +446,7 @@ const UploadPage: React.FC = () => {
           canPerformAdvancedAddon={canPerformAdvancedAddon}
           ocrCost={OCR_COST}
           basicAnalysisCost={BASIC_ANALYSIS_COST}
-          advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST} 
+          advancedAnalysisAddonCost={ADVANCED_ANALYSIS_ADDON_COST}
           showProcessingOptions={showProcessingOptions}
           isAdvancedSubscription={isAdvancedSubscription}
           isBasicSubscription={isBasicSubscription}
@@ -559,7 +523,7 @@ const UploadPage: React.FC = () => {
             </div>
           )}
         </div>
-      </Modal>      
+      </Modal>
     </div>
   </div>
   );
