@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Removed useRef
+import React, { useEffect, useState } from 'react';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -48,7 +48,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // Sync reset status across open tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
-        // console.log('AuthGuard: Reset flow triggered in another tab → forcing redirect.'); // REMOVED
         supabase.auth.signOut({ scope: 'global' }).finally(() => {
           navigate('/reset-password', { replace: true });
         });
@@ -63,14 +62,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   useEffect(() => {
     const handlePopState = () => {
       if (isPasswordResetInitiated || !session) {
-        // console.log('AuthGuard: Prevented back/forward navigation into protected route.'); // REMOVED
         navigate('/reset-password', { replace: true });
       }
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        // console.log('AuthGuard: Page restored from bfcache → forcing reload.'); // REMOVED
         window.location.reload();
       }
     };
@@ -108,8 +105,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     checkMfaEnrollment();
   }, [session?.user?.id, supabase]);
-
-  // Removed useEffect to clear localStorage flag after delay
 
   // Show loading indicator while checking authentication and admin/MFA status
   if (isRedirecting || loadingSession || loadingMfaStatus) {
