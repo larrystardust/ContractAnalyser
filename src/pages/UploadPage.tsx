@@ -275,7 +275,6 @@ const UploadPage: React.FC = () => {
             )}
           </div>
         </div>
-      )}
 
       <div className="flex space-x-4 mb-6">
         <Button
