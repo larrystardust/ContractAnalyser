@@ -43,6 +43,24 @@ const UploadPage: React.FC = () => {
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
   const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false);
 
+  // ADDED: Nuclear option to trap user on this page during mobile camera flow
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Only trap if in camera mode and a scan session is active
+      if (isCameraMode && scanSessionId) {
+        event.preventDefault();
+        event.returnValue = ''; // Required for Chrome to show the prompt
+        return ''; // Required for Firefox to show the prompt
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isCameraMode, scanSessionId]); // Depend on these states
+
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
     const urlScanSessionId = searchParams.get('scanSessionId');
@@ -105,7 +123,7 @@ const UploadPage: React.FC = () => {
               setMobileScanStatus('error');
             } else {
               // Clear the hash from the URL to prevent re-processing
-              window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+              window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`); // MODIFIED: Clear hash only
             }
           }).finally(() => {
             setIsMobileAuthProcessing(false);
@@ -113,7 +131,7 @@ const UploadPage: React.FC = () => {
         }
       }
     }
-  }, [searchParams, session, supabase, location.hash, t, isSessionLoading]); // Added isSessionLoading to dependencies
+  }, [searchParams, session, supabase, location.hash, t, isSessionLoading, mobileScanStatus]); // Added isSessionLoading to dependencies
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -222,7 +240,6 @@ const UploadPage: React.FC = () => {
     setIsCameraMode(true);
     setSelectedFiles([]);
     setScanSessionId(null);
-    setMobileScanStatus('idle');
     setMobileAuthToken(null);
     setShowScanOptionModal(false);
   };
