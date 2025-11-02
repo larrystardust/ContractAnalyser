@@ -96,7 +96,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
         const totpFactor = factors?.totp.find(f => f.status === 'verified');
         setHasMfaEnrolled(!!totpFactor);
-      } catch (err) {
+      } catch (err: any) {
         console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
@@ -140,13 +140,16 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
+  // MODIFIED: Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
+  // If MFA is NOT enrolled, aal1 is fine.
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
+  // REMOVED: The problematic second MFA check
+  // if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
+  //   return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  // }
 
   return <Outlet />;
 };
