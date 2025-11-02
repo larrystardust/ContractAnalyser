@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; // Removed useRef
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Database } from '../types/supabase';
@@ -131,6 +131,17 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- Enforce normal auth rules ---
   if (!session || !session.user) {
+    // ADDED: Special handling for /upload with scanSessionId/auth_token
+    const searchParams = new URLSearchParams(location.search);
+    const isMobileCameraFlow = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
+
+    if (isMobileCameraFlow) {
+      // Allow access to /upload for unauthenticated users if it's part of the mobile camera flow.
+      // The UploadPage component will handle the silent authentication.
+      return <Outlet />;
+    }
+    
+    // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
