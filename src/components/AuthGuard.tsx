@@ -116,19 +116,11 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       }
     };
 
-    // Re-adding handlePageShow with a condition
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted && !isMobileCameraFlowActive) { // Only reload if NOT in mobile camera flow
-        window.location.reload();
-      }
-    };
-
+    // REMOVED: handlePageShow listener entirely as it was causing issues with reloads.
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('pageshow', handlePageShow); // Re-add this
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('pageshow', handlePageShow); // Clean up
     };
   }, [isMobileCameraFlowActive, isPasswordResetInitiated, session, navigate, location.pathname, location.search, location.hash]);
 
@@ -151,7 +143,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
-        setLoadingMfaStatus(false);
+        setIsLoading(false);
       }
     };
     checkMfaEnrollment();
