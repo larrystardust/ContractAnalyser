@@ -20,43 +20,53 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
+  // --- IMMEDIATE mobile camera flow detection ---
+  // This runs synchronously on every render to detect mobile camera flow
+  const detectMobileCameraFlow = () => {
+    const searchParams = new URLSearchParams(location.search);
+    return location.pathname === '/upload' && 
+           searchParams.has('scanSessionId') && 
+           searchParams.has('auth_token');
+  };
+
+  // Store mobile camera flow state in ref for immediate access
+  const mobileCameraFlowActive = detectMobileCameraFlow();
+
+  // Effect to persist mobile camera flow state
+  useEffect(() => {
+    if (mobileCameraFlowActive) {
+      setIsMobileCameraFlowActive(true);
+      sessionStorage.setItem('mobileCameraFlowActive', 'true');
+    } else {
+      setIsMobileCameraFlowActive(false);
+      sessionStorage.removeItem('mobileCameraFlowActive');
+    }
+  }, [mobileCameraFlowActive]);
+
+  // Check sessionStorage on initial load
+  useEffect(() => {
+    const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true';
+    if (wasMobileCameraFlowActive && detectMobileCameraFlow()) {
+      setIsMobileCameraFlowActive(true);
+    }
+  }, []);
+
+  // --- CRITICAL: Mobile camera flow takes ABSOLUTE priority ---
+  // This check happens FIRST before any other logic
+  if (mobileCameraFlowActive || isMobileCameraFlowActive) {
+    return <Outlet />;
+  }
+
+  // --- Only run the rest of the auth logic if NOT in mobile camera flow ---
+
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isHashRecovery = hashParams.get('type') === 'recovery';
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // Effect to determine if mobile camera flow is active
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
-    setIsMobileCameraFlowActive(isActive);
-    
-    // Store in sessionStorage for persistence during reloads
-    if (isActive) {
-      sessionStorage.setItem('mobileCameraFlowActive', 'true');
-    } else {
-      sessionStorage.removeItem('mobileCameraFlowActive');
-    }
-  }, [location.pathname, location.search]);
-
-  // Check sessionStorage on initial load to maintain state during reloads
-  useEffect(() => {
-    const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true';
-    if (wasMobileCameraFlowActive) {
-      const searchParams = new URLSearchParams(location.search);
-      const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
-      if (isActive) {
-        setIsMobileCameraFlowActive(true);
-      }
-    }
-  }, [location.pathname, location.search]);
-
   // --- Global invalidation when reset starts ---
   useEffect(() => {
-    // Skip reset password logic if in mobile camera flow
-    if (isMobileCameraFlowActive) return;
-
     if (isPasswordResetInitiated) {
       // Broadcast reset state across all tabs
       localStorage.setItem('passwordResetFlowActive', 'true');
@@ -86,13 +96,10 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     window.addEventListener('storage', handleStorageChange);
 
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [isPasswordResetInitiated, location.pathname, navigate, supabase, isMobileCameraFlowActive]);
+  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
-    // Skip if in mobile camera flow
-    if (isMobileCameraFlowActive) return;
-
     const handlePopState = () => {
       if (isPasswordResetInitiated || !session) {
         navigate('/reset-password', { replace: true });
@@ -112,13 +119,10 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate, isMobileCameraFlowActive]);
+  }, [isPasswordResetInitiated, session, navigate]);
 
   // --- MFA check ---
   useEffect(() => {
-    // Skip MFA check if in mobile camera flow
-    if (isMobileCameraFlowActive) return;
-
     const checkMfaEnrollment = async () => {
       setLoadingMfaStatus(true);
       if (!session?.user) {
@@ -140,25 +144,15 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       }
     };
     checkMfaEnrollment();
-  }, [session?.user?.id, supabase, isMobileCameraFlowActive]);
+  }, [session?.user?.id, supabase]);
 
   // Show loading indicator while checking authentication and admin/MFA status
   if (isRedirecting || loadingSession || loadingMfaStatus) {
-    // Even during loading, if we're in mobile camera flow, render the outlet
-    if (isMobileCameraFlowActive) {
-      return <Outlet />;
-    }
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
       </div>
     );
-  }
-
-  // --- CRITICAL: Mobile camera flow takes ABSOLUTE priority ---
-  // This must be checked BEFORE any other redirect logic
-  if (isMobileCameraFlowActive) {
-    return <Outlet />;
   }
 
   // --- Enforce reset-password lockdown ---
@@ -170,7 +164,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
-  // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
+  // --- Enforce normal auth rules ---
   if (!session || !session.user) {
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
