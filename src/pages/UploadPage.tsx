@@ -344,7 +344,7 @@ const UploadPage: React.FC = () => {
           // Pass supabase and session for internal Realtime management
           supabase={supabase}
           session={session}
-          isSessionLoading={isSessionLoading} // MODIFIED: Pass isSessionLoading
+          isSessionLoading={isSessionLoading}
           // Pass scanSessionId and mobileAuthToken to CameraCapture
           scanSessionId={scanSessionId}
           mobileAuthToken={mobileAuthToken}
@@ -448,4 +448,4 @@ const UploadPage: React.FC = () => {
   );
 };
 
-export default UploadPage;    
+export default UploadPage;
