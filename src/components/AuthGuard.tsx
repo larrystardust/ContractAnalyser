@@ -29,14 +29,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // Effect to determine if mobile camera flow is active
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const hashParams = new URLSearchParams(location.hash.substring(1)); // ADDED: Check hash for params
+    const hashParams = new URLSearchParams(location.hash.substring(1));
 
-    const hasScanSessionId = searchParams.has('scanSessionId') || hashParams.has('scanSessionId'); // MODIFIED
-    const hasAuthToken = searchParams.has('auth_token') || hashParams.has('auth_token'); // MODIFIED
+    const hasScanSessionId = searchParams.has('scanSessionId') || hashParams.has('scanSessionId');
+    const hasAuthToken = searchParams.has('auth_token') || hashParams.has('auth_token');
 
     const isActive = location.pathname === '/upload' && hasScanSessionId && hasAuthToken;
     setIsMobileCameraFlowActive(isActive);
-  }, [location.pathname, location.search, location.hash]); // MODIFIED: Added location.hash to dependencies
+  }, [location.pathname, location.search, location.hash]);
 
 
   // --- Global invalidation when reset starts ---
@@ -69,7 +69,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // FIX: Corrected cleanup function for this useEffect
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
@@ -88,29 +87,47 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
           }
         }
         // If already on /upload, do nothing, let the browser handle it (or the beforeunload in UploadPage)
-      } else if (isPasswordResetInitiated || !session) {
-        // Normal password reset or unauthenticated flow
-        navigate('/reset-password', { replace: true });
-      }
-    };
+      } else if (isPasswordResetInitiated) {
+        // Normal password reset flow
+        if (location.pathname !== '/reset-password') {
+          navigate('/reset-password', { replace: true });
+        }
+      } else if (!session) {
+        // If not authenticated and not in password reset, redirect to login
+        // This list of public paths is getting long and hard to maintain.
+        // A better approach might be to have a list of protected paths and redirect if current path is protected.
+        const publicPaths = [
+          '/', '/public-report-view', '/checkout/success', '/checkout/cancel',
+          '/sample-dashboard', '/landing-pricing', '/login', '/signup',
+          '/auth/callback', '/accept-invitation', '/auth/email-sent',
+          '/mfa-challenge', '/reset-password', '/disclaimer', '/terms',
+          '/privacy-policy', '/help', '/maintenance', '/blog'
+        ];
+        const currentPathBase = location.pathname.split('?')[0].split('#')[0];
+        const isPublicPath = publicPaths.some(p => {
+          if (p.includes(':slug')) { // Handle dynamic blog post routes
+            const regexPattern = new RegExp('^' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
+            return regexPattern.test(currentPathBase);
+          }
+          return p === currentPathBase;
+        });
 
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        // ONLY reload if NOT in mobile camera flow
-        if (!isMobileCameraFlowActive) {
-          window.location.reload();
+        if (!isPublicPath) {
+          navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { replace: true });
         }
       }
     };
 
+    // REMOVED: handlePageShow listener entirely as it was causing issues with reloads.
+    // window.addEventListener('pageshow', handlePageShow);
+
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('pageshow', handlePageShow);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('pageshow', handlePageShow);
+      // window.removeEventListener('pageshow', handlePageShow); // REMOVED
     };
-  }, [isPasswordResetInitiated, session, navigate, isMobileCameraFlowActive, location.pathname, location.search, location.hash]); // Add dependencies
+  }, [isMobileCameraFlowActive, isPasswordResetInitiated, session, navigate, location.pathname, location.search, location.hash]);
 
   // --- MFA check ---
   useEffect(() => {
@@ -147,6 +164,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // --- CRITICAL FIX: Nuclear Trap for Mobile Camera Flow ---
+  // This must be the absolute highest priority check after initial loading.
   if (isMobileCameraFlowActive) {
     // If the user is on the /upload page, let it render
     if (location.pathname === '/upload') {
@@ -158,7 +176,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       if (scanSessionId && authToken) {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
-        // Fallback if params are lost, go to generic upload
+        // Fallback if parameters are lost, go to generic upload
         return <Navigate to="/upload" replace />;
       }
     }
