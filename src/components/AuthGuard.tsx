@@ -125,7 +125,16 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // --- Enforce reset-password lockdown ---
+  // --- CRITICAL FIX: Prioritize mobile camera flow above all other checks ---
+  // If we are in the mobile camera flow, always render Outlet immediately.
+  // The UploadPage component is responsible for handling its own authentication
+  // (via setSession from URL hash) and loading states (isMobileAuthProcessing).
+  // AuthGuard should NOT interfere with this specific flow by redirecting.
+  if (isMobileCameraFlowActive) {
+    return <Outlet />;
+  }
+
+  // --- Enforce reset-password lockdown (only if NOT in mobile camera flow) ---
   if (isPasswordResetInitiated) {
     if (location.pathname === '/reset-password' || location.pathname === '/') {
       return <Outlet />;
@@ -134,16 +143,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
-  // --- CRITICAL FIX: Prioritize mobile camera flow ---
-  // If we are in the mobile camera flow, always render Outlet.
-  // The UploadPage component is responsible for handling its own authentication
-  // (via setSession from URL hash) and loading states (isMobileAuthProcessing).
-  // AuthGuard should NOT interfere with this specific flow by redirecting.
-  if (isMobileCameraFlowActive) {
-    return <Outlet />;
-  }
-
-  // --- Enforce normal auth rules (only if NOT in mobile camera flow) ---
+  // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
   if (!session || !session.user) {
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
