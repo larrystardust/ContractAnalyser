@@ -12,13 +12,13 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useIsMobile } from '../hooks/useIsMobile';
 import QRCode from 'qrcode.react';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: useSessionContext
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
 
 const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: useSessionContext
+  const { session, isLoading: isSessionLoading } = useSessionContext();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
 
@@ -192,7 +192,7 @@ const UploadPage: React.FC = () => {
   };
 
 
-  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading) { // MODIFIED: Add isSessionLoading
+  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -448,4 +448,4 @@ const UploadPage: React.FC = () => {
   );
 };
 
-export default UploadPage;
+export default UploadPage;    
