@@ -145,7 +145,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   return <Outlet />;
