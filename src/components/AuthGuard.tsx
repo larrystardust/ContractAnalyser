@@ -26,7 +26,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // Effect to determine if mobile camera flow is active - MOVED TO TOP and made synchronous
+  // Effect to determine if mobile camera flow is active
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
@@ -46,47 +46,11 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     if (wasMobileCameraFlowActive) {
       const searchParams = new URLSearchParams(location.search);
       const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
-      setIsMobileCameraFlowActive(isActive);
+      if (isActive) {
+        setIsMobileCameraFlowActive(true);
+      }
     }
-  }, []);
-
-  // --- CRITICAL: Mobile camera flow takes ABSOLUTE priority ---
-  // Check this FIRST before any other authentication logic
-  if (isMobileCameraFlowActive) {
-    return <Outlet />;
-  }
-
-  // --- Prevent any navigation when mobile camera flow is active ---
-  useEffect(() => {
-    if (!isMobileCameraFlowActive) return;
-
-    // Block browser navigation (back/forward buttons)
-    const handlePopState = (event: PopStateEvent) => {
-      if (isMobileCameraFlowActive) {
-        window.history.pushState(null, '', window.location.href);
-        // Optional: Show message to user
-        console.warn('Navigation blocked: Please complete the upload process');
-      }
-    };
-
-    // Block any form of navigation
-    const unblock = navigate((location, action) => {
-      if (isMobileCameraFlowActive && action !== 'POP') {
-        console.warn('Programmatic navigation blocked during mobile camera flow');
-        return false; // Block the navigation
-      }
-      return true;
-    });
-
-    // Add history entry and prevent back button
-    window.history.pushState(null, '', window.location.href);
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      unblock?.();
-    };
-  }, [isMobileCameraFlowActive, navigate]);
+  }, [location.pathname, location.search]);
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -126,7 +90,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
-    // Skip if in mobile camera flow (handled separately above)
+    // Skip if in mobile camera flow
     if (isMobileCameraFlowActive) return;
 
     const handlePopState = () => {
@@ -191,8 +155,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
+  // --- CRITICAL: Mobile camera flow takes ABSOLUTE priority ---
+  // This must be checked BEFORE any other redirect logic
+  if (isMobileCameraFlowActive) {
+    return <Outlet />;
+  }
+
   // --- Enforce reset-password lockdown ---
-  if (isPasswordResetInitiated && !isMobileCameraFlowActive) {
+  if (isPasswordResetInitiated) {
     if (location.pathname === '/reset-password' || location.pathname === '/') {
       return <Outlet />;
     } else {
@@ -201,14 +171,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   }
 
   // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
-  if ((!session || !session.user) && !isMobileCameraFlowActive) {
+  if (!session || !session.user) {
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
   // This check should happen AFTER ensuring the user is authenticated.
-  if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge' && !isMobileCameraFlowActive) {
+  if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
