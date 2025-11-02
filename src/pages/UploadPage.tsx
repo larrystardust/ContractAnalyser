@@ -41,7 +41,7 @@ const UploadPage: React.FC = () => {
   const [mobileScanError, setMobileScanError] = useState<string | null>(null);
   const mobileScanChannelRef = useRef<RealtimeChannel | null>(null);
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
-  const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false); // ADDED: New state for mobile auth processing
+  const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false);
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
@@ -52,10 +52,41 @@ const UploadPage: React.FC = () => {
       setScanSessionId(urlScanSessionId);
       setMobileAuthToken(urlAuthToken);
       setIsCameraMode(true); // Directly enter camera mode
-      // The Realtime connection will be handled by CameraCapture
 
-      // MODIFIED: Explicitly handle session from URL hash if present and not already authenticated
-      // Removed !isSessionLoading from condition to ensure it attempts to set session if tokens are present
+      // Case 1: Mobile device lands on /upload with scanSessionId and auth_token, but is NOT authenticated
+      // and does NOT have Supabase tokens in the hash (meaning magic link hasn't been processed yet).
+      if (!session && !isSessionLoading && !location.hash) {
+        console.log('UploadPage: Mobile device not authenticated, initiating mobile-auth Edge Function.');
+        setIsMobileAuthProcessing(true);
+        supabase.functions.invoke('mobile-auth', {
+          body: { auth_token: urlAuthToken },
+        }).then(({ data, error }) => {
+          if (error) {
+            console.error('UploadPage: Error invoking mobile-auth Edge Function:', error);
+            setMobileScanError(t('mobile_scan_authentication_failed_magic_link'));
+            setMobileScanStatus('error');
+          } else if (data?.magicLinkUrl) {
+            console.log('UploadPage: Received magicLinkUrl, redirecting for authentication.');
+            // Redirect to the magic link URL. Supabase will handle authentication and redirect back.
+            window.location.replace(data.magicLinkUrl);
+          } else {
+            console.error('UploadPage: mobile-auth Edge Function returned no magicLinkUrl.');
+            setMobileScanError(t('mobile_scan_authentication_failed_no_magic_link'));
+            setMobileScanStatus('error');
+          }
+        }).finally(() => {
+          // isMobileAuthProcessing will be set to false after the redirect, or if an error occurs.
+          // If redirect happens, this finally might not execute before page unload.
+          // If error, we need to stop loading.
+          if (mobileScanStatus !== 'error') { // Only set to false if not already in error state
+            setIsMobileAuthProcessing(false);
+          }
+        });
+        return; // Exit early, as a redirect is pending or processing is ongoing
+      }
+
+      // Case 2: Mobile device lands on /upload with scanSessionId and auth_token, and HAS Supabase tokens in the hash.
+      // This happens AFTER the magic link redirect.
       if (!session && location.hash) { 
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
@@ -63,7 +94,7 @@ const UploadPage: React.FC = () => {
 
         if (accessToken && refreshToken) {
           console.log('UploadPage: Explicitly setting session from URL hash.');
-          setIsMobileAuthProcessing(true); // ADDED: Start processing
+          setIsMobileAuthProcessing(true);
           supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -77,12 +108,12 @@ const UploadPage: React.FC = () => {
               window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
             }
           }).finally(() => {
-            setIsMobileAuthProcessing(false); // ADDED: End processing
+            setIsMobileAuthProcessing(false);
           });
         }
       }
     }
-  }, [searchParams, session, supabase, location.hash, t]); // MODIFIED: Removed isSessionLoading from dependencies
+  }, [searchParams, session, supabase, location.hash, t, isSessionLoading]); // Added isSessionLoading to dependencies
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -193,7 +224,7 @@ const UploadPage: React.FC = () => {
     setScanSessionId(null);
     setMobileScanStatus('idle');
     setMobileAuthToken(null);
-    setShowScanOptionModal(false); // MODIFIED: Close modal when switching to device camera
+    setShowScanOptionModal(false);
   };
 
   const handleScanWithSmartphone = () => {
@@ -222,7 +253,7 @@ const UploadPage: React.FC = () => {
   };
 
 
-  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading || isMobileAuthProcessing) { // MODIFIED: Added isMobileAuthProcessing
+  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading || isMobileAuthProcessing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -472,7 +503,7 @@ const UploadPage: React.FC = () => {
             </div>
           )}
         </div>
-      </Modal>
+      </Modal>      
     </div>
   </div>
   );
