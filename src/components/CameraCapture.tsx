@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { SupabaseClient, Session } from '@supabase/supabase-js';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
-import { useSessionContext } from '@supabase/auth-helpers-react';
+import { useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Import useSessionContext
 
 interface CameraCaptureProps {
   onCapture: (imageFile: File) => void;
@@ -24,7 +24,7 @@ interface CameraCaptureProps {
   // ADDED: Supabase client and session props
   supabase: SupabaseClient;
   session: Session | null;
-  isSessionLoading: boolean;
+  isSessionLoading: boolean; // MODIFIED: Add isSessionLoading prop
 }
 
 const CameraCapture: React.FC<CameraCaptureProps> = ({
@@ -44,7 +44,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   // ADDED: Destructure supabase and session
   supabase,
   session,
-  isSessionLoading,
+  isSessionLoading, // MODIFIED: Destructure isSessionLoading
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -102,7 +102,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   // ADDED: Realtime Session Management for CameraCapture
   useEffect(() => {
     // Only proceed if session is loaded and we have scan session details
-    if (isSessionLoading || !scanSessionId || !mobileAuthToken) {
+    if (isSessionLoading || !scanSessionId || !mobileAuthToken) { // MODIFIED: Check isSessionLoading
       setMobileScanStatus('idle'); // Ensure status is idle if not ready to connect
       return;
     }
@@ -174,7 +174,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
       setMobileScanStatus('idle');
       setMobileScanError(null);
     };
-  }, [scanSessionId, mobileAuthToken, session, supabase, t, stopCamera, setMobileScanStatus, setMobileScanError, mobileScanStatus, isSessionLoading]);
+  }, [scanSessionId, mobileAuthToken, session, supabase, t, stopCamera, setMobileScanStatus, setMobileScanError, mobileScanStatus, isSessionLoading]); // MODIFIED: Add isSessionLoading to dependencies
 
 
   const handleCapture = async () => {
@@ -258,7 +258,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   };
 
   // ADDED: Render loading/error states for mobile scan session
-  if (isSessionLoading) {
+  if (isSessionLoading) { // MODIFIED: Check isSessionLoading first
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
         <Loader2 className="h-12 w-12 text-blue-400 animate-spin mx-auto mb-4" />
@@ -268,7 +268,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
     );
   }
 
-  if (!session) {
+  if (!session) { // MODIFIED: If no session after loading
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -312,59 +312,63 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   }
 
   return (
-    <> {/* MODIFIED: Replaced outermost div with a React Fragment */}
-      <div className="relative w-full bg-gray-200 rounded-lg overflow-hidden">
-        <video ref={videoRef} className="w-full h-auto rounded-lg" playsInline autoPlay muted />
-        <canvas ref={canvasRef} className="hidden" />
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleCapture}
-            disabled={!mediaStreamRef.current || isLoading || !isPlaying || (scanSessionId && mobileScanStatus !== 'connected')}
-            icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
-          >
-            {isLoading ? t('capturing') : t('capture_page')}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onDoneCapturing}
-            disabled={isLoading || capturedImages.length === 0}
-            icon={<CheckCircle className="h-5 w-5" />}
-          >
-            {t('done_capturing')} ({capturedImages.length})
-          </Button>
-        </div>
-      </div>
-
-      {capturedImages.length > 0 && (
-        <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {capturedImages.map((imageFile, index) => (
-              <div key={imageFile.name} className="relative group">
-                <img src={URL.createObjectURL(imageFile)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
-                <button
-                  type="button"
-                  onClick={() => removeCapturedImage(imageFile.name)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title={t('remove_image')}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+    <div className="space-y-4">
+      {/* MODIFIED: Removed cameraError check here, handled above */}
+      <>
+        <div className="relative w-full bg-gray-200 rounded-lg overflow-hidden">
+          <video ref={videoRef} className="w-full h-auto rounded-lg" playsInline autoPlay muted />
+          <canvas ref={canvasRef} className="hidden" />
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleCapture}
+              disabled={!mediaStreamRef.current || isLoading || !isPlaying || (scanSessionId && mobileScanStatus !== 'connected')}
+              icon={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
+            >
+              {isLoading ? t('capturing') : t('capture_page')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onDoneCapturing}
+              disabled={isLoading || capturedImages.length === 0}
+              icon={<CheckCircle className="h-5 w-5" />}
+            >
+              {t('done_capturing')} ({capturedImages.length})
+            </Button>
           </div>
         </div>
-      )}
 
-      <div className="flex justify-end">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            {t('cancel')}
-          </Button>
-        </div>
-    </> // MODIFIED: Closing React Fragment
+        {capturedImages.length > 0 && (
+          <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+              <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {capturedImages.map((imageFile, index) => (
+                <div key={imageFile.name} className="relative group">
+                  <img src={URL.createObjectURL(imageFile)} alt={`${t('captured_page')} ${index + 1}`} className="w-full h-auto rounded-md border border-gray-300" />
+                  <button
+                    type="button"
+                    onClick={() => removeCapturedImage(imageFile.name)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title={t('remove_image')}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end">
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              {t('cancel')}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
