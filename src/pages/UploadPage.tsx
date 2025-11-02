@@ -7,7 +7,7 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
-import { Link, useSearchParams, useLocation } from 'react-router-dom'; // MODIFIED: Import useLocation
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -21,7 +21,7 @@ const UploadPage: React.FC = () => {
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const location = useLocation(); // MODIFIED: Initialize useLocation
+  const location = useLocation();
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -41,6 +41,7 @@ const UploadPage: React.FC = () => {
   const [mobileScanError, setMobileScanError] = useState<string | null>(null);
   const mobileScanChannelRef = useRef<RealtimeChannel | null>(null);
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
+  const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false); // ADDED: New state for mobile auth processing
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
@@ -54,13 +55,15 @@ const UploadPage: React.FC = () => {
       // The Realtime connection will be handled by CameraCapture
 
       // MODIFIED: Explicitly handle session from URL hash if present and not already authenticated
-      if (!session && !isSessionLoading && location.hash) {
+      // Removed !isSessionLoading from condition to ensure it attempts to set session if tokens are present
+      if (!session && location.hash) { 
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
 
         if (accessToken && refreshToken) {
           console.log('UploadPage: Explicitly setting session from URL hash.');
+          setIsMobileAuthProcessing(true); // ADDED: Start processing
           supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -73,11 +76,13 @@ const UploadPage: React.FC = () => {
               // Clear the hash from the URL to prevent re-processing
               window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
             }
+          }).finally(() => {
+            setIsMobileAuthProcessing(false); // ADDED: End processing
           });
         }
       }
     }
-  }, [searchParams, session, supabase, location.hash, t, isSessionLoading]); // MODIFIED: Added isSessionLoading to dependencies
+  }, [searchParams, session, supabase, location.hash, t]); // MODIFIED: Removed isSessionLoading from dependencies
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -217,7 +222,7 @@ const UploadPage: React.FC = () => {
   };
 
 
-  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading) {
+  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading || isMobileAuthProcessing) { // MODIFIED: Added isMobileAuthProcessing
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
@@ -300,7 +305,7 @@ const UploadPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex space-x-4 mb-6">
         <Button
