@@ -33,6 +33,48 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     setIsMobileCameraFlowActive(isActive);
   }, [location.pathname, location.search]);
 
+  // --- Prevent navigation when mobile camera flow is active ---
+  useEffect(() => {
+    if (!isMobileCameraFlowActive) return;
+
+    // Block browser navigation (back/forward buttons)
+    const handlePopState = (event: PopStateEvent) => {
+      if (isMobileCameraFlowActive) {
+        // Prevent leaving and show a warning if needed
+        window.history.pushState(null, '', window.location.href);
+        // Optional: Show alert to user
+        alert('Please complete the upload process before navigating away.');
+      }
+    };
+
+    // Block programmatic navigation
+    const originalPush = navigate;
+    const blockNavigation = (to: any, options?: any) => {
+      if (isMobileCameraFlowActive) {
+        console.warn('Navigation blocked: Mobile camera flow is active');
+        return; // Block the navigation
+      }
+      return originalPush(to, options);
+    };
+
+    // Override navigate function when mobile camera flow is active
+    if (isMobileCameraFlowActive) {
+      window.history.pushState(null, '', window.location.href);
+      window.addEventListener('popstate', handlePopState);
+      
+      // Store original navigate function and override
+      (navigate as any).blocked = true;
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      
+      // Restore original navigate function when mobile camera flow ends
+      if ((navigate as any).blocked) {
+        (navigate as any).blocked = false;
+      }
+    };
+  }, [isMobileCameraFlowActive, navigate]);
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
