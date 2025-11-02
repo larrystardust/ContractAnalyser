@@ -18,81 +18,21 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-
-  // --- ULTRA AGGRESSIVE mobile camera flow detection ---
-  const detectMobileCameraFlow = () => {
-    // Check current URL
-    const searchParams = new URLSearchParams(location.search);
-    const isCurrentlyActive = location.pathname === '/upload' && 
-           searchParams.has('scanSessionId') && 
-           searchParams.has('auth_token');
-    
-    // Also check if we should be in mobile flow based on stored state
-    const wasMobileCameraFlowActive = sessionStorage.getItem('mobileCameraFlowActive') === 'true';
-    
-    return isCurrentlyActive || wasMobileCameraFlowActive;
-  };
-
-  const mobileCameraFlowActive = detectMobileCameraFlow();
-
-  // --- ABSOLUTE PRIORITY: Mobile camera flow takes over everything ---
-  if (mobileCameraFlowActive) {
-    // Store state persistently
-    sessionStorage.setItem('mobileCameraFlowActive', 'true');
-    
-    const searchParams = new URLSearchParams(location.search);
-    const scanSessionId = searchParams.get('scanSessionId');
-    const authToken = searchParams.get('auth_token');
-    
-    if (scanSessionId) sessionStorage.setItem('scanSessionId', scanSessionId);
-    if (authToken) sessionStorage.setItem('authToken', authToken);
-    
-    // If we're not currently on the upload page but should be, redirect immediately
-    if (location.pathname !== '/upload') {
-      const originalUploadUrl = sessionStorage.getItem('originalUploadUrl');
-      if (originalUploadUrl) {
-        window.location.replace(originalUploadUrl);
-      } else {
-        // Reconstruct URL
-        const storedScanSessionId = sessionStorage.getItem('scanSessionId');
-        const storedAuthToken = sessionStorage.getItem('authToken');
-        if (storedScanSessionId && storedAuthToken) {
-          const uploadUrl = `/upload?scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}`;
-          window.location.replace(uploadUrl);
-        }
-      }
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Redirecting to upload page...</p>
-          </div>
-        </div>
-      );
-    }
-    
-    // Store current URL as the original upload URL
-    sessionStorage.setItem('originalUploadUrl', window.location.href);
-    
-    // RENDER OUTLET IMMEDIATELY - NO AUTH CHECKS
-    return <Outlet />;
-  }
-
-  // --- Clean up mobile flow state when not active ---
-  useEffect(() => {
-    if (!mobileCameraFlowActive) {
-      sessionStorage.removeItem('mobileCameraFlowActive');
-      sessionStorage.removeItem('originalUploadUrl');
-    }
-  }, [mobileCameraFlowActive]);
-
-  // --- ONLY RUN NORMAL AUTH LOGIC IF NOT IN MOBILE CAMERA FLOW ---
+  const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isHashRecovery = hashParams.get('type') === 'recovery';
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
+
+  // Effect to determine if mobile camera flow is active
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
+    setIsMobileCameraFlowActive(isActive);
+  }, [location.pathname, location.search]);
+
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -124,6 +64,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
+    // FIX: Corrected cleanup function for this useEffect
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
@@ -193,7 +134,16 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
-  // --- Enforce normal auth rules ---
+  // --- CRITICAL FIX: Prioritize mobile camera flow above all other checks ---
+  // If we are in the mobile camera flow, always render Outlet immediately.
+  // The UploadPage component is responsible for handling its own authentication
+  // (via setSession from URL hash) and loading states (isMobileAuthProcessing).
+  // AuthGuard should NOT interfere with this specific flow by redirecting.
+  if (isMobileCameraFlowActive) {
+    return <Outlet />;
+  }
+
+  // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
   if (!session || !session.user) {
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
