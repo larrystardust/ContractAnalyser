@@ -143,7 +143,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
-        setIsLoading(false);
+        setLoadingMfaStatus(false); // MODIFIED: Changed setIsLoading to setLoadingMfaStatus
       }
     };
     checkMfaEnrollment();
