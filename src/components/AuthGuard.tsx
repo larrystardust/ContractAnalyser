@@ -94,8 +94,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         }
       } else if (!session) {
         // If not authenticated and not in password reset, redirect to login
-        // This list of public paths is getting long and hard to maintain.
-        // A better approach might be to have a list of protected paths and redirect if current path is protected.
         const publicPaths = [
           '/', '/public-report-view', '/checkout/success', '/checkout/cancel',
           '/sample-dashboard', '/landing-pricing', '/login', '/signup',
@@ -105,7 +103,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         ];
         const currentPathBase = location.pathname.split('?')[0].split('#')[0];
         const isPublicPath = publicPaths.some(p => {
-          if (p.includes(':slug')) { // Handle dynamic blog post routes
+          if (p.includes(':slug')) {
             const regexPattern = new RegExp('^' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
             return regexPattern.test(currentPathBase);
           }
@@ -119,13 +117,10 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
 
     // REMOVED: handlePageShow listener entirely as it was causing issues with reloads.
-    // window.addEventListener('pageshow', handlePageShow);
-
     window.addEventListener('popstate', handlePopState);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      // window.removeEventListener('pageshow', handlePageShow); // REMOVED
     };
   }, [isMobileCameraFlowActive, isPasswordResetInitiated, session, navigate, location.pathname, location.search, location.hash]);
 
