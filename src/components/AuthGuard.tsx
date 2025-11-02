@@ -29,9 +29,14 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // Effect to determine if mobile camera flow is active
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
+    const hashParams = new URLSearchParams(location.hash.substring(1)); // ADDED: Check hash for params
+
+    const hasScanSessionId = searchParams.has('scanSessionId') || hashParams.has('scanSessionId'); // MODIFIED
+    const hasAuthToken = searchParams.has('auth_token') || hashParams.has('auth_token'); // MODIFIED
+
+    const isActive = location.pathname === '/upload' && hasScanSessionId && hasAuthToken;
     setIsMobileCameraFlowActive(isActive);
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, location.hash]); // MODIFIED: Added location.hash to dependencies
 
 
   // --- Global invalidation when reset starts ---
