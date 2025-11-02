@@ -18,12 +18,22 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  // ADDED: New state to track if mobile camera flow is active
+  const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isHashRecovery = hashParams.get('type') === 'recovery';
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
+
+  // ADDED: Effect to determine if mobile camera flow is active
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
+    setIsMobileCameraFlowActive(isActive);
+  }, [location.pathname, location.search]);
+
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -55,24 +65,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
-
-  // --- HARD lock back/forward buttons + BFCache ---
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isPasswordResetInitiated || !session) {
-        navigate('/reset-password', { replace: true });
-      }
-    };
-
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) {
-        window.location.reload();
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
     window.addEventListener('pageshow', handlePageShow);
 
     return () => {
@@ -94,7 +87,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
         if (getFactorsError) throw getFactorsError;
 
-        const totpFactor = factors?.totp.find(f => f.status === 'verified');
+        const totpFactor = factors?.totp.find(factor => factor.status === 'verified');
         setHasMfaEnrolled(!!totpFactor);
       } catch (err: any) {
         console.error("AuthGuard: MFA check error:", err);
@@ -124,32 +117,22 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
+  // --- Special handling for mobile camera flow after authentication ---
+  // If the user is authenticated AND in the mobile camera flow, let them proceed to /upload
+  if (session?.user && isMobileCameraFlowActive) {
+    return <Outlet />;
+  }
+
   // --- Enforce normal auth rules ---
   if (!session || !session.user) {
-    // ADDED: Special handling for /upload with scanSessionId/auth_token
-    const searchParams = new URLSearchParams(location.search);
-    const isMobileCameraFlow = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
-
-    if (isMobileCameraFlow) {
-      // Allow access to /upload for unauthenticated users if it's part of the mobile camera flow.
-      // The UploadPage component will handle the silent authentication.
-      return <Outlet />;
-    }
-    
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // MODIFIED: Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
-  // If MFA is NOT enrolled, aal1 is fine.
+  // Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
-
-  // REMOVED: The problematic second MFA check
-  // if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
-  //   return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  // }
 
   return <Outlet />;
 };
