@@ -162,7 +162,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // This must be the absolute highest priority check after initial loading.
   if (isMobileCameraFlowActive) {
     // If the user is on the /upload page, let it render
-    if (location.pathname === '/upload?') {
+    if (location.pathname === '/upload*') {
       return <Outlet />;
     } else {
       // If somehow navigated away from /upload while in mobile camera flow, force back
@@ -172,7 +172,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
         // Fallback if parameters are lost, go to generic upload
-        return <Navigate to="/upload?" replace />;
+        return <Navigate to="/upload*" replace />;
       }
     }
   }
