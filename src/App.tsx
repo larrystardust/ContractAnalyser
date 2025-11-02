@@ -51,8 +51,7 @@ const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
-const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
-const MobileCameraRedirect = lazy(() => import('./pages/MobileCameraRedirect')); // ADDED: Lazy load MobileCameraRedirect
+// REMOVED: MobileCameraApp and MobileCameraRedirect lazy imports
 
 function App() {
   // REMOVED: isDashboardHelpModalOpen state
@@ -89,8 +88,7 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
-      '/mobile-camera', // ADDED: Mobile camera app is a public path
-      '/mobile-camera-redirect', // ADDED: Mobile camera redirect is a public path
+      // REMOVED: '/mobile-camera' and '/mobile-camera-redirect'
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -141,8 +139,7 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* ADDED: New route for mobile camera app */}
-              <Route path="/mobile-camera-redirect" element={<MobileCameraRedirect />} /> {/* ADDED: New route for mobile camera redirect */}
+              {/* REMOVED: MobileCameraApp and MobileCameraRedirect routes */}
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
