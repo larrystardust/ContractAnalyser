@@ -172,7 +172,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
         // Fallback if parameters are lost, go to generic upload
-        return <Navigate to="/upload*" replace />;
+        return <Navigate to="/upload" replace />;
       }
     }
   }
