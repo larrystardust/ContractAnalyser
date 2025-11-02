@@ -75,15 +75,31 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
-    const handlePopState = () => {
-      if (isPasswordResetInitiated || !session) {
+    const handlePopState = (e: PopStateEvent) => {
+      if (isMobileCameraFlowActive) {
+        // If in mobile camera flow, always force back to /upload if trying to navigate away
+        if (location.pathname !== '/upload') {
+          const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId');
+          const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token');
+          if (scanSessionId && authToken) {
+            navigate(`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`, { replace: true });
+          } else {
+            navigate('/upload', { replace: true }); // Fallback
+          }
+        }
+        // If already on /upload, do nothing, let the browser handle it (or the beforeunload in UploadPage)
+      } else if (isPasswordResetInitiated || !session) {
+        // Normal password reset or unauthenticated flow
         navigate('/reset-password', { replace: true });
       }
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        window.location.reload();
+        // ONLY reload if NOT in mobile camera flow
+        if (!isMobileCameraFlowActive) {
+          window.location.reload();
+        }
       }
     };
 
@@ -94,7 +110,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate]);
+  }, [isPasswordResetInitiated, session, navigate, isMobileCameraFlowActive, location.pathname, location.search, location.hash]); // Add dependencies
 
   // --- MFA check ---
   useEffect(() => {
@@ -130,22 +146,31 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // --- Enforce reset-password lockdown ---
+  // --- CRITICAL FIX: Nuclear Trap for Mobile Camera Flow ---
+  if (isMobileCameraFlowActive) {
+    // If the user is on the /upload page, let it render
+    if (location.pathname === '/upload') {
+      return <Outlet />;
+    } else {
+      // If somehow navigated away from /upload while in mobile camera flow, force back
+      const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId');
+      const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token');
+      if (scanSessionId && authToken) {
+        return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
+      } else {
+        // Fallback if params are lost, go to generic upload
+        return <Navigate to="/upload" replace />;
+      }
+    }
+  }
+
+  // --- Enforce reset-password lockdown (only if NOT in mobile camera flow) ---
   if (isPasswordResetInitiated) {
     if (location.pathname === '/reset-password' || location.pathname === '/') {
       return <Outlet />;
     } else {
       return <Navigate to="/reset-password" replace />;
     }
-  }
-
-  // --- CRITICAL FIX: Prioritize mobile camera flow above all other checks ---
-  // If we are in the mobile camera flow, always render Outlet immediately.
-  // The UploadPage component is responsible for handling its own authentication
-  // (via setSession from URL hash) and loading states (isMobileAuthProcessing).
-  // AuthGuard should NOT interfere with this specific flow by redirecting.
-  if (isMobileCameraFlowActive) {
-    return <Outlet />;
   }
 
   // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
