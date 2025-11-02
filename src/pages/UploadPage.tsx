@@ -445,7 +445,7 @@ const UploadPage: React.FC = () => {
         </div>
       </Modal>
     </div>
-  </>
+  </div>
   );
 };
 
