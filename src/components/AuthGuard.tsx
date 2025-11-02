@@ -162,7 +162,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // This must be the absolute highest priority check after initial loading.
   if (isMobileCameraFlowActive) {
     // If the user is on the /upload page, let it render
-    if (location.pathname === '/upload') {
+    if (location.pathname === '/upload?') {
       return <Outlet />;
     } else {
       // If somehow navigated away from /upload while in mobile camera flow, force back
