@@ -87,12 +87,16 @@ Deno.serve(async (req) => {
     const userEmail = userData.user.email;
 
     // Generate a magic link. The redirectTo URL is crucial here.
-    // It should point to a new client-side route that will handle the session.
+    // It should point directly to the /upload page with the scan session details.
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    const mobileRedirectUrl = `${appBaseUrl}/mobile-camera-redirect?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+    // MODIFIED: Redirect directly to /upload
+    const mobileRedirectUrl = `${appBaseUrl}/upload?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+
+    const linkType = 'magiclink'; // Explicitly define the type
+    console.log('mobile-auth: Attempting to generate link with type:', linkType); // Log it for debugging
 
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink', // Use 'magiclink' type
+      type: linkType, // Use 'magiclink' type
       email: userEmail,
       redirectTo: mobileRedirectUrl, // Supabase will redirect here after processing the magic link
     });
