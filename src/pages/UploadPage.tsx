@@ -15,6 +15,7 @@ import QRCode from 'qrcode.react';
 import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
+import { useToast } from '../context/ToastContext'; // ADDED: Import useToast
 
 const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
@@ -22,6 +23,7 @@ const UploadPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const { addToast } = useToast(); // ADDED: Initialize useToast
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -54,12 +56,49 @@ const UploadPage: React.FC = () => {
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Store original functions
+    const originalReload = window.location.reload;
+    const originalGo = window.history.go;
+    const originalBack = window.history.back;
+    const originalForward = window.history.forward;
+
+    if (isCameraMode && scanSessionId) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      // OVERRIDE: Nuclear option to prevent programmatic reloads and history navigation
+      window.location.reload = () => {
+        console.warn("Reload attempt blocked during mobile scan session.");
+        addToast(t('reload_blocked_during_scan'), 'warning');
+      };
+      window.history.go = (delta?: number) => {
+        console.warn(`History go(${delta}) attempt blocked during mobile scan session.`);
+        addToast(t('navigation_blocked_during_scan'), 'warning');
+      };
+      window.history.back = () => {
+        console.warn("History back attempt blocked during mobile scan session.");
+        addToast(t('navigation_blocked_during_scan'), 'warning');
+      };
+      window.history.forward = () => {
+        console.warn("History forward attempt blocked during mobile scan session.");
+        addToast(t('navigation_blocked_during_scan'), 'warning');
+      };
+    } else {
+      // Restore original functions if not in camera mode
+      window.location.reload = originalReload;
+      window.history.go = originalGo;
+      window.history.back = originalBack;
+      window.history.forward = originalForward;
+    }
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Always restore on unmount
+      window.location.reload = originalReload;
+      window.history.go = originalGo;
+      window.history.back = originalBack;
+      window.history.forward = originalForward;
     };
-  }, [isCameraMode, scanSessionId]); // Depend on these states
+  }, [isCameraMode, scanSessionId, addToast, t]); // Depend on these states and addToast/t
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
@@ -123,7 +162,7 @@ const UploadPage: React.FC = () => {
               setMobileScanStatus('error');
             } else {
               // Clear the hash from the URL to prevent re-processing
-              window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`); // MODIFIED: Clear hash only
+              window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`); // Clear hash only
             }
           }).finally(() => {
             setIsMobileAuthProcessing(false);
