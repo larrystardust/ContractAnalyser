@@ -18,7 +18,6 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  // ADDED: New state to track if mobile camera flow is active
   const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
@@ -27,7 +26,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // ADDED: Effect to determine if mobile camera flow is active
+  // Effect to determine if mobile camera flow is active
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const isActive = location.pathname === '/upload' && searchParams.has('scanSessionId') && searchParams.has('auth_token');
@@ -65,7 +64,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // FIX: Removed incorrect event listener removals from this cleanup
+    // FIX: Corrected cleanup function for this useEffect
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
 
@@ -135,23 +134,28 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
-  // --- Special handling for mobile camera flow after authentication ---
-  // If the user is authenticated AND in the mobile camera flow, let them proceed to /upload
-  if (session?.user && isMobileCameraFlowActive) {
+  // --- CRITICAL FIX: Prioritize mobile camera flow ---
+  // If we are in the mobile camera flow, always render Outlet.
+  // The UploadPage component is responsible for handling its own authentication
+  // (via setSession from URL hash) and loading states (isMobileAuthProcessing).
+  // AuthGuard should NOT interfere with this specific flow by redirecting.
+  if (isMobileCameraFlowActive) {
     return <Outlet />;
   }
 
-  // --- Enforce normal auth rules ---
+  // --- Enforce normal auth rules (only if NOT in mobile camera flow) ---
   if (!session || !session.user) {
     // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   // Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
+  // This check should happen AFTER ensuring the user is authenticated.
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
+  // If all checks pass, render the protected content
   return <Outlet />;
 };
 
