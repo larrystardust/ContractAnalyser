@@ -65,7 +65,25 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    return () => window.removeEventListener('popstate', handlePopState);
+    // FIX: Removed incorrect event listener removals from this cleanup
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [isPasswordResetInitiated, location.pathname, navigate, supabase]);
+
+  // --- HARD lock back/forward buttons + BFCache ---
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isPasswordResetInitiated || !session) {
+        navigate('/reset-password', { replace: true });
+      }
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
     window.addEventListener('pageshow', handlePageShow);
 
     return () => {
@@ -87,7 +105,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         const { data: factors, error: getFactorsError } = await supabase.auth.mfa.listFactors();
         if (getFactorsError) throw getFactorsError;
 
-        const totpFactor = factors?.totp.find(factor => factor.status === 'verified');
+        const totpFactor = factors?.totp.find(f => f.status === 'verified');
         setHasMfaEnrolled(!!totpFactor);
       } catch (err: any) {
         console.error("AuthGuard: MFA check error:", err);
