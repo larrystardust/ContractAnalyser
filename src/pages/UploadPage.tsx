@@ -7,7 +7,7 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
-import { Link, useSearchParams } from 'react-router-dom'; // ADDED useSearchParams
+import { Link, useSearchParams } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -20,7 +20,7 @@ const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams(); // ADDED: Initialize useSearchParams
+  const [searchParams] = useSearchParams();
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -41,7 +41,7 @@ const UploadPage: React.FC = () => {
   const mobileScanChannelRef = useRef<RealtimeChannel | null>(null);
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
 
-  // ADDED: Effect to check for scanSessionId and auth_token in URL on load
+  // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
     const urlScanSessionId = searchParams.get('scanSessionId');
     const urlAuthToken = searchParams.get('auth_token');
@@ -58,13 +58,9 @@ const UploadPage: React.FC = () => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
   }, [isUploading]);
 
-  // REMOVED: Old Realtime session management useEffect from UploadPage.tsx
-  // This logic is now moved to CameraCapture.tsx
-
   const OCR_COST = 3;
   const BASIC_ANALYSIS_COST = 1;
   const ADVANCED_ANALYSIS_ADDON_COST = 1;
-
 
   const availableCredits = getTotalSingleUseCredits();
   const hasSubscription = subscription && (subscription.status === 'active' || subscription.status === 'trialing');
@@ -78,16 +74,12 @@ const UploadPage: React.FC = () => {
   const canPerformBasicAnalysis = isAdvancedSubscription || isBasicSubscription || availableCredits >= BASIC_ANALYSIS_COST;
   const canPerformAdvancedAddon = isAdvancedSubscription || availableCredits >= ADVANCED_ANALYSIS_ADDON_COST;
 
-  // MODIFIED: showProcessingOptions should be true for single-use users only.
-  // For basic/admin-assigned, a separate section will be shown. For advanced, nothing.
   const showProcessingOptions = !isBasicSubscription && !isAdvancedSubscription;
-
 
   const handleUploadStatusChange = (status: boolean) => {
     setIsUploading(status);
   };
 
-  // MODIFIED: handleAddCapturedImage now directly adds to selectedFiles and capturedImages
   const handleAddCapturedImage = (imageFile: File) => {
     setCapturedImages(prev => [...prev, imageFile]);
     setSelectedFiles(prev => [...prev, imageFile]);
@@ -122,19 +114,15 @@ const UploadPage: React.FC = () => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  // MODIFIED: New handler for "Scan Document" button
   const handleScanDocumentClick = async () => {
     if (!session) {
       alert(t('upload_page_login_to_scan'));
       return;
     }
 
-    // If on mobile, directly enter camera mode (this is for the desktop user clicking "Scan Document" on their mobile device)
     if (isMobileDevice) {
       setIsCameraMode(true);
       setSelectedFiles([]);
-      // For mobile, we don't need a scan session ID or auth token from the desktop
-      // The CameraCapture component will directly use the device camera
       setScanSessionId(null);
       setMobileAuthToken(null);
       setMobileScanStatus('idle');
@@ -142,14 +130,12 @@ const UploadPage: React.FC = () => {
       return;
     }
 
-    // For desktop, create a scan session and show QR code
     setMobileScanStatus('connecting');
     setMobileScanError(null);
     setShowScanOptionModal(true);
-    setShowQrCode(false); // Hide QR code initially
+    setShowQrCode(false);
 
     try {
-      // MODIFIED: Invoke create-scan-session to get auth_token
       const { data, error } = await supabase.functions.invoke('create-scan-session', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -160,37 +146,32 @@ const UploadPage: React.FC = () => {
       if (!data?.scanSessionId || !data?.auth_token) throw new Error(t('upload_page_failed_to_create_scan_session'));
 
       setScanSessionId(data.scanSessionId);
-      setMobileAuthToken(data.auth_token); // ADDED: Store the auth token
-      setShowQrCode(true); // Show QR code once session is created
+      setMobileAuthToken(data.auth_token);
+      setShowQrCode(true);
     } catch (err: any) {
       console.error('UploadPage: Error creating scan session:', err);
       setMobileScanStatus('error');
       setMobileScanError(err.message || t('upload_page_failed_to_create_scan_session'));
-      setShowScanOptionModal(false); // Close modal on error
+      setShowScanOptionModal(false);
     }
   };
 
-  // ADDED: Handler for "Scan with the camera of this device"
   const handleScanWithDeviceCamera = () => {
     setShowScanOptionModal(false);
-    setShowQrCode(false); // Hide QR code if user chooses desktop camera
+    setShowQrCode(false);
     setIsCameraMode(true);
     setSelectedFiles([]);
-    setScanSessionId(null); // Clear mobile scan session if desktop camera is used
+    setScanSessionId(null);
     setMobileScanStatus('idle');
-    setMobileAuthToken(null); // ADDED: Clear auth token
+    setMobileAuthToken(null);
   };
 
-  // ADDED: Handler for "Scan with a smartphone" (just shows QR code, session already created)
   const handleScanWithSmartphone = () => {
-    // Session is already created in handleScanDocumentClick for desktop users
     setShowQrCode(true);
   };
 
-  // ADDED: Handler to close the mobile scan session
   const handleEndMobileScanSession = async () => {
     if (mobileScanChannelRef.current) {
-      // Notify mobile that desktop is ending session
       if (mobileScanStatus === 'connected') {
         mobileScanChannelRef.current.send({
           type: 'broadcast',
@@ -206,8 +187,8 @@ const UploadPage: React.FC = () => {
     setMobileScanError(null);
     setShowScanOptionModal(false);
     setShowQrCode(false);
-    setMobileAuthToken(null); // ADDED: Clear auth token
-    setIsCameraMode(false); // Exit camera mode
+    setMobileAuthToken(null);
+    setIsCameraMode(false);
   };
 
 
@@ -239,7 +220,6 @@ const UploadPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6 mt-16">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('upload_new_contract')}</h1>
       
-      {/* MODIFIED: Conditional rendering for Important Document Format message */}
       {(isAdvancedSubscription || isBasicSubscription) ? (
         <div className="bg-yellow-50 border-l-4 border-yellow-300 text-yellow-800 p-4 mb-6" role="alert">
           <div className="flex items-center">
@@ -266,7 +246,6 @@ const UploadPage: React.FC = () => {
         </div>
       )}
 
-      {/* Credit/Subscription Status Display */}
       <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
         <div className="flex items-center">
           <FileText className="h-5 w-5 mr-3 flex-shrink-0" />
@@ -277,7 +256,6 @@ const UploadPage: React.FC = () => {
                 <p className="text-sm">
                   {subscription?.max_files === 999999 ? t('unlimited_files_message') : t('subscription_files_remaining', { count: (maxAllowedFiles - (totalSubscriptionFiles || 0)), maxFiles: maxAllowedFiles, totalUploaded: (totalSubscriptionFiles || 0) })}
                 </p>
-                {/* NEW: Display single-use credits for basic subscription users */}
                 {isBasicSubscription && (
                   <p className="text-sm mt-2">
                     {t('advanced_analysis_cost_and_available_credits', { cost: ADVANCED_ANALYSIS_ADDON_COST, count: availableCredits })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
@@ -297,9 +275,8 @@ const UploadPage: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
         <Button
           variant={isCameraMode || mobileScanStatus !== 'idle' ? 'secondary' : 'primary'}
@@ -321,7 +298,6 @@ const UploadPage: React.FC = () => {
         )}
       </div>
 
-      {/* Mobile Scan Status Display */}
       {mobileScanStatus === 'connected' && (
         <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
           <div className="flex items-center">
@@ -365,10 +341,13 @@ const UploadPage: React.FC = () => {
           isLoading={isUploading}
           capturedImages={capturedImages}
           removeCapturedImage={removeCapturedImage}
-          // ADDED: Pass scanSessionId and mobileAuthToken to CameraCapture
+          // Pass supabase and session for internal Realtime management
+          supabase={supabase}
+          session={session}
+          // Pass scanSessionId and mobileAuthToken to CameraCapture
           scanSessionId={scanSessionId}
           mobileAuthToken={mobileAuthToken}
-          // ADDED: Pass status setters to CameraCapture
+          // Pass status setters to CameraCapture
           setMobileScanStatus={setMobileScanStatus}
           setMobileScanError={setMobileScanError}
           mobileScanStatus={mobileScanStatus}
@@ -403,7 +382,6 @@ const UploadPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODIFIED: Scan Option Modal for Desktop */}
       <Modal
         isOpen={showScanOptionModal}
         onClose={handleEndMobileScanSession}
@@ -443,9 +421,8 @@ const UploadPage: React.FC = () => {
               ) : (
                 <p className="text-gray-600">{t('scan_qr_code_to_connect')}</p>
               )}
-              {scanSessionId && mobileAuthToken && ( // MODIFIED: Ensure mobileAuthToken exists
+              {scanSessionId && mobileAuthToken && (
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-                  {/* MODIFIED: Include auth_token in QR code URL and point to /upload */}
                   <QRCode value={`${window.location.origin}/upload?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
                 </div>
               )}
