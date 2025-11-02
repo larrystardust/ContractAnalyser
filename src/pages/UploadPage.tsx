@@ -7,7 +7,7 @@ import { useAppSettings } from '../hooks/useAppSettings';
 import { useTranslation } from 'react-i18next';
 import { useUserOrders } from '../hooks/useUserOrders';
 import { useSubscription } from '../hooks/useSubscription';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom'; // MODIFIED: Import useLocation
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -21,6 +21,7 @@ const UploadPage: React.FC = () => {
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const location = useLocation(); // MODIFIED: Initialize useLocation
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -51,8 +52,32 @@ const UploadPage: React.FC = () => {
       setMobileAuthToken(urlAuthToken);
       setIsCameraMode(true); // Directly enter camera mode
       // The Realtime connection will be handled by CameraCapture
+
+      // MODIFIED: Explicitly handle session from URL hash if present and not already authenticated
+      if (!session && !isSessionLoading && location.hash) {
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          console.log('UploadPage: Explicitly setting session from URL hash.');
+          supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          }).then(({ error }) => {
+            if (error) {
+              console.error('UploadPage: Error setting session from hash:', error);
+              setMobileScanError(t('mobile_scan_authentication_failed_session_set'));
+              setMobileScanStatus('error');
+            } else {
+              // Clear the hash from the URL to prevent re-processing
+              window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            }
+          });
+        }
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, session, supabase, location.hash, t, isSessionLoading]); // MODIFIED: Added isSessionLoading to dependencies
 
   useEffect(() => {
     console.log('UploadPage: isUploading state changed to:', isUploading);
@@ -157,13 +182,13 @@ const UploadPage: React.FC = () => {
   };
 
   const handleScanWithDeviceCamera = () => {
-    setShowScanOptionModal(false);
     setShowQrCode(false);
     setIsCameraMode(true);
     setSelectedFiles([]);
     setScanSessionId(null);
     setMobileScanStatus('idle');
     setMobileAuthToken(null);
+    setShowScanOptionModal(false); // MODIFIED: Close modal when switching to device camera
   };
 
   const handleScanWithSmartphone = () => {
@@ -275,6 +300,7 @@ const UploadPage: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
 
       <div className="flex space-x-4 mb-6">
         <Button
@@ -444,7 +470,6 @@ const UploadPage: React.FC = () => {
         </div>
       </Modal>
     </div>
-  </div>  
   );
 };
 
