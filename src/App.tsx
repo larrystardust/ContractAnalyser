@@ -1,19 +1,17 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-// REMOVED: Direct imports for page components
 
 import { ContractProvider } from './context/ContractContext';
 import './index.css';
-import AuthGuard from './components/AuthGuard'; // Keep direct import for AuthGuard
-import AdminGuard from './components/AdminGuard'; // Keep direct import for AdminGuard
+import AuthGuard from './components/AuthGuard';
+import AdminGuard from './components/AdminGuard';
 import { useTheme } from './hooks/useTheme';
-import MainLayout from './components/layout/MainLayout'; // Keep direct import for MainLayout
+import MainLayout from './components/layout/MainLayout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next'; 
 
-// MODIFIED: Lazy load all page components
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const PricingSection = lazy(() => import('./components/pricing/PricingSection'));
 const CheckoutSuccess = lazy(() => import('./components/checkout/CheckoutSuccess'));
@@ -50,22 +48,18 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
-const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
-// REMOVED: MobileCameraApp and MobileCameraRedirect lazy imports
+const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal'));
 
 function App() {
-  // REMOVED: isDashboardHelpModalOpen state
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
-  // REMOVED: useSessionContext and useSupabaseClient as they are not directly used here anymore
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
   const { t } = useTranslation();
 
   useTheme();
 
-  // MODIFIED: Removed session and isSessionLoading from dependencies as they are not directly used here
   useEffect(() => {
     const publicPaths = [
       '/',
@@ -88,7 +82,8 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
-      // REMOVED: '/mobile-camera' and '/mobile-camera-redirect'
+      // The /mobile-camera and /mobile-camera-redirect routes are no longer needed
+      // as the camera functionality is now integrated directly into /upload.
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -107,29 +102,20 @@ function App() {
       navigate('/maintenance', { replace: true });
       return;
     }
+  }, [location, navigate, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
-    // The AuthGuard now handles redirection for unauthenticated users
-    // if (!isSessionLoading && !session && !isPublicPath(currentPathBase)) {
-    //   navigate('/', { replace: true });
-    // }
-  }, [location, navigate, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]); // MODIFIED: Removed session, isSessionLoading, supabase from dependencies
-
-  // MODIFIED: handleOpenHelpModal now navigates to the help page
   const handleOpenHelpModal = () => {
-    // The AuthGuard will handle authentication checks for /dashboard-help
-    navigate('/dashboard-help'); // Navigate to the standalone help page
+    navigate('/dashboard-help');
   };
 
   return (
     <ContractProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-700">
         <ErrorBoundary>
-          {/* MODIFIED: Added Suspense for lazy-loaded routes */}
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-700"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div></div>}>
             <Routes>
               <Route path="/maintenance" element={<MaintenancePage />} />
 
-              {/* Routes without Header */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -139,12 +125,9 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              {/* REMOVED: MobileCameraApp and MobileCameraRedirect routes */}
 
-              {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
                 onOpenHelpModal={handleOpenHelpModal}
-                // REMOVED: isDashboardHelpModalOpen and setIsDashboardHelpModal props
               />}>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth/email-sent" element={<EmailSentPage />} />
@@ -157,7 +140,6 @@ function App() {
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
 
-                {/* Protected Routes */}
                 <Route element={<AuthGuard />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/contracts" element={<ContractsPage />} />
@@ -168,11 +150,9 @@ function App() {
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
 
-                  {/* MODIFIED: DashboardHelpModal is now a standalone route */}
                   <Route path="/dashboard-help" element={<DashboardHelpModal />} />
                 </Route>
 
-                {/* Admin Protected Routes */}
                 <Route element={<AdminGuard />}>
                   <Route path="/admin" element={<AdminDashboardPage />} />
                   <Route path="/admin/inquiries" element={<AdminInquiriesPage />} />
@@ -184,7 +164,7 @@ function App() {
                 </Route>
               </Route>
             </Routes>
-          </Suspense> {/* END Suspense */}
+          </Suspense>
         </ErrorBoundary>
       </div>
     </ContractProvider>
