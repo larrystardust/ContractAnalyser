@@ -342,7 +342,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
 
         {capturedImages.length > 0 && (
           <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
+              <h3 className="text-md font-semibold text-gray-800 mb-3">{t('captured_images_preview')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {capturedImages.map((imageFile, index) => (
                 <div key={imageFile.name} className="relative group">
@@ -362,11 +362,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         )}
 
         <div className="flex justify-end">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            {t('cancel')}
-          </Button>
-        </div>
-      </>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              {t('cancel')}
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
