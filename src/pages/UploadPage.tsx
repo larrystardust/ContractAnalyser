@@ -345,7 +345,7 @@ const UploadPage: React.FC = () => {
               </>
             )}
             {!hasSubscription && availableCredits < (OCR_COST + BASIC_ANALYSIS_COST) && (
-              <p className className="text-sm mt-2">
+              <p className="text-sm mt-2">
                 {t('not_enough_credits_for_ocr_analysis', { cost: (OCR_COST + BASIC_ANALYSIS_COST) })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
               </p>
             )}
