@@ -284,7 +284,7 @@ const UploadPage: React.FC = () => {
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">{t('error_loading_settings')}</h2>
           <p className="text-gray-600 mb-4">
-            {t('problem_fetching_settings')}
+            {t('problem_fetching_data')}
           </p>
           <p className="text-sm text-red-500">Error: {appSettingsError}</p>
         </div>
@@ -345,7 +345,7 @@ const UploadPage: React.FC = () => {
               </>
             )}
             {!hasSubscription && availableCredits < (OCR_COST + BASIC_ANALYSIS_COST) && (
-              <p className="text-sm mt-2">
+              <p className className="text-sm mt-2">
                 {t('not_enough_credits_for_ocr_analysis', { cost: (OCR_COST + BASIC_ANALYSIS_COST) })} <Link to="/pricing" className="font-medium underline">{t('pricing_page')}</Link>.
               </p>
             )}
