@@ -93,8 +93,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         // If in mobile camera flow, always force back to /upload if trying to navigate away
         if (location.pathname !== '/upload') {
           // MODIFIED: Prioritize sessionStorage for parameters
-          const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId') || sessionStorage.getItem('scanSessionId');
-          const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token') || sessionStorage.getItem('auth_token');
+          const scanSessionId = sessionStorage.getItem('scanSessionId'); // Get directly from sessionStorage
+          const authToken = sessionStorage.getItem('auth_token'); // Get directly from sessionStorage
           if (scanSessionId && authToken) {
             navigate(`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`, { replace: true });
           } else {
@@ -182,12 +182,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     } else {
       // If somehow navigated away from /upload while in mobile camera flow, force back
       // MODIFIED: Prioritize sessionStorage for parameters
-      const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId') || sessionStorage.getItem('scanSessionId');
-      const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token') || sessionStorage.getItem('auth_token');
+      const scanSessionId = sessionStorage.getItem('scanSessionId'); // Get directly from sessionStorage
+      const authToken = sessionStorage.getItem('auth_token'); // Get directly from sessionStorage
       if (scanSessionId && authToken) {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
-        // Fallback if parameters are lost, go to generic upload
+        // Fallback if parameters are lost (shouldn't happen with sessionStorage), go to generic upload
         return <Navigate to="/upload" replace />;
       }
     }
