@@ -43,7 +43,7 @@ const UploadPage: React.FC = () => {
   const [mobileScanError, setMobileScanError] = useState<string | null>(null);
   const mobileScanChannelRef = useRef<RealtimeChannel | null>(null);
   const [mobileAuthToken, setMobileAuthToken] = useState<string | null>(null);
-  const [isMobileAuthProcessing, setIsMobileAuthProcessing] = useState(false);
+  // REMOVED: isMobileAuthProcessing state
 
   // MODIFIED: Removed the problematic useEffect that tried to reassign window.location.reload and window.history methods.
   // Keeping only the window.onbeforeunload event listener.
@@ -89,33 +89,36 @@ const UploadPage: React.FC = () => {
       sessionStorage.setItem('scanSessionId', currentScanSessionId);
       sessionStorage.setItem('auth_token', currentAuthToken);
 
-      // If not authenticated and no hash (meaning magic link hasn't been processed yet), initiate mobile-auth
-      if (!session && !isSessionLoading && !location.hash) {
-        console.log('UploadPage: Mobile device not authenticated, initiating mobile-auth Edge Function.');
-        setIsMobileAuthProcessing(true);
-        supabase.functions.invoke('mobile-auth', {
-          body: { auth_token: currentAuthToken },
-        }).then(({ data, error }) => {
-          if (error) {
-            console.error('UploadPage: Error invoking mobile-auth Edge Function:', error);
-            setMobileScanError(t('mobile_scan_authentication_failed_magic_link'));
-            setMobileScanStatus('error');
-          } else if (data?.magicLinkUrl) {
-            console.log('UploadPage: Received magicLinkUrl, redirecting for authentication.');
-            window.location.replace(data.magicLinkUrl);
-          } else {
-            console.error('UploadPage: mobile-auth Edge Function returned no magicLinkUrl.');
-            setMobileScanError(t('mobile_scan_authentication_failed_no_magic_link'));
-            setMobileScanStatus('error');
-          }
-        }).finally(() => {
-          if (mobileScanStatus !== 'error') {
-            setIsMobileAuthProcessing(false);
-          }
-        });
-        return; // Exit early, as a redirect is pending or processing is ongoing
+      // MODIFIED: Direct session setting logic
+      // If not authenticated but tokens are in the hash, set the session directly
+      if (!session && !isSessionLoading && location.hash) {
+        console.log('UploadPage: Handling redirect with hash. Current location.search:', location.search, 'location.hash:', location.hash);
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+
+        if (accessToken && refreshToken) {
+          console.log('UploadPage: Explicitly setting session from URL hash.');
+          // REMOVED: setIsMobileAuthProcessing(true);
+          supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          }).then(({ error }) => {
+            if (error) {
+              console.error('UploadPage: Error setting session from hash:', error);
+              setMobileScanError(t('mobile_scan_authentication_failed_session_set'));
+              setMobileScanStatus('error');
+            } else {
+              // CRITICAL FIX: Clean the URL hash and ensure query params are present
+              const newUrl = `${window.location.pathname}?scanSessionId=${currentScanSessionId}&auth_token=${currentAuthToken}`;
+              console.log('UploadPage: Replacing state to clean hash and add query params:', newUrl);
+              window.history.replaceState({}, document.title, newUrl);
+            }
+          }).finally(() => {
+            // REMOVED: setIsMobileAuthProcessing(false);
+          });
+        }
       }
-      // The logic for handling location.hash and supabase.auth.setSession is now moved to MobileAuthCallbackPage.tsx
     }
   }, [searchParams, session, supabase, location.hash, t, isSessionLoading, mobileScanStatus]);
 
@@ -268,7 +271,7 @@ const UploadPage: React.FC = () => {
   };
 
 
-  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading || isMobileAuthProcessing) {
+  if (loadingUserProfile || loadingAppSettings || loadingOrders || loadingSubscription || isSessionLoading /* REMOVED: || isMobileAuthProcessing */) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
