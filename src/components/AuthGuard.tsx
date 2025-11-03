@@ -89,20 +89,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
-      if (isMobileCameraFlowActive) {
-        // If in mobile camera flow, always force back to /upload if trying to navigate away
-        if (location.pathname !== '/upload') {
-          // MODIFIED: Prioritize sessionStorage for parameters
-          const scanSessionId = sessionStorage.getItem('scanSessionId'); // Get directly from sessionStorage
-          const authToken = sessionStorage.getItem('auth_token'); // Get directly from sessionStorage
-          if (scanSessionId && authToken) {
-            navigate(`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`, { replace: true });
-          } else {
-            navigate('/upload', { replace: true }); // Fallback
-          }
-        }
-        // If already on /upload, do nothing, let the browser handle it (or the beforeunload in UploadPage)
-      } else if (isPasswordResetInitiated) {
+      // MODIFIED: Remove mobile camera flow logic from handlePopState
+      // This is now handled by the main render logic's "Nuclear Trap"
+      if (isPasswordResetInitiated) {
         // Normal password reset flow
         if (location.pathname !== '/reset-password') {
           navigate('/reset-password', { replace: true });
