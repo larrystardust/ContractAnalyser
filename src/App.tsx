@@ -49,6 +49,7 @@ const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal'));
+const MobileAuthCallbackPage = lazy(() => import('./pages/MobileAuthCallbackPage')); // ADDED: New page
 
 function App() {
   const location = useLocation();
@@ -82,6 +83,7 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
+      '/mobile-auth-callback', // ADDED: New public path
       // The /mobile-camera and /mobile-camera-redirect routes are no longer needed
       // as the camera functionality is now integrated directly into /upload.
     ];
@@ -125,6 +127,7 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/mobile-auth-callback" element={<MobileAuthCallbackPage />} /> {/* ADDED: New route */}
 
               <Route element={<MainLayout
                 onOpenHelpModal={handleOpenHelpModal}
