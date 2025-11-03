@@ -87,10 +87,11 @@ Deno.serve(async (req) => {
     const userEmail = userData.user.email;
 
     // Generate a magic link. The redirectTo URL is crucial here.
-    // It should point directly to the /upload page with the scan session details.
+    // It should point directly to the /upload page.
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    // MODIFIED: Redirect directly to /upload
-    const mobileRedirectUrl = `${appBaseUrl}/upload?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+    // MODIFIED: Redirect directly to /upload, WITHOUT scanSessionId and auth_token in query params.
+    // These will be handled by sessionStorage.
+    const mobileRedirectUrl = `${appBaseUrl}/upload`;
 
     const linkType = 'magiclink'; // Explicitly define the type
     console.log('mobile-auth: Attempting to generate link with type:', linkType); // Log it for debugging
