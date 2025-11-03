@@ -86,23 +86,24 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    // MODIFIED: Generate an access token directly instead of a magic link
-    const { data: { properties: tokenProperties }, error: generateTokenError } = await supabase.auth.admin.generateLink({
-      type: 'token', // Generate a token directly
-      uid: userId,
+    // Generate a magic link. The redirectTo URL is crucial here.
+    // It should point to a new client-side route that will handle the session.
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+    const mobileRedirectUrl = `${appBaseUrl}/mobile-camera-redirect?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+
+    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink', // Use 'magiclink' type
+      email: userEmail,
+      redirectTo: mobileRedirectUrl, // Supabase will redirect here after processing the magic link
     });
 
-    if (generateTokenError || !tokenProperties?.access_token || !tokenProperties?.refresh_token) {
-      console.error('mobile-auth: Failed to generate session tokens:', generateTokenError);
+    if (generateLinkError || !properties?.action_link) {
+      console.error('mobile-auth: Failed to generate magic link:', generateLinkError);
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    // MODIFIED: Construct the redirectTo URL with tokens in hash and scanSessionId/auth_token in query
-    const redirectToUrl = `${appBaseUrl}/upload?scanSessionId=${scanSessionId}&auth_token=${auth_token}#access_token=${tokenProperties.access_token}&refresh_token=${tokenProperties.refresh_token}&type=recovery&expires_in=${tokenProperties.expires_in}&token_type=bearer`;
-
-    // Return the redirectTo URL to the mobile client
-    return corsResponse({ magicLinkUrl: redirectToUrl });
+    // Return the magic link URL to the mobile client
+    return corsResponse({ magicLinkUrl: properties.action_link });
 
   } catch (error: any) {
     console.error('mobile-auth: Unhandled error:', error);
