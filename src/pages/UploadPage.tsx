@@ -137,9 +137,12 @@ const UploadPage: React.FC = () => {
               setMobileScanError(t('mobile_scan_authentication_failed_session_set'));
               setMobileScanStatus('error');
             } else {
-              // CRITICAL FIX: Remove window.history.replaceState here.
-              // AuthGuard will now handle the final URL cleanup and redirection based on sessionStorage.
-              console.log('UploadPage: Session set from hash. Relying on AuthGuard for final URL state.');
+              // CRITICAL FIX: Re-introduce window.history.replaceState here to clean the URL hash
+              // AND ensure the scanSessionId and auth_token are present as query parameters.
+              // This is important for AuthGuard to consistently see these parameters.
+              const newUrl = `${window.location.pathname}?scanSessionId=${currentScanSessionId}&auth_token=${currentAuthToken}`;
+              console.log('UploadPage: Replacing state to clean hash and add query params:', newUrl);
+              window.history.replaceState({}, document.title, newUrl);
             }
           }).finally(() => {
             setIsMobileAuthProcessing(false);
