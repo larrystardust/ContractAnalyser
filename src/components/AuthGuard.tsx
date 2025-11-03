@@ -31,10 +31,24 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     const searchParams = new URLSearchParams(location.search);
     const hashParams = new URLSearchParams(location.hash.substring(1));
 
-    const hasScanSessionId = searchParams.has('scanSessionId') || hashParams.has('scanSessionId');
-    const hasAuthToken = searchParams.has('auth_token') || hashParams.has('auth_token');
+    // MODIFIED: Check sessionStorage as fallback
+    const urlScanSessionId = searchParams.get('scanSessionId') || hashParams.get('scanSessionId') || sessionStorage.getItem('scanSessionId');
+    const urlAuthToken = searchParams.get('auth_token') || hashParams.get('auth_token') || sessionStorage.getItem('auth_token');
+
+    const hasScanSessionId = !!urlScanSessionId;
+    const hasAuthToken = !!urlAuthToken;
 
     const isActive = location.pathname === '/upload' && hasScanSessionId && hasAuthToken;
+    console.log('AuthGuard: isMobileCameraFlowActive check:', {
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+      sessionStorageScanSessionId: sessionStorage.getItem('scanSessionId'),
+      sessionStorageAuthToken: sessionStorage.getItem('auth_token'),
+      hasScanSessionId,
+      hasAuthToken,
+      isActive
+    });
     setIsMobileCameraFlowActive(isActive);
   }, [location.pathname, location.search, location.hash]);
 
@@ -78,8 +92,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       if (isMobileCameraFlowActive) {
         // If in mobile camera flow, always force back to /upload if trying to navigate away
         if (location.pathname !== '/upload') {
-          const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId');
-          const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token');
+          // MODIFIED: Prioritize sessionStorage for parameters
+          const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId') || sessionStorage.getItem('scanSessionId');
+          const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token') || sessionStorage.getItem('auth_token');
           if (scanSessionId && authToken) {
             navigate(`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`, { replace: true });
           } else {
@@ -143,7 +158,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
         console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
-        setLoadingMfaStatus(false); // MODIFIED: Changed setIsLoading to setLoadingMfaStatus
+        setLoadingMfaStatus(false);
       }
     };
     checkMfaEnrollment();
@@ -166,8 +181,9 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       return <Outlet />;
     } else {
       // If somehow navigated away from /upload while in mobile camera flow, force back
-      const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId');
-      const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token');
+      // MODIFIED: Prioritize sessionStorage for parameters
+      const scanSessionId = new URLSearchParams(location.search).get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId') || sessionStorage.getItem('scanSessionId');
+      const authToken = new URLSearchParams(location.search).get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token') || sessionStorage.getItem('auth_token');
       if (scanSessionId && authToken) {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
