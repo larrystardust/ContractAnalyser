@@ -66,34 +66,36 @@ const UploadPage: React.FC = () => {
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
-    let urlScanSessionId = searchParams.get('scanSessionId');
-    let urlAuthToken = searchParams.get('auth_token');
+    // 1. Try to get params from URL (search first, then hash)
+    let currentScanSessionId = searchParams.get('scanSessionId') || new URLSearchParams(location.hash.substring(1)).get('scanSessionId');
+    let currentAuthToken = searchParams.get('auth_token') || new URLSearchParams(location.hash.substring(1)).get('auth_token');
 
-    // ADDED: Retrieve from sessionStorage if not in URL
-    if (!urlScanSessionId) {
-      urlScanSessionId = sessionStorage.getItem('scanSessionId');
+    // 2. If not found in URL, try sessionStorage
+    if (!currentScanSessionId) {
+      currentScanSessionId = sessionStorage.getItem('scanSessionId');
     }
-    if (!urlAuthToken) {
-      urlAuthToken = sessionStorage.getItem('auth_token');
+    if (!currentAuthToken) {
+      currentAuthToken = sessionStorage.getItem('auth_token');
     }
 
-    if (urlScanSessionId && urlAuthToken) {
-      console.log('UploadPage: Initial URL/sessionStorage params detected:', { urlScanSessionId, urlAuthToken });
-      setScanSessionId(urlScanSessionId);
-      setMobileAuthToken(urlAuthToken);
-      setIsCameraMode(true); // Directly enter camera mode
+    // 3. If we have both, set state and persist in sessionStorage
+    if (currentScanSessionId && currentAuthToken) {
+      console.log('UploadPage: Initial params detected (from URL or sessionStorage):', { currentScanSessionId, currentAuthToken });
+      setScanSessionId(currentScanSessionId);
+      setMobileAuthToken(currentAuthToken);
+      setIsCameraMode(true);
 
-      // ADDED: Store in sessionStorage immediately if found in URL
-      sessionStorage.setItem('scanSessionId', urlScanSessionId);
-      sessionStorage.setItem('auth_token', urlAuthToken);
+      // Always ensure sessionStorage is up-to-date with the latest found parameters
+      sessionStorage.setItem('scanSessionId', currentScanSessionId);
+      sessionStorage.setItem('auth_token', currentAuthToken);
 
-      // Case 1: Mobile device lands on /upload with scanSessionId and auth_token, but is NOT authenticated
+      // Case 1: Mobile device lands on /upload with params, but is NOT authenticated
       // and does NOT have Supabase tokens in the hash (meaning magic link hasn't been processed yet).
       if (!session && !isSessionLoading && !location.hash) {
         console.log('UploadPage: Mobile device not authenticated, initiating mobile-auth Edge Function.');
         setIsMobileAuthProcessing(true);
         supabase.functions.invoke('mobile-auth', {
-          body: { auth_token: urlAuthToken },
+          body: { auth_token: currentAuthToken },
         }).then(({ data, error }) => {
           if (error) {
             console.error('UploadPage: Error invoking mobile-auth Edge Function:', error);
@@ -101,7 +103,6 @@ const UploadPage: React.FC = () => {
             setMobileScanStatus('error');
           } else if (data?.magicLinkUrl) {
             console.log('UploadPage: Received magicLinkUrl, redirecting for authentication.');
-            // Redirect to the magic link URL. Supabase will handle authentication and redirect back.
             window.location.replace(data.magicLinkUrl);
           } else {
             console.error('UploadPage: mobile-auth Edge Function returned no magicLinkUrl.');
@@ -109,17 +110,14 @@ const UploadPage: React.FC = () => {
             setMobileScanStatus('error');
           }
         }).finally(() => {
-          // isMobileAuthProcessing will be set to false after the redirect, or if an error occurs.
-          // If redirect happens, this finally might not execute before page unload.
-          // If error, we need to stop loading.
           if (mobileScanStatus !== 'error') {
             setIsMobileAuthProcessing(false);
           }
         });
-        return; // Exit early, as a redirect is pending or processing is ongoing
+        return;
       }
 
-      // Case 2: Mobile device lands on /upload with scanSessionId and auth_token, and HAS Supabase tokens in the hash.
+      // Case 2: Mobile device lands on /upload with params and HAS Supabase tokens in the hash.
       // This happens AFTER the magic link redirect.
       if (!session && location.hash) {
         console.log('UploadPage: Handling redirect with hash. Current location.search:', location.search, 'location.hash:', location.hash);
@@ -139,13 +137,11 @@ const UploadPage: React.FC = () => {
               setMobileScanError(t('mobile_scan_authentication_failed_session_set'));
               setMobileScanStatus('error');
             } else {
-              // Clear the hash from the URL to prevent re-processing
-              const currentPath = window.location.pathname;
-              // Ensure search params are preserved, potentially from sessionStorage if stripped
-              const currentSearch = `?scanSessionId=${urlScanSessionId}&auth_token=${urlAuthToken}`; // MODIFIED: Reconstruct search from stored values
-              console.log('UploadPage: Before replaceState - pathname:', currentPath, 'search:', currentSearch);
-              window.history.replaceState({}, document.title, `${currentPath}${currentSearch}`); // Clear hash only
-              console.log('UploadPage: After replaceState - new URL:', window.location.href);
+              // CRITICAL FIX: Ensure the URL is correctly reconstructed with query params
+              // after clearing the hash. This prevents the URL from being stripped.
+              const newUrl = `${window.location.pathname}?scanSessionId=${currentScanSessionId}&auth_token=${currentAuthToken}`;
+              console.log('UploadPage: Replacing state to:', newUrl);
+              window.history.replaceState({}, document.title, newUrl);
             }
           }).finally(() => {
             setIsMobileAuthProcessing(false);
