@@ -18,7 +18,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
+  // MODIFIED: isMobileCameraFlowActive is now derived directly, not state
+  // const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -26,32 +27,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // Effect to determine if mobile camera flow is active
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-
-    // MODIFIED: Check sessionStorage as fallback
-    const urlScanSessionId = searchParams.get('scanSessionId') || hashParams.get('scanSessionId') || sessionStorage.getItem('scanSessionId');
-    const urlAuthToken = searchParams.get('auth_token') || hashParams.get('auth_token') || sessionStorage.getItem('auth_token');
-
-    const hasScanSessionId = !!urlScanSessionId;
-    const hasAuthToken = !!urlAuthToken;
-
-    const isActive = location.pathname === '/upload' && hasScanSessionId && hasAuthToken;
-    console.log('AuthGuard: isMobileCameraFlowActive check:', {
-      pathname: location.pathname,
-      search: location.search,
-      hash: location.hash,
-      sessionStorageScanSessionId: sessionStorage.getItem('scanSessionId'),
-      sessionStorageAuthToken: sessionStorage.getItem('auth_token'),
-      hasScanSessionId,
-      hasAuthToken,
-      isActive
-    });
-    setIsMobileCameraFlowActive(isActive);
-  }, [location.pathname, location.search, location.hash]);
-
+  // MODIFIED: isMobileCameraFlowActive is now a direct calculation
+  const isMobileCameraFlowActive = (() => {
+    const scanSessionId = sessionStorage.getItem('scanSessionId');
+    const authToken = sessionStorage.getItem('auth_token');
+    return !!scanSessionId && !!authToken;
+  })();
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -103,7 +84,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
           '/sample-dashboard', '/landing-pricing', '/login', '/signup',
           '/auth/callback', '/accept-invitation', '/auth/email-sent',
           '/mfa-challenge', '/reset-password', '/disclaimer', '/terms',
-          '/privacy-policy', '/help', '/maintenance', '/blog'
+          '/privacy-policy', '/help', '/maintenance', '/blog',
+          '/mobile-auth-callback' // ADDED: MobileAuthCallbackPage is also public
         ];
         const currentPathBase = location.pathname.split('?')[0].split('#')[0];
         const isPublicPath = publicPaths.some(p => {
@@ -126,7 +108,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [isMobileCameraFlowActive, isPasswordResetInitiated, session, navigate, location.pathname, location.search, location.hash]);
+  }, [isPasswordResetInitiated, session, navigate, location.pathname, location.search]); // MODIFIED: Removed isMobileCameraFlowActive from dependencies
 
   // --- MFA check ---
   useEffect(() => {
@@ -170,13 +152,15 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
       return <Outlet />;
     } else {
       // If somehow navigated away from /upload while in mobile camera flow, force back
-      // MODIFIED: Prioritize sessionStorage for parameters
-      const scanSessionId = sessionStorage.getItem('scanSessionId'); // Get directly from sessionStorage
-      const authToken = sessionStorage.getItem('auth_token'); // Get directly from sessionStorage
+      const scanSessionId = sessionStorage.getItem('scanSessionId');
+      const authToken = sessionStorage.getItem('auth_token');
+      // This condition should always be true if isMobileCameraFlowActive is true, but for safety
       if (scanSessionId && authToken) {
         return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
       } else {
-        // Fallback if parameters are lost (shouldn't happen with sessionStorage), go to generic upload
+        // Fallback if sessionStorage somehow got cleared, end camera mode
+        sessionStorage.removeItem('scanSessionId');
+        sessionStorage.removeItem('auth_token');
         return <Navigate to="/upload" replace />;
       }
     }
