@@ -18,7 +18,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
+  // MODIFIED: isMobileCameraFlowActive is now derived directly, not state
+  // const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -26,21 +27,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
 
-  // Effect to determine if mobile camera flow is active
-  useEffect(() => {
-    // MODIFIED: Check sessionStorage as primary source
-    const ssScanSessionId = sessionStorage.getItem('scanSessionId');
-    const ssAuthToken = sessionStorage.getItem('auth_token');
-
-    const isActive = !!ssScanSessionId && !!ssAuthToken;
-    console.log('AuthGuard: isMobileCameraFlowActive check (from sessionStorage):', {
-      pathname: location.pathname,
-      sessionStorageScanSessionId: ssScanSessionId,
-      sessionStorageAuthToken: ssAuthToken,
-      isActive
-    });
-    setIsMobileCameraFlowActive(isActive);
-  }, [location.pathname]); // Only re-evaluate when pathname changes
+  // MODIFIED: isMobileCameraFlowActive is now a direct calculation
+  const isMobileCameraFlowActive = (() => {
+    const scanSessionId = sessionStorage.getItem('scanSessionId');
+    const authToken = sessionStorage.getItem('auth_token');
+    return !!scanSessionId && !!authToken;
+  })();
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -92,8 +84,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
           '/sample-dashboard', '/landing-pricing', '/login', '/signup',
           '/auth/callback', '/accept-invitation', '/auth/email-sent',
           '/mfa-challenge', '/reset-password', '/disclaimer', '/terms',
-          '/privacy-policy', '/help', '/maintenance', '/blog',
-          '/mobile-auth-callback' // ADDED: MobileAuthCallbackPage is also public
+          '/privacy-policy', '/help', '/maintenance', '/blog'
         ];
         const currentPathBase = location.pathname.split('?')[0].split('#')[0];
         const isPublicPath = publicPaths.some(p => {
@@ -158,22 +149,19 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // If the user is on the /upload page, let it render
     if (location.pathname === '/upload') {
       return <Outlet />;
-    }
-    // If the user is on the /mobile-auth-callback page, let it render to set the session
-    if (location.pathname === '/mobile-auth-callback') {
-      return <Outlet />;
-    }
-    
-    // If somehow navigated away from /upload or /mobile-auth-callback while in mobile camera flow, force back
-    const scanSessionId = sessionStorage.getItem('scanSessionId');
-    const authToken = sessionStorage.getItem('auth_token');
-    if (scanSessionId && authToken) {
-      return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
     } else {
-      // Fallback if sessionStorage somehow got cleared, end camera mode
-      sessionStorage.removeItem('scanSessionId');
-      sessionStorage.removeItem('auth_token');
-      return <Navigate to="/upload" replace />;
+      // If somehow navigated away from /upload while in mobile camera flow, force back
+      const scanSessionId = sessionStorage.getItem('scanSessionId');
+      const authToken = sessionStorage.getItem('auth_token');
+      // This condition should always be true if isMobileCameraFlowActive is true, but for safety
+      if (scanSessionId && authToken) {
+        return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
+      } else {
+        // Fallback if sessionStorage somehow got cleared, end camera mode
+        sessionStorage.removeItem('scanSessionId');
+        sessionStorage.removeItem('auth_token');
+        return <Navigate to="/upload" replace />;
+      }
     }
   }
 
