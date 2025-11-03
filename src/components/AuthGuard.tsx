@@ -18,21 +18,12 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false);
   const [loadingMfaStatus, setLoadingMfaStatus] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  // MODIFIED: isMobileCameraFlowActive is now derived directly, not state
-  // const [isMobileCameraFlowActive, setIsMobileCameraFlowActive] = useState(false);
 
   // --- Detect reset-password flow ---
   const hashParams = new URLSearchParams(location.hash.substring(1));
   const isHashRecovery = hashParams.get('type') === 'recovery';
   const isLocalStorageRecoveryActive = localStorage.getItem('passwordResetFlowActive') === 'true';
   const isPasswordResetInitiated = isHashRecovery || isLocalStorageRecoveryActive;
-
-  // MODIFIED: isMobileCameraFlowActive is now a direct calculation
-  const isMobileCameraFlowActive = (() => {
-    const scanSessionId = sessionStorage.getItem('scanSessionId');
-    const authToken = sessionStorage.getItem('auth_token');
-    return !!scanSessionId && !!authToken;
-  })();
 
   // --- Global invalidation when reset starts ---
   useEffect(() => {
@@ -57,6 +48,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     // Sync reset status across open tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'passwordResetFlowActive' && e.newValue === 'true') {
+        // console.log('AuthGuard: Reset flow triggered in another tab → forcing redirect.'); // REMOVED
         supabase.auth.signOut({ scope: 'global' }).finally(() => {
           navigate('/reset-password', { replace: true });
         });
@@ -69,45 +61,28 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
   // --- HARD lock back/forward buttons + BFCache ---
   useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      // MODIFIED: Remove mobile camera flow logic from handlePopState
-      // This is now handled by the main render logic's "Nuclear Trap"
-      if (isPasswordResetInitiated) {
-        // Normal password reset flow
-        if (location.pathname !== '/reset-password') {
-          navigate('/reset-password', { replace: true });
-        }
-      } else if (!session) {
-        // If not authenticated and not in password reset, redirect to login
-        const publicPaths = [
-          '/', '/public-report-view', '/checkout/success', '/checkout/cancel',
-          '/sample-dashboard', '/landing-pricing', '/login', '/signup',
-          '/auth/callback', '/accept-invitation', '/auth/email-sent',
-          '/mfa-challenge', '/reset-password', '/disclaimer', '/terms',
-          '/privacy-policy', '/help', '/maintenance', '/blog'
-        ];
-        const currentPathBase = location.pathname.split('?')[0].split('#')[0];
-        const isPublicPath = publicPaths.some(p => {
-          if (p.includes(':slug')) {
-            const regexPattern = new RegExp('^' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:slug/g, '[^/]+') + '$');
-            return regexPattern.test(currentPathBase);
-          }
-          return p === currentPathBase;
-        });
-
-        if (!isPublicPath) {
-          navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { replace: true });
-        }
+    const handlePopState = () => {
+      if (isPasswordResetInitiated || !session) {
+        // console.log('AuthGuard: Prevented back/forward navigation into protected route.'); // REMOVED
+        navigate('/reset-password', { replace: true });
       }
     };
 
-    // REMOVED: handlePageShow listener entirely as it was causing issues with reloads.
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // console.log('AuthGuard: Page restored from bfcache → forcing reload.'); // REMOVED
+        window.location.reload();
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isPasswordResetInitiated, session, navigate, location.pathname, location.search]); // MODIFIED: Removed isMobileCameraFlowActive from dependencies
+  }, [isPasswordResetInitiated, session, navigate]);
 
   // --- MFA check ---
   useEffect(() => {
@@ -124,7 +99,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
 
         const totpFactor = factors?.totp.find(f => f.status === 'verified');
         setHasMfaEnrolled(!!totpFactor);
-      } catch (err: any) {
+      } catch (err) {
         console.error("AuthGuard: MFA check error:", err);
         setHasMfaEnrolled(false);
       } finally {
@@ -133,6 +108,8 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     };
     checkMfaEnrollment();
   }, [session?.user?.id, supabase]);
+
+  // Removed useEffect to clear localStorage flag after delay
 
   // Show loading indicator while checking authentication and admin/MFA status
   if (isRedirecting || loadingSession || loadingMfaStatus) {
@@ -143,29 +120,7 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     );
   }
 
-  // --- CRITICAL FIX: Nuclear Trap for Mobile Camera Flow ---
-  // This must be the absolute highest priority check after initial loading.
-  if (isMobileCameraFlowActive) {
-    // If the user is on the /upload page, let it render
-    if (location.pathname === '/upload') {
-      return <Outlet />;
-    } else {
-      // If somehow navigated away from /upload while in mobile camera flow, force back
-      const scanSessionId = sessionStorage.getItem('scanSessionId');
-      const authToken = sessionStorage.getItem('auth_token');
-      // This condition should always be true if isMobileCameraFlowActive is true, but for safety
-      if (scanSessionId && authToken) {
-        return <Navigate to={`/upload?scanSessionId=${scanSessionId}&auth_token=${authToken}`} replace />;
-      } else {
-        // Fallback if sessionStorage somehow got cleared, end camera mode
-        sessionStorage.removeItem('scanSessionId');
-        sessionStorage.removeItem('auth_token');
-        return <Navigate to="/upload" replace />;
-      }
-    }
-  }
-
-  // --- Enforce reset-password lockdown (only if NOT in mobile camera flow) ---
+  // --- Enforce reset-password lockdown ---
   if (isPasswordResetInitiated) {
     if (location.pathname === '/reset-password' || location.pathname === '/') {
       return <Outlet />;
@@ -174,19 +129,19 @@ const AuthGuard: React.FC<AuthGuardProps> = () => {
     }
   }
 
-  // --- Enforce normal auth rules (only if NOT in mobile camera flow or password reset) ---
+  // --- Enforce normal auth rules ---
   if (!session || !session.user) {
-    // For all other protected routes, redirect to login
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // Only redirect to MFA challenge if MFA is ENROLLED and AAL is aal1.
-  // This check should happen AFTER ensuring the user is authenticated.
   if (hasMfaEnrolled && session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
     return <Navigate to={`/mfa-challenge?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If all checks pass, render the protected content
+  if (session.aal === 'aal1' && location.pathname !== '/mfa-challenge') {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
+
   return <Outlet />;
 };
 
