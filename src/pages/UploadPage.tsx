@@ -66,13 +66,26 @@ const UploadPage: React.FC = () => {
 
   // Effect to check for scanSessionId and auth_token in URL on load
   useEffect(() => {
-    const urlScanSessionId = searchParams.get('scanSessionId');
-    const urlAuthToken = searchParams.get('auth_token');
+    let urlScanSessionId = searchParams.get('scanSessionId');
+    let urlAuthToken = searchParams.get('auth_token');
+
+    // ADDED: Retrieve from sessionStorage if not in URL
+    if (!urlScanSessionId) {
+      urlScanSessionId = sessionStorage.getItem('scanSessionId');
+    }
+    if (!urlAuthToken) {
+      urlAuthToken = sessionStorage.getItem('auth_token');
+    }
 
     if (urlScanSessionId && urlAuthToken) {
+      console.log('UploadPage: Initial URL/sessionStorage params detected:', { urlScanSessionId, urlAuthToken });
       setScanSessionId(urlScanSessionId);
       setMobileAuthToken(urlAuthToken);
       setIsCameraMode(true); // Directly enter camera mode
+
+      // ADDED: Store in sessionStorage immediately if found in URL
+      sessionStorage.setItem('scanSessionId', urlScanSessionId);
+      sessionStorage.setItem('auth_token', urlAuthToken);
 
       // Case 1: Mobile device lands on /upload with scanSessionId and auth_token, but is NOT authenticated
       // and does NOT have Supabase tokens in the hash (meaning magic link hasn't been processed yet).
@@ -109,6 +122,7 @@ const UploadPage: React.FC = () => {
       // Case 2: Mobile device lands on /upload with scanSessionId and auth_token, and HAS Supabase tokens in the hash.
       // This happens AFTER the magic link redirect.
       if (!session && location.hash) {
+        console.log('UploadPage: Handling redirect with hash. Current location.search:', location.search, 'location.hash:', location.hash);
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
@@ -126,7 +140,12 @@ const UploadPage: React.FC = () => {
               setMobileScanStatus('error');
             } else {
               // Clear the hash from the URL to prevent re-processing
-              window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`); // Clear hash only
+              const currentPath = window.location.pathname;
+              // Ensure search params are preserved, potentially from sessionStorage if stripped
+              const currentSearch = `?scanSessionId=${urlScanSessionId}&auth_token=${urlAuthToken}`; // MODIFIED: Reconstruct search from stored values
+              console.log('UploadPage: Before replaceState - pathname:', currentPath, 'search:', currentSearch);
+              window.history.replaceState({}, document.title, `${currentPath}${currentSearch}`); // Clear hash only
+              console.log('UploadPage: After replaceState - new URL:', window.location.href);
             }
           }).finally(() => {
             setIsMobileAuthProcessing(false);
@@ -174,6 +193,9 @@ const UploadPage: React.FC = () => {
     newSearchParams.delete('scanSessionId');
     newSearchParams.delete('auth_token');
     window.history.replaceState({}, document.title, `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`);
+    // ADDED: Clear sessionStorage
+    sessionStorage.removeItem('scanSessionId');
+    sessionStorage.removeItem('auth_token');
   };
 
   const handleCancelCamera = () => {
@@ -185,6 +207,9 @@ const UploadPage: React.FC = () => {
     newSearchParams.delete('scanSessionId');
     newSearchParams.delete('auth_token');
     window.history.replaceState({}, document.title, `${window.location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`);
+    // ADDED: Clear sessionStorage
+    sessionStorage.removeItem('scanSessionId');
+    sessionStorage.removeItem('auth_token');
   };
 
   const removeCapturedImage = (fileNameToRemove: string) => {
@@ -230,6 +255,9 @@ const UploadPage: React.FC = () => {
       setScanSessionId(data.scanSessionId);
       setMobileAuthToken(data.auth_token);
       setShowQrCode(true);
+      // ADDED: Store in sessionStorage when creating a new session
+      sessionStorage.setItem('scanSessionId', data.scanSessionId);
+      sessionStorage.setItem('auth_token', data.auth_token);
     } catch (err: any) {
       console.error('UploadPage: Error creating scan session:', err);
       setMobileScanStatus('error');
@@ -270,6 +298,9 @@ const UploadPage: React.FC = () => {
     setShowQrCode(false);
     setMobileAuthToken(null);
     setIsCameraMode(false);
+    // ADDED: Clear sessionStorage
+    sessionStorage.removeItem('scanSessionId');
+    sessionStorage.removeItem('auth_token');
   };
 
 
