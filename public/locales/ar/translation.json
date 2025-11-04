@@ -1707,13 +1707,13 @@
   
   "mobile_auth_landing_error_title": "خطأ في المصادقة",
   "mobile_auth_landing_invalid_access": "وصول غير صالح. يرجى مسح رمز الاستجابة السريعة من تطبيق سطح المكتب.",
-  "mobile_auth_landing_processing_auth":
-  "mobile_auth_landing_initiating_auth":
-  "mobile_auth_landing_failed_to_get_redirect_url":
-  "mobile_auth_landing_authentication_failed":
-  "mobile_auth_landing_storing_context":
-  "mobile_auth_landing_reconstructing_url":
-  "mobile_auth_landing_processing_error":
-  "mobile_auth_landing_already_authenticated":
-  "mobile_auth_landing_please_wait":
+  "mobile_auth_landing_processing_auth": "معالجة المصادقة",
+  "mobile_auth_landing_initiating_auth": "بدء المصادقة عبر الهاتف المحمول",
+  "mobile_auth_landing_failed_to_get_redirect_url": "فشل الحصول على عنوان URL لإعادة التوجيه من الخادم.",
+  "mobile_auth_landing_authentication_failed": "فشلت المصادقة عبر الهاتف المحمول.",
+  "mobile_auth_landing_storing_context": "تخزين سياق المصادقة",
+  "mobile_auth_landing_reconstructing_url": "إعادة بناء عنوان URL وتعيين الجلسة",
+  "mobile_auth_landing_processing_error": "خطأ في معالجة إعادة توجيه المصادقة.",
+  "mobile_auth_landing_already_authenticated": "تمت المصادقة بالفعل. إعادة التوجيه...",
+  "mobile_auth_landing_please_wait": "يرجى الانتظار بينما نقوم بتسجيل دخولك بأمان."
 }
