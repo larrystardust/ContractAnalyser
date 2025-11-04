@@ -12,7 +12,7 @@ const MobileCameraApp: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams(); // Keep for initial QR code parsing
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -76,14 +76,16 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // NEW useEffect to handle session tokens from URL hash
+  // MODIFIED: This useEffect now parses ALL tokens from the hash
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
+    const hashScanSessionId = hashParams.get('scanSessionId'); // Get from hash
+    const hashAuthToken = hashParams.get('auth_token'); // Get from hash
 
-    if (accessToken && refreshToken) {
-      console.log('MobileCameraApp: Found access_token and refresh_token in URL hash. Setting session directly.');
+    if (accessToken && refreshToken && hashScanSessionId && hashAuthToken) {
+      console.log('MobileCameraApp: Found all tokens in URL hash. Setting session directly.');
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -93,6 +95,8 @@ const MobileCameraApp: React.FC = () => {
           setConnectionError(error.message || t('mobile_scan_authentication_failed'));
         } else {
           console.log('MobileCameraApp: Session set successfully from hash.');
+          setScanSessionId(hashScanSessionId); // Set scanSessionId from hash
+          // Note: authToken is not stored in state here, but used in main useEffect
           setSessionSetFromHash(true); // Indicate session was set this way
           // Clear the hash from the URL to remove sensitive tokens
           window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
@@ -105,11 +109,17 @@ const MobileCameraApp: React.FC = () => {
         setIsSessionReady(true); // Set session ready after hash processing
       });
     } else {
+      // If not all tokens are in hash, check query params for initial QR code scan
+      const queryScanSessionId = searchParams.get('scanSessionId');
+      const queryAuthToken = searchParams.get('auth_token');
+      if (queryScanSessionId && queryAuthToken) {
+        setScanSessionId(queryScanSessionId); // Set scanSessionId from query
+        // Note: authToken is not stored in state here, but used in main useEffect
+      }
       setIsConnecting(false); // No tokens in hash, proceed with normal flow
       setIsSessionReady(true); // Set session ready as no hash processing needed
     }
-  }, [location.hash, supabase.auth, t]);
-
+  }, [location.hash, supabase.auth, t, searchParams]); // ADDED searchParams to dependencies
 
   // --- Realtime Session Management & Authentication ---
   const initiateMobileAuth = useCallback(async (id: string, authToken: string) => {
@@ -126,7 +136,7 @@ const MobileCameraApp: React.FC = () => {
       if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url'));
 
       // Programmatically navigate to the redirectToUrl
-      // This will trigger Supabase's auth flow and redirect back to /mobile-camera with tokens in hash
+      // This will trigger Supabase's auth flow and redirect back to /mobile-camera-redirect with tokens in hash
       window.location.replace(data.redirectToUrl);
 
     } catch (err: any) {
@@ -183,15 +193,16 @@ const MobileCameraApp: React.FC = () => {
       return;
     }
 
-    const id = searchParams.get('scanSessionId');
-    const authToken = searchParams.get('auth_token');
+    // MODIFIED: Get scanSessionId and authToken from state, which are set by the hash parsing useEffect
+    const id = scanSessionId; 
+    const authToken = new URLSearchParams(location.hash.substring(1)).get('auth_token') || searchParams.get('auth_token'); // Prioritize hash, fallback to query
 
     if (!id || !authToken) {
       setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
       return;
     }
-    setScanSessionId(id);
+    // setScanSessionId(id); // Already set by hash parsing useEffect or initial query param
 
     console.log('MobileCameraApp: Main useEffect - session:', session);
     console.log('MobileCameraApp: Main useEffect - session?.user?.id:', session?.user?.id);
@@ -212,7 +223,7 @@ const MobileCameraApp: React.FC = () => {
       return; // Prevent further execution in this cycle
     }
 
-    // Condition 1: Session was just set from URL hash. Proceed to Realtime.
+    // Condition 1: Session was just set from hash. Proceed to Realtime.
     if (sessionSetFromHash && session?.user?.id) {
       console.log('MobileCameraApp: Session already set from hash. Connecting to Realtime.');
       connectToRealtime(id, session.user.id);
@@ -235,7 +246,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]);
+  }, [scanSessionId, location.hash, searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]); // MODIFIED: Added scanSessionId, location.hash, searchParams to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
