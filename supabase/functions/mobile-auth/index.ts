@@ -42,10 +42,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { auth_token } = await req.json();
+    const { auth_token, redirect_to_url } = await req.json(); // MODIFIED: Receive redirect_to_url
 
-    if (!auth_token) {
-      return corsResponse({ error: getTranslatedMessage('message_missing_auth_token', 'en') }, 400);
+    if (!auth_token || !redirect_to_url) { // MODIFIED: Check for redirect_to_url
+      return corsResponse({ error: getTranslatedMessage('message_missing_auth_token_or_redirect_url', 'en') }, 400); // MODIFIED
     }
 
     const jwtSecret = new TextEncoder().encode(Deno.env.get('JWT_SECRET'));
@@ -86,17 +86,11 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    
-    // MODIFIED: Construct the redirectTo URL to point to /mobile-camera-redirect
-    // and pass scanSessionId and auth_token as query parameters.
-    const redirectToBase = `${appBaseUrl}/mobile-camera-redirect`;
-    const redirectToUrlWithParams = `${redirectToBase}?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
-
+    // MODIFIED: Use redirect_to_url received from client
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
-      redirectTo: redirectToUrlWithParams, // Use the URL with query parameters
+      redirectTo: redirect_to_url, // Use the URL constructed by the client
     });
 
     if (generateLinkError || !properties?.action_link) {
@@ -104,7 +98,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // Return the action_link (magic link URL) to the mobile client
     const redirectToUrl = properties.action_link;
 
     return corsResponse({ redirectToUrl: redirectToUrl });
