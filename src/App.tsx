@@ -79,9 +79,25 @@ function App() {
       const supabaseAccessToken = hashParams.get('access_token');
       const supabaseRefreshToken = hashParams.get('refresh_token');
 
+      console.log('App.tsx: handleMobileAuthRedirect triggered.');
+      console.log('App.tsx: Current location.search:', location.search);
+      console.log('App.tsx: Current location.hash:', location.hash);
+      console.log('App.tsx: queryScanSessionId:', queryScanSessionId);
+      console.log('App.tsx: queryAuthToken:', queryAuthToken);
+      console.log('App.tsx: supabaseAccessToken (from hash):', supabaseAccessToken ? 'present' : 'absent');
+      console.log('App.tsx: supabaseRefreshToken (from hash):', supabaseRefreshToken ? 'present' : 'absent');
+
       // Scenario 1: Initial landing from QR code scan (has query params)
       if (queryScanSessionId && queryAuthToken) {
-        console.log('App.tsx: Detected scanSessionId and auth_token in query parameters.');
+        console.log('App.tsx: Scenario 1 - Detected scanSessionId and auth_token in query parameters.');
+
+        // Prevent re-processing if already handled
+        if (localStorage.getItem('mobile_auth_processing_query') === 'true') {
+          console.log('App.tsx: Already processing query params, skipping re-invocation.');
+          return;
+        }
+        localStorage.setItem('mobile_auth_processing_query', 'true'); // Set flag
+
         // Store context in localStorage
         localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
           scanSessionId: queryScanSessionId,
@@ -89,8 +105,10 @@ function App() {
         }));
         console.log('App.tsx: Context stored in localStorage.');
 
-        // Clear query parameters from the URL
+        // Clear query parameters from the URL immediately
+        // This is crucial to prevent infinite loops or re-triggering this block
         navigate(location.pathname, { replace: true });
+        console.log('App.tsx: Query parameters cleared from URL.');
 
         // Now, invoke the mobile-auth Edge Function to get the magic link
         try {
@@ -105,16 +123,24 @@ function App() {
             },
           });
 
-          if (invokeError) throw invokeError;
-          if (!data?.redirectToUrl) throw new Error('Failed to get redirect URL from server.');
+          if (invokeError) {
+            console.error('App.tsx: Error invoking mobile-auth Edge Function:', invokeError);
+            throw invokeError;
+          }
+          if (!data?.redirectToUrl) {
+            console.error('App.tsx: Failed to get redirect URL from server (no redirectToUrl in response).');
+            throw new Error('Failed to get redirect URL from server.');
+          }
 
           console.log('App.tsx: Received magic link. Redirecting to:', data.redirectToUrl);
+          localStorage.removeItem('mobile_auth_processing_query'); // Clear flag before redirect
           window.location.replace(data.redirectToUrl); // This will trigger Supabase's auth flow
           return;
 
         } catch (err: any) {
           console.error('App.tsx: Error during mobile authentication initiation:', err);
           localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // Clean up on error
+          localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
           navigate('/login', { replace: true }); // Redirect to login on error
           return;
         }
@@ -122,9 +148,12 @@ function App() {
 
       // Scenario 2: Redirect back from Supabase auth (has hash params, context in localStorage)
       const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
-      if (supabaseAccessToken && supabaseRefreshToken && storedContext) {
-        console.log('App.tsx: Detected Supabase session tokens in URL hash and stored context.');
-        try {
+      if (supabaseAccessToken && supabaseRefreshToken) { // Check for hash tokens first
+        console.log('App.tsx: Scenario 2 - Detected Supabase session tokens in URL hash.');
+
+        if (storedContext) {
+          console.log('App.tsx: Found stored mobile auth context in localStorage.');
+          try {
             const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
 
             // Set the Supabase session
@@ -142,6 +171,7 @@ function App() {
 
             console.log('App.tsx: Supabase session set. Clearing stored context.');
             localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+            localStorage.removeItem('mobile_auth_processing_query'); // Ensure this is cleared
 
             // Construct the final URL for MobileCameraApp with all parameters in hash
             const finalMobileCameraUrl = `/mobile-camera#scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}&access_token=${supabaseAccessToken}&refresh_token=${supabaseRefreshToken}`;
@@ -153,15 +183,20 @@ function App() {
           } catch (err: any) {
             console.error('App.tsx: Error processing stored mobile auth context:', err);
             localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+            localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
             navigate('/login', { replace: true });
             return;
           }
-        } else if (supabaseAccessToken && supabaseRefreshToken && !storedContext) {
-          console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. Assuming regular login. Redirecting to dashboard.');
-          // If no context, it might be a regular login, redirect to dashboard
-          navigate('/dashboard', { replace: true });
+        } else {
+          console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. This might be a regular login or a failed mobile auth attempt. Redirecting to login.');
+          // NUCLEAR FIX: If context is missing, redirect to login, NOT dashboard.
+          navigate('/login', { replace: true }); 
           return;
         }
+      }
+      // If neither query params nor hash params for mobile auth are present,
+      // and no stored context, then it's a normal page load.
+      // The regular AuthGuard will handle authentication for protected routes.
     };
 
     handleMobileAuthRedirect();
