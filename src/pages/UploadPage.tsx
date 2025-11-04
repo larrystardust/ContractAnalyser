@@ -142,7 +142,7 @@ const UploadPage: React.FC = () => {
           mobileScanChannelRef.current.send({
             type: 'broadcast',
             event: 'desktop_disconnected',
-            payload: { userId: session.user.id },
+            payload: { userId: session?.user?.id },
           });
         }
         supabase.removeChannel(mobileScanChannelRef.current);
@@ -512,8 +512,8 @@ const UploadPage: React.FC = () => {
               )}
               {scanSessionId && mobileAuthToken && ( // MODIFIED: Ensure mobileAuthToken exists
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-                  {/* MODIFIED: Include auth_token in QR code URL */}
-                  <QRCode value={`${window.location.origin}/mobile-camera?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
+                  {/* MODIFIED: QR code now points to MobileAuthLanding with query params */}
+                  <QRCode value={`${window.location.origin}/mobile-auth-landing?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
                 </div>
               )}
               <p className="text-sm text-gray-500">{t('qr_code_link_description_connect')}</p>
