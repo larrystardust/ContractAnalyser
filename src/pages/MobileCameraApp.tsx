@@ -193,16 +193,37 @@ const MobileCameraApp: React.FC = () => {
     }
     setScanSessionId(id);
 
-    // If session was just set from hash, proceed directly to Realtime connection
+    console.log('MobileCameraApp: Main useEffect - session:', session);
+    console.log('MobileCameraApp: Main useEffect - session?.user?.id:', session?.user?.id);
+    console.log('MobileCameraApp: Main useEffect - sessionSetFromHash:', sessionSetFromHash);
+
+    // CRITICAL FIX: If session exists but wasn't set from hash, it might be stale.
+    // Force sign out to ensure a clean authentication flow via mobile-auth.
+    if (session?.user?.id && !sessionSetFromHash) {
+      console.log('MobileCameraApp: Stale session detected. Signing out to re-authenticate.');
+      supabase.auth.signOut().then(() => {
+        // After signing out, the component will re-render, and the useEffect will run again.
+        // This time, session?.user?.id should be null, leading to initiateMobileAuth.
+      }).catch(err => {
+        console.error('MobileCameraApp: Error during forced sign out:', err);
+        setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+        setIsConnecting(false);
+      });
+      return; // Prevent further execution in this cycle
+    }
+
+    // Condition 1: Session was just set from URL hash. Proceed to Realtime.
     if (sessionSetFromHash && session?.user?.id) {
       console.log('MobileCameraApp: Session already set from hash. Connecting to Realtime.');
       connectToRealtime(id, session.user.id);
-    } else if (session?.user?.id) {
-      // If session exists (and not just set from hash), proceed to connect to Realtime
+    }
+    // Condition 2: An active session already exists (e.g., user was already logged in). Proceed to Realtime.
+    else if (session?.user?.id) {
       console.log('MobileCameraApp: Session exists. Connecting to Realtime.');
       connectToRealtime(id, session.user.id);
-    } else {
-      // If no session, initiate authentication via Edge Function
+    }
+    // Condition 3: No active session, and session was NOT just set from hash. Initiate mobile authentication.
+    else {
       console.log('MobileCameraApp: No session. Initiating mobile authentication.');
       initiateMobileAuth(id, authToken);
     }
@@ -214,7 +235,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]); // ADDED isSessionReady to dependencies
+  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]);
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
