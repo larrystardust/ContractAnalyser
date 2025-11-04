@@ -86,16 +86,12 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    
-    // MODIFIED: Construct the redirectTo URL to point to the static HTML redirect page
-    // and pass the URL-encoded client-provided redirect_to_url as a hash parameter.
-    const staticRedirectPageUrl = `${appBaseUrl}/supabase-auth-redirect.html#final_target=${encodeURIComponent(redirect_to_url)}`;
-
+    // MODIFIED: The redirectTo URL for Supabase is now simply the app's base URL.
+    // All other context is handled client-side via localStorage and the MobileAuthLanding page.
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
-      redirectTo: staticRedirectPageUrl, // Use the new static HTML redirect page
+      redirectTo: redirect_to_url, // This will be the app's base URL (e.g., https://contractanalyser.com/)
     });
 
     if (generateLinkError || !properties?.action_link) {
