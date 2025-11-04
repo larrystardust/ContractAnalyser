@@ -22,25 +22,24 @@ const MobileAuthLanding: React.FC = () => {
 
   // Function to initiate mobile authentication via Edge Function
   const initiateMobileAuth = useCallback(async (scanSessionId: string, authToken: string) => {
+    console.log('MobileAuthLanding: initiateMobileAuth called.');
     setMessage(t('mobile_auth_landing_initiating_auth'));
     try {
-      // The redirectTo URL for Supabase will be the app's root, as it strips paths anyway.
-      // We will reconstruct the final URL client-side after Supabase redirects.
       const appBaseUrl = window.location.origin;
       const supabaseRedirectTarget = `${appBaseUrl}/`; // Supabase will redirect here with its tokens in hash
 
+      console.log('MobileAuthLanding: Calling mobile-auth Edge Function with redirect_to_url:', supabaseRedirectTarget);
       const { data, error: invokeError } = await supabase.functions.invoke('mobile-auth', {
         body: {
           auth_token: authToken,
-          redirect_to_url: supabaseRedirectTarget, // Tell the Edge Function where Supabase should redirect
+          redirect_to_url: supabaseRedirectTarget,
         },
       });
 
       if (invokeError) throw invokeError;
       if (!data?.redirectToUrl) throw new Error(t('mobile_auth_landing_failed_to_get_redirect_url'));
 
-      // Programmatically navigate to the magic link URL provided by the Edge Function
-      // This will trigger Supabase's auth flow and eventually redirect back to appBaseUrl/
+      console.log('MobileAuthLanding: Received magic link. Redirecting to:', data.redirectToUrl);
       window.location.replace(data.redirectToUrl);
 
     } catch (err: any) {
@@ -52,6 +51,11 @@ const MobileAuthLanding: React.FC = () => {
 
   useEffect(() => {
     const handleAuthFlow = async () => {
+      console.log('MobileAuthLanding: useEffect triggered.');
+      console.log('MobileAuthLanding: Current URL:', window.location.href);
+      console.log('MobileAuthLanding: searchParams:', searchParams.toString());
+      console.log('MobileAuthLanding: location.hash:', location.hash);
+
       const queryScanSessionId = searchParams.get('scanSessionId');
       const queryAuthToken = searchParams.get('auth_token');
       const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -60,28 +64,30 @@ const MobileAuthLanding: React.FC = () => {
 
       // Scenario 1: Initial landing from QR code scan (has query params)
       if (queryScanSessionId && queryAuthToken) {
+        console.log('MobileAuthLanding: Scenario 1 - Initial landing with query params.');
         setMessage(t('mobile_auth_landing_storing_context'));
-        // Store context in localStorage before initiating Supabase auth
         localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
           scanSessionId: queryScanSessionId,
           authToken: queryAuthToken,
         }));
-        // Clear query params to prevent re-processing on subsequent redirects
-        navigate(location.pathname, { replace: true });
+        console.log('MobileAuthLanding: Context stored in localStorage.');
+        // REMOVED: navigate(location.pathname, { replace: true }); // This was the problematic line
 
-        // Now, initiate the Supabase auth flow
         await initiateMobileAuth(queryScanSessionId, queryAuthToken);
         return; // Exit, as a redirect is pending
       }
 
       // Scenario 2: Redirect back from Supabase auth (has hash params, context in localStorage)
       const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
+      console.log('MobileAuthLanding: Stored context from localStorage:', storedContext);
+
       if (supabaseAccessToken && supabaseRefreshToken && storedContext) {
+        console.log('MobileAuthLanding: Scenario 2 - Redirect back from Supabase auth.');
         setMessage(t('mobile_auth_landing_reconstructing_url'));
         try {
           const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
 
-          // Set the Supabase session
+          console.log('MobileAuthLanding: Setting Supabase session.');
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: supabaseAccessToken,
             refresh_token: supabaseRefreshToken,
@@ -91,10 +97,9 @@ const MobileAuthLanding: React.FC = () => {
             throw sessionError;
           }
 
-          // Clear stored context
+          console.log('MobileAuthLanding: Supabase session set. Clearing stored context.');
           localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
 
-          // Construct the final URL for MobileCameraApp with all parameters in hash
           const finalMobileCameraUrl = `/mobile-camera#scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}&access_token=${supabaseAccessToken}&refresh_token=${supabaseRefreshToken}`;
           
           console.log('MobileAuthLanding: Final redirecting to MobileCameraApp:', finalMobileCameraUrl);
@@ -113,14 +118,15 @@ const MobileAuthLanding: React.FC = () => {
 
       // Scenario 3: User is already authenticated and lands here (e.g., direct navigation)
       if (session?.user?.id) {
+        console.log('MobileAuthLanding: Scenario 3 - User already authenticated.');
         setMessage(t('mobile_auth_landing_already_authenticated'));
-        // If already authenticated, and no pending context, just go to upload page
         navigate('/upload', { replace: true });
         setStatus('success');
         return;
       }
 
       // Fallback: If none of the above, something is wrong or user landed directly without context
+      console.log('MobileAuthLanding: Fallback scenario hit. Invalid access.');
       setError(t('mobile_auth_landing_invalid_access'));
       setStatus('error');
 
