@@ -1711,13 +1711,13 @@
   
   "mobile_auth_landing_error_title": "Authentication Error",
   "mobile_auth_landing_invalid_access": "Invalid access. Please scan the QR code from the desktop application.",
-  "mobile_auth_landing_processing_auth":
-  "mobile_auth_landing_initiating_auth":
-  "mobile_auth_landing_failed_to_get_redirect_url":
-  "mobile_auth_landing_authentication_failed":
-  "mobile_auth_landing_storing_context":
-  "mobile_auth_landing_reconstructing_url":
-  "mobile_auth_landing_processing_error":
-  "mobile_auth_landing_already_authenticated":
-  "mobile_auth_landing_please_wait":
+  "mobile_auth_landing_processing_auth": "Processing authentication",
+  "mobile_auth_landing_initiating_auth": "Initiating mobile authentication",
+  "mobile_auth_landing_failed_to_get_redirect_url": "Failed to get redirect URL from server.",
+  "mobile_auth_landing_authentication_failed": "Mobile authentication failed.",
+  "mobile_auth_landing_storing_context": "Storing authentication context",
+  "mobile_auth_landing_reconstructing_url": "Reconstructing URL and setting session",
+  "mobile_auth_landing_processing_error": "Error processing authentication redirect.",
+  "mobile_auth_landing_already_authenticated": "Already authenticated. Redirecting...",
+  "mobile_auth_landing_please_wait": "Please wait while we securely log you in."
 }
