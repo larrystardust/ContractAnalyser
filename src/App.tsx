@@ -71,18 +71,60 @@ function App() {
   // ADDED: New useEffect for handling mobile authentication redirect
   useEffect(() => {
     const handleMobileAuthRedirect = async () => {
+      const queryParams = new URLSearchParams(location.search);
       const hashParams = new URLSearchParams(location.hash.substring(1));
+
+      const queryScanSessionId = queryParams.get('scanSessionId');
+      const queryAuthToken = queryParams.get('auth_token');
       const supabaseAccessToken = hashParams.get('access_token');
       const supabaseRefreshToken = hashParams.get('refresh_token');
 
-      // Check if Supabase session tokens are present in the hash
-      if (supabaseAccessToken && supabaseRefreshToken) {
-        console.log('App.tsx: Detected Supabase session tokens in URL hash.');
-        const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
+      // Scenario 1: Initial landing from QR code scan (has query params)
+      if (queryScanSessionId && queryAuthToken) {
+        console.log('App.tsx: Detected scanSessionId and auth_token in query parameters.');
+        // Store context in localStorage
+        localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
+          scanSessionId: queryScanSessionId,
+          authToken: queryAuthToken,
+        }));
+        console.log('App.tsx: Context stored in localStorage.');
 
-        if (storedContext) {
-          console.log('App.tsx: Found stored mobile auth context in localStorage.');
-          try {
+        // Clear query parameters from the URL
+        navigate(location.pathname, { replace: true });
+
+        // Now, invoke the mobile-auth Edge Function to get the magic link
+        try {
+          const appBaseUrl = window.location.origin;
+          const supabaseRedirectTarget = `${appBaseUrl}/`; // Supabase will redirect here with its tokens in hash
+
+          console.log('App.tsx: Invoking mobile-auth Edge Function.');
+          const { data, error: invokeError } = await supabase.functions.invoke('mobile-auth', {
+            body: {
+              auth_token: queryAuthToken,
+              redirect_to_url: supabaseRedirectTarget,
+            },
+          });
+
+          if (invokeError) throw invokeError;
+          if (!data?.redirectToUrl) throw new Error('Failed to get redirect URL from server.');
+
+          console.log('App.tsx: Received magic link. Redirecting to:', data.redirectToUrl);
+          window.location.replace(data.redirectToUrl); // This will trigger Supabase's auth flow
+          return;
+
+        } catch (err: any) {
+          console.error('App.tsx: Error during mobile authentication initiation:', err);
+          localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // Clean up on error
+          navigate('/login', { replace: true }); // Redirect to login on error
+          return;
+        }
+      }
+
+      // Scenario 2: Redirect back from Supabase auth (has hash params, context in localStorage)
+      const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
+      if (supabaseAccessToken && supabaseRefreshToken && storedContext) {
+        console.log('App.tsx: Detected Supabase session tokens in URL hash and stored context.');
+        try {
             const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
 
             // Set the Supabase session
@@ -93,7 +135,6 @@ function App() {
 
             if (sessionError) {
               console.error('App.tsx: Error setting Supabase session from hash:', sessionError);
-              // Handle error, maybe redirect to login or show a message
               localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
               navigate('/login', { replace: true });
               return;
@@ -115,17 +156,16 @@ function App() {
             navigate('/login', { replace: true });
             return;
           }
-        } else {
-          console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. Redirecting to dashboard.');
+        } else if (supabaseAccessToken && supabaseRefreshToken && !storedContext) {
+          console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. Assuming regular login. Redirecting to dashboard.');
           // If no context, it might be a regular login, redirect to dashboard
           navigate('/dashboard', { replace: true });
           return;
         }
-      }
     };
 
     handleMobileAuthRedirect();
-  }, [location.hash, navigate, supabase.auth]); // Depend on location.hash and navigate
+  }, [location.hash, location.search, navigate, supabase.auth]); // Depend on location.hash and location.search
 
   useEffect(() => {
     const publicPaths = [
