@@ -162,7 +162,6 @@ function App() {
           navigate('/dashboard', { replace: true });
           return;
         }
-      }
     };
 
     handleMobileAuthRedirect();
