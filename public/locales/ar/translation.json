@@ -1703,5 +1703,7 @@
   "mobile_scan_desktop_disconnected": "تم قطع اتصال سطح المكتب بالجلسة. إنهاء جلسة الهاتف المحمول.",
   "mobile_scan_camera_error_title": "خطأ في الوصول إلى الكاميرا",
   "back_to_upload": "العودة إلى صفحة التحميل",
-  "upload_page_mobile_connected_qr": "تم توصيل الجهاز المحمول. ابدأ المسح الضوئي!"
+  "upload_page_mobile_connected_qr": "تم توصيل الجهاز المحمول. ابدأ المسح الضوئي!",
+  "mobile_auth_landing_error_title": "خطأ في المصادقة",
+  "mobile_auth_landing_invalid_access": "وصول غير صالح. يرجى مسح رمز الاستجابة السريعة من تطبيق سطح المكتب."
 }
