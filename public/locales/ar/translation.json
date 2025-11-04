@@ -1704,6 +1704,16 @@
   "mobile_scan_camera_error_title": "خطأ في الوصول إلى الكاميرا",
   "back_to_upload": "العودة إلى صفحة التحميل",
   "upload_page_mobile_connected_qr": "تم توصيل الجهاز المحمول. ابدأ المسح الضوئي!",
+  
   "mobile_auth_landing_error_title": "خطأ في المصادقة",
-  "mobile_auth_landing_invalid_access": "وصول غير صالح. يرجى مسح رمز الاستجابة السريعة من تطبيق سطح المكتب."
+  "mobile_auth_landing_invalid_access": "وصول غير صالح. يرجى مسح رمز الاستجابة السريعة من تطبيق سطح المكتب.",
+  "mobile_auth_landing_processing_auth":
+  "mobile_auth_landing_initiating_auth":
+  "mobile_auth_landing_failed_to_get_redirect_url":
+  "mobile_auth_landing_authentication_failed":
+  "mobile_auth_landing_storing_context":
+  "mobile_auth_landing_reconstructing_url":
+  "mobile_auth_landing_processing_error":
+  "mobile_auth_landing_already_authenticated":
+  "mobile_auth_landing_please_wait":
 }
