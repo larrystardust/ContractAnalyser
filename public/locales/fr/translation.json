@@ -1709,5 +1709,7 @@
   "mobile_scan_desktop_disconnected": "Le bureau s'est déconnecté de la session. Fin de la session mobile.",
   "mobile_scan_camera_error_title": "Erreur d'accès à la caméra",
   "back_to_upload": "Retour à la page de téléchargement",
-  "upload_page_mobile_connected_qr": "Appareil mobile connecté. Commencez à scanner !"
+  "upload_page_mobile_connected_qr": "Appareil mobile connecté. Commencez à scanner !",
+  "mobile_auth_landing_error_title": "Erreur d'authentification",
+  "mobile_auth_landing_invalid_access": "Accès invalide. Veuillez scanner le code QR depuis l'application de bureau."
 }
