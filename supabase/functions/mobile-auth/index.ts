@@ -87,14 +87,16 @@ Deno.serve(async (req) => {
     const userEmail = userData.user.email;
 
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    // MODIFIED: Construct the base redirect URL for the mobile camera app, including scanSessionId and auth_token as HASH parameters
-    const baseMobileCameraUrl = `${appBaseUrl}/mobile-camera#scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+    
+    // MODIFIED: Construct the redirectTo URL to point to /mobile-camera-redirect
+    // and pass scanSessionId and auth_token as query parameters.
+    const redirectToBase = `${appBaseUrl}/mobile-camera-redirect`;
+    const redirectToUrlWithParams = `${redirectToBase}?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
 
-    // Use 'magiclink' type and set redirectTo to baseMobileCameraUrl
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
-      redirectTo: baseMobileCameraUrl, // This is the URL Supabase will redirect to after magic link authentication
+      redirectTo: redirectToUrlWithParams, // Use the URL with query parameters
     });
 
     if (generateLinkError || !properties?.action_link) {
@@ -102,11 +104,9 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // The redirectToUrl is now the action_link itself, which the client will navigate to.
-    // Supabase will then handle the redirect to baseMobileCameraUrl with tokens in hash.
+    // Return the action_link (magic link URL) to the mobile client
     const redirectToUrl = properties.action_link;
 
-    // Return the constructed redirectToUrl to the mobile client
     return corsResponse({ redirectToUrl: redirectToUrl });
 
   } catch (error: any) {
