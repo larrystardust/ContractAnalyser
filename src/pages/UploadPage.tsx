@@ -244,6 +244,14 @@ const UploadPage: React.FC = () => {
 
       setScanSessionId(data.scanSessionId);
       setMobileAuthToken(data.auth_token);
+      
+      // ADDED: Store context in localStorage before generating QR code
+      localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
+        scanSessionId: data.scanSessionId,
+        authToken: data.auth_token,
+      }));
+      console.log('UploadPage: Context stored in localStorage for mobile auth.');
+
       setShowQrCode(true); // Show QR code once session is created
     } catch (err: any) {
       console.error('UploadPage: Error creating scan session:', err);
