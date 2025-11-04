@@ -87,17 +87,17 @@ Deno.serve(async (req) => {
     const userEmail = userData.user.email;
 
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    // Construct the base redirect URL for the mobile camera app, including scanSessionId and auth_token as query params
-    const baseMobileCameraUrl = `${appBaseUrl}/mobile-camera?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+    // MODIFIED: Construct the base redirect URL for the mobile camera app, including scanSessionId and auth_token as HASH parameters
+    const baseMobileCameraUrl = `${appBaseUrl}/mobile-camera#scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
 
-    // MODIFIED: Use 'magiclink' type and set redirectTo to baseMobileCameraUrl
+    // Use 'magiclink' type and set redirectTo to baseMobileCameraUrl
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink', // Changed from 'token' to 'magiclink'
+      type: 'magiclink',
       email: userEmail,
       redirectTo: baseMobileCameraUrl, // This is the URL Supabase will redirect to after magic link authentication
     });
 
-    if (generateLinkError || !properties?.action_link) { // MODIFIED: Check for action_link
+    if (generateLinkError || !properties?.action_link) {
       console.error('mobile-auth: Failed to generate magic link:', generateLinkError);
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
