@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('mobile-auth: Edge Function invoked.'); // ADDED: Log to confirm invocation
     const { auth_token, redirect_to_url } = await req.json(); // MODIFIED: Receive redirect_to_url
 
     if (!auth_token || !redirect_to_url) { // MODIFIED: Check for redirect_to_url
