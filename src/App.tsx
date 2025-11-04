@@ -68,6 +68,8 @@ function App() {
 
   useTheme();
 
+  const [isMobileAuthFlowInProgress, setIsMobileAuthFlowInProgress] = useState(false);
+
   // ADDED: New useEffect for handling mobile authentication redirect
   useEffect(() => {
     const handleMobileAuthRedirect = async () => {
@@ -79,6 +81,18 @@ function App() {
       const supabaseAccessToken = hashParams.get('access_token');
       const supabaseRefreshToken = hashParams.get('refresh_token');
 
+      const isInitialMobileAuthLanding = queryScanSessionId && queryAuthToken;
+      const isSupabaseRedirectAfterMagicLink = supabaseAccessToken && supabaseRefreshToken;
+
+      // If any part of the mobile auth flow is detected, set flag
+      if (isInitialMobileAuthLanding || isSupabaseRedirectAfterMagicLink) {
+        setIsMobileAuthFlowInProgress(true);
+      } else {
+        // If not in mobile auth flow, ensure flag is false
+        setIsMobileAuthFlowInProgress(false);
+        return; // Exit early if not relevant to mobile auth
+      }
+
       console.log('App.tsx: handleMobileAuthRedirect triggered.');
       console.log('App.tsx: Current location.search:', location.search);
       console.log('App.tsx: Current location.hash:', location.hash);
@@ -88,7 +102,7 @@ function App() {
       console.log('App.tsx: supabaseRefreshToken (from hash):', supabaseRefreshToken ? 'present' : 'absent');
 
       // Scenario 1: Initial landing from QR code scan (has query params)
-      if (queryScanSessionId && queryAuthToken) {
+      if (isInitialMobileAuthLanding) {
         console.log('App.tsx: Scenario 1 - Detected scanSessionId and auth_token in query parameters.');
 
         // Prevent re-processing if already handled
@@ -141,6 +155,7 @@ function App() {
           console.error('App.tsx: Error during mobile authentication initiation:', err);
           localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // Clean up on error
           localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
+          setIsMobileAuthFlowInProgress(false); // Reset flag on error
           navigate('/login', { replace: true }); // Redirect to login on error
           return;
         }
@@ -148,7 +163,7 @@ function App() {
 
       // Scenario 2: Redirect back from Supabase auth (has hash params, context in localStorage)
       const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
-      if (supabaseAccessToken && supabaseRefreshToken) { // Check for hash tokens first
+      if (isSupabaseRedirectAfterMagicLink) { // Check for hash tokens first
         console.log('App.tsx: Scenario 2 - Detected Supabase session tokens in URL hash.');
 
         if (storedContext) {
@@ -165,6 +180,7 @@ function App() {
             if (sessionError) {
               console.error('App.tsx: Error setting Supabase session from hash:', sessionError);
               localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+              setIsMobileAuthFlowInProgress(false); // Reset flag on error
               navigate('/login', { replace: true });
               return;
             }
@@ -177,6 +193,7 @@ function App() {
             const finalMobileCameraUrl = `/mobile-camera#scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}&access_token=${supabaseAccessToken}&refresh_token=${supabaseRefreshToken}`;
             
             console.log('App.tsx: Final redirecting to MobileCameraApp:', finalMobileCameraUrl);
+            setIsMobileAuthFlowInProgress(false); // Reset flag on successful redirect
             navigate(finalMobileCameraUrl, { replace: true });
             return;
 
@@ -184,12 +201,14 @@ function App() {
             console.error('App.tsx: Error processing stored mobile auth context:', err);
             localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
             localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
+            setIsMobileAuthFlowInProgress(false); // Reset flag on error
             navigate('/login', { replace: true });
             return;
           }
         } else {
           console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. This might be a regular login or a failed mobile auth attempt. Redirecting to login.');
           // NUCLEAR FIX: If context is missing, redirect to login, NOT dashboard.
+          setIsMobileAuthFlowInProgress(false); // Reset flag on error
           navigate('/login', { replace: true }); 
           return;
         }
@@ -254,6 +273,15 @@ function App() {
   const handleOpenHelpModal = () => {
     navigate('/dashboard-help');
   };
+
+  if (isMobileAuthFlowInProgress) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div>
+        <p className="text-gray-500 mt-4">{t('mobile_auth_landing_please_wait')}</p>
+      </div>
+    );
+  }
 
   return (
     <ContractProvider>
