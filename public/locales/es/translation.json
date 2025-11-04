@@ -1704,13 +1704,13 @@
   
   "mobile_auth_landing_error_title": "Error de autenticación",
   "mobile_auth_landing_invalid_access": "Acceso inválido. Escanee el código QR desde la aplicación de escritorio.",
-  "mobile_auth_landing_processing_auth":
-  "mobile_auth_landing_initiating_auth":
-  "mobile_auth_landing_failed_to_get_redirect_url":
-  "mobile_auth_landing_authentication_failed":
-  "mobile_auth_landing_storing_context":
-  "mobile_auth_landing_reconstructing_url":
-  "mobile_auth_landing_processing_error":
-  "mobile_auth_landing_already_authenticated":
-  "mobile_auth_landing_please_wait":
+  "mobile_auth_landing_processing_auth": "Procesando autenticación",
+  "mobile_auth_landing_initiating_auth": "Iniciando autenticación móvil",
+  "mobile_auth_landing_failed_to_get_redirect_url": "No se pudo obtener la URL de redirección del servidor.",
+  "mobile_auth_landing_authentication_failed": "La autenticación móvil falló.",
+  "mobile_auth_landing_storing_context": "Almacenando contexto de autenticación",
+  "mobile_auth_landing_reconstructing_url": "Reconstruyendo URL y estableciendo sesión",
+  "mobile_auth_landing_processing_error": "Error al procesar la redirección de autenticación.",
+  "mobile_auth_landing_already_authenticated": "Ya autenticado. Redirigiendo...",
+  "mobile_auth_landing_please_wait": "Espere mientras iniciamos sesión de forma segura."
 }
