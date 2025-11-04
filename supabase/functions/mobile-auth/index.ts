@@ -86,11 +86,16 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    // MODIFIED: Use redirect_to_url received from client
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+    
+    // MODIFIED: Construct the redirectTo URL to point to /auth-redirect-handler
+    // and pass the URL-encoded client-provided redirect_to_url as a query parameter.
+    const authRedirectHandlerUrl = `${appBaseUrl}/auth-redirect-handler?target_url=${encodeURIComponent(redirect_to_url)}`;
+
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
-      redirectTo: redirect_to_url, // Use the URL constructed by the client
+      redirectTo: authRedirectHandlerUrl, // Use the new intermediary handler URL
     });
 
     if (generateLinkError || !properties?.action_link) {
@@ -98,6 +103,7 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
+    // Return the action_link (magic link URL) to the mobile client
     const redirectToUrl = properties.action_link;
 
     return corsResponse({ redirectToUrl: redirectToUrl });
