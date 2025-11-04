@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -13,6 +13,7 @@ const MobileCameraApp: React.FC = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const [scanSessionId, setScanSessionId] = useState<string | null>(null);
@@ -26,6 +27,7 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [sessionSetFromHash, setSessionSetFromHash] = useState(false); // NEW state
 
   // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
@@ -73,52 +75,56 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // --- Realtime Session Management & Authentication ---
+  // NEW useEffect to handle session tokens from URL hash
   useEffect(() => {
-    const id = searchParams.get('scanSessionId');
-    const authToken = searchParams.get('auth_token');
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
 
-    if (!id || !authToken) {
-      setConnectionError(t('mobile_scan_session_id_missing'));
-      setIsConnecting(false);
-      return;
-    }
-    setScanSessionId(id);
-
-    // Check if session is already established (e.g., after redirect from MobileCameraRedirect)
-    if (session?.user?.id) {
-      // If session exists, proceed to connect to Realtime
-      connectToRealtime(id, session.user.id);
+    if (accessToken && refreshToken) {
+      console.log('MobileCameraApp: Found access_token and refresh_token in URL hash. Setting session directly.');
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          console.error('MobileCameraApp: Error setting session from hash:', error);
+          setConnectionError(error.message || t('mobile_scan_authentication_failed'));
+        } else {
+          console.log('MobileCameraApp: Session set successfully from hash.');
+          setSessionSetFromHash(true); // Indicate session was set this way
+          // Clear the hash from the URL to remove sensitive tokens
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }
+      }).catch(err => {
+        console.error('MobileCameraApp: Unexpected error during setSession:', err);
+        setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+      }).finally(() => {
+        setIsConnecting(false);
+      });
     } else {
-      // If no session, initiate authentication via Edge Function to get magic link
-      initiateMobileAuth(id, authToken);
+      setIsConnecting(false); // No tokens in hash, proceed with normal flow
     }
+  }, [location.hash, supabase.auth, t]);
 
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-      stopCamera();
-    };
-  }, [searchParams, supabase, session, t, stopCamera]);
 
+  // --- Realtime Session Management & Authentication ---
   const initiateMobileAuth = useCallback(async (id: string, authToken: string) => {
     setIsConnecting(true);
     setConnectionError(null);
 
     try {
-      // Call mobile-auth Edge Function to get the magic link URL
+      // Call mobile-auth Edge Function to get the redirectToUrl
       const { data, error } = await supabase.functions.invoke('mobile-auth', {
         body: { auth_token: authToken },
       });
 
       if (error) throw error;
-      if (!data?.magicLinkUrl) throw new Error(t('mobile_scan_failed_to_get_magic_link'));
+      if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url')); // MODIFIED: Expect redirectToUrl
 
-      // Programmatically navigate to the magic link URL
-      // This will trigger Supabase's auth flow and redirect to /mobile-camera-redirect
-      window.location.replace(data.magicLinkUrl);
+      // Programmatically navigate to the redirectToUrl
+      // This will trigger Supabase's auth flow and redirect back to /mobile-camera with tokens in hash
+      window.location.replace(data.redirectToUrl); // MODIFIED: Use redirectToUrl
 
     } catch (err: any) {
       console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
@@ -166,6 +172,41 @@ const MobileCameraApp: React.FC = () => {
 
     channelRef.current = newChannel;
   }, [supabase, t, stopCamera]);
+
+  // Main useEffect for session and Realtime connection
+  useEffect(() => {
+    const id = searchParams.get('scanSessionId');
+    const authToken = searchParams.get('auth_token');
+
+    if (!id || !authToken) {
+      setConnectionError(t('mobile_scan_session_id_missing'));
+      setIsConnecting(false);
+      return;
+    }
+    setScanSessionId(id);
+
+    // If session was just set from hash, proceed directly to Realtime connection
+    if (sessionSetFromHash && session?.user?.id) {
+      console.log('MobileCameraApp: Session already set from hash. Connecting to Realtime.');
+      connectToRealtime(id, session.user.id);
+    } else if (session?.user?.id) {
+      // If session exists (and not just set from hash), proceed to connect to Realtime
+      console.log('MobileCameraApp: Session exists. Connecting to Realtime.');
+      connectToRealtime(id, session.user.id);
+    } else {
+      // If no session, initiate authentication via Edge Function
+      console.log('MobileCameraApp: No session. Initiating mobile authentication.');
+      initiateMobileAuth(id, authToken);
+    }
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      // stopCamera is handled by its own useEffect cleanup
+    };
+  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth]); // ADDED sessionSetFromHash, connectToRealtime, initiateMobileAuth to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
