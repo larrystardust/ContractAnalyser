@@ -27,7 +27,8 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sessionSetFromHash, setSessionSetFromHash] = useState(false); // NEW state
+  const [sessionSetFromHash, setSessionSetFromHash] = useState(false);
+  const [isSessionReady, setIsSessionReady] = useState(false); // NEW state
 
   // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
@@ -101,9 +102,11 @@ const MobileCameraApp: React.FC = () => {
         setConnectionError(err.message || t('mobile_scan_authentication_failed'));
       }).finally(() => {
         setIsConnecting(false);
+        setIsSessionReady(true); // Set session ready after hash processing
       });
     } else {
       setIsConnecting(false); // No tokens in hash, proceed with normal flow
+      setIsSessionReady(true); // Set session ready as no hash processing needed
     }
   }, [location.hash, supabase.auth, t]);
 
@@ -120,11 +123,11 @@ const MobileCameraApp: React.FC = () => {
       });
 
       if (error) throw error;
-      if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url')); // MODIFIED: Expect redirectToUrl
+      if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url'));
 
       // Programmatically navigate to the redirectToUrl
       // This will trigger Supabase's auth flow and redirect back to /mobile-camera with tokens in hash
-      window.location.replace(data.redirectToUrl); // MODIFIED: Use redirectToUrl
+      window.location.replace(data.redirectToUrl);
 
     } catch (err: any) {
       console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
@@ -175,6 +178,11 @@ const MobileCameraApp: React.FC = () => {
 
   // Main useEffect for session and Realtime connection
   useEffect(() => {
+    // NEW: Wait until session is ready from hash processing
+    if (!isSessionReady) {
+      return;
+    }
+
     const id = searchParams.get('scanSessionId');
     const authToken = searchParams.get('auth_token');
 
@@ -206,7 +214,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth]); // ADDED sessionSetFromHash, connectToRealtime, initiateMobileAuth to dependencies
+  }, [searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]); // ADDED isSessionReady to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
