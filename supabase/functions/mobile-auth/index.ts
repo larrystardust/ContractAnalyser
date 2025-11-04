@@ -88,14 +88,14 @@ Deno.serve(async (req) => {
 
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
     
-    // MODIFIED: Construct the redirectTo URL to point to /auth-redirect-handler
-    // and pass the URL-encoded client-provided redirect_to_url as a query parameter.
-    const authRedirectHandlerUrl = `${appBaseUrl}/auth-redirect-handler?target_url=${encodeURIComponent(redirect_to_url)}`;
+    // MODIFIED: Construct the redirectTo URL to point to the static HTML redirect page
+    // and pass the URL-encoded client-provided redirect_to_url as a hash parameter.
+    const staticRedirectPageUrl = `${appBaseUrl}/supabase-auth-redirect.html#final_target=${encodeURIComponent(redirect_to_url)}`;
 
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
-      redirectTo: authRedirectHandlerUrl, // Use the new intermediary handler URL
+      redirectTo: staticRedirectPageUrl, // Use the new static HTML redirect page
     });
 
     if (generateLinkError || !properties?.action_link) {
