@@ -52,7 +52,7 @@ const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
 const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
-// REMOVED: AuthRedirectHandler
+const MobileAuthLanding = lazy(() => import('./pages/MobileAuthLanding')); // ADDED: Lazy load MobileAuthLanding
 
 function App() {
   // REMOVED: isDashboardHelpModalOpen state
@@ -90,8 +90,7 @@ function App() {
       '/blog',
       '/blog/:slug',
       '/mobile-camera', // ADDED: Mobile camera app is a public path
-      // REMOVED: '/auth-redirect-handler', // Auth redirect handler is a public path
-      '/supabase-auth-redirect.html', // ADDED: Static redirect page is a public path
+      '/mobile-auth-landing', // ADDED: Mobile auth landing page is a public path
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -143,7 +142,7 @@ function App() {
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* ADDED: New route for mobile camera app */}
-              {/* REMOVED: <Route path="/auth-redirect-handler" element={<AuthRedirectHandler />} /> */}
+              <Route path="/mobile-auth-landing" element={<MobileAuthLanding />} /> {/* ADDED: New route for mobile auth landing */}
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
