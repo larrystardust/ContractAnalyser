@@ -16,6 +16,8 @@ import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ScanSessionMessage } from '../types';
 
+const MOBILE_AUTH_CONTEXT_KEY = 'mobile_auth_context'; // ADDED: Define key for localStorage
+
 // Define the structure for a captured image
 interface CapturedImage {
   id: string;
@@ -74,7 +76,7 @@ const UploadPage: React.FC = () => {
 
     newChannel
       .on('broadcast', { event: 'desktop_ready' }, async (payload) => {
-        console.log('UploadPage: Desktop ready signal received:', payload);
+        console.log('UploadPage: Desktop ready signal received:', payload); // FIXED: Corrected console.log
         setMobileScanStatus('connected');
         // Send desktop ready signal back to mobile
         await newChannel.send({
@@ -85,7 +87,7 @@ const UploadPage: React.FC = () => {
       })
       .on('broadcast', { event: 'image_data' }, async (payload: { payload: ScanSessionMessage }) => {
         const message = payload.payload;
-        console.log('MobileCameraApp: Image data message received:', message);
+        console.log('UploadPage: Image data message received:', message); // FIXED: Corrected console.log
 
         if (message.type === 'image_captured' && message.payload?.imageUrl) {
           try {
@@ -512,8 +514,8 @@ const UploadPage: React.FC = () => {
               )}
               {scanSessionId && mobileAuthToken && ( // MODIFIED: Ensure mobileAuthToken exists
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
-                  {/* MODIFIED: QR code now points to MobileAuthLanding with query params */}
-                  <QRCode value={`${window.location.origin}/mobile-auth-landing?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
+                  {/* MODIFIED: QR code now points to root with query params */}
+                  <QRCode value={`${window.location.origin}/?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
                 </div>
               )}
               <p className="text-sm text-gray-500">{t('qr_code_link_description_connect')}</p>
