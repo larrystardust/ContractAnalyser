@@ -275,7 +275,7 @@ const UploadPage: React.FC = () => {
   // ADDED: Handler to close the mobile scan session
   const handleEndMobileScanSession = async () => {
     if (mobileScanChannelRef.current) {
-      // Notify mobile that desktop is ending session
+      // Notify mobile that desktop is disconnecting
       if (mobileScanStatus === 'connected') {
         mobileScanChannelRef.current.send({
           type: 'broadcast',
