@@ -90,21 +90,21 @@ Deno.serve(async (req) => {
     // Construct the base redirect URL for the mobile camera app, including scanSessionId and auth_token as query params
     const baseMobileCameraUrl = `${appBaseUrl}/mobile-camera?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
 
-    // Generate a token link. This will return access_token and refresh_token directly.
-    const { data: { session: authSession }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'token', // Use 'token' type to get session tokens directly
+    // MODIFIED: Use 'magiclink' type and set redirectTo to baseMobileCameraUrl
+    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink', // Changed from 'token' to 'magiclink'
       email: userEmail,
-      // redirectTo is not strictly needed for 'token' type, but can be used as a fallback
-      // We will construct the final redirect URL manually.
+      redirectTo: baseMobileCameraUrl, // This is the URL Supabase will redirect to after magic link authentication
     });
 
-    if (generateLinkError || !authSession?.access_token || !authSession?.refresh_token) {
-      console.error('mobile-auth: Failed to generate session tokens:', generateLinkError);
+    if (generateLinkError || !properties?.action_link) { // MODIFIED: Check for action_link
+      console.error('mobile-auth: Failed to generate magic link:', generateLinkError);
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // Construct the final redirect URL with tokens in the hash
-    const redirectToUrl = `${baseMobileCameraUrl}#access_token=${authSession.access_token}&refresh_token=${authSession.refresh_token}&expires_in=${authSession.expires_in}&token_type=bearer`;
+    // The redirectToUrl is now the action_link itself, which the client will navigate to.
+    // Supabase will then handle the redirect to baseMobileCameraUrl with tokens in hash.
+    const redirectToUrl = properties.action_link;
 
     // Return the constructed redirectToUrl to the mobile client
     return corsResponse({ redirectToUrl: redirectToUrl });
