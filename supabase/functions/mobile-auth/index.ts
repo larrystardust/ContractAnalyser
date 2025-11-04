@@ -86,24 +86,28 @@ Deno.serve(async (req) => {
     }
     const userEmail = userData.user.email;
 
-    // Generate a magic link. The redirectTo URL is crucial here.
-    // It should point to a new client-side route that will handle the session.
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-    const mobileRedirectUrl = `${appBaseUrl}/mobile-camera-redirect?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
+    // Construct the base redirect URL for the mobile camera app, including scanSessionId and auth_token as query params
+    const baseMobileCameraUrl = `${appBaseUrl}/mobile-camera?scanSessionId=${scanSessionId}&auth_token=${auth_token}`;
 
-    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink', // Use 'magiclink' type
+    // Generate a token link. This will return access_token and refresh_token directly.
+    const { data: { session: authSession }, error: generateLinkError } = await supabase.auth.admin.generateLink({
+      type: 'token', // Use 'token' type to get session tokens directly
       email: userEmail,
-      redirectTo: mobileRedirectUrl, // Supabase will redirect here after processing the magic link
+      // redirectTo is not strictly needed for 'token' type, but can be used as a fallback
+      // We will construct the final redirect URL manually.
     });
 
-    if (generateLinkError || !properties?.action_link) {
-      console.error('mobile-auth: Failed to generate magic link:', generateLinkError);
+    if (generateLinkError || !authSession?.access_token || !authSession?.refresh_token) {
+      console.error('mobile-auth: Failed to generate session tokens:', generateLinkError);
       return corsResponse({ error: getTranslatedMessage('message_failed_to_generate_sign_in_token', 'en') }, 500);
     }
 
-    // Return the magic link URL to the mobile client
-    return corsResponse({ magicLinkUrl: properties.action_link });
+    // Construct the final redirect URL with tokens in the hash
+    const redirectToUrl = `${baseMobileCameraUrl}#access_token=${authSession.access_token}&refresh_token=${authSession.refresh_token}&expires_in=${authSession.expires_in}&token_type=bearer`;
+
+    // Return the constructed redirectToUrl to the mobile client
+    return corsResponse({ redirectToUrl: redirectToUrl });
 
   } catch (error: any) {
     console.error('mobile-auth: Unhandled error:', error);
