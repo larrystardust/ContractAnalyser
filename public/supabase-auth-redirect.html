@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating...</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #2563eb; /* Blue-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .message {
+            margin-left: 15px;
+            font-size: 1.1em;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="message">Authenticating, please wait...</div>
+    </div>
+
+    <script>
+        (function() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+
+            const finalTargetParam = params.get('final_target');
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            const expiresIn = params.get('expires_in');
+            const tokenType = params.get('token_type');
+
+            if (finalTargetParam) {
+                try {
+                    let targetUrl = decodeURIComponent(finalTargetParam);
+                    
+                    // Ensure targetUrl is a valid URL object to manipulate its hash
+                    const urlObj = new URL(targetUrl);
+
+                    // Append Supabase auth tokens to the target URL's hash
+                    const authTokens = [];
+                    if (accessToken) authTokens.push(`access_token=${accessToken}`);
+                    if (refreshToken) authTokens.push(`refresh_token=${refreshToken}`);
+                    if (expiresIn) authTokens.push(`expires_in=${expiresIn}`);
+                    if (tokenType) authTokens.push(`token_type=${tokenType}`);
+
+                    if (authTokens.length > 0) {
+                        if (urlObj.hash) {
+                            urlObj.hash += `&${authTokens.join('&')}`;
+                        } else {
+                            urlObj.hash = `#${authTokens.join('&')}`;
+                        }
+                    }
+                    
+                    console.log('Redirecting to final URL:', urlObj.toString());
+                    window.location.replace(urlObj.toString());
+                } catch (e) {
+                    console.error('Error decoding or constructing final URL:', e);
+                    document.querySelector('.message').textContent = 'Authentication failed: Invalid redirect URL.';
+                }
+            } else {
+                console.error('No final_target parameter found in hash.');
+                document.querySelector('.message').textContent = 'Authentication failed: Missing redirect information.';
+            }
+        })();
+    </script>
+</body>
+</html>
