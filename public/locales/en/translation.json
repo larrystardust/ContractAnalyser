@@ -1707,5 +1707,7 @@
   "mobile_scan_desktop_disconnected": "Desktop disconnected from session. Ending mobile session.",
   "mobile_scan_camera_error_title": "Camera Access Error",
   "back_to_upload": "Back to Upload Page",
-  "upload_page_mobile_connected_qr": "Mobile device connected. Start scanning!"
+  "upload_page_mobile_connected_qr": "Mobile device connected. Start scanning!",
+  "mobile_auth_landing_error_title": "Authentication Error",
+  "mobile_auth_landing_invalid_access": "Invalid access. Please scan the QR code from the desktop application."
 }
