@@ -204,43 +204,50 @@ const UploadPage: React.FC = () => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  // MODIFIED: New handler for "Scan Document" button
+  // MODIFIED: handleScanDocumentClick now only opens the modal
   const handleScanDocumentClick = async () => {
     if (!session) {
       alert(t('upload_page_login_to_scan'));
       return;
     }
 
-    if (isMobileDevice) {
-      setIsCameraMode(true);
-      setSelectedFiles([]);
-    } else {
-      // For desktop, create a scan session and show QR code
-      setMobileScanStatus('connecting');
-      setMobileScanError(null);
-      setShowScanOptionModal(true);
-      setShowQrCode(false); // Hide QR code initially
+    // Reset states for a clean start when opening the modal
+    setShowScanOptionModal(true);
+    setShowQrCode(false);
+    setScanSessionId(null);
+    setMobileAuthToken(null);
+    setMobileScanStatus('idle');
+  };
 
-      try {
-        // MODIFIED: Invoke create-scan-session to get auth_token
-        const { data, error } = await supabase.functions.invoke('create-scan-session', {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        });
+  // NEW: handleInitiateSmartphoneScan function
+  const handleInitiateSmartphoneScan = async () => {
+    if (!session) {
+      alert(t('upload_page_login_to_scan'));
+      return;
+    }
 
-        if (error) throw error;
-        if (!data?.scanSessionId || !data?.auth_token) throw new Error(t('upload_page_failed_to_create_scan_session'));
+    setMobileScanStatus('connecting');
+    setMobileScanError(null);
+    setShowQrCode(false); // Hide QR code until session is created
 
-        setScanSessionId(data.scanSessionId);
-        setMobileAuthToken(data.auth_token); // ADDED: Store the auth token
-        setShowQrCode(true); // Show QR code once session is created
-      } catch (err: any) {
-        console.error('UploadPage: Error creating scan session:', err);
-        setMobileScanStatus('error');
-        setMobileScanError(err.message || t('upload_page_failed_to_create_scan_session'));
-        setShowScanOptionModal(false); // Close modal on error
-      }
+    try {
+      const { data, error } = await supabase.functions.invoke('create-scan-session', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.scanSessionId || !data?.auth_token) throw new Error(t('upload_page_failed_to_create_scan_session'));
+
+      setScanSessionId(data.scanSessionId);
+      setMobileAuthToken(data.auth_token);
+      setShowQrCode(true); // Show QR code once session is created
+    } catch (err: any) {
+      console.error('UploadPage: Error creating scan session:', err);
+      setMobileScanStatus('error');
+      setMobileScanError(err.message || t('upload_page_failed_to_create_scan_session'));
+      setShowScanOptionModal(false); // Close modal on error
     }
   };
 
@@ -253,12 +260,6 @@ const UploadPage: React.FC = () => {
     setScanSessionId(null); // Clear mobile scan session if desktop camera is used
     setMobileScanStatus('idle');
     setMobileAuthToken(null); // ADDED: Clear auth token
-  };
-
-  // ADDED: Handler for "Scan with a smartphone" (just shows QR code, session already created)
-  const handleScanWithSmartphone = () => {
-    // Session is already created in handleScanDocumentClick for desktop users
-    setShowQrCode(true);
   };
 
   // ADDED: Handler to close the mobile scan session
@@ -485,7 +486,7 @@ const UploadPage: React.FC = () => {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                onClick={handleScanWithSmartphone}
+                onClick={handleInitiateSmartphoneScan} // MODIFIED: Call new function
                 icon={<Smartphone className="w-5 h-5 mr-2" />}
                 disabled={mobileScanStatus === 'connecting'}
               >
