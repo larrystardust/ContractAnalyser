@@ -27,7 +27,6 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  // REMOVED: sessionSetFromHash and isSessionReady states as they are handled by MobileAuthLanding
 
   // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
@@ -75,44 +74,29 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // MODIFIED: This useEffect now *only* parses ALL tokens from the hash
+  // MODIFIED: This useEffect now *only* parses ALL tokens from the hash and sets local state
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const refreshToken = hashParams.get('refresh_token');
     const hashScanSessionId = hashParams.get('scanSessionId'); // Get from hash
     const hashAuthToken = hashParams.get('auth_token'); // Get from hash
+    const supabaseAccessToken = hashParams.get('access_token'); // Get from hash
+    const supabaseRefreshToken = hashParams.get('refresh_token'); // Get from hash
 
-    if (accessToken && refreshToken && hashScanSessionId && hashAuthToken) {
-      console.log('MobileCameraApp: Found all tokens in URL hash. Setting session directly.');
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      }).then(({ error }) => {
-        if (error) {
-          console.error('MobileCameraApp: Error setting session from hash:', error);
-          setConnectionError(error.message || t('mobile_scan_authentication_failed'));
-        } else {
-          console.log('MobileCameraApp: Session set successfully from hash.');
-          setScanSessionId(hashScanSessionId); // Set scanSessionId from hash
-          // Note: authToken is not stored in state here, but used in main useEffect
-          // Clear the hash from the URL to remove sensitive tokens
-          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-          setIsConnecting(false); // Finished processing initial hash
-        }
-      }).catch(err => {
-        console.error('MobileCameraApp: Unexpected error during setSession:', err);
-        setConnectionError(err.message || t('mobile_scan_authentication_failed'));
-        setIsConnecting(false);
-      });
+    if (hashScanSessionId && hashAuthToken && supabaseAccessToken && supabaseRefreshToken) {
+      console.log('MobileCameraApp: Found all tokens in URL hash.');
+      setScanSessionId(hashScanSessionId);
+      // mobileAuthToken is not directly used in this component's state, but passed to Realtime
+      // The Supabase session should already be set by App.tsx
+      setIsConnecting(false); // Finished processing initial hash
+      // Clear the hash from the URL to remove sensitive tokens
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     } else {
-      // If essential tokens are missing from hash, it's an error or direct access
       console.error('MobileCameraApp: Missing essential tokens in hash. Redirecting to upload.');
       setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
       navigate('/upload', { replace: true }); // Redirect to upload page if direct access
     }
-  }, [location.hash, supabase.auth, t, navigate]);
+  }, [location.hash, navigate, t]);
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
     setIsConnecting(true);
@@ -265,7 +249,7 @@ const MobileCameraApp: React.FC = () => {
   const handleDone = async () => {
     if (channelRef.current) {
       const message: ScanSessionMessage = { type: 'session_ended' };
-      await channelRef.current.send({
+      await channelRef.current?.send({ // Use optional chaining as channelRef.current might be null
         type: 'broadcast',
         event: 'image_data',
         payload: message,
