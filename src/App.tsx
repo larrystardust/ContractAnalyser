@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-// REMOVED: Direct imports for page components
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Import useSupabaseClient and useSessionContext
 
 import { ContractProvider } from './context/ContractContext';
 import './index.css';
@@ -52,21 +52,81 @@ const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
 const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
 const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
-const MobileAuthLanding = lazy(() => import('./pages/MobileAuthLanding')); // ADDED: Lazy load MobileAuthLanding
+// REMOVED: MobileAuthLanding
+
+const MOBILE_AUTH_CONTEXT_KEY = 'mobile_auth_context'; // ADDED: Define key for localStorage
 
 function App() {
-  // REMOVED: isDashboardHelpModalOpen state
+  const supabase = useSupabaseClient(); // ADDED: Get Supabase client
+  const { session } = useSessionContext(); // ADDED: Get session context
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
-  // REMOVED: useSessionContext and useSupabaseClient as they are not directly used here anymore
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
   const { t } = useTranslation();
 
   useTheme();
 
-  // MODIFIED: Removed session and isSessionLoading from dependencies as they are not directly used here
+  // ADDED: New useEffect for handling mobile authentication redirect
+  useEffect(() => {
+    const handleMobileAuthRedirect = async () => {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const supabaseAccessToken = hashParams.get('access_token');
+      const supabaseRefreshToken = hashParams.get('refresh_token');
+
+      // Check if Supabase session tokens are present in the hash
+      if (supabaseAccessToken && supabaseRefreshToken) {
+        console.log('App.tsx: Detected Supabase session tokens in URL hash.');
+        const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
+
+        if (storedContext) {
+          console.log('App.tsx: Found stored mobile auth context in localStorage.');
+          try {
+            const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
+
+            // Set the Supabase session
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: supabaseAccessToken,
+              refresh_token: supabaseRefreshToken,
+            });
+
+            if (sessionError) {
+              console.error('App.tsx: Error setting Supabase session from hash:', sessionError);
+              // Handle error, maybe redirect to login or show a message
+              localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+              navigate('/login', { replace: true });
+              return;
+            }
+
+            console.log('App.tsx: Supabase session set. Clearing stored context.');
+            localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+
+            // Construct the final URL for MobileCameraApp with all parameters in hash
+            const finalMobileCameraUrl = `/mobile-camera#scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}&access_token=${supabaseAccessToken}&refresh_token=${supabaseRefreshToken}`;
+            
+            console.log('App.tsx: Final redirecting to MobileCameraApp:', finalMobileCameraUrl);
+            navigate(finalMobileCameraUrl, { replace: true });
+            return;
+
+          } catch (err: any) {
+            console.error('App.tsx: Error processing stored mobile auth context:', err);
+            localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+            navigate('/login', { replace: true });
+            return;
+          }
+        } else {
+          console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. Redirecting to dashboard.');
+          // If no context, it might be a regular login, redirect to dashboard
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+      }
+    };
+
+    handleMobileAuthRedirect();
+  }, [location.hash, navigate, supabase.auth]); // Depend on location.hash and navigate
+
   useEffect(() => {
     const publicPaths = [
       '/',
@@ -89,8 +149,8 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
-      '/mobile-camera', // ADDED: Mobile camera app is a public path
-      '/mobile-auth-landing', // ADDED: Mobile auth landing page is a public path
+      '/mobile-camera', // Mobile camera app is a public path
+      // REMOVED: '/mobile-auth-landing', // Mobile auth landing page is no longer a separate route
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -114,19 +174,16 @@ function App() {
     // if (!isSessionLoading && !session && !isPublicPath(currentPathBase)) {
     //   navigate('/', { replace: true });
     // }
-  }, [location, navigate, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]); // MODIFIED: Removed session, isSessionLoading, supabase from dependencies
+  }, [location, navigate, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
-  // MODIFIED: handleOpenHelpModal now navigates to the help page
   const handleOpenHelpModal = () => {
-    // The AuthGuard will handle authentication checks for /dashboard-help
-    navigate('/dashboard-help'); // Navigate to the standalone help page
+    navigate('/dashboard-help');
   };
 
   return (
     <ContractProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-700">
         <ErrorBoundary>
-          {/* MODIFIED: Added Suspense for lazy-loaded routes */}
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-700"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-900"></div></div>}>
             <Routes>
               <Route path="/maintenance" element={<MaintenancePage />} />
@@ -141,13 +198,12 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* ADDED: New route for mobile camera app */}
-              <Route path="/mobile-auth-landing" element={<MobileAuthLanding />} /> {/* ADDED: New route for mobile auth landing */}
+              <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* New route for mobile camera app */}
+              {/* REMOVED: <Route path="/mobile-auth-landing" element={<MobileAuthLanding />} /> */}
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
                 onOpenHelpModal={handleOpenHelpModal}
-                // REMOVED: isDashboardHelpModalOpen and setIsDashboardHelpModal props
               />}>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/auth/email-sent" element={<EmailSentPage />} />
