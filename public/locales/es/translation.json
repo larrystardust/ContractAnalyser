@@ -1700,5 +1700,7 @@
   "mobile_scan_desktop_disconnected": "El escritorio se desconectó de la sesión. Finalizando la sesión móvil.",
   "mobile_scan_camera_error_title": "Error de acceso a la cámara",
   "back_to_upload": "Volver a la página de carga",
-  "upload_page_mobile_connected_qr": "Dispositivo móvil conectado. ¡Empiece a escanear!"
+  "upload_page_mobile_connected_qr": "Dispositivo móvil conectado. ¡Empiece a escanear!",
+  "mobile_auth_landing_error_title": "Error de autenticación",
+  "mobile_auth_landing_invalid_access": "Acceso inválido. Escanee el código QR desde la aplicación de escritorio."
 }
