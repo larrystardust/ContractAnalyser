@@ -74,7 +74,7 @@ const UploadPage: React.FC = () => {
 
     newChannel
       .on('broadcast', { event: 'desktop_ready' }, async (payload) => {
-        console.log('MobileCameraApp: Desktop ready signal received:', payload);
+        console.log('UploadPage: Desktop ready signal received:', payload);
         setMobileScanStatus('connected');
         // Send desktop ready signal back to mobile
         await newChannel.send({
