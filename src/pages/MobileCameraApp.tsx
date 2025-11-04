@@ -127,16 +127,22 @@ const MobileCameraApp: React.FC = () => {
     setConnectionError(null);
 
     try {
-      // Call mobile-auth Edge Function to get the redirectToUrl
+      const appBaseUrl = window.location.origin;
+      // Construct the final redirect URL with scanSessionId and authToken in the hash
+      const finalRedirectUrl = `${appBaseUrl}/mobile-camera#scanSessionId=${id}&auth_token=${authToken}`;
+
+      // Call mobile-auth Edge Function to get the action_link
       const { data, error } = await supabase.functions.invoke('mobile-auth', {
-        body: { auth_token: authToken },
+        body: {
+          auth_token: authToken,
+          redirect_to_url: finalRedirectUrl // Pass the constructed URL to the Edge Function
+        },
       });
 
       if (error) throw error;
       if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url'));
 
-      // Programmatically navigate to the redirectToUrl
-      // This will trigger Supabase's auth flow and redirect back to /mobile-camera-redirect with tokens in hash
+      // Programmatically navigate to the action_link
       window.location.replace(data.redirectToUrl);
 
     } catch (err: any) {
