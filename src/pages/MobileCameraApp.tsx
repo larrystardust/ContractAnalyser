@@ -27,8 +27,7 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sessionSetFromHash, setSessionSetFromHash] = useState(false);
-  const [isSessionReady, setIsSessionReady] = useState(false); // NEW state
+  // REMOVED: sessionSetFromHash and isSessionReady states as they are handled by MobileAuthLanding
 
   // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
@@ -76,7 +75,7 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // MODIFIED: This useEffect now parses ALL tokens from the hash
+  // MODIFIED: This useEffect now *only* parses ALL tokens from the hash
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
@@ -97,60 +96,23 @@ const MobileCameraApp: React.FC = () => {
           console.log('MobileCameraApp: Session set successfully from hash.');
           setScanSessionId(hashScanSessionId); // Set scanSessionId from hash
           // Note: authToken is not stored in state here, but used in main useEffect
-          setSessionSetFromHash(true); // Indicate session was set this way
           // Clear the hash from the URL to remove sensitive tokens
           window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+          setIsConnecting(false); // Finished processing initial hash
         }
       }).catch(err => {
         console.error('MobileCameraApp: Unexpected error during setSession:', err);
         setConnectionError(err.message || t('mobile_scan_authentication_failed'));
-      }).finally(() => {
         setIsConnecting(false);
-        setIsSessionReady(true); // Set session ready after hash processing
       });
     } else {
-      // If not all tokens are in hash, check query params for initial QR code scan
-      const queryScanSessionId = searchParams.get('scanSessionId');
-      const queryAuthToken = searchParams.get('auth_token');
-      if (queryScanSessionId && queryAuthToken) {
-        setScanSessionId(queryScanSessionId); // Set scanSessionId from query
-        // Note: authToken is not stored in state here, but used in main useEffect
-      }
-      setIsConnecting(false); // No tokens in hash, proceed with normal flow
-      setIsSessionReady(true); // Set session ready as no hash processing needed
-    }
-  }, [location.hash, supabase.auth, t, searchParams]); // ADDED searchParams to dependencies
-
-  // --- Realtime Session Management & Authentication ---
-  const initiateMobileAuth = useCallback(async (id: string, authToken: string) => {
-    setIsConnecting(true);
-    setConnectionError(null);
-
-    try {
-      const appBaseUrl = window.location.origin;
-      // Construct the final redirect URL with scanSessionId and authToken in the hash
-      const finalRedirectUrl = `${appBaseUrl}/mobile-camera#scanSessionId=${id}&auth_token=${authToken}`;
-
-      // Call mobile-auth Edge Function to get the action_link
-      const { data, error } = await supabase.functions.invoke('mobile-auth', {
-        body: {
-          auth_token: authToken,
-          redirect_to_url: finalRedirectUrl // Pass the constructed URL to the Edge Function
-        },
-      });
-
-      if (error) throw error;
-      if (!data?.redirectToUrl) throw new Error(t('mobile_scan_failed_to_get_redirect_url'));
-
-      // Programmatically navigate to the action_link
-      window.location.replace(data.redirectToUrl);
-
-    } catch (err: any) {
-      console.error('MobileCameraApp: Error during mobile authentication initiation:', err);
-      setConnectionError(err.message || t('mobile_scan_authentication_failed'));
+      // If essential tokens are missing from hash, it's an error or direct access
+      console.error('MobileCameraApp: Missing essential tokens in hash. Redirecting to upload.');
+      setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
+      navigate('/upload', { replace: true }); // Redirect to upload page if direct access
     }
-  }, [supabase, t]);
+  }, [location.hash, supabase.auth, t, navigate]);
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
     setIsConnecting(true);
@@ -192,57 +154,16 @@ const MobileCameraApp: React.FC = () => {
     channelRef.current = newChannel;
   }, [supabase, t, stopCamera]);
 
-  // Main useEffect for session and Realtime connection
+  // Main useEffect for Realtime connection (after session is established)
   useEffect(() => {
-    // NEW: Wait until session is ready from hash processing
-    if (!isSessionReady) {
-      return;
-    }
-
-    // MODIFIED: Get scanSessionId and authToken from state, which are set by the hash parsing useEffect
-    const id = scanSessionId; 
-    const authToken = new URLSearchParams(location.hash.substring(1)).get('auth_token') || searchParams.get('auth_token'); // Prioritize hash, fallback to query
-
-    if (!id || !authToken) {
-      setConnectionError(t('mobile_scan_session_id_missing'));
-      setIsConnecting(false);
-      return;
-    }
-    // setScanSessionId(id); // Already set by hash parsing useEffect or initial query param
-
-    console.log('MobileCameraApp: Main useEffect - session:', session);
-    console.log('MobileCameraApp: Main useEffect - session?.user?.id:', session?.user?.id);
-    console.log('MobileCameraApp: Main useEffect - sessionSetFromHash:', sessionSetFromHash);
-
-    // CRITICAL FIX: If session exists but wasn't set from hash, it might be stale.
-    // Force sign out to ensure a clean authentication flow via mobile-auth.
-    if (session?.user?.id && !sessionSetFromHash) {
-      console.log('MobileCameraApp: Stale session detected. Signing out to re-authenticate.');
-      supabase.auth.signOut().then(() => {
-        // After signing out, the component will re-render, and the useEffect will run again.
-        // This time, session?.user?.id should be null, leading to initiateMobileAuth.
-      }).catch(err => {
-        console.error('MobileCameraApp: Error during forced sign out:', err);
-        setConnectionError(err.message || t('mobile_scan_authentication_failed'));
-        setIsConnecting(false);
-      });
-      return; // Prevent further execution in this cycle
-    }
-
-    // Condition 1: Session was just set from hash. Proceed to Realtime.
-    if (sessionSetFromHash && session?.user?.id) {
-      console.log('MobileCameraApp: Session already set from hash. Connecting to Realtime.');
-      connectToRealtime(id, session.user.id);
-    }
-    // Condition 2: An active session already exists (e.g., user was already logged in). Proceed to Realtime.
-    else if (session?.user?.id) {
-      console.log('MobileCameraApp: Session exists. Connecting to Realtime.');
-      connectToRealtime(id, session.user.id);
-    }
-    // Condition 3: No active session, and session was NOT just set from hash. Initiate mobile authentication.
-    else {
-      console.log('MobileCameraApp: No session. Initiating mobile authentication.');
-      initiateMobileAuth(id, authToken);
+    if (session?.user?.id && scanSessionId) {
+      console.log('MobileCameraApp: Session exists and scanSessionId is set. Connecting to Realtime.');
+      connectToRealtime(scanSessionId, session.user.id);
+    } else if (!session?.user?.id && !isConnecting) {
+      // If no session and not connecting, means initial hash processing failed or user is not logged in
+      console.error('MobileCameraApp: No active session after hash processing. Redirecting to upload.');
+      setConnectionError(t('mobile_scan_authentication_required'));
+      navigate('/upload', { replace: true });
     }
 
     return () => {
@@ -252,7 +173,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [scanSessionId, location.hash, searchParams, supabase, session, t, sessionSetFromHash, connectToRealtime, initiateMobileAuth, isSessionReady]); // MODIFIED: Added scanSessionId, location.hash, searchParams to dependencies
+  }, [session, scanSessionId, connectToRealtime, navigate, isConnecting, t]);
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
