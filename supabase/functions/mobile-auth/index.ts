@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     const userEmail = userData.user.email;
 
     // MODIFIED: The redirectTo URL for Supabase is now simply the app's base URL.
-    // All other context is handled client-side via localStorage and the MobileAuthLanding page.
+    // All other context is handled client-side via localStorage and the App.tsx component.
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmail,
