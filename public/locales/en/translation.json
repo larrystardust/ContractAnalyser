@@ -1714,5 +1714,7 @@
   "mobile_scan_return_to_desktop_title": "Return to Desktop",
   "mobile_scan_return_to_desktop_message": "You have finished capturing images. Please return to your desktop application to complete the upload process.",
   "mobile_scan_go_to_desktop": "Go to Desktop",
-  "mobile_scan_authentication_required": "Authentication required for mobile scan. Please log in."
+  "mobile_scan_authentication_required": "Authentication required for mobile scan. Please log in.",
+
+  "mobile_auth_landing_please_wait": "Please wait while we securely log you in."
 }
