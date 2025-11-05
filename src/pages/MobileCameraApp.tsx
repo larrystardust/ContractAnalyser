@@ -87,7 +87,7 @@ const MobileCameraApp: React.FC = () => {
     if (hashScanSessionId && hashAuthToken && supabaseAccessToken && supabaseRefreshToken) {
       console.log('MobileCameraApp: Found all tokens in URL hash.');
       setScanSessionId(hashScanSessionId);
-      // mobileAuthToken is not directly used in this component's state, but used in main useEffect
+      // mobileAuthToken is not directly used in this component's state, but passed to Realtime
       // The Supabase session should already be set by App.tsx
       setIsConnecting(false); // Finished processing initial hash
       // Clear the hash from the URL to remove sensitive tokens
@@ -130,7 +130,7 @@ const MobileCameraApp: React.FC = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('MobileCameraApp: Subscribed to scan session channel.');
-          // Broadcast that mobile is ready
+          // ADDED: Broadcast that mobile is ready
           await newChannel.send({
             type: 'broadcast',
             event: 'mobile_ready',
