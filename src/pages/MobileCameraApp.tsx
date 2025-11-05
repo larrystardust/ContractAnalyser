@@ -106,7 +106,7 @@ const MobileCameraApp: React.FC = () => {
   }, [location.hash, navigate, t]);
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
-    setIsConnecting(true); // ADDED: Explicitly set connecting state here
+    setIsConnecting(true); // Still set to true when starting connection
     setConnectionError(null);
 
     const newChannel = supabase.channel(`scan-session-${id}`, {
@@ -118,9 +118,9 @@ const MobileCameraApp: React.FC = () => {
     });
 
     newChannel
-      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
+      .on('broadcast', { event: 'desktop_ready' }, (payload) => { // Mobile LISTENS for desktop_ready
         console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // Desktop is ready, can start capturing
+        setIsConnecting(false); // Once desktop is ready, mobile stops connecting state
       })
       .on('broadcast', { event: 'desktop_disconnected' }, () => {
         setConnectionError(t('mobile_scan_desktop_disconnected'));
@@ -130,12 +130,13 @@ const MobileCameraApp: React.FC = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('MobileCameraApp: Subscribed to scan session channel.');
-          // ADDED: Broadcast that mobile is ready
+          // Mobile now SENDS mobile_ready immediately after subscribing
           await newChannel.send({
             type: 'broadcast',
             event: 'mobile_ready',
             payload: { userId: userId },
           });
+          console.log('MobileCameraApp: Sent mobile_ready signal.');
         } else if (status === 'CHANNEL_ERROR') {
           setConnectionError(t('mobile_scan_channel_error'));
           setIsConnecting(false);
@@ -143,13 +144,12 @@ const MobileCameraApp: React.FC = () => {
       });
 
     channelRef.current = newChannel;
-  }, [supabase, t, stopCamera, setIsConnecting]); // ADDED: setIsConnecting to dependencies
+  }, [supabase, t, stopCamera, setIsConnecting]); // setIsConnecting is still a dependency for useCallback
 
   // Main useEffect for Realtime connection (after session is established)
   useEffect(() => {
     if (session?.user?.id && scanSessionId) {
       console.log('MobileCameraApp: Session exists and scanSessionId is set. Connecting to Realtime.');
-      // REMOVED: setIsConnecting(true); // REMOVED: Explicitly set connecting state here
       connectToRealtime(scanSessionId, session.user.id);
     } else if (!session?.user?.id && !isConnecting) {
       // If no session and not connecting, means initial hash processing failed or user is not logged in
@@ -165,7 +165,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [session, scanSessionId, connectToRealtime, navigate, t, isConnecting]); // ADDED: isConnecting to dependencies
+  }, [session, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Removed 'isConnecting' from dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
