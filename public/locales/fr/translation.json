@@ -1710,16 +1710,13 @@
   "mobile_scan_camera_error_title": "Erreur d'accès à la caméra",
   "back_to_upload": "Retour à la page de téléchargement",
   "upload_page_mobile_connected_qr": "Appareil mobile connecté. Commencez à scanner !",
+  "upload_page_login_to_scan": "Veuillez vous connecter pour scanner des documents.",
+  "mobile_scan_loading_session": "Chargement de la session...",
+  "mobile_scan_please_wait": "Veuillez patienter pendant que nous configurons votre session de numérisation mobile.",
+  "mobile_scan_return_to_desktop_title": "Retour au bureau",
+  "mobile_scan_return_to_desktop_message": "Vous avez terminé la capture d'images. Veuillez retourner à votre application de bureau pour terminer le processus de téléchargement de votre document pour analyse.",
+  "mobile_scan_go_to_desktop": "Aller au bureau",
+  "mobile_scan_authentication_required": "Authentification requise pour la numérisation mobile. Veuillez vous connecter.",
   
-  "mobile_auth_landing_error_title": "Erreur d'authentification",
-  "mobile_auth_landing_invalid_access": "Accès invalide. Veuillez scanner le code QR depuis l'application de bureau.",
-  "mobile_auth_landing_processing_auth": "Traitement de l'authentification",
-  "mobile_auth_landing_initiating_auth": "Initialisation de l'authentification mobile",
-  "mobile_auth_landing_failed_to_get_redirect_url": "Échec de l'obtention de l'URL de redirection du serveur.",
-  "mobile_auth_landing_authentication_failed": "L'authentification mobile a échoué.",
-  "mobile_auth_landing_storing_context": "Stockage du contexte d'authentification",
-  "mobile_auth_landing_reconstructing_url": "Reconstruction de l'URL et établissement de la session",
-  "mobile_auth_landing_processing_error": "Erreur lors du traitement de la redirection d'authentification.",
-  "mobile_auth_landing_already_authenticated": "Déjà authentifié. Redirection...",
   "mobile_auth_landing_please_wait": "Veuillez patienter pendant que nous vous connectons en toute sécurité."
 }
