@@ -106,7 +106,7 @@ const MobileCameraApp: React.FC = () => {
   }, [location.hash, navigate, t]);
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
-    setIsConnecting(true);
+    setIsConnecting(true); // ADDED: Explicitly set connecting state here
     setConnectionError(null);
 
     const newChannel = supabase.channel(`scan-session-${id}`, {
@@ -120,7 +120,7 @@ const MobileCameraApp: React.FC = () => {
     newChannel
       .on('broadcast', { event: 'desktop_ready' }, (payload) => {
         console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // <--- This is the line that should be called
+        setIsConnecting(false); // Desktop is ready, can start capturing
       })
       .on('broadcast', { event: 'desktop_disconnected' }, () => {
         setConnectionError(t('mobile_scan_desktop_disconnected'));
@@ -143,12 +143,13 @@ const MobileCameraApp: React.FC = () => {
       });
 
     channelRef.current = newChannel;
-  }, [supabase, t, stopCamera]);
+  }, [supabase, t, stopCamera, setIsConnecting]); // ADDED: setIsConnecting to dependencies
 
   // Main useEffect for Realtime connection (after session is established)
   useEffect(() => {
     if (session?.user?.id && scanSessionId) {
       console.log('MobileCameraApp: Session exists and scanSessionId is set. Connecting to Realtime.');
+      // REMOVED: setIsConnecting(true); // REMOVED: Explicitly set connecting state here
       connectToRealtime(scanSessionId, session.user.id);
     } else if (!session?.user?.id && !isConnecting) {
       // If no session and not connecting, means initial hash processing failed or user is not logged in
@@ -164,7 +165,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [session, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Removed 'isConnecting' from dependencies
+  }, [session, scanSessionId, connectToRealtime, navigate, t, isConnecting]); // ADDED: isConnecting to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
