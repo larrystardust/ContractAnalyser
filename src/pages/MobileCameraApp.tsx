@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { useSupabaseClient, useSession, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Added useSessionContext
+import { useSupabaseClient, useSession, useSessionContext } from '@supabase/auth-helpers-react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card, { CardBody } from '../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import { ScanSessionMessage } from '../types';
+import Modal from '../components/ui/Modal'; // ADDED: Import Modal component
 
 const MobileCameraApp: React.FC = () => {
   const supabase = useSupabaseClient();
-  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: Used useSessionContext for isLoading
+  const { session, isLoading: isSessionLoading } = useSessionContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams(); // Keep for initial QR code parsing
   const location = useLocation();
