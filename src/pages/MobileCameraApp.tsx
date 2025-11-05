@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useSession, useSessionContext } from '@supabase/auth-helpers-react'; // MODIFIED: Added useSessionContext
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Camera, X, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -10,7 +10,7 @@ import { ScanSessionMessage } from '../types';
 
 const MobileCameraApp: React.FC = () => {
   const supabase = useSupabaseClient();
-  const session = useSession();
+  const { session, isLoading: isSessionLoading } = useSessionContext(); // MODIFIED: Used useSessionContext for isLoading
   const navigate = useNavigate();
   const [searchParams] = useSearchParams(); // Keep for initial QR code parsing
   const location = useLocation();
@@ -106,7 +106,7 @@ const MobileCameraApp: React.FC = () => {
   }, [location.hash, navigate, t]);
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
-    setIsConnecting(true); // Still set to true when starting connection
+    setIsConnecting(true); // Explicitly set connecting state here
     setConnectionError(null);
 
     const newChannel = supabase.channel(`scan-session-${id}`, {
@@ -144,15 +144,19 @@ const MobileCameraApp: React.FC = () => {
       });
 
     channelRef.current = newChannel;
-  }, [supabase, t, stopCamera, setIsConnecting]); // setIsConnecting is still a dependency for useCallback
+  }, [supabase, t, stopCamera, setIsConnecting]); // ADDED: setIsConnecting to dependencies
 
   // Main useEffect for Realtime connection (after session is established)
   useEffect(() => {
+    if (isSessionLoading) { // MODIFIED: Wait for session to load
+      return;
+    }
+
     if (session?.user?.id && scanSessionId) {
       console.log('MobileCameraApp: Session exists and scanSessionId is set. Connecting to Realtime.');
       connectToRealtime(scanSessionId, session.user.id);
-    } else if (!session?.user?.id && !isConnecting) {
-      // If no session and not connecting, means initial hash processing failed or user is not logged in
+    } else if (!session?.user?.id) { // MODIFIED: Removed !isConnecting from condition
+      // If session is definitively not authenticated after loading, redirect
       console.error('MobileCameraApp: No active session after hash processing. Redirecting to upload.');
       setConnectionError(t('mobile_scan_authentication_required'));
       navigate('/upload', { replace: true });
@@ -165,7 +169,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [session, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Removed 'isConnecting' from dependencies
+  }, [session, isSessionLoading, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Added isSessionLoading to dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
@@ -265,6 +269,20 @@ const MobileCameraApp: React.FC = () => {
     }
     navigate('/upload', { replace: true }); // Redirect back to upload page
   };
+
+  if (isSessionLoading) { // MODIFIED: Show loading state for session hydration
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="max-w-md w-full">
+          <CardBody className="text-center">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('mobile_scan_loading_session')}</h2>
+            <p className="text-gray-600">{t('mobile_scan_please_wait')}</p>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
 
   if (isConnecting) {
     return (
