@@ -75,14 +75,13 @@ const UploadPage: React.FC = () => {
     });
 
     newChannel
-      // REMOVED: .on('broadcast', { event: 'desktop_ready' }, async (payload) => { ... })
-      .on('broadcast', { event: 'mobile_ready' }, (payload) => { // ADDED: Listen for mobile_ready
+      .on('broadcast', { event: 'mobile_ready' }, (payload) => {
         console.log('UploadPage: Mobile ready signal received:', payload);
         setMobileScanStatus('connected');
       })
       .on('broadcast', { event: 'image_data' }, async (payload: { payload: ScanSessionMessage }) => {
         const message = payload.payload;
-        console.log('UploadPage: Image data message received:', message); // FIXED: Corrected console.log
+        console.log('UploadPage: Image data message received:', message);
 
         if (message.type === 'image_captured' && message.payload?.imageUrl) {
           try {
@@ -123,12 +122,15 @@ const UploadPage: React.FC = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('UploadPage: Subscribed to desktop scan session channel.');
-          // ADDED: Send desktop ready signal once subscribed
-          await newChannel.send({
-            type: 'broadcast',
-            event: 'desktop_ready',
-            payload: { userId: session?.user?.id },
-          });
+          // ADDED: Send desktop ready signal after a short delay to allow mobile to set up listeners
+          setTimeout(async () => {
+            await newChannel.send({
+              type: 'broadcast',
+              event: 'desktop_ready',
+              payload: { userId: session?.user?.id },
+            });
+            console.log('UploadPage: Sent desktop_ready signal.');
+          }, 500); // 500ms delay
         } else if (status === 'CHANNEL_ERROR') {
           setMobileScanStatus('error');
           setMobileScanError(t('upload_page_realtime_channel_error'));
