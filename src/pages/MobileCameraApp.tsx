@@ -27,6 +27,8 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  // ADDED: New state for post-capture modal
+  const [showReturnToDesktopModal, setShowReturnToDesktopModal] = useState(false);
 
   // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
@@ -267,7 +269,8 @@ const MobileCameraApp: React.FC = () => {
         payload: message,
       });
     }
-    navigate('/upload', { replace: true }); // Redirect back to upload page
+    // MODIFIED: Show modal instead of navigating directly
+    setShowReturnToDesktopModal(true);
   };
 
   if (isSessionLoading) { // MODIFIED: Show loading state for session hydration
@@ -360,6 +363,27 @@ const MobileCameraApp: React.FC = () => {
       </div>
 
       <Button onClick={handleDone} variant="outline" className="mt-8">{t('mobile_scan_cancel_session')}</Button>
+
+      {/* ADDED: Modal for returning to desktop */}
+      {showReturnToDesktopModal && (
+        <Modal
+          isOpen={showReturnToDesktopModal}
+          onClose={() => navigate('/upload', { replace: true })} // Close button navigates
+          title={t('mobile_scan_return_to_desktop_title')}
+        >
+          <div className="text-center space-y-4">
+            <p className="text-gray-700 text-lg">
+              {t('mobile_scan_return_to_desktop_message')}
+            </p>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/upload', { replace: true })}
+            >
+              {t('mobile_scan_go_to_desktop')}
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
