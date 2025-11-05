@@ -27,7 +27,7 @@ interface CapturedImage {
 const UploadPage: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -535,7 +535,7 @@ const UploadPage: React.FC = () => {
               {scanSessionId && mobileAuthToken && ( // MODIFIED: Ensure mobileAuthToken exists
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
                   {/* MODIFIED: QR code now points to root with query params */}
-                  <QRCode value={`${window.location.origin}/?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}`} size={256} level="H" />
+                  <QRCode value={`${window.location.origin}/?scanSessionId=${scanSessionId}&auth_token=${mobileAuthToken}&lang=${i18n.language}`} size={256} level="H" />
                 </div>
               )}
               <p className="text-sm text-gray-500">{t('qr_code_link_description_connect')}</p>
