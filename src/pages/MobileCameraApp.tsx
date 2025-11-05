@@ -104,7 +104,7 @@ const MobileCameraApp: React.FC = () => {
       setIsConnecting(false); // Finished processing initial setup
 
       // NEW: Clear the flags now that MobileCameraApp has consumed the context
-      localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+      localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // Ensure this is cleared here
       localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG);
       console.log('MobileCameraApp: Cleared mobile auth context and active flag from localStorage.');
 
