@@ -207,19 +207,30 @@ const UploadPage: React.FC = () => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  // MODIFIED: handleScanDocumentClick now only opens the modal
+  // MODIFIED: handleScanDocumentClick now checks for mobile device
   const handleScanDocumentClick = async () => {
     if (!session) {
       alert(t('upload_page_login_to_scan'));
       return;
     }
 
-    // Reset states for a clean start when opening the modal
-    setShowScanOptionModal(true);
-    setShowQrCode(false);
-    setScanSessionId(null);
-    setMobileAuthToken(null);
-    setMobileScanStatus('idle');
+    // If on a mobile device, directly enter camera mode
+    if (isMobileDevice) {
+      setShowScanOptionModal(false); // Ensure modal is not shown
+      setShowQrCode(false); // Ensure QR code is not shown
+      setIsCameraMode(true); // Directly enter camera mode
+      setSelectedFiles([]); // Clear any existing files
+      setScanSessionId(null); // Clear mobile scan session if desktop camera is used
+      setMobileScanStatus('idle');
+      setMobileAuthToken(null);
+    } else {
+      // For desktop, proceed with the existing logic to show scan options modal
+      setShowScanOptionModal(true);
+      setShowQrCode(false);
+      setScanSessionId(null);
+      setMobileAuthToken(null);
+      setMobileScanStatus('idle');
+    }
   };
 
   // NEW: handleInitiateSmartphoneScan function
