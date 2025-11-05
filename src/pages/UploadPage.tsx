@@ -383,7 +383,6 @@ const UploadPage: React.FC = () => {
           </div>
         </div>
       </div>
-      )}
 
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
