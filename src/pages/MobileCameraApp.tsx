@@ -87,7 +87,7 @@ const MobileCameraApp: React.FC = () => {
     if (hashScanSessionId && hashAuthToken && supabaseAccessToken && supabaseRefreshToken) {
       console.log('MobileCameraApp: Found all tokens in URL hash.');
       setScanSessionId(hashScanSessionId);
-      // mobileAuthToken is not directly used in this component's state, but passed to Realtime
+      // mobileAuthToken is not directly used in this component's state, but used in main useEffect
       // The Supabase session should already be set by App.tsx
       setIsConnecting(false); // Finished processing initial hash
       // Clear the hash from the URL to remove sensitive tokens
@@ -120,7 +120,7 @@ const MobileCameraApp: React.FC = () => {
     newChannel
       .on('broadcast', { event: 'desktop_ready' }, (payload) => {
         console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // Desktop is ready, can start capturing
+        setIsConnecting(false); // <--- This is the line that should be called
       })
       .on('broadcast', { event: 'desktop_disconnected' }, () => {
         setConnectionError(t('mobile_scan_desktop_disconnected'));
@@ -164,7 +164,7 @@ const MobileCameraApp: React.FC = () => {
       }
       // stopCamera is handled by its own useEffect cleanup
     };
-  }, [session, scanSessionId, connectToRealtime, navigate, isConnecting, t]);
+  }, [session, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Removed 'isConnecting' from dependencies
 
   // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
