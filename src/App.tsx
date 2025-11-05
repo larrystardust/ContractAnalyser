@@ -186,7 +186,7 @@ function App() {
             }
 
             console.log('App.tsx: Supabase session set. Clearing stored context.');
-            localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+            // REMOVED: localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // THIS LINE IS REMOVED
             localStorage.removeItem('mobile_auth_processing_query'); // Ensure this is cleared
 
             // Construct the final URL for MobileCameraApp with all parameters in hash
