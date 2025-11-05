@@ -64,7 +64,7 @@ function App() {
   const navigationType = useNavigationType();
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
 
   useTheme();
 
@@ -78,6 +78,7 @@ function App() {
 
       const queryScanSessionId = queryParams.get('scanSessionId');
       const queryAuthToken = queryParams.get('auth_token');
+      const queryLang = queryParams.get('lang'); // MODIFIED: Get lang from query params
       const supabaseAccessToken = hashParams.get('access_token');
       const supabaseRefreshToken = hashParams.get('refresh_token');
 
@@ -98,6 +99,7 @@ function App() {
       console.log('App.tsx: Current location.hash:', location.hash);
       console.log('App.tsx: queryScanSessionId:', queryScanSessionId);
       console.log('App.tsx: queryAuthToken:', queryAuthToken);
+      console.log('App.tsx: queryLang:', queryLang); // MODIFIED: Log queryLang
       console.log('App.tsx: supabaseAccessToken (from hash):', supabaseAccessToken ? 'present' : 'absent');
       console.log('App.tsx: supabaseRefreshToken (from hash):', supabaseRefreshToken ? 'present' : 'absent');
 
@@ -116,6 +118,7 @@ function App() {
         localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
           scanSessionId: queryScanSessionId,
           authToken: queryAuthToken,
+          lang: queryLang, // MODIFIED: Store lang in context
         }));
         console.log('App.tsx: Context stored in localStorage.');
 
@@ -169,7 +172,19 @@ function App() {
         if (storedContext) {
           console.log('App.tsx: Found stored mobile auth context in localStorage.');
           try {
-            const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
+            const { scanSessionId: storedScanSessionId, authToken: storedAuthToken, lang: storedLang } = JSON.parse(storedContext); // MODIFIED: Extract lang
+
+            // MODIFIED: Apply language preference from stored context
+            if (storedLang && i18n.language !== storedLang) {
+              console.log(`App.tsx: Changing i18n language to ${storedLang} from mobile auth context.`);
+              await i18n.changeLanguage(storedLang);
+              localStorage.setItem('i18nextLng', storedLang); // Ensure localStorage is updated
+              if (storedLang === 'ar') { // Add other RTL languages here if needed
+                document.documentElement.setAttribute('dir', 'rtl');
+              } else {
+                document.documentElement.setAttribute('dir', 'ltr');
+              }
+            }
 
             // Set the Supabase session
             const { error: sessionError } = await supabase.auth.setSession({
@@ -219,7 +234,7 @@ function App() {
     };
 
     handleMobileAuthRedirect();
-  }, [location.hash, location.search, navigate, supabase.auth]); // Depend on location.hash and location.search
+  }, [location.hash, location.search, navigate, supabase.auth, i18n]); // MODIFIED: Added i18n to dependencies
 
   useEffect(() => {
     const publicPaths = [
