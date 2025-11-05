@@ -75,9 +75,16 @@ const UploadPage: React.FC = () => {
     });
 
     newChannel
-      .on('broadcast', { event: 'mobile_ready' }, (payload) => {
+      .on('broadcast', { event: 'mobile_ready' }, async (payload) => { // Desktop now LISTENS for mobile_ready
         console.log('UploadPage: Mobile ready signal received:', payload);
         setMobileScanStatus('connected');
+        // Once mobile is ready, desktop sends its ready signal
+        await newChannel.send({
+          type: 'broadcast',
+          event: 'desktop_ready',
+          payload: { userId: session.user.id },
+        });
+        console.log('UploadPage: Sent desktop_ready signal in response to mobile_ready.');
       })
       .on('broadcast', { event: 'image_data' }, async (payload: { payload: ScanSessionMessage }) => {
         const message = payload.payload;
@@ -121,16 +128,8 @@ const UploadPage: React.FC = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('UploadPage: Subscribed to desktop scan session channel.');
-          // ADDED: Send desktop ready signal after a short delay to allow mobile to set up listeners
-          setTimeout(async () => {
-            await newChannel.send({
-              type: 'broadcast',
-              event: 'desktop_ready',
-              payload: { userId: session?.user?.id },
-            });
-            console.log('UploadPage: Sent desktop_ready signal.');
-          }, 500); // 500ms delay
+          console.log('UploadPage: Subscribed to desktop scan session channel. Waiting for mobile_ready...');
+          // Desktop does NOT send desktop_ready immediately. It waits for mobile_ready.
         } else if (status === 'CHANNEL_ERROR') {
           setMobileScanStatus('error');
           setMobileScanError(t('upload_page_realtime_channel_error'));
@@ -384,6 +383,7 @@ const UploadPage: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Mode Toggle Buttons */}
       <div className="flex space-x-4 mb-6">
