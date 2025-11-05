@@ -7,13 +7,16 @@ import Button from '../components/ui/Button';
 import Card, { CardBody } from '../components/ui/Card';
 import { useTranslation } from 'react-i18next';
 import { ScanSessionMessage } from '../types';
-import Modal from '../components/ui/Modal'; // ADDED: Import Modal component
+import Modal from '../components/ui/Modal';
+
+const MOBILE_AUTH_CONTEXT_KEY = 'mobile_auth_context';
+const MOBILE_AUTH_FLOW_ACTIVE_FLAG = 'mobile_auth_flow_active'; // NEW: Persistent flag for mobile auth flow
 
 const MobileCameraApp: React.FC = () => {
   const supabase = useSupabaseClient();
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // Keep for initial QR code parsing
+  const [searchParams] = useSearchParams();
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -28,10 +31,8 @@ const MobileCameraApp: React.FC = () => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  // ADDED: New state for post-capture modal
   const [showReturnToDesktopModal, setShowReturnToDesktopModal] = useState(false);
 
-  // --- Camera Logic (reused from CameraCapture, adapted) ---
   const stopCamera = useCallback(() => {
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(track => track.stop());
@@ -46,11 +47,11 @@ const MobileCameraApp: React.FC = () => {
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }, // Always use environment camera for mobile scanning
+        video: { facingMode: 'environment' },
       });
       mediaStreamRef.current = mediaStream;
       if (videoRef.current) {
-        videoRef.videoWidth = 1280; // Set a standard resolution for video feed
+        videoRef.videoWidth = 1280;
         videoRef.videoHeight = 720;
         videoRef.current.srcObject = mediaStream;
         try {
@@ -79,37 +80,44 @@ const MobileCameraApp: React.FC = () => {
     };
   }, [startCamera]);
 
-  // MODIFIED: This useEffect now *only* parses ALL tokens from the hash and sets local state
+  // MODIFIED: This useEffect now primarily parses context from localStorage
   useEffect(() => {
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    const hashScanSessionId = hashParams.get('scanSessionId'); // Get from hash
-    const hashAuthToken = hashParams.get('auth_token'); // Get from hash
-    const supabaseAccessToken = hashParams.get('access_token'); // Get from hash
-    const supabaseRefreshToken = hashParams.get('refresh_token'); // Get from hash
+    const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
+    const mobileAuthFlowActive = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true';
 
-    if (hashScanSessionId && hashAuthToken && supabaseAccessToken && supabaseRefreshToken) {
-      console.log('MobileCameraApp: Found all tokens in URL hash.');
-      setScanSessionId(hashScanSessionId);
-      // mobileAuthToken is not directly used in this component's state, but used in main useEffect
-      // The Supabase session should already be set by App.tsx
-      setIsConnecting(false); // Finished processing initial hash
-      // Clear the hash from the URL to remove sensitive tokens
-      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-
-      // NUCLEAR FIX: Clear the mobile auth context from localStorage here, after it's been consumed.
-      localStorage.removeItem('mobile_auth_context');
-      console.log('MobileCameraApp: Cleared mobile auth context from localStorage.');
-
-    } else {
-      console.error('MobileCameraApp: Missing essential tokens in hash. Redirecting to upload.');
+    if (!mobileAuthFlowActive || !storedContext) {
+      console.error('MobileCameraApp: Mobile auth flow not active or context missing. Redirecting to upload.');
       setConnectionError(t('mobile_scan_session_id_missing'));
       setIsConnecting(false);
-      navigate('/upload', { replace: true }); // Redirect to upload page if direct access
+      navigate('/upload', { replace: true });
+      return;
     }
-  }, [location.hash, navigate, t]);
+
+    try {
+      const { scanSessionId: storedScanSessionId, authToken: storedAuthToken } = JSON.parse(storedContext);
+      if (!storedScanSessionId || !storedAuthToken) {
+        throw new Error('Invalid mobile auth context in localStorage.');
+      }
+      setScanSessionId(storedScanSessionId);
+      // The session should already be active by the time MobileCameraApp loads, handled by App.tsx
+
+      setIsConnecting(false); // Finished processing initial setup
+
+      // NEW: Clear the flags now that MobileCameraApp has consumed the context
+      localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+      localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG);
+      console.log('MobileCameraApp: Cleared mobile auth context and active flag from localStorage.');
+
+    } catch (e) {
+      console.error('MobileCameraApp: Error parsing stored mobile auth context:', e);
+      setConnectionError(t('mobile_scan_session_id_missing'));
+      setIsConnecting(false);
+      navigate('/upload', { replace: true });
+    }
+  }, [navigate, t]); // Only depends on navigate and t
 
   const connectToRealtime = useCallback(async (id: string, userId: string) => {
-    setIsConnecting(true); // Explicitly set connecting state here
+    setIsConnecting(true);
     setConnectionError(null);
 
     const newChannel = supabase.channel(`scan-session-${id}`, {
@@ -121,9 +129,9 @@ const MobileCameraApp: React.FC = () => {
     });
 
     newChannel
-      .on('broadcast', { event: 'desktop_ready' }, (payload) => { // Mobile LISTENS for desktop_ready
+      .on('broadcast', { event: 'desktop_ready' }, (payload) => {
         console.log('MobileCameraApp: Desktop ready signal received:', payload);
-        setIsConnecting(false); // Once desktop is ready, mobile stops connecting state
+        setIsConnecting(false);
       })
       .on('broadcast', { event: 'desktop_disconnected' }, () => {
         setConnectionError(t('mobile_scan_desktop_disconnected'));
@@ -133,7 +141,6 @@ const MobileCameraApp: React.FC = () => {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           console.log('MobileCameraApp: Subscribed to scan session channel.');
-          // Mobile now SENDS mobile_ready immediately after subscribing
           await newChannel.send({
             type: 'broadcast',
             event: 'mobile_ready',
@@ -147,19 +154,17 @@ const MobileCameraApp: React.FC = () => {
       });
 
     channelRef.current = newChannel;
-  }, [supabase, t, stopCamera, setIsConnecting]); // ADDED: setIsConnecting to dependencies
+  }, [supabase, t, stopCamera, setIsConnecting]);
 
-  // Main useEffect for Realtime connection (after session is established)
   useEffect(() => {
-    if (isSessionLoading) { // MODIFIED: Wait for session to load
+    if (isSessionLoading) {
       return;
     }
 
     if (session?.user?.id && scanSessionId) {
       console.log('MobileCameraApp: Session exists and scanSessionId is set. Connecting to Realtime.');
       connectToRealtime(scanSessionId, session.user.id);
-    } else if (!session?.user?.id) { // MODIFIED: Removed !isConnecting from condition
-      // If session is definitively not authenticated after loading, redirect
+    } else if (!session?.user?.id) {
       console.error('MobileCameraApp: No active session after hash processing. Redirecting to upload.');
       setConnectionError(t('mobile_scan_authentication_required'));
       navigate('/upload', { replace: true });
@@ -170,11 +175,9 @@ const MobileCameraApp: React.FC = () => {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
-      // stopCamera is handled by its own useEffect cleanup
     };
-  }, [session, isSessionLoading, scanSessionId, connectToRealtime, navigate, t]); // MODIFIED: Added isSessionLoading to dependencies
+  }, [session, isSessionLoading, scanSessionId, connectToRealtime, navigate, t]);
 
-  // --- Image Capture and Upload ---
   const handleCaptureAndUpload = async () => {
     if (!videoRef.current || !canvasRef.current || !scanSessionId || !session?.user?.id) {
       setConnectionError(t('mobile_scan_capture_error_no_session'));
@@ -198,7 +201,6 @@ const MobileCameraApp: React.FC = () => {
           const filePath = `${session.user.id}/${scanSessionId}/${fileName}`;
 
           try {
-            // Upload image to temporary storage
             const { data, error: uploadError } = await supabase.storage
               .from('temp_scans')
               .upload(filePath, blob, {
@@ -210,7 +212,6 @@ const MobileCameraApp: React.FC = () => {
               throw uploadError;
             }
 
-            // Get public URL for the uploaded image
             const { data: publicUrlData } = supabase.storage
               .from('temp_scans')
               .getPublicUrl(filePath);
@@ -219,7 +220,6 @@ const MobileCameraApp: React.FC = () => {
               throw new Error(t('mobile_scan_failed_to_get_public_url'));
             }
 
-            // Send message to desktop via Realtime
             const message: ScanSessionMessage = {
               type: 'image_captured',
               payload: {
@@ -240,7 +240,6 @@ const MobileCameraApp: React.FC = () => {
           } catch (err: any) {
             console.error('MobileCameraApp: Error uploading or sending image:', err);
             setConnectionError(err.message || t('mobile_scan_failed_to_send_image'));
-            // Also send error message to desktop
             const errorMessage: ScanSessionMessage = {
               type: 'error',
               payload: { errorMessage: err.message || t('mobile_scan_failed_to_send_image') },
@@ -264,17 +263,23 @@ const MobileCameraApp: React.FC = () => {
   const handleDone = async () => {
     if (channelRef.current) {
       const message: ScanSessionMessage = { type: 'session_ended' };
-      await channelRef.current?.send({ // Use optional chaining as channelRef.current might be null
+      await channelRef.current?.send({
         type: 'broadcast',
         event: 'image_data',
         payload: message,
       });
     }
-    // MODIFIED: Show modal instead of navigating directly
     setShowReturnToDesktopModal(true);
+    localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG); // NEW: Clear persistent flag on done
   };
 
-  if (isSessionLoading) { // MODIFIED: Show loading state for session hydration
+  // NEW: handleCancelSession function to clear the persistent flag
+  const handleCancelSession = () => {
+    localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG);
+    navigate('/upload', { replace: true });
+  };
+
+  if (isSessionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <Card className="max-w-md w-full">
@@ -363,13 +368,12 @@ const MobileCameraApp: React.FC = () => {
         </div>
       </div>
 
-      <Button onClick={handleDone} variant="outline" className="mt-8">{t('mobile_scan_cancel_session')}</Button>
+      <Button onClick={handleCancelSession} variant="outline" className="mt-8">{t('mobile_scan_cancel_session')}</Button>
 
-      {/* ADDED: Modal for returning to desktop */}
       {showReturnToDesktopModal && (
         <Modal
           isOpen={showReturnToDesktopModal}
-          onClose={() => navigate('/upload', { replace: true })} // Close button navigates
+          onClose={() => navigate('/upload', { replace: true })}
           title={t('mobile_scan_return_to_desktop_title')}
         >
           <div className="text-center space-y-4">
