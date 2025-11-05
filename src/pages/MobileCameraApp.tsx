@@ -87,11 +87,16 @@ const MobileCameraApp: React.FC = () => {
     if (hashScanSessionId && hashAuthToken && supabaseAccessToken && supabaseRefreshToken) {
       console.log('MobileCameraApp: Found all tokens in URL hash.');
       setScanSessionId(hashScanSessionId);
-      // mobileAuthToken is not directly used in this component's state, but passed to Realtime
+      // mobileAuthToken is not directly used in this component's state, but used in main useEffect
       // The Supabase session should already be set by App.tsx
       setIsConnecting(false); // Finished processing initial hash
       // Clear the hash from the URL to remove sensitive tokens
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+
+      // NUCLEAR FIX: Clear the mobile auth context from localStorage here, after it's been consumed.
+      localStorage.removeItem('mobile_auth_context');
+      console.log('MobileCameraApp: Cleared mobile auth context from localStorage.');
+
     } else {
       console.error('MobileCameraApp: Missing essential tokens in hash. Redirecting to upload.');
       setConnectionError(t('mobile_scan_session_id_missing'));
