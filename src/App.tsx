@@ -1,19 +1,18 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react'; // ADDED: Import useSupabaseClient and useSessionContext
+import { useSupabaseClient, useSessionContext } from '@supabase/auth-helpers-react';
 
 import { ContractProvider } from './context/ContractContext';
 import './index.css';
-import AuthGuard from './components/AuthGuard'; // Keep direct import for AuthGuard
-import AdminGuard from './components/AdminGuard'; // Keep direct import for AdminGuard
+import AuthGuard from './components/AuthGuard';
+import AdminGuard from './components/AdminGuard';
 import { useTheme } from './hooks/useTheme';
-import MainLayout from './components/layout/MainLayout'; // Keep direct import for MainLayout
+import MainLayout from './components/layout/MainLayout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAppSettings } from './hooks/useAppSettings';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next'; 
 
-// MODIFIED: Lazy load all page components
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const PricingSection = lazy(() => import('./components/pricing/PricingSection'));
 const CheckoutSuccess = lazy(() => import('./components/checkout/CheckoutSuccess'));
@@ -50,27 +49,37 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
-const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal')); // This is a route, so lazy load it.
-const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp')); // ADDED: Lazy load MobileCameraApp
-// REMOVED: MobileAuthLanding
+const DashboardHelpModal = lazy(() => import('./components/dashboard/DashboardHelpModal'));
+const MobileCameraApp = lazy(() => import('./pages/MobileCameraApp'));
 
-const MOBILE_AUTH_CONTEXT_KEY = 'mobile_auth_context'; // ADDED: Define key for localStorage
+const MOBILE_AUTH_CONTEXT_KEY = 'mobile_auth_context';
+const MOBILE_AUTH_FLOW_ACTIVE_FLAG = 'mobile_auth_flow_active'; // NEW: Persistent flag for mobile auth flow
 
 function App() {
-  const supabase = useSupabaseClient(); // ADDED: Get Supabase client
-  const { session } = useSessionContext(); // ADDED: Get session context
+  const supabase = useSupabaseClient();
+  const { session } = useSessionContext();
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const { settings: appSettings, loading: loadingAppSettings } = useAppSettings();
   const { isAdmin, loadingAdminStatus } = useIsAdmin();
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const { t, i18n } = useTranslation();
 
   useTheme();
 
   const [isMobileAuthFlowInProgress, setIsMobileAuthFlowInProgress] = useState(false);
 
-  // ADDED: New useEffect for handling mobile authentication redirect
+  // NEW: useEffect for persistent redirection to /mobile-camera
+  useEffect(() => {
+    const mobileAuthFlowActive = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true';
+    if (mobileAuthFlowActive && !loadingAppSettings && !loadingAdminStatus && session?.user && location.pathname !== '/mobile-camera') {
+      console.log('App.tsx: Persistent mobile auth flow detected. Redirecting to /mobile-camera.');
+      navigate('/mobile-camera', { replace: true });
+    }
+  }, [session?.user, location.pathname, navigate, loadingAppSettings, loadingAdminStatus]);
+
+
+  // MODIFIED: Existing useEffect for handling mobile authentication redirect
   useEffect(() => {
     const handleMobileAuthRedirect = async () => {
       const queryParams = new URLSearchParams(location.search);
@@ -78,18 +87,18 @@ function App() {
 
       const queryScanSessionId = queryParams.get('scanSessionId');
       const queryAuthToken = queryParams.get('auth_token');
-      const queryLang = queryParams.get('lang'); // MODIFIED: Get lang from query params
+      const queryLang = queryParams.get('lang');
       const supabaseAccessToken = hashParams.get('access_token');
       const supabaseRefreshToken = hashParams.get('refresh_token');
 
       const isInitialMobileAuthLanding = queryScanSessionId && queryAuthToken;
       const isSupabaseRedirectAfterMagicLink = supabaseAccessToken && supabaseRefreshToken;
+      const mobileAuthFlowActiveFromStorage = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true'; // Check persistent flag
 
       // If any part of the mobile auth flow is detected, set flag
-      if (isInitialMobileAuthLanding || isSupabaseRedirectAfterMagicLink) {
+      if (isInitialMobileAuthLanding || isSupabaseRedirectAfterMagicLink || mobileAuthFlowActiveFromStorage) {
         setIsMobileAuthFlowInProgress(true);
       } else {
-        // If not in mobile auth flow, ensure flag is false
         setIsMobileAuthFlowInProgress(false);
         return; // Exit early if not relevant to mobile auth
       }
@@ -99,7 +108,7 @@ function App() {
       console.log('App.tsx: Current location.hash:', location.hash);
       console.log('App.tsx: queryScanSessionId:', queryScanSessionId);
       console.log('App.tsx: queryAuthToken:', queryAuthToken);
-      console.log('App.tsx: queryLang:', queryLang); // MODIFIED: Log queryLang
+      console.log('App.tsx: queryLang:', queryLang);
       console.log('App.tsx: supabaseAccessToken (from hash):', supabaseAccessToken ? 'present' : 'absent');
       console.log('App.tsx: supabaseRefreshToken (from hash):', supabaseRefreshToken ? 'present' : 'absent');
 
@@ -112,13 +121,14 @@ function App() {
           console.log('App.tsx: Already processing query params, skipping re-invocation.');
           return;
         }
-        localStorage.setItem('mobile_auth_processing_query', 'true'); // Set flag
+        localStorage.setItem('mobile_auth_processing_query', 'true');
+        localStorage.setItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG, 'true'); // NEW: Set persistent flag
 
         // Store context in localStorage
         localStorage.setItem(MOBILE_AUTH_CONTEXT_KEY, JSON.stringify({
           scanSessionId: queryScanSessionId,
           authToken: queryAuthToken,
-          lang: queryLang, // MODIFIED: Store lang in context
+          lang: queryLang,
         }));
         console.log('App.tsx: Context stored in localStorage.');
 
@@ -150,15 +160,16 @@ function App() {
           }
 
           console.log('App.tsx: Received magic link. Redirecting to:', data.redirectToUrl);
-          localStorage.removeItem('mobile_auth_processing_query'); // Clear flag before redirect
+          localStorage.removeItem('mobile_auth_processing_query');
           window.location.replace(data.redirectToUrl); // This will trigger Supabase's auth flow
           return;
 
         } catch (err: any) {
           console.error('App.tsx: Error during mobile authentication initiation:', err);
-          localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // Clean up on error
-          localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
-          setIsMobileAuthFlowInProgress(false); // Reset flag on error
+          localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
+          localStorage.removeItem('mobile_auth_processing_query');
+          localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG); // NEW: Clear persistent flag on error
+          setIsMobileAuthFlowInProgress(false);
           navigate('/login', { replace: true }); // Redirect to login on error
           return;
         }
@@ -166,27 +177,25 @@ function App() {
 
       // Scenario 2: Redirect back from Supabase auth (has hash params, context in localStorage)
       const storedContext = localStorage.getItem(MOBILE_AUTH_CONTEXT_KEY);
-      if (isSupabaseRedirectAfterMagicLink) { // Check for hash tokens first
+      if (isSupabaseRedirectAfterMagicLink) {
         console.log('App.tsx: Scenario 2 - Detected Supabase session tokens in URL hash.');
 
         if (storedContext) {
           console.log('App.tsx: Found stored mobile auth context in localStorage.');
           try {
-            const { scanSessionId: storedScanSessionId, authToken: storedAuthToken, lang: storedLang } = JSON.parse(storedContext); // MODIFIED: Extract lang
+            const { lang: storedLang } = JSON.parse(storedContext);
 
-            // MODIFIED: Apply language preference from stored context
             if (storedLang && i18n.language !== storedLang) {
               console.log(`App.tsx: Changing i18n language to ${storedLang} from mobile auth context.`);
               await i18n.changeLanguage(storedLang);
-              localStorage.setItem('i18nextLng', storedLang); // Ensure localStorage is updated
-              if (storedLang === 'ar') { // Add other RTL languages here if needed
+              localStorage.setItem('i18nextLng', storedLang);
+              if (storedLang === 'ar') {
                 document.documentElement.setAttribute('dir', 'rtl');
               } else {
                 document.documentElement.setAttribute('dir', 'ltr');
               }
             }
 
-            // Set the Supabase session
             const { error: sessionError } = await supabase.auth.setSession({
               access_token: supabaseAccessToken,
               refresh_token: supabaseRefreshToken,
@@ -195,46 +204,40 @@ function App() {
             if (sessionError) {
               console.error('App.tsx: Error setting Supabase session from hash:', sessionError);
               localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
-              setIsMobileAuthFlowInProgress(false); // Reset flag on error
+              localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG); // NEW: Clear persistent flag on error
+              setIsMobileAuthFlowInProgress(false);
               navigate('/login', { replace: true });
               return;
             }
 
-            console.log('App.tsx: Supabase session set. Clearing stored context.');
-            // REMOVED: localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY); // THIS LINE IS REMOVED
-            localStorage.removeItem('mobile_auth_processing_query'); // Ensure this is cleared
-
-            // Construct the final URL for MobileCameraApp with all parameters in hash
-            const finalMobileCameraUrl = `/mobile-camera#scanSessionId=${storedScanSessionId}&auth_token=${storedAuthToken}&access_token=${supabaseAccessToken}&refresh_token=${supabaseRefreshToken}`;
-            
-            console.log('App.tsx: Final redirecting to MobileCameraApp:', finalMobileCameraUrl);
-            setIsMobileAuthFlowInProgress(false); // Reset flag on successful redirect
-            navigate(finalMobileCameraUrl, { replace: true });
+            console.log('App.tsx: Supabase session set. Clearing stored context and redirecting to /mobile-camera.');
+            localStorage.removeItem('mobile_auth_processing_query');
+            // The MOBILE_AUTH_FLOW_ACTIVE_FLAG will be cleared by MobileCameraApp once it loads.
+            setIsMobileAuthFlowInProgress(false); // Reset this state as navigation is happening
+            navigate('/mobile-camera', { replace: true }); // NEW: Direct to mobile-camera
             return;
 
           } catch (err: any) {
             console.error('App.tsx: Error processing stored mobile auth context:', err);
             localStorage.removeItem(MOBILE_AUTH_CONTEXT_KEY);
-            localStorage.removeItem('mobile_auth_processing_query'); // Clear flag on error
-            setIsMobileAuthFlowInProgress(false); // Reset flag on error
+            localStorage.removeItem('mobile_auth_processing_query');
+            localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG); // NEW: Clear persistent flag on error
+            setIsMobileAuthFlowInProgress(false);
             navigate('/login', { replace: true });
             return;
           }
         } else {
           console.warn('App.tsx: Supabase session tokens found, but no mobile auth context in localStorage. This might be a regular login or a failed mobile auth attempt. Redirecting to login.');
-          // NUCLEAR FIX: If context is missing, redirect to login, NOT dashboard.
-          setIsMobileAuthFlowInProgress(false); // Reset flag on error
-          navigate('/login', { replace: true }); 
+          localStorage.removeItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG); // NEW: Clear persistent flag if context is missing
+          setIsMobileAuthFlowInProgress(false);
+          navigate('/login', { replace: true });
           return;
         }
       }
-      // If neither query params nor hash params for mobile auth are present,
-      // and no stored context, then it's a normal page load.
-      // The regular AuthGuard will handle authentication for protected routes.
     };
 
     handleMobileAuthRedirect();
-  }, [location.hash, location.search, navigate, supabase.auth, i18n]); // MODIFIED: Added i18n to dependencies
+  }, [location.hash, location.search, navigate, supabase.auth, i18n]);
 
   useEffect(() => {
     const publicPaths = [
@@ -258,8 +261,7 @@ function App() {
       '/maintenance',
       '/blog',
       '/blog/:slug',
-      '/mobile-camera', // Mobile camera app is a public path
-      // REMOVED: '/mobile-auth-landing', // Mobile auth landing page is no longer a separate route
+      '/mobile-camera',
     ];
     
     const currentPathBase = location.pathname.split('?')[0].split('#')[0];
@@ -278,11 +280,6 @@ function App() {
       navigate('/maintenance', { replace: true });
       return;
     }
-
-    // The AuthGuard now handles redirection for unauthenticated users
-    // if (!isSessionLoading && !session && !isPublicPath(currentPathBase)) {
-    //   navigate('/', { replace: true });
-    // }
   }, [location, navigate, appSettings, loadingAppSettings, isAdmin, loadingAdminStatus]);
 
   const handleOpenHelpModal = () => {
@@ -316,8 +313,7 @@ function App() {
               <Route path="/mfa-challenge" element={<MfaChallengePage />} />
               <Route path="/public-report-view" element={<PublicReportViewerPage />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/mobile-camera" element={<MobileCameraApp />} /> {/* New route for mobile camera app */}
-              {/* REMOVED: <Route path="/mobile-auth-landing" element={<MobileAuthLanding />} /> */}
+              <Route path="/mobile-camera" element={<MobileCameraApp />} />
 
               {/* Routes with Header (MainLayout) */}
               <Route element={<MainLayout
@@ -345,7 +341,6 @@ function App() {
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
 
-                  {/* MODIFIED: DashboardHelpModal is now a standalone route */}
                   <Route path="/dashboard-help" element={<DashboardHelpModal />} />
                 </Route>
 
@@ -361,7 +356,7 @@ function App() {
                 </Route>
               </Route>
             </Routes>
-          </Suspense> {/* END Suspense */}
+          </Suspense>
         </ErrorBoundary>
       </div>
     </ContractProvider>
