@@ -42,35 +42,65 @@ export type Database = {
       analysis_results: {
         Row: {
           compliance_score: number
+          confidentiality_obligations_summary: string | null
           contract_id: string
+          contract_type: string | null
+          contract_value: string | null
           created_at: string
           data_protection_impact: string | null
+          effective_date: string | null
           executive_summary: string
           id: string
+          indemnification_clause_summary: string | null
           jurisdiction_summaries: Json | null
+          liability_cap_summary: string | null
+          parties: string[] | null
+          performed_advanced_analysis: boolean | null
+          renewal_date: string | null
           report_file_path: string | null
+          termination_date: string | null
           updated_at: string
         }
         Insert: {
           compliance_score: number
+          confidentiality_obligations_summary?: string | null
           contract_id: string
+          contract_type?: string | null
+          contract_value?: string | null
           created_at?: string
           data_protection_impact?: string | null
+          effective_date?: string | null
           executive_summary: string
           id?: string
+          indemnification_clause_summary?: string | null
           jurisdiction_summaries?: Json | null
+          liability_cap_summary?: string | null
+          parties?: string[] | null
+          performed_advanced_analysis?: boolean | null
+          renewal_date?: string | null
           report_file_path?: string | null
+          termination_date?: string | null
           updated_at?: string
         }
         Update: {
           compliance_score?: number
+          confidentiality_obligations_summary?: string | null
           contract_id?: string
+          contract_type?: string | null
+          contract_value?: string | null
           created_at?: string
           data_protection_impact?: string | null
+          effective_date?: string | null
           executive_summary?: string
           id?: string
+          indemnification_clause_summary?: string | null
           jurisdiction_summaries?: Json | null
+          liability_cap_summary?: string | null
+          parties?: string[] | null
+          performed_advanced_analysis?: boolean | null
+          renewal_date?: string | null
           report_file_path?: string | null
+          termination_date?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -429,6 +459,8 @@ export type Database = {
           login_at: string | null
           mobile_phone_number: string | null
           notification_settings: Json | null
+          renewal_notification_days_before: number | null
+          termination_notification_days_before: number | null
           theme_preference: string
         }
         Insert: {
@@ -445,6 +477,8 @@ export type Database = {
           login_at?: string | null
           mobile_phone_number?: string | null
           notification_settings?: Json | null
+          renewal_notification_days_before?: number | null
+          termination_notification_days_before?: number | null
           theme_preference?: string
         }
         Update: {
@@ -461,6 +495,8 @@ export type Database = {
           login_at?: string | null
           mobile_phone_number?: string | null
           notification_settings?: Json | null
+          renewal_notification_days_before?: number | null
+          termination_notification_days_before?: number | null
           theme_preference?: string
         }
         Relationships: [
@@ -468,6 +504,38 @@ export type Database = {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
             isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scan_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -567,6 +635,7 @@ export type Database = {
           max_users: number | null
           price_id: string
           product_id: string
+          tier: number | null
           updated_at: string
         }
         Insert: {
@@ -576,6 +645,7 @@ export type Database = {
           max_users?: number | null
           price_id: string
           product_id: string
+          tier?: number | null
           updated_at?: string
         }
         Update: {
@@ -585,6 +655,7 @@ export type Database = {
           max_users?: number | null
           price_id?: string
           product_id?: string
+          tier?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -605,6 +676,7 @@ export type Database = {
           price_id: string | null
           status: Database["public"]["Enums"]["stripe_subscription_status"]
           subscription_id: string | null
+          tier: number | null
           updated_at: string | null
         }
         Insert: {
@@ -622,6 +694,7 @@ export type Database = {
           price_id?: string | null
           status: Database["public"]["Enums"]["stripe_subscription_status"]
           subscription_id?: string | null
+          tier?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -639,6 +712,7 @@ export type Database = {
           price_id?: string | null
           status?: Database["public"]["Enums"]["stripe_subscription_status"]
           subscription_id?: string | null
+          tier?: number | null
           updated_at?: string | null
         }
         Relationships: []
