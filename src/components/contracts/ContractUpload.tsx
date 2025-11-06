@@ -85,6 +85,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [showNamingModalInternal, setShowNamingModalInternal] = useState(false);
   const [contractNameForUploadInternal, setContractNameForUploadInternal] = useState('');
 
+  // ADDED: State for total images size
+  const [totalImagesSize, setTotalImagesSize] = useState(0);
+
 
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
@@ -139,6 +142,17 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       setPerformAdvancedAnalysis(false);
     }
   }, [capturedImages, selectedFiles, isAdvancedSubscription, isBasicSubscription]); // MODIFIED: Removed hasImageInput from dependencies as it's derived here
+
+  // ADDED: Effect to calculate total size of images
+  useEffect(() => {
+    const currentSelectedFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
+    const currentCapturedImages = Array.isArray(capturedImages) ? capturedImages : [];
+
+    const totalSize = [...currentCapturedImages, ...currentSelectedFiles]
+      .filter(file => file.type.startsWith('image/')) // Only sum image files
+      .reduce((sum, file) => sum + file.size, 0);
+    setTotalImagesSize(totalSize);
+  }, [selectedFiles, capturedImages]);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -503,6 +517,16 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
+  // ADDED: Helper function to format bytes
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  };
+
 
   // Drag and Drop functions
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
@@ -622,6 +646,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           {isAnyInputSelected && (
             <div className="w-full mt-6">
               <p className="text-sm text-gray-700 font-medium mb-3">{t('selected_files_for_upload')}:</p>
+              {totalImagesSize > 0 && ( // ADDED: Display total size of images
+                <p className="text-sm text-gray-600 mb-3">{t('total_size')}: {formatBytes(totalImagesSize)}</p>
+              )}
               <p className="text-xs text-gray-500 mb-3">{t('reorder_pages_message')}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedFiles.map((file, index) => (
