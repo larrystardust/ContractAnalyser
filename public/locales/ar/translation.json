@@ -1714,6 +1714,7 @@
   
   "mobile_auth_landing_please_wait": "يرجى الانتظار بينما نقوم بتسجيل دخولك بأمان.",
 
+  "total_size": "الحجم الكلي",
   "name_your_contract": "تسمية العقد الخاص بك",
   "provide_name_for_scanned_contract": "يرجى تقديم اسم للعقد الممسوح ضوئيًا قبل تحميله.",
   "contract_name_placeholder": "مثال: اتفاقيتي الممسوحة ضوئيًا",
