@@ -116,23 +116,22 @@ const SampleContractList: React.FC<SampleContractListProps> = ({ contractsToDisp
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
-                      {getStatusIcon(contract.status)}
-                      <span className="ml-1 text-xs font-medium text-gray-700">
-                        {t(getStatusLabel(contract.status))}
-                      </span>
-                    </div>
-                    {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
-                      <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
-                        <div
-                          className="bg-blue-600 h-1.5 rounded-full"
-                          style={{ width: `${contract.processing_progress}%` }}
-                        ></div>
-                      </div>
-                    )}
+                {/* MODIFIED: Adjusted layout for mobile responsiveness */}
+                <div className="flex flex-col items-end space-y-1 sm:flex-row sm:items-center sm:space-x-2">
+                  <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
+                    {getStatusIcon(contract.status)}
+                    <span className="ml-1 text-xs font-medium text-gray-700">
+                      {t(getStatusLabel(contract.status))}
+                    </span>
                   </div>
+                  {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
+                    <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
+                      <div
+                        className="bg-blue-600 h-1.5 rounded-full"
+                        style={{ width: `${contract.processing_progress}%` }}
+                      ></div>
+                    </div>
+                  )}
                 </div>
               </CardBody>
             </Card>
