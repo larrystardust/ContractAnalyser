@@ -373,12 +373,25 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       let imageDatasToProcess: string[] = [];
       let needsBackendOcr = false; // Flag to tell backend whether to perform OCR
 
+      // Determine total size and file type for the database entry
+      const totalSizeInBytes = allInputs.reduce((sum, file) => sum + file.size, 0);
+      fileSize = formatBytes(totalSizeInBytes); // Use the helper to format total size
+
+      // Determine fileType: if any image is involved, treat as image/jpeg, otherwise use first selected file's type
+      const hasAnyImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+      if (hasAnyImageInput) {
+        fileType = 'image/jpeg';
+        needsBackendOcr = true; // If any image, OCR is needed
+      } else if (selectedFiles.length > 0) {
+        fileType = selectedFiles[0].type;
+      } else {
+        fileType = 'application/octet-stream'; // Default fallback
+      }
+
+
       // Process captured images first
       if (capturedImages.length > 0) {
         if (!fileName) fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`; // Fallback if no custom name
-        fileSize = t('not_applicable');
-        fileType = 'image/jpeg';
-        needsBackendOcr = true; // Captured images always need OCR
         
         for (const imageFile of capturedImages) {
           imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
@@ -398,12 +411,9 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       } else if (selectedFiles.length > 0) {
         // Process uploaded files
         if (!fileName) fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name; // Fallback if no custom name
-        fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
-        fileType = selectedFiles[0].type;
-
+        
         for (const file of selectedFiles) {
           if (file.type.startsWith('image/')) {
-            needsBackendOcr = true; // Uploaded images always need OCR
             imageDatasToProcess.push(await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
@@ -439,7 +449,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         files: filesToUpload.length > 0 ? filesToUpload : undefined,
         imageDatas: imageDatasToProcess.length > 0 ? imageDatasToProcess : undefined,
         fileName,
-        fileSize,
+        fileSize, // This will now be the correctly calculated and formatted size
         fileType,
         jurisdictions: selectedJurisdictions,
         contractText, // This will now contain text for PDF/DOCX if applicable
