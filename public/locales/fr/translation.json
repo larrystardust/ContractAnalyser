@@ -1718,5 +1718,12 @@
   "mobile_scan_go_to_desktop": "Aller au bureau",
   "mobile_scan_authentication_required": "Authentification requise pour la numérisation mobile. Veuillez vous connecter.",
   
-  "mobile_auth_landing_please_wait": "Veuillez patienter pendant que nous vous connectons en toute sécurité."
+  "mobile_auth_landing_please_wait": "Veuillez patienter pendant que nous vous connectons en toute sécurité.",
+
+  "name_your_contract": "Nommez votre contrat",
+  "provide_name_for_scanned_contract": "Veuillez fournir un nom pour votre contrat numérisé avant de le télécharger.",
+  "contract_name_placeholder": "Ex: Mon accord numérisé",
+  "confirm_name": "Confirmer le nom",
+  "contract_name_cannot_be_empty": "Le nom du contrat ne peut pas être vide.",
+  "scanned_document_default_name": "Document numérisé {{date}}"
 }
