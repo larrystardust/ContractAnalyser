@@ -74,9 +74,14 @@ function App() {
     const mobileAuthFlowActive = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true';
     if (mobileAuthFlowActive && !loadingAppSettings && !loadingAdminStatus && session?.user && location.pathname !== '/mobile-camera') {
       console.log('App.tsx: Persistent mobile auth flow detected. Redirecting to /mobile-camera.');
+      setIsMobileAuthFlowInProgress(true); // Show spinner during persistent redirect
       navigate('/mobile-camera', { replace: true });
+    } else if (!mobileAuthFlowActive && isMobileAuthFlowInProgress && location.pathname !== '/mobile-camera') {
+      // If the flag is cleared externally (e.g., by MobileCameraApp) and we are not on /mobile-camera,
+      // then we can safely turn off the spinner.
+      setIsMobileAuthFlowInProgress(false);
     }
-  }, [session?.user, location.pathname, navigate, loadingAppSettings, loadingAdminStatus]);
+  }, [session?.user, location.pathname, navigate, loadingAppSettings, loadingAdminStatus, isMobileAuthFlowInProgress]); // Added isMobileAuthFlowInProgress to dependencies
 
 
   // MODIFIED: Existing useEffect for handling mobile authentication redirect
@@ -93,14 +98,19 @@ function App() {
 
       const isInitialMobileAuthLanding = queryScanSessionId && queryAuthToken;
       const isSupabaseRedirectAfterMagicLink = supabaseAccessToken && supabaseRefreshToken;
-      const mobileAuthFlowActiveFromStorage = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true'; // Check persistent flag
+      // const mobileAuthFlowActiveFromStorage = localStorage.getItem(MOBILE_AUTH_FLOW_ACTIVE_FLAG) === 'true'; // REMOVED: No longer needed here
 
-      // If any part of the mobile auth flow is detected, set flag
-      if (isInitialMobileAuthLanding || isSupabaseRedirectAfterMagicLink || mobileAuthFlowActiveFromStorage) {
+      // Only set isMobileAuthFlowInProgress if an *active* mobile auth event is detected
+      // This prevents the spinner from re-activating on subsequent re-renders if the flag is still in localStorage
+      if (isInitialMobileAuthLanding || isSupabaseRedirectAfterMagicLink) {
         setIsMobileAuthFlowInProgress(true);
       } else {
-        setIsMobileAuthFlowInProgress(false);
-        return; // Exit early if not relevant to mobile auth
+        // If no active event, and we are not already in the flow, then exit.
+        // If we are already in the flow (e.g., persistent redirect from top useEffect),
+        // then this function should not interfere with isMobileAuthFlowInProgress.
+        if (!isMobileAuthFlowInProgress) { // Only return if not already showing spinner
+          return;
+        }
       }
 
       console.log('App.tsx: handleMobileAuthRedirect triggered.');
