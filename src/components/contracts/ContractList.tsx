@@ -188,13 +188,13 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                 className={`transition-all duration-200 border border-gray-100 ${contract.id === pinnedContractId ? 'order-first border-blue-500 shadow-lg' : ''}`} // ADDED: Pinning styles
               >
                 <CardBody className="flex justify-between items-center">
-                  <div className="flex items-center">
+                  <div className="flex items-center flex-1 min-w-0"> {/* MODIFIED: Added flex-1 min-w-0 */}
                     <div className="flex-shrink-0 mr-4">
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <FileText className="h-5 w-5 text-blue-900" />
                       </div>
                     </div>
-                    <div>
+                    <div className="min-w-0"> {/* MODIFIED: Added min-w-0 */}
                       <h3 className="text-sm font-medium text-gray-900">{contract.translated_name || contract.name}</h3>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDate(contract.created_at)} • {contract.size}
