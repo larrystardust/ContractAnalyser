@@ -1712,5 +1712,12 @@
   "mobile_scan_go_to_desktop": "الذهاب إلى سطح المكتب",
   "mobile_scan_authentication_required": "المصادقة مطلوبة للمسح الضوئي عبر الهاتف المحمول. الرجاء تسجيل الدخول.",
   
-  "mobile_auth_landing_please_wait": "يرجى الانتظار بينما نقوم بتسجيل دخولك بأمان."
+  "mobile_auth_landing_please_wait": "يرجى الانتظار بينما نقوم بتسجيل دخولك بأمان.",
+
+  "name_your_contract": "تسمية العقد الخاص بك",
+  "provide_name_for_scanned_contract": "يرجى تقديم اسم للعقد الممسوح ضوئيًا قبل تحميله.",
+  "contract_name_placeholder": "مثال: اتفاقيتي الممسوحة ضوئيًا",
+  "confirm_name": "تأكيد الاسم",
+  "contract_name_cannot_be_empty": "لا يمكن أن يكون اسم العقد فارغًا.",
+  "scanned_document_default_name": "مستند ممسوح ضوئيًا {{date}}"
 }
