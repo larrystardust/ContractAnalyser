@@ -1709,5 +1709,12 @@
   "mobile_scan_go_to_desktop": "Ir al escritorio",
   "mobile_scan_authentication_required": "Autenticación requerida para el escaneo móvil. Por favor, inicie sesión.",
   
-  "mobile_auth_landing_please_wait": "Espere mientras iniciamos sesión de forma segura."
+  "mobile_auth_landing_please_wait": "Espere mientras iniciamos sesión de forma segura.",
+
+  "name_your_contract": "Nombra tu contrato",
+  "provide_name_for_scanned_contract": "Por favor, proporciona un nombre para tu contrato escaneado antes de subirlo.",
+  "contract_name_placeholder": "Ej: Mi acuerdo escaneado",
+  "confirm_name": "Confirmar nombre",
+  "contract_name_cannot_be_empty": "El nombre del contrato no puede estar vacío.",
+  "scanned_document_default_name": "Documento escaneado {{date}}"
 }
