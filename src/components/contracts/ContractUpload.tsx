@@ -846,8 +846,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
               !isAnyInputSelected || 
               selectedJurisdictions.length === 0 || 
               uploading || 
-              (!performOcr && !performAnalysis) ||
-              (hasImageInput && !contractNameForUploadInternal.trim() && !showNamingModalInternal) // ADDED: Disable if images are present but not named yet
+              (!performOcr && !performAnalysis)
             }
             icon={<Upload className="w-4 h-4" />}
           >
