@@ -210,34 +210,34 @@ const ContractList: React.FC<ContractListProps> = ({ contractsToDisplay, onSelec
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
-                        {getStatusIcon(contract.status)}
-                        <span className="ml-1 text-xs font-medium text-gray-700">
-                          {t(getStatusLabel(contract.status))}
-                        </span>
-                      </div>
-                      {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
-                        <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
-                          <div 
-                            className="bg-blue-600 h-1.5 rounded-full" 
-                            style={{ width: `${contract.processing_progress}%` }}
-                          ></div>
-                        </div>
-                      )}
-                      {!isSample && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={(e) => handleDownload(contract, e)}
-                          icon={<Download className="h-4 w-4" />}
-                          title={downloadButtonTitle}
-                        >
-                          {downloadButtonText}
-                        </Button>
-                      )}
+                  {/* MODIFIED: Adjusted layout for mobile responsiveness */}
+                  <div className="flex flex-col items-end space-y-1 sm:flex-row sm:items-center sm:space-x-2">
+                    <div className="flex items-center px-3 py-1 rounded-full bg-gray-100">
+                      {getStatusIcon(contract.status)}
+                      <span className="ml-1 text-xs font-medium text-gray-700">
+                        {t(getStatusLabel(contract.status))}
+                      </span>
                     </div>
+                    {contract.status === 'analyzing' && contract.processing_progress !== undefined && (
+                      <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
+                        <div 
+                          className="bg-blue-600 h-1.5 rounded-full" 
+                          style={{ width: `${contract.processing_progress}%` }}
+                        ></div>
+                      </div>
+                    )}
+                    {!isSample && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={(e) => handleDownload(contract, e)}
+                        icon={<Download className="h-4 w-4" />}
+                        title={downloadButtonTitle}
+                        className="w-full sm:w-auto" // Added responsive width
+                      >
+                        {downloadButtonText}
+                      </Button>
+                    )}
                     {!isSample && (
                       <button
                         onClick={(e) => handleDelete(contract.id, contract.file_path, e)}
