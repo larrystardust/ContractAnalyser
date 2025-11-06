@@ -212,8 +212,7 @@ function App() {
 
             console.log('App.tsx: Supabase session set. Clearing stored context and redirecting to /mobile-camera.');
             localStorage.removeItem('mobile_auth_processing_query');
-            // The MOBILE_AUTH_FLOW_ACTIVE_FLAG will be cleared by MobileCameraApp once it loads.
-            // setIsMobileAuthFlowInProgress(false); // REMOVED: Keep true until MobileCameraApp loads
+            setIsMobileAuthFlowInProgress(false); // MODIFIED: Set to false here to stop spinner in App.tsx
             navigate('/mobile-camera', { replace: true }); // NEW: Direct to mobile-camera
             return;
 
