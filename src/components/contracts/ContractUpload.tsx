@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useUserOrders } from '../../hooks/useUserOrders';
+import Modal from '../ui/Modal'; // ADDED: Import Modal
 
 // Dynamically import pdfjs-dist and mammoth
 const loadPdfjs = async () => {
@@ -40,6 +41,7 @@ interface ContractUploadProps {
   isAdvancedSubscription: boolean;
   isBasicSubscription: boolean;
   loadingOrders: boolean; // MODIFIED: Added loadingOrders prop
+  // REMOVED: customContractName and onTriggerUpload props
 }
 
 const ContractUpload: React.FC<ContractUploadProps> = ({
@@ -63,7 +65,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const { subscription, loading: loadingSubscription } = useSubscription();
   const { getTotalSingleUseCredits } = useUserOrders();
 
@@ -78,6 +80,11 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
   const [draggedItemType, setDraggedItemType] = useState<'file' | 'image' | null>(null);
 
   const [hasDocumentFiles, setHasDocumentFiles] = useState(false);
+
+  // ADDED: States for internal naming modal
+  const [showNamingModalInternal, setShowNamingModalInternal] = useState(false);
+  const [contractNameForUploadInternal, setContractNameForUploadInternal] = useState('');
+
 
   const languageOptions = [
     { value: 'auto', label: t('auto_detect') },
@@ -286,9 +293,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // ADDED: New internal function to handle the actual upload process
+  const initiateUploadProcess = async (nameOverride: string | null) => {
     let currentCreditCost = 0;
     // MODIFIED: Credit calculation logic based on subscription type
     if (!isAdvancedSubscription && !isBasicSubscription) { // Single-use user
@@ -346,7 +352,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     onUploadStatusChange(true);
     try {
       let contractText = '';
-      let fileName = '';
+      let fileName = nameOverride || ''; // MODIFIED: Use nameOverride if provided
       let fileSize = '';
       let fileType = '';
       let filesToUpload: File[] = [];
@@ -355,7 +361,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
       // Process captured images first
       if (capturedImages.length > 0) {
-        fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`;
+        if (!fileName) fileName = `${t('scanned_document_prefix')}_${Date.now()}.jpeg`; // Fallback if no custom name
         fileSize = t('not_applicable');
         fileType = 'image/jpeg';
         needsBackendOcr = true; // Captured images always need OCR
@@ -377,7 +383,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         }
       } else if (selectedFiles.length > 0) {
         // Process uploaded files
-        fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name;
+        if (!fileName) fileName = selectedFiles.length > 1 ? `${t('multi_page_contract_prefix')}_${Date.now()}` : selectedFiles[0].name; // Fallback if no custom name
         fileSize = selectedFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024) + ` ${t('megabytes_unit')}`;
         fileType = selectedFiles[0].type;
 
@@ -449,6 +455,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      // REMOVED: onClearCustomContractName(); // ADDED: Clear custom name after successful upload
     } catch (error: any) {
       let errorMessage = error.message || t('failed_to_upload_contract_or_extract_text', { message: error.message });
       if (errorMessage.includes('Setting up fake worker failed') || errorMessage.includes('Failed to fetch dynamically imported module')) {
@@ -462,9 +469,40 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
   };
 
+  // REMOVED: useEffect to trigger upload when onTriggerUpload is called from parent
+
+
   const isAnyInputSelected = capturedImages.length > 0 || selectedFiles.length > 0;
   const hasImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
   // hasDocumentFiles is already calculated in useEffect
+
+  // ADDED: Function to handle form submission, potentially showing naming modal first
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Check if there are any image files (captured or selected)
+    const hasAnyImageInput = capturedImages.length > 0 || selectedFiles.some(f => f.type.startsWith('image/'));
+
+    if (hasAnyImageInput) {
+      // If image input, show naming modal first
+      setContractNameForUploadInternal(t('scanned_document_default_name', { date: new Date().toLocaleDateString(i18n.language) }));
+      setShowNamingModalInternal(true);
+    } else {
+      // Otherwise, proceed directly with upload (for document files)
+      initiateUploadProcess(null);
+    }
+  };
+
+  // ADDED: Function to confirm name from internal modal
+  const handleNamingModalConfirmInternal = () => {
+    if (contractNameForUploadInternal.trim()) {
+      setShowNamingModalInternal(false);
+      initiateUploadProcess(contractNameForUploadInternal);
+    } else {
+      alert(t('contract_name_cannot_be_empty'));
+    }
+  };
+
 
   // Drag and Drop functions
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
@@ -531,7 +569,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleFormSubmit}> {/* MODIFIED: Call handleFormSubmit */}
         <div
           className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center
             ${isDragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-gray-50'}
@@ -804,13 +842,49 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
           <Button
             type="submit"
             variant="primary"
-            disabled={!isAnyInputSelected || selectedJurisdictions.length === 0 || uploading || (!performOcr && !performAnalysis)}
+            disabled={
+              !isAnyInputSelected || 
+              selectedJurisdictions.length === 0 || 
+              uploading || 
+              (!performOcr && !performAnalysis) ||
+              (hasImageInput && !contractNameForUploadInternal.trim() && !showNamingModalInternal) // ADDED: Disable if images are present but not named yet
+            }
             icon={<Upload className="w-4 h-4" />}
           >
             {uploading ? t('uploading') : t('upload_contract_button')}
           </Button>
         </div>
       </form>
+
+      {/* ADDED: Naming Modal for Scanned Contracts (Internal to ContractUpload) */}
+      <Modal
+        isOpen={showNamingModalInternal}
+        onClose={() => setShowNamingModalInternal(false)}
+        title={t('name_your_contract')}
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">{t('provide_name_for_scanned_contract')}</p>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder={t('contract_name_placeholder')}
+            value={contractNameForUploadInternal}
+            onChange={(e) => setContractNameForUploadInternal(e.target.value)}
+          />
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setShowNamingModalInternal(false)}>
+              {t('cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleNamingModalConfirmInternal}
+              disabled={!contractNameForUploadInternal.trim()}
+            >
+              {t('confirm_name')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
