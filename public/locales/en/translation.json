@@ -1716,5 +1716,12 @@
   "mobile_scan_go_to_desktop": "Go to Desktop",
   "mobile_scan_authentication_required": "Authentication required for mobile scan. Please log in.",
 
-  "mobile_auth_landing_please_wait": "Please wait while we securely log you in."
+  "mobile_auth_landing_please_wait": "Please wait while we securely log you in.",
+
+  "name_your_contract": "Name Your Contract",
+  "provide_name_for_scanned_contract": "Please provide a name for your scanned contract before uploading.",
+  "contract_name_placeholder": "e.g., My Scanned Agreement",
+  "confirm_name": "Confirm Name",
+  "contract_name_cannot_be_empty": "Contract name cannot be empty.",
+  "scanned_document_default_name": "Scanned Document {{date}}"
 }
