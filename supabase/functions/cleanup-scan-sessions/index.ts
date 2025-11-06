@@ -99,22 +99,22 @@ Deno.serve(async (req) => {
           }
         }
 
-        // 3. Update the session status to 'expired'
-        const { error: updateError } = await supabase
+        // 3. Delete the session row from the database
+        const { error: deleteError } = await supabase
           .from('scan_sessions')
-          .update({ status: 'expired' })
+          .delete()
           .eq('id', session.id);
 
-        if (updateError) {
-          console.error(`cleanup-scan-sessions: Error updating status for session ${session.id}:`, updateError);
-          return { id: session.id, status: 'failed', reason: updateError.message };
+        if (deleteError) {
+          console.error(`cleanup-scan-sessions: Error deleting session ${session.id}:`, deleteError);
+          return { id: session.id, status: 'failed', reason: deleteError.message };
         } else {
-          console.log(`cleanup-scan-sessions: Successfully expired session ${session.id}.`);
+          console.log(`cleanup-scan-sessions: Successfully deleted session ${session.id}.`);
           await logActivity(
             supabase,
             session.user_id,
-            'SCAN_SESSION_EXPIRED',
-            `Scan session ${session.id} expired and was cleaned up.`,
+            'SCAN_SESSION_DELETED', // MODIFIED: Changed event type
+            `Scan session ${session.id} was deleted.`, // MODIFIED: Changed description
             { scan_session_id: session.id }
           );
           return { id: session.id, status: 'success' };
