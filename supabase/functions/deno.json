@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "npm:": "https://deno.land/x/npm@0.1.4/mod.ts#",
+    "anthropic": "npm:anthropic@^0.29.0",
+    "openai": "npm:openai@^4.53.0",
+    "stripe": "npm:stripe@^17.7.0",
+    "resend": "npm:resend@^6.0.1",
+    "jose": "npm:jose@^5.2.3",
+    "google-auth-library": "npm:google-auth-library@^9.10.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.49.1"
+  }
+}
