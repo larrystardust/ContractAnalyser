@@ -720,7 +720,7 @@ NOTES:
             clause_hash: cacheHash,
             jurisdiction: userSelectedJurisdictions,
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
-            llm_model: 'claude-4.5-sonnet-20250929',
+            llm_model: 'claude-sonnet-4-5',
             cached_result: analysisData,
           });
         if (insertCacheError) {
