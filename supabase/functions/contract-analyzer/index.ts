@@ -518,8 +518,8 @@ Deno.serve(async (req) => {
     const notSpecifiedTranslatedString = getTranslatedMessage('not_specified', outputLanguage);
 
     // --- Dream Team Logic: Conditional LLM Orchestration ---
-    if (isAdvancedPlanUser) { // Advanced Plan: GPT-4o (Eyes) + Claude Sonnet 4.5 (Brain)
-      console.log(`contract-analyzer: DEBUG - Advanced Plan user (Tier ${userSubscriptionTier}). Using Dream Team workflow.`);
+    if (performAdvancedAnalysis) { // MODIFIED: Use performAdvancedAnalysis flag
+      console.log(`contract-analyzer: DEBUG - Advanced Analysis requested. Using Dream Team workflow.`); // MODIFIED
       
       // Phase 1: GPT-4o as "Eyes" for initial extraction and structuring
       await supabase.from('contracts').update({ processing_progress: 40 }).eq('id', contractId);
@@ -729,7 +729,7 @@ NOTES:
       }
 
     } else { // Non-Advanced Plans: GPT-4o as "All-in-One"
-      console.log(`contract-analyzer: DEBUG - Non-Advanced Plan user (Tier ${userSubscriptionTier}). Using GPT-4o All-in-One workflow.`);
+      console.log(`contract-analyzer: DEBUG - Basic Analysis requested. Using GPT-4o All-in-One workflow.`); // MODIFIED
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
       const gpt4oAllInOneSystemPrompt = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
