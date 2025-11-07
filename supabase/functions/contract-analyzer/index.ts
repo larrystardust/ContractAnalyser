@@ -691,7 +691,7 @@ NOTES:
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
         const claudeCompletion = await anthropic.messages.create({
-          model: "claude-4.5-sonnet-20250929", // Use Claude Sonnet 4.5
+          model: "claude-sonnet-4-5", // MODIFIED: Use the correct API identifier for Claude Sonnet 4.5
           max_tokens: 4000, // Adjust based on expected output length
           temperature: 0.2,
           system: claudeSystemPrompt,
