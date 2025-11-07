@@ -263,6 +263,14 @@ export const edgeTranslations = {
     email_system_update_body_p1: "We have an important update regarding: {title}",
     email_system_update_body_p2: "Please visit your dashboard for more information.",
     previous_plan: "Previous Plan",
+
+    artifacts_section_title: "Artifacts",
+    redlined_clause_artifact: "Redlined Clause Artifact",
+    redlined_clause_artifact_description: "This artifact provides a redlined version of a high-risk clause, highlighting problematic areas and suggesting a revised version for improved clarity and reduced risk. It is linked to finding ID: {{findingId}}.",
+    redlined_clause_artifact_description_report: "This artifact provides a redlined version of a high-risk clause, highlighting problematic areas and suggesting a revised version for improved clarity and reduced risk.",
+    download_artifact: "Download Artifact",
+    not_applicable: "Not Applicable",
+    error_no_content_from_claude: "No content received from Claude Sonnet 4.5.",
   },
   es: {
     report_title: "Informe de Análisis de Contrato",
@@ -528,6 +536,14 @@ export const edgeTranslations = {
     email_system_update_body_p1: "Tenemos una actualización importante sobre: {title}", 
     email_system_update_body_p2: "Visite su panel de control para obtener más información.",
     previous_plan: "Plan Anterior",
+
+    artifacts_section_title: "Artefactos",
+    redlined_clause_artifact: "Artefacto de Cláusula Marcada",
+    redlined_clause_artifact_description: "Este artefacto proporciona una versión marcada de una cláusula de alto riesgo, destacando las áreas problemáticas y sugiriendo una versión revisada para una mayor claridad y un riesgo reducido. Está vinculado al ID de hallazgo: {{findingId}}.",
+    redlined_clause_artifact_description_report: "Este artefacto proporciona una versión marcada de una cláusula de alto riesgo, destacando las áreas problemáticas y sugiriendo una versión revisada para una mayor claridad y un riesgo reducido.",
+    download_artifact: "Descargar Artefacto",
+    not_applicable: "No aplicable",
+    error_no_content_from_claude: "No se recibió contenido de Claude Sonnet 4.5.",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -793,6 +809,14 @@ export const edgeTranslations = {
     email_system_update_body_p1: "Nous avons une mise à jour importante concernant : {title}", 
     email_system_update_body_p2: "Veuillez visiter votre tableau de bord pour plus d'informations.",
     previous_plan: "Plan Précédent",
+
+    artifacts_section_title: "Artefacts",
+    redlined_clause_artifact: "Artefact de clause surlignée",
+    redlined_clause_artifact_description: "Cet artefact fournit une version surlignée d'une clause à haut risque, mettant en évidence les zones problématiques et suggérant une version révisée pour une clarté améliorée et un risque réduit. Il est lié à l'identifiant de constatation : {{findingId}}.",
+    redlined_clause_artifact_description_report: "Cet artefact fournit une version surlignée d'une clause à haut risque, mettant en évidence les zones problématiques et suggérant une version révisée pour une clarté améliorée et un risque réduit.",
+    download_artifact: "Télécharger l'Artefact",
+    not_applicable: "Non applicable",
+    error_no_content_from_claude: "Aucun contenu reçu de Claude Sonnet 4.5.",
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -1058,6 +1082,14 @@ export const edgeTranslations = {
     email_system_update_body_p1: "لدينا تحديث هام بخصوص: {title}",  
     email_system_update_body_p2: "يرجى زيارة لوحة التحكم الخاصة بك لمزيد من المعلومات.",
     previous_plan: "الخطة السابقة",
+
+    artifacts_section_title: "التحف",
+    redlined_clause_artifact: "تحفة البند المخطط",
+    redlined_clause_artifact_description: "توفر هذه التحفة نسخة مخططة من بند عالي المخاطر، مع إبراز المناطق الإشكالية واقتراح نسخة منقحة لتحسين الوضوح وتقليل المخاطر. وهي مرتبطة بمعرف الاكتشاف: {{findingId}}.",
+    redlined_clause_artifact_description_report: "توفر هذه التحفة نسخة مخططة من بند عالي المخاطر، مع إبراز المناطق الإشكالية واقتراح نسخة منقحة لتحسين الوضوح وتقليل المخاطر.",
+    download_artifact: "تنزيل التحفة",
+    not_applicable: "غير قابل للتطبيق",
+    error_no_content_from_claude: "لم يتم استلام أي محتوى من Claude Sonnet 4.5.",
   }
 };
 
