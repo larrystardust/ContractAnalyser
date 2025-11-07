@@ -1,7 +1,7 @@
 {
   "imports": {
     "npm:": "https://deno.land/x/npm@0.1.4/mod.ts#",
-    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@^0.68.0", // MODIFIED: Corrected package name and updated version
+    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@^0.68.0", 
     "openai": "npm:openai@^4.53.0",
     "stripe": "npm:stripe@^17.7.0",
     "resend": "npm:resend@^6.0.1",
