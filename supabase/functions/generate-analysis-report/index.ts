@@ -54,24 +54,20 @@ Deno.serve(async (req) => {
 
     try {
       rawBody = await req.text();
-      // console.log('generate-analysis-report: Raw request body received:', rawBody); // REMOVED
       if (rawBody) {
         requestBody = JSON.parse(rawBody);
       }
-      // console.log('generate-analysis-report: Parsed requestBody:', requestBody); // REMOVED
     } catch (e) {
       console.error('generate-analysis-report: Error parsing request body as JSON:', e);
       return corsResponse({ error: 'Invalid JSON in request body.' }, 400);
     }
 
     const { contractId, contractName: bodyContractName, analysisResult: bodyAnalysisResult, outputLanguage } = requestBody;
-    // console.log('generate-analysis-report: Extracted contractId:', contractId); // REMOVED
 
     if (!contractId) {
       return corsResponse({ error: 'Missing contractId' }, 400);
     }
 
-    // Authenticate the user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return corsResponse({ error: 'Authorization header missing' }, 401);
@@ -88,7 +84,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Unauthorized: Invalid or missing user token' }, 401);
     }
 
-    // Verify that the user owns the contract associated with this report
     const { data: contract, error: contractError } = await supabase
       .from('contracts')
       .select('user_id')
@@ -102,9 +97,7 @@ Deno.serve(async (req) => {
     let finalContractName = bodyContractName;
     let finalAnalysisResult = bodyAnalysisResult;
 
-    // If analysisResult is not provided or is incomplete, fetch it from the database
     if (!finalAnalysisResult || !finalAnalysisResult.executive_summary || !finalAnalysisResult.findings) {
-      // console.log(`Fetching analysis results for contractId: ${contractId} from database.`); // REMOVED
       const { data: contractData, error: contractFetchError } = await supabase
         .from('contracts')
         .select(`
@@ -122,11 +115,12 @@ Deno.serve(async (req) => {
             parties,
             liability_cap_summary,
             indemnification_clause_summary,
-            confidentiality_obligations_summary
+            confidentiality_obligations_summary,
+            redlined_clause_artifact_path
           )
         `)
         .eq('id', contractId)
-        .eq('user_id', user.id) // Ensure user owns the contract
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (contractFetchError) {
@@ -138,15 +132,11 @@ Deno.serve(async (req) => {
       }
 
       finalContractName = contractData.name;
-      finalAnalysisResult = contractData.analysis_results; // Assuming one analysis result per contract
+      finalAnalysisResult = contractData.analysis_results;
     }
 
-    // CRITICAL FIX: Directly use the values from finalAnalysisResult, as contract-analyzer now guarantees them to be strings
-    // If parties is an empty array, display the translated 'not_specified'
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
-
-    // Embedded CSS content from public/report.css
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
       h1, h2, h3, h4 { color: #0056b3; }
@@ -171,9 +161,14 @@ Deno.serve(async (req) => {
       .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
       .jurisdiction-summary { border: 1px solid #cce5ff; background-color: #e0f2ff; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
       .jurisdiction-summary h4 { margin-top: 0; color: #0056b3; }
+      /* ADDED: Styles for redlined artifact */
+      .artifact-section { margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
+      .artifact-section h3 { color: #0056b3; margin-bottom: 10px; }
+      .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
+      .redlined-text { color: red; font-weight: bold; }
+      .suggested-text { color: green; font-weight: bold; }
     `;
 
-    // Generate HTML report content
     let htmlContent = `
       <!DOCTYPE html>
       <html lang="${outputLanguage}">
@@ -221,6 +216,15 @@ Deno.serve(async (req) => {
                   <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
                   <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div>
+
+              ${finalAnalysisResult.redlined_clause_artifact_path ? `
+              <div class="section artifact-section">
+                  <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
+                  <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
+                  <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
+                  <p><a href="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}" target="_blank">${getTranslatedMessage('download_artifact', outputLanguage)}</a></p>
+              </div>
+              ` : ''}
 
               <div class="section">
                   <h2>${getTranslatedMessage('jurisdiction_summaries', outputLanguage)}</h2>
@@ -284,7 +288,6 @@ Deno.serve(async (req) => {
       </html>
     `;
 
-    // Upload HTML to Supabase Storage
     const fileName = `report-${contractId}-${Date.now()}.html`;
     const filePath = fileName; 
 
@@ -300,7 +303,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Failed to generate and store report.' }, 500);
     }
 
-    // MODIFIED: Use getPublicUrl instead of createSignedUrl
     const { data: publicUrlData } = supabase.storage
       .from('reports')
       .getPublicUrl(filePath);
