@@ -545,6 +545,7 @@ NOTES:
 - Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use 'not_specified'.
 - Ensure the JSON is valid and strictly adheres to the specified structure.
 - Do not include any text outside the JSON object.
+- All string values must be properly escaped for JSON. Specifically, any double quotes within a string value must be escaped with a backslash (\\").
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
 
@@ -658,6 +659,7 @@ Return your findings strictly as a valid JSON object with the following structur
 NOTES:
 - Ensure the JSON is valid and strictly adheres to the specified structure.
 - Do not include any text outside the JSON object.
+- All string values must be properly escaped for JSON. Specifically, any double quotes within a string value must be escaped with a backslash (\\").
 - All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 - Risk levels must be one of: high, medium, low, none.
 - Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial.
