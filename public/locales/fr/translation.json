@@ -1726,5 +1726,17 @@
   "contract_name_placeholder": "Ex: Mon accord numérisé",
   "confirm_name": "Confirmer le nom",
   "contract_name_cannot_be_empty": "Le nom du contrat ne peut pas être vide.",
-  "scanned_document_default_name": "Document numérisé {{date}}"
+  "scanned_document_default_name": "Document numérisé {{date}}",
+
+  "artifacts_section_title": "Artefacts",
+  "redlined_clause_artifact": "Artefact de clause surlignée",
+  "redlined_clause_artifact_description": "Cet artefact fournit une version surlignée d'une clause à haut risque, mettant en évidence les zones problématiques et suggérant une version révisée pour une clarté améliorée et un risque réduit. Il est lié à l'identifiant de constatation : {{findingId}}.",
+  "original_clause": "Clause Originale",
+  "redlined_version": "Version Surlignée",
+  "suggested_revision": "Révision Suggérée",
+  "download_artifact": "Télécharger l'Artefact",
+  "failed_to_load_redlined_clause": "Échec du chargement de l'artefact de clause surlignée : {{message}}",
+  "redlined_clause_download_started": "Téléchargement de la clause surlignée démarré.",
+  "failed_to_download_redlined_clause": "Échec du téléchargement de l'artefact de clause surlignée : {{message}}",
+  "no_artifacts_generated": "Aucun artefact n'a été généré pour ce contrat."
 }
