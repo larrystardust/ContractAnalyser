@@ -14,7 +14,7 @@
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.56.0",
-    "anthropic": "^0.29.0",  
+    "@anthropic-ai/sdk": "^0.68.0",  // MODIFIED: Corrected package name and updated version
     "dotenv": "^16.4.5",
     "google-auth-library": "^9.10.0",
     "i18next": "^23.11.5",
