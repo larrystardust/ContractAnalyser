@@ -1717,5 +1717,17 @@
   "contract_name_placeholder": "Ej: Mi acuerdo escaneado",
   "confirm_name": "Confirmar nombre",
   "contract_name_cannot_be_empty": "El nombre del contrato no puede estar vacío.",
-  "scanned_document_default_name": "Documento escaneado {{date}}"
+  "scanned_document_default_name": "Documento escaneado {{date}}",
+
+  "artifacts_section_title": "Artefactos",
+  "redlined_clause_artifact": "Artefacto de Cláusula Marcada",
+  "redlined_clause_artifact_description": "Este artefacto proporciona una versión marcada de una cláusula de alto riesgo, destacando las áreas problemáticas y sugiriendo una versión revisada para una mayor claridad y un riesgo reducido. Está vinculado al ID de hallazgo: {{findingId}}.",
+  "original_clause": "Cláusula Original",
+  "redlined_version": "Versión Marcada",
+  "suggested_revision": "Revisión Sugerida",
+  "download_artifact": "Descargar Artefacto",
+  "failed_to_load_redlined_clause": "Error al cargar el artefacto de cláusula marcada: {{message}}",
+  "redlined_clause_download_started": "Descarga de la cláusula marcada iniciada.",
+  "failed_to_download_redlined_clause": "Error al descargar el artefacto de cláusula marcada: {{message}}",
+  "no_artifacts_generated": "No se generaron artefactos para este contrato."
 }
