@@ -706,7 +706,7 @@ NOTES:
           ],
         });
 
-        const claudeOutputContent = claudeCompletion.content[0].text;
+        const claudeOutputContent = claudeCompletion.content.text;
         if (!claudeOutputContent) {
           throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
         }
