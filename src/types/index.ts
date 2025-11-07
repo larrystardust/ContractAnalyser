@@ -34,6 +34,14 @@ export interface Finding {
   updated_at: string; // Added
 }
 
+// ADDED: Interface for Redlined Clause Artifact
+export interface RedlinedClauseArtifact {
+  originalClause: string;
+  redlinedVersion: string;
+  suggestedRevision: string;
+  findingId?: string; // Optional: Link to a specific finding
+}
+
 export interface AnalysisResult {
   id: string; // Added for UUID
   contract_id: string; // Added foreign key
@@ -56,6 +64,7 @@ export interface AnalysisResult {
   indemnificationClauseSummary?: string | null;
   confidentialityObligationsSummary?: string | null;
   performedAdvancedAnalysis?: boolean; // ADDED: New flag for advanced analysis
+  redlinedClauseArtifactPath?: string | null; // ADDED: Path to the redlined clause artifact
 }
 
 export interface JurisdictionSummary {
