@@ -1732,5 +1732,5 @@
   "failed_to_load_redlined_clause": "فشل تحميل تحفة البند المخطط: {{message}}",
   "redlined_clause_download_started": "بدأ تنزيل البند المخطط.",
   "failed_to_download_redlined_clause": "فشل تنزيل تحفة البند المخطط: {{message}}",
-  "no_artifacts_generated": "لم يتم إنشاء أي تحف لهذا العقد.",
+  "no_artifacts_generated": "لم يتم إنشاء أي تحف لهذا العقد."
 }
