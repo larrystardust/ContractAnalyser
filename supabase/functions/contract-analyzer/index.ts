@@ -710,7 +710,11 @@ NOTES:
         if (!claudeOutputContent) {
           throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
         }
-        analysisData = JSON.parse(claudeOutputContent);
+
+        // MODIFIED: Remove markdown code block fences before parsing JSON
+        const cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
+        
+        analysisData = JSON.parse(cleanedClaudeOutput); // MODIFIED: Parse the cleaned output
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
         // Store in cache
