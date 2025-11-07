@@ -1,9 +1,10 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0';
+import Anthropic from 'anthropic'; // ADDED: Import Anthropic
 import { logActivity } from '../_shared/logActivity.ts';
 import { getTranslatedMessage } from '../_shared/edge_translations.ts';
-import { GoogleAuth } from 'npm:google-auth-library@9.10.0'; // ADDED: For Google Cloud Auth
+import { GoogleAuth } from 'npm:google-auth-library@9.10.0';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -16,7 +17,12 @@ const openai = new OpenAI({
   apiKey: Deno.env.get('OPENAI_API_KEY')!,
 });
 
-// ADDED: Initialize Google Cloud Auth
+// ADDED: Initialize Anthropic client
+const anthropic = new Anthropic({
+  apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
+});
+
+// Initialize Google Cloud Auth for Vision API
 const googleClientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL');
 const googlePrivateKey = Deno.env.get('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
 
@@ -70,7 +76,7 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// MODIFIED: New helper function for translation with improved prompt
+// Helper function for translation with improved prompt
 async function translateText(text: string | null | undefined, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
     return text || ''; // Ensure a string is always returned
@@ -108,10 +114,8 @@ async function translateText(text: string | null | undefined, targetLanguage: st
   }
 }
 
-// ADDED: OCR function using Google Cloud Vision API
-async function executeOcr(imageData: string, userPreferredLanguage: string): Promise<string> { // MODIFIED: Renamed function
-  // REMOVED: if (!Deno.env.get('GOOGLE_VISION_API_KEY')) check
-
+// OCR function using Google Cloud Vision API
+async function executeOcr(imageData: string, userPreferredLanguage: string): Promise<string> {
   const requestBody = {
     requests: [
       {
@@ -128,7 +132,7 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
   };
 
   try {
-    const accessTokenResult = await auth.getAccessToken(); // Get access token for Google Cloud
+    const accessTokenResult = await auth.getAccessToken();
 
     let tokenString: string | undefined;
     if (typeof accessTokenResult === 'string') {
@@ -147,7 +151,7 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokenString}`, // Use the extracted token string
+          'Authorization': `Bearer ${tokenString}`,
         },
         body: JSON.stringify(requestBody),
       }
@@ -173,8 +177,17 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
   }
 }
 
-// ADDED: Cost for advanced analysis add-on
+// Cost for advanced analysis add-on
 const ADVANCED_ANALYSIS_ADDON_COST = 1;
+
+// ADDED: Hashing function for caching
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hexHash;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -194,16 +207,15 @@ Deno.serve(async (req) => {
   let userEmail: string;
   let userName: string | null = null;
   let userSubscriptionId: string | null = null;
-  let userSubscriptionTier: number | null = null; // ADDED: To store user's subscription tier
+  let userSubscriptionTier: number | null = null;
   let userNotificationSettings: Record<string, { email: boolean; inApp: boolean }> = {};
   let token: string;
   let userPreferredLanguage: string = 'en';
 
-  // ADDED: New variables from request body
-  let imageDatas: string[] | undefined; // MODIFIED: Array of image data
+  let imageDatas: string[] | undefined;
   let shouldPerformOcr: boolean;
   let performAnalysis: boolean;
-  let performAdvancedAnalysis: boolean; // ADDED: New flag
+  let performAdvancedAnalysis: boolean;
   let creditCost: number;
 
   try {
@@ -213,10 +225,10 @@ Deno.serve(async (req) => {
       source_language,
       output_language,
       original_contract_name,
-      image_datas, // MODIFIED: Array of image data
+      image_datas,
       perform_ocr_flag,
       perform_analysis,
-      perform_advanced_analysis, // ADDED: Destructure new flag
+      perform_advanced_analysis,
       credit_cost,
     } = await req.json();
 
@@ -225,13 +237,13 @@ Deno.serve(async (req) => {
     sourceLanguage = source_language || 'auto';
     outputLanguage = output_language || 'en';
     originalContractName = original_contract_name;
-    imageDatas = image_datas; // MODIFIED: Array of image data
+    imageDatas = image_datas;
     shouldPerformOcr = perform_ocr_flag || false;
     performAnalysis = perform_analysis || false;
-    performAdvancedAnalysis = perform_advanced_analysis || false; // ADDED: Initialize new flag
+    performAdvancedAnalysis = perform_advanced_analysis || false;
     creditCost = credit_cost || 0;
 
-    if (!contractId || (!contractText && (!imageDatas || imageDatas.length === 0))) { // MODIFIED: Check for imageDatas array
+    if (!contractId || (!contractText && (!imageDatas || imageDatas.length === 0))) {
       return corsResponse({ error: 'Missing contract_id and either contract_text or image_datas' }, 400);
     }
 
@@ -256,7 +268,7 @@ Deno.serve(async (req) => {
     const { data: profileData, error: profileError } = await retry(async () => {
       return await supabase
         .from('profiles')
-        .select('full_name, notification_settings, language_preference') // MODIFIED: Select language_preference
+        .select('full_name, notification_settings, language_preference')
         .eq('id', userId)
         .maybeSingle();
     }, 5, 500);
@@ -279,13 +291,12 @@ Deno.serve(async (req) => {
         ...defaultNotificationSettings,
         ...(profileData?.notification_settings as Record<string, { email: boolean; inApp: boolean }> || {}),
       };
-      userPreferredLanguage = profileData?.language_preference || outputLanguage; // MODIFIED: Use profileData.language_preference
+      userPreferredLanguage = profileData?.language_preference || outputLanguage;
     }
 
-    // MODIFIED: Fetch user's subscription tier
     const { data: membershipData, error: membershipError } = await supabase
       .from('subscription_memberships')
-      .select('subscription_id, stripe_subscriptions(tier)') // Select tier from related stripe_subscriptions
+      .select('subscription_id, stripe_subscriptions(tier)')
       .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle();
@@ -294,9 +305,8 @@ Deno.serve(async (req) => {
       console.error(`contract-analyzer: Error fetching membership for user ${userId}:`, membershipError);
     } else if (membershipData) {
       userSubscriptionId = membershipData.subscription_id;
-      userSubscriptionTier = membershipData.stripe_subscriptions?.tier || null; // Extract tier
+      userSubscriptionTier = membershipData.stripe_subscriptions?.tier || null;
     } else {
-      // If no active membership, check for direct subscription (owner)
       const { data: customerData, error: customerError } = await supabase
         .from('stripe_customers')
         .select('customer_id')
@@ -306,14 +316,14 @@ Deno.serve(async (req) => {
       if (!customerError && customerData?.customer_id) {
         const { data: directSubData, error: directSubError } = await supabase
           .from('stripe_subscriptions')
-          .select('subscription_id, tier') // MODIFIED: Select tier
+          .select('subscription_id, tier')
           .eq('customer_id', customerData.customer_id)
           .eq('status', 'active')
           .maybeSingle();
 
         if (!directSubError && directSubData) {
           userSubscriptionId = directSubData.subscription_id;
-          userSubscriptionTier = directSubData.tier || null; // Extract tier
+          userSubscriptionTier = directSubData.tier || null;
         }
       }
     }
@@ -329,12 +339,13 @@ Deno.serve(async (req) => {
   console.log(`contract-analyzer: DEBUG - User ${userId} (Tier: ${userSubscriptionTier}) requested analysis.`);
   console.log(`contract-analyzer: DEBUG - performAdvancedAnalysis: ${performAdvancedAnalysis}, creditCost from frontend: ${creditCost}`);
 
-  // MODIFIED: Refined condition for credit deduction
+  const isAdvancedPlanUser = userSubscriptionTier !== null && (userSubscriptionTier === 4 || userSubscriptionTier === 5);
+  const isBasicPlanUser = userSubscriptionTier !== null && (userSubscriptionTier === 2 || userSubscriptionTier === 3);
+
   // Deduct credits if:
-  // 1. There is no active subscription (userSubscriptionId is null)
-  // 2. The user has a subscription, but it's a basic/admin-assigned plan (tier < 4) AND advanced analysis is requested.
-  //    In this case, the base analysis is covered, but advanced analysis is an add-on.
-  const shouldDeductCredits = !userSubscriptionId || (userSubscriptionTier !== null && userSubscriptionTier < 4 && performAdvancedAnalysis);
+  // 1. User is on a single-use plan (no subscription)
+  // 2. User is on a basic plan (tier 2 or 3) AND advanced analysis is requested.
+  const shouldDeductCredits = !userSubscriptionId || (isBasicPlanUser && performAdvancedAnalysis);
 
   if (shouldDeductCredits) {
     console.log(`contract-analyzer: DEBUG - User is NOT on an advanced plan (Tier < 4 or no subscription) OR is on a basic plan requesting advanced analysis. Proceeding with credit deduction check.`);
@@ -399,7 +410,7 @@ Deno.serve(async (req) => {
     }
     console.log(`contract-analyzer: DEBUG - Credit deduction completed. Final remaining cost: ${remainingCost}`);
   } else {
-    console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier >= 4) or a basic plan not requesting advanced analysis. Skipping credit deduction.`);
+    console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier 4 or 5) or a basic plan not requesting advanced analysis. Skipping credit deduction.`);
   }
   // --- END: Authorization Logic & Credit Deduction ---
 
@@ -411,7 +422,7 @@ Deno.serve(async (req) => {
       userId,
       'CONTRACT_ANALYSIS_STARTED',
       `User ${userEmail} started analysis for contract ID: ${contractId}`,
-      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, perform_advanced_analysis: performAdvancedAnalysis, credit_cost: creditCost } // MODIFIED: Log new flag
+      { contract_id: contractId, perform_ocr: shouldPerformOcr, perform_analysis: performAnalysis, perform_advanced_analysis: performAdvancedAnalysis, credit_cost: creditCost, user_tier: userSubscriptionTier }
     );
 
     await supabase
@@ -419,10 +430,9 @@ Deno.serve(async (req) => {
       .update({ status: 'analyzing', processing_progress: 10 })
       .eq('id', contractId);
 
-    // Fetch the contract details, including file_path if OCR is needed for a document
     const { data: contractDetails, error: fetchContractError } = await supabase
       .from('contracts')
-      .select('contract_content, user_id, jurisdictions, name, output_language, file_path') // MODIFIED: Added output_language, file_path
+      .select('contract_content, user_id, jurisdictions, name, output_language, file_path')
       .eq('id', contractId)
       .single();
 
@@ -434,17 +444,15 @@ Deno.serve(async (req) => {
     const userSelectedJurisdictions = contractDetails.jurisdictions.join(', ');
     const fetchedContractName = contractDetails.name;
 
-    // ADDED: OCR Processing Step
-    let processedContractText = contractText; // Start with text from frontend (if any)
+    let processedContractText = contractText;
 
     if (shouldPerformOcr) {
       await supabase.from('contracts').update({ processing_progress: 20 }).eq('id', contractId);
-      let ocrImageDatas: string[] = []; // MODIFIED: Array for OCR image data
+      let ocrImageDatas: string[] = [];
 
       if (imageDatas && imageDatas.length > 0) {
         ocrImageDatas = imageDatas;
       } else if (contractDetails.file_path) {
-        // If no imageData from frontend, but OCR is requested for a file already in storage
         const { data: fileBlob, error: downloadError } = await supabase.storage
           .from('contracts')
           .download(contractDetails.file_path);
@@ -454,24 +462,21 @@ Deno.serve(async (req) => {
           throw new Error(getTranslatedMessage('error_failed_to_fetch_file_from_storage', userPreferredLanguage));
         }
 
-        // Convert Blob to Base64
         const arrayBuffer = await fileBlob.arrayBuffer();
         ocrImageDatas.push(btoa(String.fromCharCode(...new Uint8Array(arrayBuffer))));
       }
 
-      if (ocrImageDatas.length > 0) { // MODIFIED: Check length of ocrImageDatas
+      if (ocrImageDatas.length > 0) {
         let ocrResults: string[] = [];
-        for (const imgData of ocrImageDatas) { // MODIFIED: Iterate through image data array
+        for (const imgData of ocrImageDatas) {
           try {
             ocrResults.push(await executeOcr(imgData, userPreferredLanguage));
           } catch (ocrError: any) {
             console.error('contract-analyzer: OCR failed for one image:', ocrError);
-            // Continue processing other images, but log the error
           }
         }
-        processedContractText = ocrResults.join('\n\n'); // Concatenate OCR results
+        processedContractText = ocrResults.join('\n\n');
         
-        // Update contract_content in DB with OCR'd text
         await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
         await logActivity(
           supabase,
@@ -480,7 +485,6 @@ Deno.serve(async (req) => {
           `User ${userEmail} performed OCR for contract ID: ${contractId}`,
           { contract_id: contractId }
         );
-        // Send notification for OCR completion
         await supabase.from('notifications').insert({
           user_id: userId,
           title: 'notification_title_ocr_completed',
@@ -492,7 +496,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // If only OCR was requested, and not analysis, we can mark as completed and return
     if (shouldPerformOcr && !performAnalysis) {
       await supabase
         .from('contracts')
@@ -501,19 +504,235 @@ Deno.serve(async (req) => {
       return corsResponse({ message: getTranslatedMessage('message_ocr_completed_only', userPreferredLanguage), translated_contract_name: translatedContractName });
     }
 
-    // If analysis is not requested, or if OCR failed, we should not proceed with analysis
     if (!performAnalysis || !processedContractText) {
       if (!processedContractText) {
         throw new Error(getTranslatedMessage('error_no_text_for_analysis', userPreferredLanguage));
       }
     }
 
-    // Proceed with AI Analysis if performAnalysis is true
     await supabase.from('contracts').update({ processing_progress: 30 }).eq('id', contractId);
 
     translatedContractName = await translateText(originalContractName, outputLanguage);
 
-    let systemPromptContent = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+    let analysisData: any;
+    const notSpecifiedTranslatedString = getTranslatedMessage('not_specified', outputLanguage);
+
+    // --- Dream Team Logic: Conditional LLM Orchestration ---
+    if (isAdvancedPlanUser) { // Advanced Plan: GPT-4o (Eyes) + Claude Sonnet 4.5 (Brain)
+      console.log(`contract-analyzer: DEBUG - Advanced Plan user (Tier ${userSubscriptionTier}). Using Dream Team workflow.`);
+      
+      // Phase 1: GPT-4o as "Eyes" for initial extraction and structuring
+      await supabase.from('contracts').update({ processing_progress: 40 }).eq('id', contractId);
+      const gpt4oSystemPrompt = `You are an expert document parser. Your task is to extract and structure key information from the provided legal contract text. Do NOT perform any legal analysis or interpretation. Focus solely on accurate extraction.
+
+Return your findings strictly as a valid JSON object with the following structure:
+{
+  "executiveSummaryBrief": "A very brief (1-2 sentences) summary of the contract's purpose.",
+  "contractType": "e.g., Service Agreement, NDA, Lease Agreement",
+  "parties": ["Party A Name", "Party B Name", "..."],
+  "effectiveDate": "YYYY-MM-DD or 'not_specified'",
+  "terminationDate": "YYYY-MM-DD or 'not_specified'",
+  "renewalDate": "YYYY-MM-DD or 'not_specified'",
+  "contractValue": "e.g., '$100,000 USD' or 'not_specified'",
+  "segmentedText": [
+    {"segmentId": "1", "text": "First paragraph/clause text."},
+    {"segmentId": "2", "text": "Second paragraph/clause text."},
+    // ... up to 50 segments for very long documents, or fewer for shorter ones.
+  ]
+}
+
+NOTES:
+- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use 'not_specified'.
+- Ensure the JSON is valid and strictly adheres to the specified structure.
+- Do not include any text outside the JSON object.
+- All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
+`;
+
+      const gpt4oCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: gpt4oSystemPrompt },
+          { role: "user", content: `Contract Text:\n\n${processedContractText}` },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.1,
+      });
+
+      const gpt4oOutputContent = gpt4oCompletion.choices[0].message?.content;
+      if (!gpt4oOutputContent) {
+        throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
+      }
+      const gpt4oExtractedData = JSON.parse(gpt4oOutputContent);
+      console.log("contract-analyzer: DEBUG - GPT-4o (Eyes) extracted data:", gpt4oExtractedData);
+
+      // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis and artifact generation
+      await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
+
+      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI, embodying the expertise of a senior legal counsel with 30 years of experience. Your task is to perform a deep, nuanced analysis of the provided legal contract text and structured metadata. You have access to the full contract text and should leverage your 200K context window to understand the document holistically without chunking.
+
+Based on the provided contract text and metadata, generate:
+1.  A comprehensive executive summary.
+2.  A detailed data protection impact assessment.
+3.  An overall compliance score (0-100).
+4.  A list of specific findings. Each finding must include:
+    *   title, description, risk level (high, medium, low, none),
+    *   jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others),
+    *   category (compliance, risk, data-protection, enforceability, drafting, commercial),
+    *   recommendations (as an array of strings),
+    *   an optional clauseReference (text from the contract).
+5.  Jurisdiction-specific summaries.
+6.  **Advanced Analysis Fields:** Extract and summarize the following:
+    *   effectiveDate, terminationDate, renewalDate (YYYY-MM-DD or 'not_specified').
+    *   contractType, contractValue.
+    *   parties (array of strings).
+    *   liabilityCapSummary (2-4 sentences).
+    *   indemnificationClauseSummary (2-4 sentences).
+    *   confidentialityObligationsSummary (2-4 sentences).
+7.  **Artifacts (Redlined Clause Example):** For the most significant 'high' risk finding related to a specific clause, generate a redlined version of that clause. Assume the original clause is available in the 'segmentedText' from the metadata. Highlight problematic phrases/words with [[PROBLEM]] and suggest a revised version of the clause. If no such finding exists, return 'not_applicable'.
+
+CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):
+1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
+2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
+3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
+4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
+6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
+7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
+8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
+9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
+10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
+11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.  
+
+COMPLIANCE SCORE RULES (MANDATORY):  
+- Start from 100 points.  
+- Deduct points as follows:  
+  • Each **High risk** finding = –15 points  
+  • Each **Medium risk** finding = –8 points  
+  • Each **Low risk** finding = –3 points  
+  • Each **None** finding = 0 points (no deduction)  
+- Minimum score is 0.  
+- After deductions, round to the nearest whole number.  
+- Ensure the score reflects overall risk exposure and enforceability of the contract.  
+
+OUTPUT REQUIREMENTS:
+Return your findings strictly as a valid JSON object with the following structure:
+{
+  "executiveSummary": "...",
+  "dataProtectionImpact": "...",
+  "complianceScore": 0,
+  "findings": [
+    {
+      "title": "...",
+      "description": "...",
+      "riskLevel": "high",
+      "jurisdiction": "UK",
+      "category": "compliance",
+      "recommendations": ["...", "..."],
+      "clauseReference": "..."
+    }
+  ],
+  "jurisdictionSummaries": {
+    "UK": {
+      "jurisdiction": "UK",
+      "applicableLaws": ["...", "..."],
+      "keyFindings": ["...", "..."],
+      "riskLevel": "high"
+    }
+  },
+  "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "contractType": "...",
+  "contractValue": "...",
+  "parties": ["...", "..."],
+  "liabilityCapSummary": "...",
+  "indemnificationClauseSummary": "...",
+  "confidentialityObligationsSummary": "...",
+  "redlinedClauseArtifact": {
+    "originalClause": "...",
+    "redlinedVersion": "...",
+    "suggestedRevision": "...",
+    "findingId": "..."
+  }
+}
+
+NOTES:
+- Ensure the JSON is valid and strictly adheres to the specified structure.
+- Do not include any text outside the JSON object.
+- All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
+- Risk levels must be one of: high, medium, low, none.
+- Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial.
+- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use '${notSpecifiedTranslatedString}'.
+- For 'redlinedClauseArtifact', if no suitable high-risk clause is found, set the entire object to null or 'not_applicable'.
+`;
+
+      // Caching Logic for Claude's analysis
+      const cacheKeyContent = JSON.stringify({
+        contractText: processedContractText,
+        metadata: gpt4oExtractedData,
+        jurisdictions: userSelectedJurisdictions,
+        outputLanguage: outputLanguage,
+        advancedAnalysis: performAdvancedAnalysis,
+      });
+      const cacheHash = await sha256(cacheKeyContent);
+
+      const { data: cachedResult, error: cacheError } = await supabase
+        .from('cached_clause_analysis')
+        .select('cached_result')
+        .eq('clause_hash', cacheHash)
+        .maybeSingle();
+
+      if (cacheError) {
+        console.warn("contract-analyzer: Error querying cache:", cacheError);
+      }
+
+      if (cachedResult) {
+        console.log("contract-analyzer: DEBUG - Cache hit for Claude analysis.");
+        analysisData = cachedResult.cached_result;
+      } else {
+        console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
+        const claudeCompletion = await anthropic.messages.create({
+          model: "claude-4.5-sonnet-20250929", // Use Claude Sonnet 4.5
+          max_tokens: 4000, // Adjust based on expected output length
+          temperature: 0.2,
+          system: claudeSystemPrompt,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(gpt4oExtractedData, null, 2)}` }
+              ]
+            }
+          ],
+        });
+
+        const claudeOutputContent = claudeCompletion.content[0].text;
+        if (!claudeOutputContent) {
+          throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
+        }
+        analysisData = JSON.parse(claudeOutputContent);
+        console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
+
+        // Store in cache
+        const { error: insertCacheError } = await supabase
+          .from('cached_clause_analysis')
+          .insert({
+            clause_hash: cacheHash,
+            jurisdiction: userSelectedJurisdictions,
+            analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
+            llm_model: 'claude-4.5-sonnet-20250929',
+            cached_result: analysisData,
+          });
+        if (insertCacheError) {
+          console.warn("contract-analyzer: Error inserting into cache:", insertCacheError);
+        }
+      }
+
+    } else { // Non-Advanced Plans: GPT-4o as "All-in-One"
+      console.log(`contract-analyzer: DEBUG - Non-Advanced Plan user (Tier ${userSubscriptionTier}). Using GPT-4o All-in-One workflow.`);
+      await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
+
+      const gpt4oAllInOneSystemPrompt = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
 
 CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
 1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
@@ -563,7 +782,16 @@ Return your findings strictly as a valid JSON object with the following structur
       "keyFindings": ["...", "..."],
       "riskLevel": "high"
     }
-  }
+  },
+  "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "contractType": "...",
+  "contractValue": "...",
+  "parties": ["...", "..."],
+  "liabilityCapSummary": "...",
+  "indemnificationClauseSummary": "...",
+  "confidentialityObligationsSummary": "..."
 }
 
 NOTES:  
@@ -585,74 +813,27 @@ JURISDICTION FOCUS:
 The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
 `;
 
-    // ADDED: Conditional prompt modification for advanced analysis
-    if (performAdvancedAnalysis) {
-      systemPromptContent += `
+      const gpt4oCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: gpt4oAllInOneSystemPrompt },
+          { role: "user", content: `Contract Text:\n\n${processedContractText}` },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      });
 
-ADVANCED ANALYSIS REQUIREMENTS (MANDATORY IF REQUESTED):
-In addition to the above, if 'performAdvancedAnalysis' is true, extract the following specific data points from the contract. If a data point is not explicitly found, infer it if possible, or state "${getTranslatedMessage('not_specified', outputLanguage)}".
-
-Add these fields to the root of the JSON object:
-{
-  // ... existing fields ...
-  "effectiveDate": "YYYY-MM-DD", // The date the contract becomes active.
-  "terminationDate": "YYYY-MM-DD", // The date the contract is set to terminate, if specified.
-  "renewalDate": "YYYY-MM-DD", // The date the contract is set to renew, if applicable.
-  "contractType": "...", // e.g., "Service Agreement", "Sales Agreements", "Non-Disclosure Agreements (NDAs)", "Lease Agreement", "Licensing Agreements", "Employment Contract", "Partnership Agreements", "Loan Agreements", "Independent Contractor Agreements", "Mergers & Acquisitions", "MDA".
-  "contractValue": "...", // The monetary value of the contract, if specified (e.g., "$100,000 USD", "500,000 EUR").
-  "parties": ["...", "..."], // An array of the names of all parties involved in the contract.
-  "liabilityCapSummary": "...", // A summary (2-4 sentences) of any liability caps or limitations.
-  "indemnificationClauseSummary": "...", // A summary (2-4 sentences) of the indemnification clause.
-  "confidentialityObligationsSummary": "..." // A summary (2-4 sentences) of confidentiality obligations.
-}
-
-NOTES FOR ADVANCED ANALYSIS:
-- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use "${getTranslatedMessage('not_specified', outputLanguage)}".
-- Ensure all new text fields are also generated in ${outputLanguage}.
-`;
-    }
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: systemPromptContent,
-        },
-        {
-          role: "user",
-          content: `Contract Text:\n\n${processedContractText}`,
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.2, // Keep it low for consistent demo results
-    });
-
-    const aiResponseContent = completion.choices[0].message?.content;
-    if (!aiResponseContent) {
-      throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
-    }
-
-    let analysisData: any;
-    try {
-      const parsedContent = JSON.parse(aiResponseContent);
-      // Ensure parsedContent is an object, otherwise default to an empty object
-      analysisData = (typeof parsedContent === 'object' && parsedContent !== null) ? { ...parsedContent } : {}; // Shallow copy to ensure mutability
-
-      // Ensure top-level properties are initialized as expected types if missing or invalid
-      if (!Array.isArray(analysisData.findings)) {
-        analysisData.findings = [];
+      const aiResponseContent = gpt4oCompletion.choices[0].message?.content;
+      if (!aiResponseContent) {
+        throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
-      if (typeof analysisData.jurisdictionSummaries !== 'object' || analysisData.jurisdictionSummaries === null) {
-        analysisData.jurisdictionSummaries = {};
-      }
-    } catch (parseError) {
-      console.error('contract-analyzer: Error parsing OpenAI response JSON:', parseError);
-      throw new Error(getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage));
+      analysisData = JSON.parse(aiResponseContent);
+      console.log("contract-analyzer: DEBUG - GPT-4o (All-in-One) analysis data:", analysisData);
     }
+    // --- END Dream Team Logic ---
 
     // Defensive checks before processing analysisData properties
-    analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : '';
+    analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
     analysisData.dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
@@ -660,12 +841,10 @@ NOTES FOR ADVANCED ANALYSIS:
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
-    // MODIFIED: Add defensive checks for findings
     if (Array.isArray(analysisData.findings)) {
-      for (let i = 0; i < analysisData.findings.length; i++) { // Use index-based loop for safer modification
+      for (let i = 0; i < analysisData.findings.length; i++) {
         let finding = analysisData.findings[i];
-        if (finding && typeof finding === 'object') { // Ensure finding is an object
-          // Create a shallow copy of finding to ensure mutability if it was frozen/sealed
+        if (finding && typeof finding === 'object') {
           finding = { ...finding };
           finding.title = typeof finding.title === 'string' ? finding.title : '';
           finding.title = await translateText(finding.title, outputLanguage);
@@ -673,52 +852,47 @@ NOTES FOR ADVANCED ANALYSIS:
           finding.description = typeof finding.description === 'string' ? finding.description : '';
           finding.description = await translateText(finding.description, outputLanguage);
           
-          // Ensure recommendations is an array before mapping
           if (Array.isArray(finding.recommendations)) {
             finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
           } else {
-            finding.recommendations = []; // Default to empty array if not an array
+            finding.recommendations = [];
           }
           if (finding.clauseReference) {
             finding.clauseReference = typeof finding.clauseReference === 'string' ? finding.clauseReference : '';
             finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
           }
-          analysisData.findings[i] = finding; // Assign the potentially new/modified finding back
+          analysisData.findings[i] = finding;
         } else {
-          analysisData.findings[i] = {}; // Replace invalid finding with an empty object
+          analysisData.findings[i] = {};
         }
       }
     }
 
-    // MODIFIED: Add defensive checks for jurisdictionSummaries
     if (analysisData.jurisdictionSummaries && typeof analysisData.jurisdictionSummaries === 'object') {
-      const newJurisdictionSummaries: Record<string, any> = {}; // Create a new object for summaries
+      const newJurisdictionSummaries: Record<string, any> = {};
       for (const key in analysisData.jurisdictionSummaries) {
         let summary = analysisData.jurisdictionSummaries[key];
-        if (summary && typeof summary === 'object') { // Ensure summary is an object
-          // Create a shallow copy of summary to ensure mutability
+        if (summary && typeof summary === 'object') {
           summary = { ...summary };
-          // Ensure applicableLaws is an array before mapping
           if (Array.isArray(summary.applicableLaws)) {
             summary.applicableLaws = await Promise.all(summary.applicableLaws.map((law: string) => translateText(law, outputLanguage)));
           } else {
             summary.applicableLaws = [];
           }
-          // Ensure keyFindings is an array before mapping
           if (Array.isArray(summary.keyFindings)) {
             summary.keyFindings = await Promise.all(summary.keyFindings.map((kf: string) => translateText(kf, outputLanguage)));
           } else {
             summary.keyFindings = [];
           }
-          newJurisdictionSummaries[key] = summary; // Assign the potentially new/modified summary back
+          newJurisdictionSummaries[key] = summary;
         } else {
-          newJurisdictionSummaries[key] = {}; // Replace invalid summary with an empty object
+          newJurisdictionSummaries[key] = {};
         }
       }
-      analysisData.jurisdictionSummaries = newJurisdictionSummaries; // Assign the new summaries object
+      analysisData.jurisdictionSummaries = newJurisdictionSummaries;
     }
 
-    // ADDED: Translate new advanced fields if present
+    // Translate advanced fields if present
     if (performAdvancedAnalysis) {
       if (analysisData.effectiveDate) analysisData.effectiveDate = await translateText(analysisData.effectiveDate, outputLanguage);
       if (analysisData.terminationDate) analysisData.terminationDate = await translateText(analysisData.terminationDate, outputLanguage);
@@ -741,20 +915,36 @@ NOTES FOR ADVANCED ANALYSIS:
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
-    // CRITICAL FIX: Process advanced analysis fields into their final translated string form
-    // This ensures the database stores the display string, and the report generator receives it.
-    const notSpecifiedTranslatedString = getTranslatedMessage('not_specified', outputLanguage);
-
     const processedEffectiveDate = analysisData.effectiveDate || notSpecifiedTranslatedString;
     const processedTerminationDate = analysisData.terminationDate || notSpecifiedTranslatedString;
     const processedRenewalDate = analysisData.renewalDate || notSpecifiedTranslatedString;
     const processedContractType = analysisData.contractType || notSpecifiedTranslatedString;
     const processedContractValue = analysisData.contractValue || notSpecifiedTranslatedString;
-    const processedParties = analysisData.parties || []; // Keep as array for DB, but pass as string for report
+    const processedParties = analysisData.parties || [];
     const processedLiabilityCapSummary = analysisData.liabilityCapSummary || notSpecifiedTranslatedString;
     const processedIndemnificationClauseSummary = analysisData.indemnificationClauseSummary || notSpecifiedTranslatedString;
     const processedConfidentialityObligationsSummary = analysisData.confidentialityObligationsSummary || notSpecifiedTranslatedString;
 
+    // ADDED: Process and store artifacts
+    let redlinedClauseArtifactPath: string | null = null;
+    if (isAdvancedPlanUser && analysisData.redlinedClauseArtifact && analysisData.redlinedClauseArtifact.redlinedVersion) {
+      const artifactContent = JSON.stringify(analysisData.redlinedClauseArtifact, null, 2);
+      const artifactFileName = `redlined-clause-${contractId}-${Date.now()}.json`;
+      const artifactFilePath = `${userId}/${contractId}/${artifactFileName}`;
+
+      const { error: uploadArtifactError } = await supabase.storage
+        .from('contract_artifacts') // NEW STORAGE BUCKET
+        .upload(artifactFilePath, artifactContent, {
+          contentType: 'application/json',
+          upsert: true,
+        });
+
+      if (uploadArtifactError) {
+        console.error('contract-analyzer: Error uploading redlined clause artifact:', uploadArtifactError);
+      } else {
+        redlinedClauseArtifactPath = artifactFilePath;
+      }
+    }
 
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
@@ -766,16 +956,17 @@ NOTES FOR ADVANCED ANALYSIS:
           compliance_score: complianceScore,
           jurisdiction_summaries: jurisdictionSummaries,
           findings: findings,
-          // CRITICAL FIX: Pass processed string values to report generator
           effective_date: processedEffectiveDate,
           termination_date: processedTerminationDate,
           renewal_date: processedRenewalDate,
           contract_type: processedContractType,
           contract_value: processedContractValue,
-          parties: processedParties, // Pass as array, generate-analysis-report will join
+          parties: processedParties,
           liability_cap_summary: processedLiabilityCapSummary,
           indemnification_clause_summary: processedIndemnificationClauseSummary,
           confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
+          // ADDED: Pass artifact path to report generator
+          redlined_clause_artifact_path: redlinedClauseArtifactPath,
         },
         outputLanguage: outputLanguage,
       },
@@ -800,7 +991,6 @@ NOTES FOR ADVANCED ANALYSIS:
         compliance_score: complianceScore,
         jurisdiction_summaries: jurisdictionSummaries,
         report_file_path: reportFilePath,
-        // CRITICAL FIX: Store processed string values in the database
         effective_date: processedEffectiveDate,
         termination_date: processedTerminationDate,
         renewal_date: processedRenewalDate,
@@ -810,7 +1000,9 @@ NOTES FOR ADVANCED ANALYSIS:
         liability_cap_summary: processedLiabilityCapSummary,
         indemnification_clause_summary: processedIndemnificationClauseSummary,
         confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
-        performed_advanced_analysis: performAdvancedAnalysis, // ADDED: Store the flag
+        performed_advanced_analysis: performAdvancedAnalysis,
+        // ADDED: Store artifact path in DB
+        redlined_clause_artifact_path: redlinedClauseArtifactPath,
       })
       .select()
       .single();
@@ -909,7 +1101,7 @@ NOTES FOR ADVANCED ANALYSIS:
       userId,
       'CONTRACT_ANALYSIS_COMPLETED',
       `User ${userEmail} completed analysis for contract ID: ${contractId} with compliance score: ${complianceScore}%`,
-      { contract_id: contractId, compliance_score: complianceScore, perform_advanced_analysis: performAdvancedAnalysis } // MODIFIED: Log new flag
+      { contract_id: contractId, compliance_score: complianceScore, perform_advanced_analysis: performAdvancedAnalysis, user_tier: userSubscriptionTier }
     );
 
     return corsResponse({ message: 'Analysis completed successfully', translated_contract_name: translatedContractName });
@@ -926,7 +1118,7 @@ NOTES FOR ADVANCED ANALYSIS:
       userId,
       'CONTRACT_ANALYSIS_FAILED',
       `User ${userEmail} failed analysis for contract ID: ${contractId}. Error: ${error.message}`,
-      { contract_id: contractId, error: error.message, perform_advanced_analysis: performAdvancedAnalysis } // MODIFIED: Log new flag
+      { contract_id: contractId, error: error.message, perform_advanced_analysis: performAdvancedAnalysis, user_tier: userSubscriptionTier }
     );
 
     const notificationContractName = translatedContractName;
