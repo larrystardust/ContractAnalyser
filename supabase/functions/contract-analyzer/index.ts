@@ -713,10 +713,21 @@ NOTES:
           throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
         }
 
-        // MODIFIED: Remove markdown code block fences before parsing JSON
-        const cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
+        // Remove markdown code block fences before parsing JSON
+        let cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
         
-        analysisData = JSON.parse(cleanedClaudeOutput); // MODIFIED: Parse the cleaned output
+        // NEW: Aggressively trim to ensure content starts with '{' and ends with '}'
+        const firstBrace = cleanedClaudeOutput.indexOf('{');
+        const lastBrace = cleanedClaudeOutput.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleanedClaudeOutput = cleanedClaudeOutput.substring(firstBrace, lastBrace + 1);
+        } else {
+          // If we can't find valid braces, it's severely malformed, log and throw
+          console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup:", cleanedClaudeOutput);
+          throw new Error(getTranslatedMessage('error_claude_output_not_valid_json_structure', userPreferredLanguage));
+        }
+        
+        analysisData = JSON.parse(cleanedClaudeOutput); // Parse the cleaned output
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
         // Store in cache
