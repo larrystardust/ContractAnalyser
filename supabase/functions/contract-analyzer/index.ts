@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0';
-import Anthropic from 'anthropic'; // ADDED: Import Anthropic
+import Anthropic from 'npm:@anthropic-ai/sdk'; // ADDED: Import Anthropic
 import { logActivity } from '../_shared/logActivity.ts';
 import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 import { GoogleAuth } from 'npm:google-auth-library@9.10.0';
