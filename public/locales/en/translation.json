@@ -1724,5 +1724,17 @@
   "contract_name_placeholder": "e.g., My Scanned Agreement",
   "confirm_name": "Confirm Name",
   "contract_name_cannot_be_empty": "Contract name cannot be empty.",
-  "scanned_document_default_name": "Scanned Document {{date}}"
+  "scanned_document_default_name": "Scanned Document {{date}}",
+
+  "artifacts_section_title": "Artifacts",
+  "redlined_clause_artifact": "Redlined Clause Artifact",
+  "redlined_clause_artifact_description": "This artifact provides a redlined version of a high-risk clause, highlighting problematic areas and suggesting a revised version for improved clarity and reduced risk. It is linked to finding ID: {{findingId}}.",
+  "original_clause": "Original Clause",
+  "redlined_version": "Redlined Version",
+  "suggested_revision": "Suggested Revision",
+  "download_artifact": "Download Artifact",
+  "failed_to_load_redlined_clause": "Failed to load redlined clause artifact: {{message}}",
+  "redlined_clause_download_started": "Redlined clause download started.",
+  "failed_to_download_redlined_clause": "Failed to download redlined clause artifact: {{message}}",
+  "no_artifacts_generated": "No artifacts were generated for this contract."
 }
