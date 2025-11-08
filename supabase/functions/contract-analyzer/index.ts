@@ -583,7 +583,7 @@ CRITICAL JSON VALIDATION:
 - ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets `[]` and braces `{}` are correctly matched and closed.
+- DOUBLE-CHECK all brackets `\\[\\]` and braces `\\{\\}` are correctly matched and closed.
 - IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
@@ -706,7 +706,7 @@ CRITICAL JSON VALIDATION:
 - ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets `[]` and braces `{}` are correctly matched and closed.
+- DOUBLE-CHECK all brackets `\\[\\]` and braces `\\{\\}` are correctly matched and closed.
 - IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 
 NOTES:
