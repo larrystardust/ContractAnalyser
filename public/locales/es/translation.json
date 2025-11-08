@@ -1729,5 +1729,10 @@
   "failed_to_load_redlined_clause": "Error al cargar el artefacto de cláusula marcada: {{message}}",
   "redlined_clause_download_started": "Descarga de la cláusula marcada iniciada.",
   "failed_to_download_redlined_clause": "Error al descargar el artefacto de cláusula marcada: {{message}}",
-  "no_artifacts_generated": "No se generaron artefactos para este contrato."
+  "no_artifacts_generated": "No se generaron artefactos para este contrato.",
+
+  "contract_analysis_in_progress": "Análisis de contrato en curso",
+  "contract_being_analyzed": "El contrato está siendo analizado",
+  "may_take_minutes": "Esto puede tardar unos minutos.",
+  "reanalyze_contract": "Volver a analizar el contrato"
 }
