@@ -247,53 +247,6 @@ function safeJsonParse(input: string, context: string = 'unknown'): any {
   throw new Error(`Unexpected error in JSON parsing for ${context}`);
 }
 
-  console.log(`safeJsonParse: Starting parse for ${context}, input length: ${input.length}`);
-  
-  let cleaned = cleanJsonString(input);
-  
-  // Try direct parse first
-  try {
-    const result = JSON.parse(cleaned);
-    console.log(`safeJsonParse: Direct parse successful for ${context}`);
-    return result;
-  } catch (firstError) {
-    console.log(`safeJsonParse: First parse attempt failed, trying fixes...`);
-    
-    // Strategy 1: Fix common array trailing commas
-    try {
-      let fixed = cleaned.replace(/,(\s*[}\]])/g, '$1');
-      const result = JSON.parse(fixed);
-      console.log(`safeJsonParse: Fixed trailing commas successfully`);
-      return result;
-    } catch (secondError) {
-      // Strategy 2: Extract JSON more aggressively
-      try {
-        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const result = JSON.parse(jsonMatch[0]);
-          console.log(`safeJsonParse: Extracted JSON successfully`);
-          return result;
-        }
-      } catch (thirdError) {
-        // Final attempt: Try to fix unescaped quotes
-        try {
-          // Fix unescaped quotes within strings more carefully
-          let finalFixed = cleaned.replace(/(?<!")(\w+):\s*([^",{}\[\]]+)(?=,|\s*[}\]])/g, '"$1": "$2"');
-          const result = JSON.parse(finalFixed);
-          console.log(`safeJsonParse: Fixed unquoted keys successfully`);
-          return result;
-        } catch (finalError) {
-          console.error(`safeJsonParse: All parsing strategies failed for ${context}. Error:`, finalError.message);
-          console.error(`safeJsonParse: Cleaned output (first 1000 chars):`, cleaned.substring(0, 1000));
-          throw new Error(`JSON parsing failed in ${context}: ${finalError.message}`);
-        }
-      }
-    }
-  }
-  
-  throw new Error(`Unexpected error in JSON parsing for ${context}`);
-}
-
 // Helper function for translation with improved prompt
 async function translateText(text: string | null | undefined, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
