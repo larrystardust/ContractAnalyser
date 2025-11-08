@@ -76,46 +76,86 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// Helper function to clean up common JSON errors before parsing
+// ENHANCED: Improved JSON cleaning function with better error handling
 function cleanJsonString(jsonString: string): string {
-  // Attempt to find the first and last valid JSON delimiters
-  let startIndex = -1;
-  let endIndex = -1;
-
-  // Prioritize finding a JSON object {}
-  const firstBrace = jsonString.indexOf('{');
-  const lastBrace = jsonString.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    startIndex = firstBrace;
-    endIndex = lastBrace;
+  if (!jsonString || typeof jsonString !== 'string') {
+    return '{}';
   }
 
-  // If no object found, try to find a JSON array []
-  if (startIndex === -1) { // Only try array if object not found
-    const firstBracket = jsonString.indexOf('[');
-    const lastBracket = jsonString.lastIndexOf(']');
-    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-      startIndex = firstBracket;
-      endIndex = lastBracket;
-    }
+  // Remove markdown code blocks and any surrounding text
+  let cleaned = jsonString.replace(/```json\s*|\s*```/g, '').trim();
+  
+  // Remove any text before the first { and after the last }
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    console.warn("cleanJsonString: No valid JSON object structure found");
+    return '{}';
   }
-
-  if (startIndex === -1 || endIndex === -1) {
-    // If no valid JSON structure found, return original string or throw
-    console.warn("cleanJsonString: No valid JSON object or array structure found after initial cleanup. Returning original string.");
-    return jsonString; // Return original string if no valid JSON structure found
-  }
-
-  let cleaned = jsonString.substring(startIndex, endIndex + 1);
-
+  
+  cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+  
   // Remove trailing commas from objects and arrays
-  // This regex targets a comma followed by optional whitespace and then a closing brace or bracket
-  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+  cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
   
   // Remove comments (single-line and multi-line)
   cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
-
+  
+  // Fix unescaped quotes within strings
+  cleaned = cleaned.replace(/"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g, (match) => {
+    if (match.startsWith("'") && match.endsWith("'")) {
+      // Convert single quotes to double quotes and escape internal double quotes
+      const content = match.slice(1, -1).replace(/"/g, '\\"');
+      return `"${content}"`;
+    }
+    return match;
+  });
+  
+  // Ensure proper escaping of newlines and other special characters
+  cleaned = cleaned.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+  
   return cleaned;
+}
+
+// NEW: Robust JSON parsing with multiple fallback strategies
+function safeJsonParse(input: string, context: string = 'unknown'): any {
+  if (!input || typeof input !== 'string') {
+    throw new Error(`Invalid input for JSON parsing in ${context}`);
+  }
+
+  let cleaned = cleanJsonString(input);
+  
+  // Multiple parsing attempts with different strategies
+  const parsingStrategies = [
+    () => JSON.parse(cleaned),
+    () => {
+      // Try to fix common array issues
+      cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+      return JSON.parse(cleaned);
+    },
+    () => {
+      // Try to extract just the JSON part more aggressively
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      throw new Error('No JSON object found');
+    }
+  ];
+
+  for (let i = 0; i < parsingStrategies.length; i++) {
+    try {
+      return parsingStrategies[i]();
+    } catch (parseError) {
+      if (i === parsingStrategies.length - 1) {
+        console.error(`safeJsonParse: All parsing strategies failed for ${context}. Cleaned output:`, cleaned);
+        throw new Error(`JSON parsing failed in ${context}: ${parseError.message}`);
+      }
+    }
+  }
+
+  throw new Error(`Unexpected error in JSON parsing for ${context}`);
 }
 
 // Helper function for translation with improved prompt
@@ -625,119 +665,77 @@ CRITICAL JSON VALIDATION:
       // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis and artifact generation
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
-      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI, embodying the expertise of a senior legal counsel with 30 years of experience. Your task is to perform a deep, nuanced analysis of the provided legal contract text and structured metadata. You have access to the full contract text and should leverage your 200K context window to understand the document holistically without chunking.
+      // ENHANCED: Claude prompt with strict JSON-only output instructions
+      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract and return ONLY valid JSON with no additional text.
 
-Based on the provided contract text and metadata, generate:
-1.  A comprehensive executive summary.
-2.  A detailed data protection impact assessment.
-3.  An overall compliance score (0-100).
-4.  A list of specific findings. Each finding must include:
-    *   title, description, risk level (high, medium, low, none),
-    *   jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others),
-    *   category (compliance, risk, data-protection, enforceability, drafting, commercial),
-    *   recommendations (as an array of strings),
-    *   an optional clauseReference (text from the contract).
-5.  Jurisdiction-specific summaries.
-6.  **Advanced Analysis Fields:** Extract and summarize the following:
-    *   effectiveDate, terminationDate, renewalDate (YYYY-MM-DD or 'not_specified').
-    *   contractType, contractValue.
-    *   parties (array of strings).
-    *   liabilityCapSummary (2-4 sentences).
-    *   indemnificationClauseSummary (2-4 sentences).
-    *   confidentialityObligationsSummary (2-4 sentences).
-7.  **Artifacts (Redlined Clause Example):** For the most significant 'high' risk finding related to a specific clause, generate a redlined version of that clause. Assume the original clause is available in the 'segmentedText' from the metadata. Highlight problematic phrases/words with [[PROBLEM]] and suggest a revised version of the clause. If no such finding exists, return 'not_applicable'.
+CRITICAL INSTRUCTIONS:
+- Output ONLY raw JSON, no other text, explanations, or markdown
+- Ensure all strings are properly escaped
+- No trailing commas in arrays or objects
+- All opening brackets/clauses must be properly closed
+- Use double quotes for all JSON properties and string values
 
-CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):
-1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
-2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
-3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
-4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
-6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
-7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
-8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
-9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
-10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
-11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.  
-
-COMPLIANCE SCORE RULES (MANDATORY):  
-- Start from 100 points.  
-- Deduct points as follows:  
-  • Each **High risk** finding = –15 points  
-  • Each **Medium risk** finding = –8 points  
-  • Each **Low risk** finding = –3 points  
-  • Each **None** finding = 0 points (no deduction)  
-- Minimum score is 0.  
-- After deductions, round to the nearest whole number.  
-- Ensure the score reflects overall risk exposure and enforceability of the contract.  
-
-OUTPUT REQUIREMENTS:
-Return your findings strictly as a valid JSON object with the following structure:
+REQUIRED JSON STRUCTURE:
 {
-  "executiveSummary": "...",
-  "dataProtectionImpact": "...",
-  "complianceScore": 0,
+  "executiveSummary": "string (max 2000 chars)",
+  "dataProtectionImpact": "string (max 2000 chars)", 
+  "complianceScore": "number (0-100)",
   "findings": [
     {
-      "title": "...",
-      "description": "...",
-      "riskLevel": "high",
-      "jurisdiction": "UK",
-      "category": "compliance",
-      "recommendations": ["...", "..."],
-      "clauseReference": "..."
+      "title": "string",
+      "description": "string",
+      "riskLevel": "low|medium|high|critical",
+      "jurisdiction": "string",
+      "category": "commercial|legal|operational|compliance|data-protection",
+      "recommendations": ["string", "string"],
+      "clauseReference": "string"
     }
   ],
   "jurisdictionSummaries": {
     "UK": {
       "jurisdiction": "UK",
-      "applicableLaws": ["...", "..."],
-      "keyFindings": ["...", "..."],
+      "applicableLaws": ["string"],
+      "keyFindings": ["string"],
       "riskLevel": "high"
     }
   },
   "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
   "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
   "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "contractType": "...",
-  "contractValue": "...",
-  "parties": ["...", "..."],
-  "liabilityCapSummary": "...",
-  "indemnificationClauseSummary": "...",
-  "confidentialityObligationsSummary": "...",
+  "contractType": "string",
+  "contractValue": "string",
+  "parties": ["string"],
+  "liabilityCapSummary": "string",
+  "indemnificationClauseSummary": "string",
+  "confidentialityObligationsSummary": "string",
   "redlinedClauseArtifact": {
-    "originalClause": "...",
-    "redlinedVersion": "...",
-    "suggestedRevision": "...",
-    "findingId": "..."
+    "originalClause": "string",
+    "redlinedVersion": "string", 
+    "suggestedRevision": "string",
+    "findingId": "string"
   }
 }
 
-CRITICAL JSON VALIDATION:
-- The entire output MUST be a single, valid JSON object.
-- DO NOT include any text, comments, or markdown outside the JSON object.
-- ENSURE all string values are properly escaped (e.g., double quotes (\"), newlines (\\n), and backslashes (\\\\)).
-- VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
-- CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets \`[]\` and braces \`{}\` are correctly matched and closed.
-- Each element within an array (e.g., 'findings', 'recommendations', 'parties') MUST be a valid JSON value (string, object, etc.) and MUST be separated by a comma. There must be NO missing commas between array elements.
-- IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
+COMPLIANCE SCORE RULES:  
+- Start from 100 points  
+- High risk = –15 points, Medium = –8, Low = –3, None = 0  
+- Minimum score is 0, round to nearest whole number
 
-NOTES:
-- Ensure the JSON is valid and strictly adheres to the specified structure.
-- Do not include any text outside the JSON object.
-- All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
-- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
-- All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
-- Risk levels must be one of: high, medium, low, none.
-- Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial.
-- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use '${notSpecifiedTranslatedString}'.
-- For 'redlinedClauseArtifact', if no suitable high-risk clause is found, set the entire object to null or 'not_applicable'.
+VALIDATE YOUR OUTPUT:
+- Check for trailing commas
+- Ensure all quotes are properly escaped
+- Verify all arrays have commas between elements
+- Confirm no missing brackets/braces
+- Test JSON validity before output
+
+Contract jurisdictions to focus on: ${userSelectedJurisdictions}
+Output language: ${outputLanguage}
 `;
 
       // Caching Logic for Claude's analysis
       const cacheKeyContent = JSON.stringify({
         contractText: processedContractText,
-        metadata: analysisData, // MODIFIED: Changed gpt4oExtractedData to analysisData
+        metadata: analysisData,
         jurisdictions: userSelectedJurisdictions,
         outputLanguage: outputLanguage,
         advancedAnalysis: performAdvancedAnalysis,
@@ -760,53 +758,34 @@ NOTES:
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
 
-        // Wrap Claude call and parsing in a retry block
-        analysisData = await retry(async () => { // ADDED retry wrapper
-        const claudeCompletion = await anthropic.messages.create({
-          model: "claude-sonnet-4-5", // MODIFIED: Use the correct API identifier for Claude Sonnet 4.5
-          max_tokens: 5000, // Adjust based on expected output length
-          temperature: 0.2,
-          system: claudeSystemPrompt,
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
-                { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
-              ]
-            }
-          ],
-        });
+        // ENHANCED: Claude call with retry and robust parsing
+        analysisData = await retry(async () => {
+          const claudeCompletion = await anthropic.messages.create({
+            model: "claude-sonnet-4-5",
+            max_tokens: 5000,
+            temperature: 0.2,
+            system: claudeSystemPrompt,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
+                ]
+              }
+            ],
+          });
 
-        const claudeOutputContent = claudeCompletion.content[0].text;
-        if (!claudeOutputContent) {
-          throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
-        }
-
-        // Remove markdown code block fences before parsing JSON
-        let cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
-          
-          // Apply aggressive JSON cleanup before parsing
-          cleanedClaudeOutput = cleanJsonString(cleanedClaudeOutput); // Ensure this line is present and correctly calls the helper
-
-          // The subsequent logic to find first/last brace/bracket is now handled within cleanJsonString
-          // So, this block can be simplified:
-          // const firstBrace = cleanedClaudeOutput.indexOf('{');
-          // const lastBrace = cleanedClaudeOutput.lastIndexOf('}');
-          // if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          //   cleanedClaudeOutput = cleanedClaudeOutput.substring(firstBrace, lastBrace + 1);
-          // } else {
-          //   console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup. Raw output:", cleanedClaudeOutput);
-          //   throw new Error(getTranslatedMessage('error_claude_output_not_valid_json_structure', userPreferredLanguage));
-          // }
-          
-          try {
-              return JSON.parse(cleanedClaudeOutput);
-          } catch (parseError: any) {
-              console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
-              throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
+          const claudeOutputContent = claudeCompletion.content[0].text;
+          if (!claudeOutputContent) {
+            throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
           }
-        }, 1, 1000); // MODIFIED: Retry 1 time with exponential backoff starting at 1s
+
+          console.log("contract-analyzer: DEBUG - Raw Claude output received");
+          
+          // Use enhanced safe JSON parsing
+          return safeJsonParse(claudeOutputContent, "Claude analysis");
+        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
@@ -927,7 +906,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
       try {
-        analysisData = JSON.parse(aiResponseContent);
+        analysisData = safeJsonParse(aiResponseContent, "GPT-4o All-in-One");
       } catch (parseError: any) {
         console.error("contract-analyzer: JSON parsing failed for GPT-4o All-in-One output. Raw output:", aiResponseContent);
         throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (GPT-4o All-in-One): ${parseError.message}`);
