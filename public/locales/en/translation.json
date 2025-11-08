@@ -1736,5 +1736,10 @@
   "failed_to_load_redlined_clause": "Failed to load redlined clause artifact: {{message}}",
   "redlined_clause_download_started": "Redlined clause download started.",
   "failed_to_download_redlined_clause": "Failed to download redlined clause artifact: {{message}}",
-  "no_artifacts_generated": "No artifacts were generated for this contract."
+  "no_artifacts_generated": "No artifacts were generated for this contract.",
+
+  "contract_analysis_in_progress": "Contract analysis in progress",
+  "contract_being_analyzed": "The contract is being analyzed",
+  "may_take_minutes": "This may take a few minutes.",
+  "reanalyze_contract": "Reanalyze Contract"
 }
