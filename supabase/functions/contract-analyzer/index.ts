@@ -322,7 +322,6 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (!directSubError && directSubData) {
-          userSubscriptionId = directSubData.subscription_id;
           userSubscriptionTier = directSubData.tier || null;
         }
       }
@@ -475,7 +474,7 @@ Deno.serve(async (req) => {
             console.error('contract-analyzer: OCR failed for one image:', ocrError);
           }
         }
-        processedContractText = ocrResults.join('\n\n');
+        processedContractText = ocrResults.join('\n\n--- Page Break ---\n\n');
         
         await supabase.from('contracts').update({ contract_content: processedContractText }).eq('id', contractId);
         await logActivity(
@@ -546,6 +545,7 @@ NOTES:
 - Ensure the JSON is valid and strictly adheres to the specified structure.
 - Do not include any text outside the JSON object.
 - All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
+- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
 
@@ -563,8 +563,13 @@ NOTES:
       if (!gpt4oOutputContent) {
         throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
-      const gpt4oExtractedData = JSON.parse(gpt4oOutputContent);
-      console.log("contract-analyzer: DEBUG - GPT-4o (Eyes) extracted data:", gpt4oExtractedData);
+      try {
+        analysisData = JSON.parse(gpt4oOutputContent);
+      } catch (parseError: any) {
+        console.error("contract-analyzer: JSON parsing failed for GPT-4o output. Raw output:", gpt4oOutputContent);
+        throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (GPT-4o): ${parseError.message}`);
+      }
+      console.log("contract-analyzer: DEBUG - GPT-4o (Eyes) extracted data:", analysisData);
 
       // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis and artifact generation
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
@@ -660,6 +665,7 @@ NOTES:
 - Ensure the JSON is valid and strictly adheres to the specified structure.
 - Do not include any text outside the JSON object.
 - All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
+- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
 - All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 - Risk levels must be one of: high, medium, low, none.
 - Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial.
@@ -723,11 +729,16 @@ NOTES:
           cleanedClaudeOutput = cleanedClaudeOutput.substring(firstBrace, lastBrace + 1);
         } else {
           // If we can't find valid braces, it's severely malformed, log and throw
-          console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup:", cleanedClaudeOutput);
+          console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup. Raw output:", cleanedClaudeOutput);
           throw new Error(getTranslatedMessage('error_claude_output_not_valid_json_structure', userPreferredLanguage));
         }
         
-        analysisData = JSON.parse(cleanedClaudeOutput); // Parse the cleaned output
+        try {
+            analysisData = JSON.parse(cleanedClaudeOutput); // Parse the cleaned output
+        } catch (parseError: any) {
+            console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
+            throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
+        }
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
         // Store in cache
@@ -814,8 +825,10 @@ Return your findings strictly as a valid JSON object with the following structur
 NOTES:  
 - Ensure the JSON is valid and strictly adheres to the specified structure.  
 - Do not include any text outside the JSON object.  
-- Always populate each field (if information is missing, provide your best inference).  
-- Risk levels must be one of: high, medium, low, none.  
+- All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
+- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
+- All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
+- Risk levels must be one of: high, medium, low, none.
 - Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial. 
 - Apply the compliance score rules consistently to every analysis.
 
@@ -844,7 +857,12 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       if (!aiResponseContent) {
         throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
-      analysisData = JSON.parse(aiResponseContent);
+      try {
+        analysisData = JSON.parse(aiResponseContent);
+      } catch (parseError: any) {
+        console.error("contract-analyzer: JSON parsing failed for GPT-4o All-in-One output. Raw output:", aiResponseContent);
+        throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (GPT-4o All-in-One): ${parseError.message}`);
+      }
       console.log("contract-analyzer: DEBUG - GPT-4o (All-in-One) analysis data:", analysisData);
     }
     // --- END Dream Team Logic ---
@@ -988,7 +1006,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         outputLanguage: outputLanguage,
       },
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`, // Pass the current user's token
       },
     });
 
