@@ -769,7 +769,7 @@ const claudeCompletion = await anthropic.messages.create({
         // ENHANCED: Claude call with retry and robust parsing
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
+            model: "claude-sonnet-4-5",
             max_tokens: 5000,
             temperature: 0.2,
             system: claudeSystemPrompt,
