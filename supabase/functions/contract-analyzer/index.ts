@@ -752,9 +752,9 @@ Before output, verify:
         // ENHANCED: Claude call with retry and robust parsing
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
-            max_tokens: 5000,
-            temperature: 0.2,
+            model: "claude-sonnet-4-5",
+            max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
+            temperature: 0.1,
             system: claudeSystemPrompt,
             messages: [
               {
@@ -772,11 +772,12 @@ Before output, verify:
             throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
           }
 
-          console.log("contract-analyzer: DEBUG - Raw Claude output received");
+          console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
+          console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
+        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
