@@ -793,7 +793,7 @@ const claudeCompletion = await anthropic.messages.create({
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
+        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
