@@ -761,7 +761,7 @@ Output language: ${outputLanguage}
         // ENHANCED: Claude call with retry and robust parsing
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
+            model: "claude-sonnet-4-5",
             max_tokens: 5000,
             temperature: 0.2,
             system: claudeSystemPrompt,
@@ -785,7 +785,7 @@ Output language: ${outputLanguage}
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); // ENHANCED: Retry 2 times with backoff
+        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
@@ -796,7 +796,7 @@ Output language: ${outputLanguage}
             clause_hash: cacheHash,
             jurisdiction: userSelectedJurisdictions,
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
-            llm_model: 'claude-3-5-sonnet-20241022',
+            llm_model: 'claude-sonnet-4-5',
             cached_result: analysisData,
           });
         if (insertCacheError) {
