@@ -723,18 +723,45 @@ Before output, verify:
 - All arrays and objects properly closed
 `;
 
-      // And reduce the Claude max_tokens to prevent overly long responses:
+      // Caching Logic for Claude's analysis
+      const cacheKeyContent = JSON.stringify({
+        contractText: processedContractText,
+        metadata: analysisData,
+        jurisdictions: userSelectedJurisdictions,
+        outputLanguage: outputLanguage,
+        advancedAnalysis: performAdvancedAnalysis,
+      });
+      const cacheHash = await sha256(cacheKeyContent);
+
+      const { data: cachedResult, error: cacheError } = await supabase
+        .from('cached_clause_analysis')
+        .select('cached_result')
+        .eq('clause_hash', cacheHash)
+        .maybeSingle();
+
+      if (cacheError) {
+        console.warn("contract-analyzer: Error querying cache:", cacheError);
+      }
+
+      if (cachedResult) {
+        console.log("contract-analyzer: DEBUG - Cache hit for Claude analysis.");
+        analysisData = cachedResult.cached_result;
+      } else {
+        console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
+
+        // ENHANCED: Claude call with retry and robust parsing
+        analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
-            model: "claude-sonnet-4-5",
-            max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
-            temperature: 0.1,
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 5000,
+            temperature: 0.2,
             system: claudeSystemPrompt,
             messages: [
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
-                  { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
+                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
             ],
@@ -749,7 +776,7 @@ Before output, verify:
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
+        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
