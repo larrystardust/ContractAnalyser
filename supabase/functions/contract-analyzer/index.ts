@@ -676,7 +676,7 @@ NOTES:
       // Caching Logic for Claude's analysis
       const cacheKeyContent = JSON.stringify({
         contractText: processedContractText,
-        metadata: gpt4oExtractedData,
+        metadata: analysisData, // MODIFIED: Changed gpt4oExtractedData to analysisData
         jurisdictions: userSelectedJurisdictions,
         outputLanguage: outputLanguage,
         advancedAnalysis: performAdvancedAnalysis,
