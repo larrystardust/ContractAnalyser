@@ -708,7 +708,7 @@ NOTES:
               role: "user",
               content: [
                 { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
-                { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(gpt4oExtractedData, null, 2)}` }
+                { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
               ]
             }
           ],
