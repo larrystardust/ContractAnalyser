@@ -865,8 +865,8 @@ Before output, verify:
           console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
           // Use enhanced safe JSON parsing
-  return safeJsonParse(claudeOutputContent, "Claude analysis");
-}, 2, 1000); // Reduce retries to 2 to avoid timeout cascades 
+          return safeJsonParse(claudeOutputContent, "Claude analysis");
+        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades 
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
