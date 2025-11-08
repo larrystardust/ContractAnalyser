@@ -76,6 +76,36 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
+// Helper function to clean up common JSON errors before parsing
+function cleanJsonString(jsonString: string): string {
+  // Remove trailing commas from objects and arrays
+  let cleaned = jsonString.replace(/,(\s*[}\]])/g, '$1');
+  // Remove comments (single-line and multi-line)
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  // Remove any non-JSON text before the first brace or after the last brace
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  const firstBracket = cleaned.indexOf('[');
+  const lastBracket = cleaned.lastIndexOf(']');
+
+  let startIndex = -1;
+  let endIndex = -1;
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    startIndex = firstBrace;
+    endIndex = lastBrace;
+  } else if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+    startIndex = firstBracket;
+    endIndex = lastBracket;
+  }
+
+  if (startIndex !== -1 && endIndex !== -1) {
+    cleaned = cleaned.substring(startIndex, endIndex + 1);
+  }
+
+  return cleaned;
+}
+
 // Helper function for translation with improved prompt
 async function translateText(text: string | null | undefined, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
@@ -546,12 +576,15 @@ NOTES:
 - Do not include any text outside the JSON object.
 - All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
 - Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
+
 CRITICAL JSON VALIDATION:
-- STRICTLY adhere to valid JSON syntax.
-- DO NOT include any comments or non-JSON text.
-- ENSURE all string values are properly escaped (e.g., double quotes, newlines).
+- The entire output MUST be a single, valid JSON object.
+- DO NOT include any text, comments, or markdown outside the JSON object.
+- ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
+- DOUBLE-CHECK all brackets `[]` and braces `{}` are correctly matched and closed.
+- IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
 
@@ -668,11 +701,13 @@ Return your findings strictly as a valid JSON object with the following structur
 }
 
 CRITICAL JSON VALIDATION:
-- STRICTLY adhere to valid JSON syntax.
-- DO NOT include any comments or non-JSON text.
-- ENSURE all string values are properly escaped (e.g., double quotes, newlines).
+- The entire output MUST be a single, valid JSON object.
+- DO NOT include any text, comments, or markdown outside the JSON object.
+- ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
+- DOUBLE-CHECK all brackets `[]` and braces `{}` are correctly matched and closed.
+- IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 
 NOTES:
 - Ensure the JSON is valid and strictly adheres to the specified structure.
@@ -716,7 +751,7 @@ NOTES:
         analysisData = await retry(async () => { // ADDED retry wrapper
         const claudeCompletion = await anthropic.messages.create({
           model: "claude-sonnet-4-5", // MODIFIED: Use the correct API identifier for Claude Sonnet 4.5
-          max_tokens: 4000, // Adjust based on expected output length
+          max_tokens: 8000, // Adjust based on expected output length
           temperature: 0.2,
           system: claudeSystemPrompt,
           messages: [
@@ -737,6 +772,9 @@ NOTES:
 
         // Remove markdown code block fences before parsing JSON
         let cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
+
+        // NEW: Apply aggressive JSON cleanup before parsing
+        cleanedClaudeOutput = cleanJsonString(cleanedClaudeOutput); // ADDED: Call cleanJsonString
         
         // NEW: Aggressively trim to ensure content starts with '{' and ends with '}'
         const firstBrace = cleanedClaudeOutput.indexOf('{');
@@ -755,7 +793,7 @@ NOTES:
               console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
               throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
           }
-        }, 3, 1500); // Retry 3 times with exponential backoff starting at 1.5s // ADDED retry parameters
+        }, 2, 1000); // MODIFIED: Retry 2 times with exponential backoff starting at 1s // ADDED retry parameters
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
