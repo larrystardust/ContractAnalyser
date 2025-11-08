@@ -789,7 +789,7 @@ Before output, verify:
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); 
+        }, 3, 1000); // ENHANCED: Retry 3 times with backoff 
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
