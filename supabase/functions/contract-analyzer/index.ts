@@ -740,17 +740,60 @@ const claudeCompletion = await anthropic.messages.create({
   ],
 });
 
-        const claudeOutputContent = claudeCompletion.content[0].text;
-        if (!claudeOutputContent) {
-          throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
-        }
-      
-        console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
-        console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
-        
-        // Use enhanced safe JSON parsing
-        return safeJsonParse(claudeOutputContent, "Claude analysis");
-      }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
+       // Caching Logic for Claude's analysis
+      const cacheKeyContent = JSON.stringify({
+        contractText: processedContractText,
+        metadata: analysisData,
+        jurisdictions: userSelectedJurisdictions,
+        outputLanguage: outputLanguage,
+        advancedAnalysis: performAdvancedAnalysis,
+      });
+      const cacheHash = await sha256(cacheKeyContent);
+
+      const { data: cachedResult, error: cacheError } = await supabase
+        .from('cached_clause_analysis')
+        .select('cached_result')
+        .eq('clause_hash', cacheHash)
+        .maybeSingle();
+
+      if (cacheError) {
+        console.warn("contract-analyzer: Error querying cache:", cacheError);
+      }
+
+      if (cachedResult) {
+        console.log("contract-analyzer: DEBUG - Cache hit for Claude analysis.");
+        analysisData = cachedResult.cached_result;
+      } else {
+        console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
+
+        // ENHANCED: Claude call with retry and robust parsing
+        analysisData = await retry(async () => {
+          const claudeCompletion = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 5000,
+            temperature: 0.2,
+            system: claudeSystemPrompt,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
+                ]
+              }
+            ],
+          });
+
+          const claudeOutputContent = claudeCompletion.content[0].text;
+          if (!claudeOutputContent) {
+            throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
+          }
+
+          console.log("contract-analyzer: DEBUG - Raw Claude output received");
+          
+          // Use enhanced safe JSON parsing
+          return safeJsonParse(claudeOutputContent, "Claude analysis");
+        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
