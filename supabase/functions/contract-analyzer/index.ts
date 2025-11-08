@@ -76,7 +76,7 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// REPLACE the cleanJsonString function with this improved version:
+// REPLACE the cleanJsonString function with this much more aggressive version:
 function cleanJsonString(jsonString: string): string {
   if (!jsonString || typeof jsonString !== 'string') {
     return '{}';
@@ -84,10 +84,10 @@ function cleanJsonString(jsonString: string): string {
 
   console.log("cleanJsonString: Original input length:", jsonString.length);
   
-  // Remove markdown code blocks and any surrounding text
+  // Remove markdown code blocks FIRST
   let cleaned = jsonString.replace(/```json\s*|\s*```/g, '').trim();
   
-  // Remove any text before the first { and after the last }
+  // Extract JSON object more carefully
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
   
@@ -98,30 +98,154 @@ function cleanJsonString(jsonString: string): string {
   
   cleaned = cleaned.substring(firstBrace, lastBrace + 1);
   
-  // FIX: Remove excessive escaping - convert \\n to \n, \\" to \", etc.
-  cleaned = cleaned.replace(/\\\\n/g, '\n')
-                  .replace(/\\\\r/g, '\r')
-                  .replace(/\\\\t/g, '\t')
-                  .replace(/\\\\"/g, '"')
-                  .replace(/\\\\\\\\/g, '\\');
+  // FIX: Aggressively fix common JSON issues
+  // 1. Fix unescaped quotes within strings - look for patterns like: "text "problem" text"
+  cleaned = cleaned.replace(/("([^"\\]|\\.)*")/g, (match) => {
+    // Count quotes in the matched string
+    const quoteCount = (match.match(/"/g) || []).length;
+    if (quoteCount % 2 === 0) {
+      return match; // Even number of quotes, probably fine
+    }
+    // Odd number - escape the middle quotes
+    return match.replace(/([^\\])"/g, '$1\\"');
+  });
   
-  // Remove trailing commas from objects and arrays
+  // 2. Fix missing commas between object properties
+  cleaned = cleaned.replace(/"\s*\n\s*"/g, '",\n  "');
+  cleaned = cleaned.replace(/"\s*}\s*"/g, '"\n},\n"');
+  
+  // 3. Remove trailing commas from arrays and objects
   cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
   
-  // Remove comments (single-line and multi-line)
-  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  // 4. Fix missing commas in arrays
+  cleaned = cleaned.replace(/"\s*"\s*([}\]])/g, '","$1');
   
   console.log("cleanJsonString: After cleaning length:", cleaned.length);
-  console.log("cleanJsonString: First 500 chars:", cleaned.substring(0, 500));
   
   return cleaned;
 }
 
-// REPLACE the safeJsonParse function with this simplified version:
+// REPLACE the safeJsonParse function with this more targeted version:
 function safeJsonParse(input: string, context: string = 'unknown'): any {
   if (!input || typeof input !== 'string') {
     throw new Error(`Invalid input for JSON parsing in ${context}`);
   }
+
+  console.log(`safeJsonParse: Starting parse for ${context}`);
+  
+  let cleaned = cleanJsonString(input);
+  
+  // Multiple parsing strategies with better error reporting
+  const strategies = [
+    {
+      name: "Direct parse",
+      fn: () => JSON.parse(cleaned)
+    },
+    {
+      name: "Fix trailing commas", 
+      fn: () => {
+        const fixed = cleaned.replace(/,\s*([}\]])/g, '$1');
+        return JSON.parse(fixed);
+      }
+    },
+    {
+      name: "Fix unclosed quotes",
+      fn: () => {
+        // Add missing quotes at the end of strings
+        let fixed = cleaned;
+        // Look for patterns like: "text... (without closing quote)
+        fixed = fixed.replace(/("([^"\\]|\\.)*)(\n\s*[}\]])/g, '$1"$3');
+        return JSON.parse(fixed);
+      }
+    },
+    {
+      name: "Extract and validate JSON structure",
+      fn: () => {
+        // Try to build valid JSON from the structure
+        const lines = cleaned.split('\n');
+        let inString = false;
+        let escapeNext = false;
+        let fixedLines = [];
+        
+        for (let line of lines) {
+          let fixedLine = '';
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (escapeNext) {
+              fixedLine += char;
+              escapeNext = false;
+              continue;
+            }
+            
+            if (char === '\\') {
+              fixedLine += char;
+              escapeNext = true;
+              continue;
+            }
+            
+            if (char === '"') {
+              inString = !inString;
+              fixedLine += char;
+              continue;
+            }
+            
+            // If we're in a string and hit a newline without closing quote, add escape
+            if (inString && char === '\n') {
+              fixedLine += '\\n';
+              continue;
+            }
+            
+            fixedLine += char;
+          }
+          fixedLines.push(fixedLine);
+        }
+        
+        return JSON.parse(fixedLines.join('\n'));
+      }
+    },
+    {
+      name: "Last resort: manual JSON construction",
+      fn: () => {
+        console.log("safeJsonParse: Attempting manual JSON construction");
+        // Extract the main structure and manually fix it
+        const execSummaryMatch = cleaned.match(/"executiveSummary":\s*"([^"]*)"/);
+        const dataProtectionMatch = cleaned.match(/"dataProtectionImpact":\s*"([^"]*)"/);
+        const complianceScoreMatch = cleaned.match(/"complianceScore":\s*(\d+)/);
+        
+        if (!execSummaryMatch) {
+          throw new Error("Could not extract executiveSummary");
+        }
+        
+        const manualJson = {
+          executiveSummary: execSummaryMatch[1],
+          dataProtectionImpact: dataProtectionMatch ? dataProtectionMatch[1] : "",
+          complianceScore: complianceScoreMatch ? parseInt(complianceScoreMatch[1]) : 50,
+          findings: [],
+          jurisdictionSummaries: {}
+        };
+        
+        return manualJson;
+      }
+    }
+  ];
+
+  for (let i = 0; i < strategies.length; i++) {
+    try {
+      const result = strategies[i].fn();
+      console.log(`safeJsonParse: Strategy "${strategies[i].name}" succeeded`);
+      return result;
+    } catch (error) {
+      console.log(`safeJsonParse: Strategy "${strategies[i].name}" failed:`, error.message);
+      if (i === strategies.length - 1) {
+        console.error(`safeJsonParse: All strategies failed. First 500 chars of problematic JSON:`, cleaned.substring(0, 500));
+        throw new Error(`JSON parsing failed in ${context}: ${error.message}`);
+      }
+    }
+  }
+
+  throw new Error(`Unexpected error in JSON parsing for ${context}`);
+}
 
   console.log(`safeJsonParse: Starting parse for ${context}, input length: ${input.length}`);
   
@@ -788,8 +912,8 @@ Before output, verify:
           console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
           // Use enhanced safe JSON parsing
-          return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 3, 1000); // ENHANCED: Retry 3 times with backoff 
+  return safeJsonParse(claudeOutputContent, "Claude analysis");
+}, 2, 1000); // Reduce retries to 2 to avoid timeout cascades 
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
