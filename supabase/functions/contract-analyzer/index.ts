@@ -724,7 +724,6 @@ Before output, verify:
 `;
 
       // And reduce the Claude max_tokens to prevent overly long responses:
-        analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
             max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
