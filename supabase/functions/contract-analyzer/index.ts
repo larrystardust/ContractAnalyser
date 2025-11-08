@@ -546,6 +546,12 @@ NOTES:
 - Do not include any text outside the JSON object.
 - All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
 - Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
+CRITICAL JSON VALIDATION:
+- STRICTLY adhere to valid JSON syntax.
+- DO NOT include any comments or non-JSON text.
+- ENSURE all string values are properly escaped (e.g., double quotes, newlines).
+- VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
+- CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
 
@@ -661,6 +667,13 @@ Return your findings strictly as a valid JSON object with the following structur
   }
 }
 
+CRITICAL JSON VALIDATION:
+- STRICTLY adhere to valid JSON syntax.
+- DO NOT include any comments or non-JSON text.
+- ENSURE all string values are properly escaped (e.g., double quotes, newlines).
+- VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
+- CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
+
 NOTES:
 - Ensure the JSON is valid and strictly adheres to the specified structure.
 - Do not include any text outside the JSON object.
@@ -698,6 +711,9 @@ NOTES:
         analysisData = cachedResult.cached_result;
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
+
+        // Wrap Claude call and parsing in a retry block
+        analysisData = await retry(async () => { // ADDED retry wrapper
         const claudeCompletion = await anthropic.messages.create({
           model: "claude-sonnet-4-5", // MODIFIED: Use the correct API identifier for Claude Sonnet 4.5
           max_tokens: 4000, // Adjust based on expected output length
@@ -734,11 +750,13 @@ NOTES:
         }
         
         try {
-            analysisData = JSON.parse(cleanedClaudeOutput); // Parse the cleaned output
-        } catch (parseError: any) {
-            console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
-            throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
-        }
+            return JSON.parse(cleanedClaudeOutput);
+          } catch (parseError: any) {
+              console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
+              throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
+          }
+        }, 3, 1500); // Retry 3 times with exponential backoff starting at 1.5s // ADDED retry parameters
+        
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
         // Store in cache
