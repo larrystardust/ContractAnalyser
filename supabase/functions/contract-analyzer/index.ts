@@ -668,12 +668,13 @@ CRITICAL JSON VALIDATION:
       // ENHANCED: Claude prompt with strict JSON-only output instructions
       const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract and return ONLY valid JSON with no additional text.
 
-CRITICAL INSTRUCTIONS:
+CRITICAL JSON FORMATTING RULES:
 - Output ONLY raw JSON, no other text, explanations, or markdown
-- Ensure all strings are properly escaped
-- No trailing commas in arrays or objects
-- All opening brackets/clauses must be properly closed
-- Use double quotes for all JSON properties and string values
+- Use double quotes for ALL property names and string values
+- Escape only these characters: " becomes \\", \\ becomes \\\\, newlines become \\n
+- NO trailing commas in arrays or objects
+- All brackets and braces must be properly closed
+- Validate your JSON is parseable before output
 
 REQUIRED JSON STRUCTURE:
 {
@@ -716,17 +717,13 @@ REQUIRED JSON STRUCTURE:
   }
 }
 
-COMPLIANCE SCORE RULES:  
-- Start from 100 points  
-- High risk = –15 points, Medium = –8, Low = –3, None = 0  
-- Minimum score is 0, round to nearest whole number
-
-VALIDATE YOUR OUTPUT:
-- Check for trailing commas
-- Ensure all quotes are properly escaped
-- Verify all arrays have commas between elements
-- Confirm no missing brackets/braces
-- Test JSON validity before output
+FINAL VALIDATION CHECK:
+Before output, verify:
+1. No trailing commas after last array element or object property
+2. All strings use double quotes, not single quotes
+3. Special characters are properly escaped
+4. JSON.parse() would successfully parse your output
+5. No text exists outside the JSON object
 
 Contract jurisdictions to focus on: ${userSelectedJurisdictions}
 Output language: ${outputLanguage}
@@ -758,18 +755,18 @@ Output language: ${outputLanguage}
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
 
-        // ENHANCED: Claude call with retry and robust parsing
+        // ENHANCED: Claude call with better debugging
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
             max_tokens: 5000,
-            temperature: 0.2,
+            temperature: 0.1, // Lower temperature for more consistent output
             system: claudeSystemPrompt,
             messages: [
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                  { type: "text", text: `Full Contract Text:\n\n${processedContractText.substring(0, 100000)}` }, // Limit length if needed
                   { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
@@ -781,11 +778,12 @@ Output language: ${outputLanguage}
             throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
           }
 
-          console.log("contract-analyzer: DEBUG - Raw Claude output received");
+          console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
+          console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
           // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 3, 1000); // ENHANCED: Retry 3 times with backoff
+        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
