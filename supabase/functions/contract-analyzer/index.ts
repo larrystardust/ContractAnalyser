@@ -78,30 +78,42 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
 
 // Helper function to clean up common JSON errors before parsing
 function cleanJsonString(jsonString: string): string {
-  // Remove trailing commas from objects and arrays
-  let cleaned = jsonString.replace(/,(\s*[}\]])/g, '$1');
-  // Remove comments (single-line and multi-line)
-  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
-  // Remove any non-JSON text before the first brace or after the last brace
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  const firstBracket = cleaned.indexOf('[');
-  const lastBracket = cleaned.lastIndexOf(']');
-
+  // Attempt to find the first and last valid JSON delimiters
   let startIndex = -1;
   let endIndex = -1;
 
+  // Prioritize finding a JSON object {}
+  const firstBrace = jsonString.indexOf('{');
+  const lastBrace = jsonString.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
     startIndex = firstBrace;
     endIndex = lastBrace;
-  } else if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
-    startIndex = firstBracket;
-    endIndex = lastBracket;
   }
 
-  if (startIndex !== -1 && endIndex !== -1) {
-    cleaned = cleaned.substring(startIndex, endIndex + 1);
+  // If no object found, try to find a JSON array []
+  if (startIndex === -1) { // Only try array if object not found
+    const firstBracket = jsonString.indexOf('[');
+    const lastBracket = jsonString.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+      startIndex = firstBracket;
+      endIndex = lastBracket;
+    }
   }
+
+  if (startIndex === -1 || endIndex === -1) {
+    // If no valid JSON structure found, return original string or throw
+    console.warn("cleanJsonString: No valid JSON object or array structure found after initial cleanup. Returning original string.");
+    return jsonString; // Return original string if no valid JSON structure found
+  }
+
+  let cleaned = jsonString.substring(startIndex, endIndex + 1);
+
+  // Remove trailing commas from objects and arrays
+  // This regex targets a comma followed by optional whitespace and then a closing brace or bracket
+  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+  
+  // Remove comments (single-line and multi-line)
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
 
   return cleaned;
 }
@@ -580,10 +592,10 @@ NOTES:
 CRITICAL JSON VALIDATION:
 - The entire output MUST be a single, valid JSON object.
 - DO NOT include any text, comments, or markdown outside the JSON object.
-- ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
+- ENSURE all string values are properly escaped (e.g., double quotes (\"), newlines (\\n), and backslashes (\\\\)).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets \`[]\` and braces \`{}\` are correctly matched and closed.
+- DOUBLE-CHECK all brackets `\\[\\]` and braces `\\{\\}` are correctly matched and closed.
 - IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
@@ -703,10 +715,11 @@ Return your findings strictly as a valid JSON object with the following structur
 CRITICAL JSON VALIDATION:
 - The entire output MUST be a single, valid JSON object.
 - DO NOT include any text, comments, or markdown outside the JSON object.
-- ENSURE all string values are properly escaped (e.g., double quotes, newlines, backslashes).
+- ENSURE all string values are properly escaped (e.g., double quotes (\"), newlines (\\n), and backslashes (\\\\)).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets \`[]\` and braces \`{}\` are correctly matched and closed.
+- DOUBLE-CHECK all brackets `\\[\\]` and braces `\\{\\}` are correctly matched and closed.
+- Each element within an array (e.g., 'findings', 'recommendations', 'parties') MUST be a valid JSON value (string, object, etc.) and MUST be separated by a comma. There must be NO missing commas between array elements.
 - IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 
 NOTES:
@@ -751,7 +764,7 @@ NOTES:
         analysisData = await retry(async () => { // ADDED retry wrapper
         const claudeCompletion = await anthropic.messages.create({
           model: "claude-sonnet-4-5", // MODIFIED: Use the correct API identifier for Claude Sonnet 4.5
-          max_tokens: 8000, // Adjust based on expected output length
+          max_tokens: 5000, // Adjust based on expected output length
           temperature: 0.2,
           system: claudeSystemPrompt,
           messages: [
@@ -772,28 +785,28 @@ NOTES:
 
         // Remove markdown code block fences before parsing JSON
         let cleanedClaudeOutput = claudeOutputContent.replace(/```json\n?|```/g, '').trim();
+          
+          // Apply aggressive JSON cleanup before parsing
+          cleanedClaudeOutput = cleanJsonString(cleanedClaudeOutput); // Ensure this line is present and correctly calls the helper
 
-        // NEW: Apply aggressive JSON cleanup before parsing
-        cleanedClaudeOutput = cleanJsonString(cleanedClaudeOutput); // ADDED: Call cleanJsonString
-        
-        // NEW: Aggressively trim to ensure content starts with '{' and ends with '}'
-        const firstBrace = cleanedClaudeOutput.indexOf('{');
-        const lastBrace = cleanedClaudeOutput.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          cleanedClaudeOutput = cleanedClaudeOutput.substring(firstBrace, lastBrace + 1);
-        } else {
-          // If we can't find valid braces, it's severely malformed, log and throw
-          console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup. Raw output:", cleanedClaudeOutput);
-          throw new Error(getTranslatedMessage('error_claude_output_not_valid_json_structure', userPreferredLanguage));
-        }
-        
-        try {
-            return JSON.parse(cleanedClaudeOutput);
+          // The subsequent logic to find first/last brace/bracket is now handled within cleanJsonString
+          // So, this block can be simplified:
+          // const firstBrace = cleanedClaudeOutput.indexOf('{');
+          // const lastBrace = cleanedClaudeOutput.lastIndexOf('}');
+          // if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          //   cleanedClaudeOutput = cleanedClaudeOutput.substring(firstBrace, lastBrace + 1);
+          // } else {
+          //   console.error("contract-analyzer: Claude output does not contain a valid JSON object structure after initial cleanup. Raw output:", cleanedClaudeOutput);
+          //   throw new Error(getTranslatedMessage('error_claude_output_not_valid_json_structure', userPreferredLanguage));
+          // }
+          
+          try {
+              return JSON.parse(cleanedClaudeOutput);
           } catch (parseError: any) {
               console.error("contract-analyzer: JSON parsing failed for Claude output. Raw output:", cleanedClaudeOutput);
               throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (Claude): ${parseError.message}`);
           }
-        }, 2, 1000); // MODIFIED: Retry 2 times with exponential backoff starting at 1s // ADDED retry parameters
+        }, 1, 1000); // MODIFIED: Retry 1 time with exponential backoff starting at 1s
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
