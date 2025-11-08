@@ -723,54 +723,11 @@ Before output, verify:
 - All arrays and objects properly closed
 `;
 
-// And reduce the Claude max_tokens to prevent overly long responses:
-const claudeCompletion = await anthropic.messages.create({
-  model: "claude-sonnet-4-5",
-  max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
-  temperature: 0.1,
-  system: claudeSystemPrompt,
-  messages: [
-    {
-      role: "user",
-      content: [
-        { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
-        { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
-      ]
-    }
-  ],
-});
-
-       // Caching Logic for Claude's analysis
-      const cacheKeyContent = JSON.stringify({
-        contractText: processedContractText,
-        metadata: analysisData,
-        jurisdictions: userSelectedJurisdictions,
-        outputLanguage: outputLanguage,
-        advancedAnalysis: performAdvancedAnalysis,
-      });
-      const cacheHash = await sha256(cacheKeyContent);
-
-      const { data: cachedResult, error: cacheError } = await supabase
-        .from('cached_clause_analysis')
-        .select('cached_result')
-        .eq('clause_hash', cacheHash)
-        .maybeSingle();
-
-      if (cacheError) {
-        console.warn("contract-analyzer: Error querying cache:", cacheError);
-      }
-
-      if (cachedResult) {
-        console.log("contract-analyzer: DEBUG - Cache hit for Claude analysis.");
-        analysisData = cachedResult.cached_result;
-      } else {
-        console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
-
-        // ENHANCED: Claude call with retry and robust parsing
+      // And reduce the Claude max_tokens to prevent overly long responses:
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
-            max_tokens: 4000,
+            max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
             temperature: 0.1,
             system: claudeSystemPrompt,
             messages: [
