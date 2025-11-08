@@ -755,7 +755,21 @@ CRITICAL JSON VALIDATION:
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
       // ULTRA-STRICT Claude prompt
-      const claudeSystemPrompt = `You are a legal contract analysis AI. You MUST output ONLY valid JSON with no additional text.
+      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract. You MUST output ONLY valid JSON with no additional text.
+
+You must use the following checklist as part of your internal review framework to ensure completeness:
+
+CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
+1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
+2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
+3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
+4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
+6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
+7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
+8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
+9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
+10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
+11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.
 
 CRITICAL: Your output must be parseable by JSON.parse() without errors.
 
@@ -778,22 +792,22 @@ REQUIRED JSON STRUCTURE:
       "title": "Short title",
       "description": "Short description under 800 chars",
       "riskLevel": "high",
-      "jurisdiction": "US",
+      "jurisdiction": "UK",
       "category": "data-protection",
       "recommendations": ["Rec 1", "Rec 2"],
       "clauseReference": "Section X"
     }
   ],
   "jurisdictionSummaries": {
-    "US": {
-      "jurisdiction": "US",
+    "UK": {
+      "jurisdiction": "UK",
       "applicableLaws": ["Law 1", "Law 2"],
       "keyFindings": ["Finding 1", "Finding 2"],
       "riskLevel": "high"
     }
   },
-  "effectiveDate": "2025-08-11",
-  "terminationDate": "2026-08-12",
+  "effectiveDate": "2025-08-11 or '${notSpecifiedTranslatedString}'",
+  "terminationDate": "2026-08-12 or '${notSpecifiedTranslatedString}'",
   "renewalDate": "${notSpecifiedTranslatedString}",
   "contractType": "Professional Services Agreement",
   "contractValue": "${notSpecifiedTranslatedString}",
@@ -801,7 +815,11 @@ REQUIRED JSON STRUCTURE:
   "liabilityCapSummary": "Summary here",
   "indemnificationClauseSummary": "Summary here",
   "confidentialityObligationsSummary": "Summary here",
-  "redlinedClauseArtifact": null
+  "redlinedClauseArtifact": {
+    "originalClause": "string",
+    "redlinedVersion": "string", 
+    "suggestedRevision": "string",
+    "findingId": "string"
 }
 
 FINAL VALIDATION:
@@ -810,6 +828,9 @@ Before output, verify:
 - No unescaped quotes in string values
 - No trailing commas
 - All arrays and objects properly closed
+
+Contract jurisdictions to focus on: ${userSelectedJurisdictions}
+Output language: ${outputLanguage}
 `;
 
       // Caching Logic for Claude's analysis
