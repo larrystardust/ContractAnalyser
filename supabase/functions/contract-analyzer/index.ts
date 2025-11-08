@@ -770,15 +770,15 @@ const claudeCompletion = await anthropic.messages.create({
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
-            max_tokens: 5000,
-            temperature: 0.2,
+            max_tokens: 4000,
+            temperature: 0.1,
             system: claudeSystemPrompt,
             messages: [
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
-                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
+                  { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
+                  { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
             ],
