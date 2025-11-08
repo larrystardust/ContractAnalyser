@@ -1738,5 +1738,10 @@
   "failed_to_load_redlined_clause": "Échec du chargement de l'artefact de clause surlignée : {{message}}",
   "redlined_clause_download_started": "Téléchargement de la clause surlignée démarré.",
   "failed_to_download_redlined_clause": "Échec du téléchargement de l'artefact de clause surlignée : {{message}}",
-  "no_artifacts_generated": "Aucun artefact n'a été généré pour ce contrat."
+  "no_artifacts_generated": "Aucun artefact n'a été généré pour ce contrat.",
+
+  "contract_analysis_in_progress": "Analyse du contrat en cours",
+  "contract_being_analyzed": "Le contrat est en cours d'analyse",
+  "may_take_minutes": "Cela peut prendre quelques minutes.",
+  "reanalyze_contract": "Réanalyser le contrat"
 }
