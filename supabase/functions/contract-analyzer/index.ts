@@ -665,127 +665,92 @@ CRITICAL JSON VALIDATION:
       // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis and artifact generation
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
-      // ENHANCED: Claude prompt with strict JSON-only output instructions
-      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract and return ONLY valid JSON with no additional text.
+      // ULTRA-STRICT Claude prompt
+      const claudeSystemPrompt = `You are a legal contract analysis AI. You MUST output ONLY valid JSON with no additional text.
 
-CRITICAL INSTRUCTIONS:
-- Output ONLY raw JSON, no other text, explanations, or markdown
-- Ensure all strings are properly escaped
-- No trailing commas in arrays or objects
-- All opening brackets/clauses must be properly closed
-- Use double quotes for all JSON properties and string values
+CRITICAL: Your output must be parseable by JSON.parse() without errors.
+
+JSON OUTPUT RULES:
+1. Output ONLY the JSON object, no other text
+2. All strings must use double quotes
+3. Escape quotes within strings with backslash: \\"
+4. Escape backslashes with double backslash: \\\\
+5. No trailing commas in arrays or objects
+6. All brackets must be properly closed
+7. Validate your output is valid JSON before sending
 
 REQUIRED JSON STRUCTURE:
 {
-  "executiveSummary": "string (max 2000 chars)",
-  "dataProtectionImpact": "string (max 2000 chars)", 
-  "complianceScore": "number (0-100)",
+  "executiveSummary": "Keep this under 1500 characters. Ensure all quotes are properly escaped.",
+  "dataProtectionImpact": "Keep this under 1500 characters. Ensure all quotes are properly escaped.", 
+  "complianceScore": 73,
   "findings": [
     {
-      "title": "string",
-      "description": "string",
-      "riskLevel": "low|medium|high|critical",
-      "jurisdiction": "string",
-      "category": "commercial|legal|operational|compliance|data-protection",
-      "recommendations": ["string", "string"],
-      "clauseReference": "string"
+      "title": "Short title",
+      "description": "Short description under 800 chars",
+      "riskLevel": "high",
+      "jurisdiction": "US",
+      "category": "data-protection",
+      "recommendations": ["Rec 1", "Rec 2"],
+      "clauseReference": "Section X"
     }
   ],
   "jurisdictionSummaries": {
-    "UK": {
-      "jurisdiction": "UK",
-      "applicableLaws": ["string"],
-      "keyFindings": ["string"],
+    "US": {
+      "jurisdiction": "US",
+      "applicableLaws": ["Law 1", "Law 2"],
+      "keyFindings": ["Finding 1", "Finding 2"],
       "riskLevel": "high"
     }
   },
-  "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "contractType": "string",
-  "contractValue": "string",
-  "parties": ["string"],
-  "liabilityCapSummary": "string",
-  "indemnificationClauseSummary": "string",
-  "confidentialityObligationsSummary": "string",
-  "redlinedClauseArtifact": {
-    "originalClause": "string",
-    "redlinedVersion": "string", 
-    "suggestedRevision": "string",
-    "findingId": "string"
-  }
+  "effectiveDate": "2025-08-11",
+  "terminationDate": "2026-08-12",
+  "renewalDate": "${notSpecifiedTranslatedString}",
+  "contractType": "Professional Services Agreement",
+  "contractValue": "${notSpecifiedTranslatedString}",
+  "parties": ["Santa Cruz County Regional Transportation Commission", "Rowser Company Ltd"],
+  "liabilityCapSummary": "Summary here",
+  "indemnificationClauseSummary": "Summary here",
+  "confidentialityObligationsSummary": "Summary here",
+  "redlinedClauseArtifact": null
 }
 
-COMPLIANCE SCORE RULES:  
-- Start from 100 points  
-- High risk = –15 points, Medium = –8, Low = –3, None = 0  
-- Minimum score is 0, round to nearest whole number
-
-VALIDATE YOUR OUTPUT:
-- Check for trailing commas
-- Ensure all quotes are properly escaped
-- Verify all arrays have commas between elements
-- Confirm no missing brackets/braces
-- Test JSON validity before output
-
-Contract jurisdictions to focus on: ${userSelectedJurisdictions}
-Output language: ${outputLanguage}
+FINAL VALIDATION:
+Before output, verify:
+- JSON.parse(your_output) would succeed
+- No unescaped quotes in string values
+- No trailing commas
+- All arrays and objects properly closed
 `;
 
-      // Caching Logic for Claude's analysis
-      const cacheKeyContent = JSON.stringify({
-        contractText: processedContractText,
-        metadata: analysisData,
-        jurisdictions: userSelectedJurisdictions,
-        outputLanguage: outputLanguage,
-        advancedAnalysis: performAdvancedAnalysis,
-      });
-      const cacheHash = await sha256(cacheKeyContent);
+// And reduce the Claude max_tokens to prevent overly long responses:
+const claudeCompletion = await anthropic.messages.create({
+  model: "claude-sonnet-4-5",
+  max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
+  temperature: 0.1,
+  system: claudeSystemPrompt,
+  messages: [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
+        { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
+      ]
+    }
+  ],
+});
 
-      const { data: cachedResult, error: cacheError } = await supabase
-        .from('cached_clause_analysis')
-        .select('cached_result')
-        .eq('clause_hash', cacheHash)
-        .maybeSingle();
+  const claudeOutputContent = claudeCompletion.content[0].text;
+  if (!claudeOutputContent) {
+    throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
+  }
 
-      if (cacheError) {
-        console.warn("contract-analyzer: Error querying cache:", cacheError);
-      }
-
-      if (cachedResult) {
-        console.log("contract-analyzer: DEBUG - Cache hit for Claude analysis.");
-        analysisData = cachedResult.cached_result;
-      } else {
-        console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
-
-        // ENHANCED: Claude call with retry and robust parsing
-        analysisData = await retry(async () => {
-          const claudeCompletion = await anthropic.messages.create({
-            model: "claude-sonnet-4-5",
-            max_tokens: 5000,
-            temperature: 0.2,
-            system: claudeSystemPrompt,
-            messages: [
-              {
-                role: "user",
-                content: [
-                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
-                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
-                ]
-              }
-            ],
-          });
-
-          const claudeOutputContent = claudeCompletion.content[0].text;
-          if (!claudeOutputContent) {
-            throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
-          }
-
-          console.log("contract-analyzer: DEBUG - Raw Claude output received");
-          
-          // Use enhanced safe JSON parsing
-          return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
+  console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
+  console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
+  
+  // Use enhanced safe JSON parsing
+  return safeJsonParse(claudeOutputContent, "Claude analysis");
+}, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
