@@ -760,8 +760,8 @@ Before output, verify:
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
-                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
+                  { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
+                  { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
             ],
