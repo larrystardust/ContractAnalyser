@@ -1175,7 +1175,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     // Process and store artifacts
     let redlinedClauseArtifactPath: string | null = null;
-    if (isAdvancedPlanUser && analysisData.redlinedClauseArtifact && analysisData.redlinedClauseArtifact.redlinedVersion) {
+    if (performAdvancedAnalysis && analysisData.redlinedClauseArtifact && analysisData.redlinedClauseArtifact.redlinedVersion) {
       const artifactContent = JSON.stringify(analysisData.redlinedClauseArtifact, null, 2);
       const artifactFileName = `redlined-clause-${contractId}-${Date.now()}.json`;
       const artifactFilePath = `${userId}/${contractId}/${artifactFileName}`;
