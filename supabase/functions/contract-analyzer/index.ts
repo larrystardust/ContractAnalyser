@@ -1,7 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 import OpenAI from 'npm:openai@4.53.0';
-import Anthropic from 'npm:@anthropic-ai/sdk'; // ADDED: Import Anthropic
+import Anthropic from 'npm:@anthropic-ai/sdk';
 import { logActivity } from '../_shared/logActivity.ts';
 import { getTranslatedMessage } from '../_shared/edge_translations.ts';
 import { GoogleAuth } from 'npm:google-auth-library@9.10.0';
@@ -17,7 +17,7 @@ const openai = new OpenAI({
   apiKey: Deno.env.get('OPENAI_API_KEY')!,
 });
 
-// ADDED: Initialize Anthropic client
+// Initialize Anthropic client
 const anthropic = new Anthropic({
   apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
 });
@@ -45,7 +45,7 @@ function corsResponse(body: string | object | null, status = 200, origin: string
     'https://contractanalyser.com'
   ];
   
-  let accessControlAllowOrigin = '*'; // Default to wildcard for development/safety if origin is not allowed
+  let accessControlAllowOrigin = '*';
   if (origin && allowedOrigins.includes(origin)) {
     accessControlAllowOrigin = origin;
   }
@@ -70,13 +70,13 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
     if (retries > 0) {
       console.warn(`Retry attempt ${retries} failed. Retrying in ${delay}ms...`, error);
       await new Promise(res => setTimeout(res, delay));
-      return retry(fn, retries - 1, delay * 2); // Exponential backoff
+      return retry(fn, retries - 1, delay * 2);
     }
     throw error;
   }
 }
 
-// REPLACE the cleanJsonString function with this much more aggressive version:
+// IMPROVED JSON cleaning function
 function cleanJsonString(jsonString: string): string {
   if (!jsonString || typeof jsonString !== 'string') {
     return '{}';
@@ -84,10 +84,10 @@ function cleanJsonString(jsonString: string): string {
 
   console.log("cleanJsonString: Original input length:", jsonString.length);
   
-  // Remove markdown code blocks FIRST
+  // Remove markdown code blocks
   let cleaned = jsonString.replace(/```json\s*|\s*```/g, '').trim();
   
-  // Extract JSON object more carefully
+  // Extract JSON object
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
   
@@ -98,34 +98,24 @@ function cleanJsonString(jsonString: string): string {
   
   cleaned = cleaned.substring(firstBrace, lastBrace + 1);
   
-  // FIX: Aggressively fix common JSON issues
-  // 1. Fix unescaped quotes within strings - look for patterns like: "text "problem" text"
-  cleaned = cleaned.replace(/("([^"\\]|\\.)*")/g, (match) => {
-    // Count quotes in the matched string
-    const quoteCount = (match.match(/"/g) || []).length;
-    if (quoteCount % 2 === 0) {
-      return match; // Even number of quotes, probably fine
-    }
-    // Odd number - escape the middle quotes
-    return match.replace(/([^\\])"/g, '$1\\"');
-  });
-  
-  // 2. Fix missing commas between object properties
-  cleaned = cleaned.replace(/"\s*\n\s*"/g, '",\n  "');
-  cleaned = cleaned.replace(/"\s*}\s*"/g, '"\n},\n"');
-  
-  // 3. Remove trailing commas from arrays and objects
+  // Fix trailing commas in arrays and objects
   cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
   
-  // 4. Fix missing commas in arrays
-  cleaned = cleaned.replace(/"\s*"\s*([}\]])/g, '","$1');
+  // Fix missing commas between array elements
+  cleaned = cleaned.replace(/("\s*)(?=\n\s*")/g, '$1,');
+  
+  // Fix unescaped quotes within strings
+  cleaned = cleaned.replace(/(?<!\\)"(.*?)(?<!\\)"/g, (match, content) => {
+    const escapedContent = content.replace(/"/g, '\\"');
+    return `"${escapedContent}"`;
+  });
   
   console.log("cleanJsonString: After cleaning length:", cleaned.length);
   
   return cleaned;
 }
 
-// REPLACE the safeJsonParse function with this more targeted version:
+// IMPROVED JSON parsing with better error recovery
 function safeJsonParse(input: string, context: string = 'unknown'): any {
   if (!input || typeof input !== 'string') {
     throw new Error(`Invalid input for JSON parsing in ${context}`);
@@ -135,7 +125,6 @@ function safeJsonParse(input: string, context: string = 'unknown'): any {
   
   let cleaned = cleanJsonString(input);
   
-  // Multiple parsing strategies with better error reporting
   const strategies = [
     {
       name: "Direct parse",
@@ -149,82 +138,44 @@ function safeJsonParse(input: string, context: string = 'unknown'): any {
       }
     },
     {
-      name: "Fix unclosed quotes",
+      name: "Fix array commas",
       fn: () => {
-        // Add missing quotes at the end of strings
-        let fixed = cleaned;
-        // Look for patterns like: "text... (without closing quote)
-        fixed = fixed.replace(/("([^"\\]|\\.)*)(\n\s*[}\]])/g, '$1"$3');
+        // Fix missing commas between array elements
+        let fixed = cleaned.replace(/"\s*\n\s*"/g, '",\n"');
+        fixed = fixed.replace(/"\s*"\s*([}\]])/g, '","$1');
         return JSON.parse(fixed);
       }
     },
     {
-      name: "Extract and validate JSON structure",
+      name: "Extract valid JSON structure",
       fn: () => {
-        // Try to build valid JSON from the structure
-        const lines = cleaned.split('\n');
-        let inString = false;
-        let escapeNext = false;
-        let fixedLines = [];
+        // More comprehensive manual extraction
+        const execSummaryMatch = cleaned.match(/"executiveSummary"\s*:\s*"([^"]*)"/);
+        const dataProtectionMatch = cleaned.match(/"dataProtectionImpact"\s*:\s*"([^"]*)"/);
+        const complianceScoreMatch = cleaned.match(/"complianceScore"\s*:\s*(\d+)/);
         
-        for (let line of lines) {
-          let fixedLine = '';
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            
-            if (escapeNext) {
-              fixedLine += char;
-              escapeNext = false;
-              continue;
-            }
-            
-            if (char === '\\') {
-              fixedLine += char;
-              escapeNext = true;
-              continue;
-            }
-            
-            if (char === '"') {
-              inString = !inString;
-              fixedLine += char;
-              continue;
-            }
-            
-            // If we're in a string and hit a newline without closing quote, add escape
-            if (inString && char === '\n') {
-              fixedLine += '\\n';
-              continue;
-            }
-            
-            fixedLine += char;
-          }
-          fixedLines.push(fixedLine);
-        }
+        // Extract findings array more robustly
+        const findingsMatch = cleaned.match(/"findings"\s*:\s*\[(.*?)\](?=\s*,?\s*[}\]])/s);
         
-        return JSON.parse(fixedLines.join('\n'));
-      }
-    },
-    {
-      name: "Last resort: manual JSON construction",
-      fn: () => {
-        console.log("safeJsonParse: Attempting manual JSON construction");
-        // Extract the main structure and manually fix it
-        const execSummaryMatch = cleaned.match(/"executiveSummary":\s*"([^"]*)"/);
-        const dataProtectionMatch = cleaned.match(/"dataProtectionImpact":\s*"([^"]*)"/);
-        const complianceScoreMatch = cleaned.match(/"complianceScore":\s*(\d+)/);
-        
-        if (!execSummaryMatch) {
-          throw new Error("Could not extract executiveSummary");
-        }
-        
-        const manualJson = {
-          executiveSummary: execSummaryMatch[1],
+        const manualJson: any = {
+          executiveSummary: execSummaryMatch ? execSummaryMatch[1] : "Analysis completed",
           dataProtectionImpact: dataProtectionMatch ? dataProtectionMatch[1] : "",
           complianceScore: complianceScoreMatch ? parseInt(complianceScoreMatch[1]) : 50,
           findings: [],
           jurisdictionSummaries: {}
         };
-        
+
+        // Try to extract findings if they exist
+        if (findingsMatch && findingsMatch[1]) {
+          try {
+            const findingsText = `[${findingsMatch[1]}]`;
+            const fixedFindings = findingsText.replace(/,\s*([}\]])/g, '$1');
+            manualJson.findings = JSON.parse(fixedFindings);
+          } catch (e) {
+            console.log("Could not parse findings array, using empty array");
+          }
+        }
+
         return manualJson;
       }
     }
@@ -238,7 +189,7 @@ function safeJsonParse(input: string, context: string = 'unknown'): any {
     } catch (error) {
       console.log(`safeJsonParse: Strategy "${strategies[i].name}" failed:`, error.message);
       if (i === strategies.length - 1) {
-        console.error(`safeJsonParse: All strategies failed. First 500 chars of problematic JSON:`, cleaned.substring(0, 500));
+        console.error(`safeJsonParse: All strategies failed. First 500 chars:`, cleaned.substring(0, 500));
         throw new Error(`JSON parsing failed in ${context}: ${error.message}`);
       }
     }
@@ -247,19 +198,18 @@ function safeJsonParse(input: string, context: string = 'unknown'): any {
   throw new Error(`Unexpected error in JSON parsing for ${context}`);
 }
 
-// Helper function for translation with improved prompt
+// Helper function for translation
 async function translateText(text: string | null | undefined, targetLanguage: string): Promise<string> {
-  if (!text || targetLanguage === 'en') { // No need to translate if empty or target is English
-    return text || ''; // Ensure a string is always returned
+  if (!text || targetLanguage === 'en') {
+    return text || '';
   }
 
   try {
     const translationCompletion = await openai.chat.completions.create({
-      model: "gpt-4o", // Use a capable model for translation
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
-          // CRITICAL MODIFICATION: Instruct the LLM to only translate if necessary
           content: `You are a highly accurate language translator. Translate the following text into ${targetLanguage}. If the text is already in ${targetLanguage}, return the original text as is. Provide only the translated or original text. Do NOT include any additional commentary, formatting, or conversational filler.`,
         },
         {
@@ -267,21 +217,19 @@ async function translateText(text: string | null | undefined, targetLanguage: st
           content: text,
         },
       ],
-      temperature: 0.1, // Keep temperature low for accurate translation
-      max_tokens: 1000, // Adjust as needed
+      temperature: 0.1,
+      max_tokens: 1000,
     });
     const translatedContent = translationCompletion.choices[0].message?.content?.trim();
-    // console.log(`translateText: Original: "${text}" -> Translated: "${translatedContent}"`); // REMOVED
 
-    // If the translation is empty, return the original text as a fallback
     if (!translatedContent) {
       console.warn(`translateText: Empty translation received for "${text}". Returning original.`);
-      return text; // Return original text on error
+      return text;
     }
     return translatedContent;
   } catch (error) {
     console.error(`translateText: Error translating text to ${targetLanguage}:`, error);
-    return text; // Return original text on error
+    return text;
   }
 }
 
@@ -295,7 +243,7 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
         },
         features: [
           {
-            type: 'DOCUMENT_TEXT_DETECTION', // Use DOCUMENT_TEXT_DETECTION for better OCR on documents
+            type: 'DOCUMENT_TEXT_DETECTION',
           },
         ],
       },
@@ -351,7 +299,7 @@ async function executeOcr(imageData: string, userPreferredLanguage: string): Pro
 // Cost for advanced analysis add-on
 const ADVANCED_ANALYSIS_ADDON_COST = 1;
 
-// ADDED: Hashing function for caching
+// Hashing function for caching
 async function sha256(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -505,16 +453,13 @@ Deno.serve(async (req) => {
 
   let consumedOrderId: number | null = null;
 
-  // --- START: Authorization Logic & Credit Deduction ---
+  // Authorization Logic & Credit Deduction
   console.log(`contract-analyzer: DEBUG - User ${userId} (Tier: ${userSubscriptionTier}) requested analysis.`);
   console.log(`contract-analyzer: DEBUG - performAdvancedAnalysis: ${performAdvancedAnalysis}, creditCost from frontend: ${creditCost}`);
 
   const isAdvancedPlanUser = userSubscriptionTier !== null && (userSubscriptionTier === 4 || userSubscriptionTier === 5);
   const isBasicPlanUser = userSubscriptionTier !== null && (userSubscriptionTier === 2 || userSubscriptionTier === 3);
 
-  // Deduct credits if:
-  // 1. User is on a single-use plan (no subscription)
-  // 2. User is on a basic plan (tier 2 or 3) AND advanced analysis is requested.
   const shouldDeductCredits = !userSubscriptionId || (isBasicPlanUser && performAdvancedAnalysis);
 
   if (shouldDeductCredits) {
@@ -540,7 +485,7 @@ Deno.serve(async (req) => {
       .eq('payment_status', 'paid')
       .eq('status', 'completed')
       .gt('credits_remaining', 0)
-      .order('created_at', { ascending: true }); // Order by creation to consume oldest first
+      .order('created_at', { ascending: true });
 
     if (ordersError) {
       console.error('contract-analyzer: Error fetching unconsumed orders:', ordersError);
@@ -556,7 +501,6 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('error_insufficient_credits_for_operation', userPreferredLanguage, { requiredCredits: creditCost, availableCredits: totalAvailableCredits }) }, 403);
     }
 
-    // Deduct credits from orders, starting with the oldest
     let remainingCost = creditCost;
     for (const order of unconsumedOrders) {
       if (remainingCost <= 0) break;
@@ -576,13 +520,12 @@ Deno.serve(async (req) => {
         throw new Error(getTranslatedMessage('error_failed_to_deduct_credits', userPreferredLanguage));
       }
       remainingCost -= deduction;
-      consumedOrderId = order.id; // Keep track of the last order credits were consumed from
+      consumedOrderId = order.id;
     }
     console.log(`contract-analyzer: DEBUG - Credit deduction completed. Final remaining cost: ${remainingCost}`);
   } else {
     console.log(`contract-analyzer: DEBUG - User ${userId} is on an advanced plan (Tier 4 or 5) or a basic plan not requesting advanced analysis. Skipping credit deduction.`);
   }
-  // --- END: Authorization Logic & Credit Deduction ---
 
   let translatedContractName: string = originalContractName;
 
@@ -687,9 +630,9 @@ Deno.serve(async (req) => {
     let analysisData: any;
     const notSpecifiedTranslatedString = getTranslatedMessage('not_specified', outputLanguage);
 
-    // --- Dream Team Logic: Conditional LLM Orchestration ---
-    if (performAdvancedAnalysis) { // MODIFIED: Use performAdvancedAnalysis flag
-      console.log(`contract-analyzer: DEBUG - Advanced Analysis requested. Using Dream Team workflow.`); // MODIFIED
+    // Dream Team Logic: Conditional LLM Orchestration
+    if (performAdvancedAnalysis) {
+      console.log(`contract-analyzer: DEBUG - Advanced Analysis requested. Using Dream Team workflow.`);
       
       // Phase 1: GPT-4o as "Eyes" for initial extraction and structuring
       await supabase.from('contracts').update({ processing_progress: 40 }).eq('id', contractId);
@@ -706,28 +649,11 @@ Return your findings strictly as a valid JSON object with the following structur
   "contractValue": "e.g., '$100,000 USD' or 'not_specified'",
   "segmentedText": [
     {"segmentId": "1", "text": "First paragraph/clause text."},
-    {"segmentId": "2", "text": "Second paragraph/clause text."},
-    // ... up to 50 segments for very long documents, or fewer for shorter ones.
+    {"segmentId": "2", "text": "Second paragraph/clause text."}
   ]
 }
 
-NOTES:
-- Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use 'not_specified'.
-- Ensure the JSON is valid and strictly adheres to the specified structure.
-- Do not include any text outside the JSON object.
-- All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
-- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
-
-CRITICAL JSON VALIDATION:
-- The entire output MUST be a single, valid JSON object.
-- DO NOT include any text, comments, or markdown outside the JSON object.
-- ENSURE all string values are properly escaped (e.g., double quotes (\"), newlines (\\n), and backslashes (\\\\)).
-- VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
-- CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets \`[]\` and braces \`{}\` are correctly matched and closed.
-- IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
-- All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
-`;
+CRITICAL: Ensure the JSON is valid and properly formatted. No trailing commas.`;
 
       const gpt4oCompletion = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -751,89 +677,57 @@ CRITICAL JSON VALIDATION:
       }
       console.log("contract-analyzer: DEBUG - GPT-4o (Eyes) extracted data:", analysisData);
 
-      // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis and artifact generation
+      // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
-      // ULTRA-STRICT Claude prompt
-      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract. You MUST output ONLY valid JSON with no additional text.
+      // IMPROVED Claude prompt with better JSON instructions
+      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. Analyze the provided contract and return ONLY valid JSON.
 
-You must use the following checklist as part of your internal review framework to ensure completeness:
-
-CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
-1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
-2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
-3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
-4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
-6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
-7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
-8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
-9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
-10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
-11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.
-
-CRITICAL: Your output must be parseable by JSON.parse() without errors.
-
-JSON OUTPUT RULES:
-1. Output ONLY the JSON object, no other text
-2. All strings must use double quotes
-3. Escape quotes within strings with backslash: \\"
-4. Escape backslashes with double backslash: \\\\
-5. No trailing commas in arrays or objects
-6. All brackets must be properly closed
-7. Validate your output is valid JSON before sending
+CRITICAL JSON RULES:
+- Output ONLY the JSON object, no other text
+- All strings must use double quotes
+- Escape quotes within strings with backslash: \\"
+- No trailing commas in arrays or objects
+- All brackets must be properly closed
 
 REQUIRED JSON STRUCTURE:
 {
-  "executiveSummary": "Keep this under 1500 characters. Ensure all quotes are properly escaped.",
-  "dataProtectionImpact": "Keep this under 1500 characters. Ensure all quotes are properly escaped.", 
+  "executiveSummary": "Comprehensive summary of the contract (max 1500 chars)",
+  "dataProtectionImpact": "Detailed data protection analysis (max 1500 chars)", 
   "complianceScore": 73,
   "findings": [
     {
-      "title": "Short title",
-      "description": "Short description under 800 chars",
-      "riskLevel": "high",
-      "jurisdiction": "UK",
-      "category": "data-protection",
-      "recommendations": ["Rec 1", "Rec 2"],
-      "clauseReference": "Section X"
+      "title": "Finding title",
+      "description": "Finding description",
+      "riskLevel": "high|medium|low|none",
+      "jurisdiction": "US|UK|EU|etc",
+      "category": "compliance|risk|data-protection|enforceability|drafting|commercial",
+      "recommendations": ["Recommendation 1", "Recommendation 2"],
+      "clauseReference": "Section reference"
     }
   ],
   "jurisdictionSummaries": {
-    "UK": {
-      "jurisdiction": "UK",
+    "US": {
+      "jurisdiction": "US",
       "applicableLaws": ["Law 1", "Law 2"],
       "keyFindings": ["Finding 1", "Finding 2"],
       "riskLevel": "high"
     }
   },
-  "effectiveDate": "2025-08-11 or '${notSpecifiedTranslatedString}'",
-  "terminationDate": "2026-08-12 or '${notSpecifiedTranslatedString}'",
-  "renewalDate": "${notSpecifiedTranslatedString}",
-  "contractType": "Professional Services Agreement",
-  "contractValue": "${notSpecifiedTranslatedString}",
-  "parties": ["Santa Cruz County Regional Transportation Commission", "Rowser Company Ltd"],
-  "liabilityCapSummary": "Summary here",
-  "indemnificationClauseSummary": "Summary here",
-  "confidentialityObligationsSummary": "Summary here",
-  "redlinedClauseArtifact": {
-    "originalClause": "string",
-    "redlinedVersion": "string", 
-    "suggestedRevision": "string",
-    "findingId": "string"
+  "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
+  "contractType": "Contract type",
+  "contractValue": "Contract value",
+  "parties": ["Party 1", "Party 2"],
+  "liabilityCapSummary": "Liability summary",
+  "indemnificationClauseSummary": "Indemnification summary",
+  "confidentialityObligationsSummary": "Confidentiality summary"
 }
 
-FINAL VALIDATION:
-Before output, verify:
-- JSON.parse(your_output) would succeed
-- No unescaped quotes in string values
-- No trailing commas
-- All arrays and objects properly closed
+VALIDATE YOUR OUTPUT IS VALID JSON BEFORE SENDING.`;
 
-Contract jurisdictions to focus on: ${userSelectedJurisdictions}
-Output language: ${outputLanguage}
-`;
-
-      // Caching Logic for Claude's analysis
+      // Caching Logic
       const cacheKeyContent = JSON.stringify({
         contractText: processedContractText,
         metadata: analysisData,
@@ -859,18 +753,17 @@ Output language: ${outputLanguage}
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
 
-        // ENHANCED: Claude call with retry and robust parsing
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
-            max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
+            max_tokens: 4000,
             temperature: 0.1,
             system: claudeSystemPrompt,
             messages: [
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
+                  { type: "text", text: `Contract Text:\n\n${processedContractText.substring(0, 50000)}` },
                   { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
@@ -883,15 +776,21 @@ Output language: ${outputLanguage}
           }
 
           console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
-          console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
-          // Use enhanced safe JSON parsing
           return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
+        }, 2, 1000);
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
-        // Store in cache
+        // FIXED: Ensure arrays are properly formatted before caching
+        const sanitizedForCache = {
+          ...analysisData,
+          findings: Array.isArray(analysisData.findings) ? analysisData.findings : [],
+          parties: Array.isArray(analysisData.parties) ? analysisData.parties : [],
+          jurisdictionSummaries: analysisData.jurisdictionSummaries && typeof analysisData.jurisdictionSummaries === 'object' ? analysisData.jurisdictionSummaries : {}
+        };
+
+        // Store in cache with error handling
         const { error: insertCacheError } = await supabase
           .from('cached_clause_analysis')
           .insert({
@@ -899,45 +798,23 @@ Output language: ${outputLanguage}
             jurisdiction: userSelectedJurisdictions,
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
             llm_model: 'claude-sonnet-4-5',
-            cached_result: analysisData,
+            cached_result: sanitizedForCache,
           });
+        
         if (insertCacheError) {
           console.warn("contract-analyzer: Error inserting into cache:", insertCacheError);
+          // Don't throw error, just log it and continue
         }
       }
 
-    } else { // Non-Advanced Plans: GPT-4o as "All-in-One"
-      console.log(`contract-analyzer: DEBUG - Basic Analysis requested. Using GPT-4o All-in-One workflow.`); // MODIFIED
+    } else {
+      // Non-Advanced Plans: GPT-4o as "All-in-One"
+      console.log(`contract-analyzer: DEBUG - Basic Analysis requested. Using GPT-4o All-in-One workflow.`);
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
-      const gpt4oAllInOneSystemPrompt = `You are a legal contract analysis AI with the expertise of a professional legal practitioner with 30 years of experience in contract law. Analyze the provided contract text. Your role is to conduct a deep, thorough analysis of the provided contract text and provide an executive summary, data protection impact, overall compliance score (0-100), and a list of specific findings. Each finding should include a title, description, risk level (high, medium, low, none), jurisdiction (UK, EU, Ireland, US, Canada, Australia, Islamic Law, Others), category (compliance, risk, data-protection, enforceability, drafting, commercial), recommendations (as an array of strings), and an optional clause reference. You must use the following checklist as your internal review framework to ensure completeness:
+      const gpt4oAllInOneSystemPrompt = `You are a legal contract analysis AI. Analyze the provided contract text and return valid JSON.
 
-CHECKLIST FOR ANALYSIS (INTERNAL GUIDANCE – DO NOT OUTPUT VERBATIM):  
-1. Preliminary Review – name of the parties, capacity, purpose, authority, formality.  
-2. Core Business Terms – subject matter, price/consideration, performance obligations, duration/renewal.  
-3. Risk Allocation – warranties, representations, indemnities, liability caps, insurance.  
-4. Conditions & Contingencies – conditions precedent, conditions subsequent, force majeure, change in law.  
-6. Rights & Protections – termination rights, remedies, confidentiality, IP ownership/licensing, exclusivity, assignment/subcontracting.  
-7. Compliance & Enforceability – governing law, jurisdiction, dispute resolution, regulatory compliance (data, consumer, competition law), illegality risks.  
-8. Commercial Fairness & Practicality – balance of obligations, feasibility, ambiguities, consistency with other agreements.  
-9. Drafting Quality – definitions, clarity, precision, consistency, appendices/schedules, entire agreement.  
-10. Execution & Post-Signing – proper signatories, witnessing, notarization, ongoing obligations, survival clauses.  
-11. Red Flags – unilateral termination, unlimited liability, hidden auto-renewals, one-sided indemnities, penalty clauses, unfavorable law/jurisdiction, biased dispute resolution.  
-
-COMPLIANCE SCORE RULES (MANDATORY):  
-- Start from 100 points.  
-- Deduct points as follows:  
-  • Each **High risk** finding = –15 points  
-  • Each **Medium risk** finding = –8 points  
-  • Each **Low risk** finding = –3 points  
-  • Each **None** finding = 0 points (no deduction)  
-- Minimum score is 0.  
-- After deductions, round to the nearest whole number.  
-- Ensure the score reflects overall risk exposure and enforceability of the contract.  
-
-OUTPUT REQUIREMENTS:  
-Return your findings strictly as a valid JSON object with the following structure:  
-
+Return your findings as a valid JSON object with this structure:
 {
   "executiveSummary": "...",
   "dataProtectionImpact": "...",
@@ -946,52 +823,26 @@ Return your findings strictly as a valid JSON object with the following structur
     {
       "title": "...",
       "description": "...",
-      "riskLevel": "high",
-      "jurisdiction": "UK",
-      "category": "compliance",
-      "recommendations": ["...", "..."],
+      "riskLevel": "high|medium|low|none",
+      "jurisdiction": "US|UK|EU|etc",
+      "category": "compliance|risk|data-protection|enforceability|drafting|commercial",
+      "recommendations": ["..."],
       "clauseReference": "..."
     }
   ],
-  "jurisdictionSummaries": {
-    "UK": {
-      "jurisdiction": "UK",
-      "applicableLaws": ["...", "..."],
-      "keyFindings": ["...", "..."],
-      "riskLevel": "high"
-    }
-  },
+  "jurisdictionSummaries": {},
   "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
   "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
   "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
   "contractType": "...",
   "contractValue": "...",
-  "parties": ["...", "..."],
+  "parties": ["..."],
   "liabilityCapSummary": "...",
   "indemnificationClauseSummary": "...",
   "confidentialityObligationsSummary": "..."
 }
 
-NOTES:  
-- Ensure the JSON is valid and strictly adheres to the specified structure.  
-- Do not include any text outside the JSON object.  
-- All string values must be properly escaped for JSON. Specifically, any double quotes (") and newline characters (\\n) within a string value must be escaped with a backslash.
-- Ensure all arrays are correctly formatted with commas between elements and no trailing commas. All objects must have commas between key-value pairs and no trailing commas.
-- All text fields within the JSON output MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
-- Risk levels must be one of: high, medium, low, none.
-- Categories must be one of: compliance, risk, data-protection, enforceability, drafting, commercial. 
-- Apply the compliance score rules consistently to every analysis.
-
----
-DOCUMENT LANGUAGE INSTRUCTIONS:
-The contract text provided is in ${sourceLanguage === 'auto' ? 'an auto-detected language' : sourceLanguage}. If the source language === 'auto', please detect the language of the document.
-
-OUTPUT LANGUAGE INSTRUCTIONS:
-All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
-
-JURISDICTION FOCUS:
-The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
-`;
+Ensure valid JSON format with no trailing commas.`;
 
       const gpt4oCompletion = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -1015,9 +866,8 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       }
       console.log("contract-analyzer: DEBUG - GPT-4o (All-in-One) analysis data:", analysisData);
     }
-    // --- END Dream Team Logic ---
 
-    // Defensive checks before processing analysisData properties
+    // Process analysis data with defensive checks
     analysisData.executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
     analysisData.executiveSummary = await translateText(analysisData.executiveSummary, outputLanguage);
     
@@ -1026,33 +876,45 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       analysisData.dataProtectionImpact = await translateText(analysisData.dataProtectionImpact, outputLanguage);
     }
 
-    if (Array.isArray(analysisData.findings)) {
-      for (let i = 0; i < analysisData.findings.length; i++) {
-        let finding = analysisData.findings[i];
-        if (finding && typeof finding === 'object') {
-          finding = { ...finding };
-          finding.title = typeof finding.title === 'string' ? finding.title : '';
-          finding.title = await translateText(finding.title, outputLanguage);
-          
-          finding.description = typeof finding.description === 'string' ? finding.description : '';
-          finding.description = await translateText(finding.description, outputLanguage);
-          
-          if (Array.isArray(finding.recommendations)) {
-            finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
-          } else {
-            finding.recommendations = [];
-          }
-          if (finding.clauseReference) {
-            finding.clauseReference = typeof finding.clauseReference === 'string' ? finding.clauseReference : '';
-            finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
-          }
-          analysisData.findings[i] = finding;
+    // Ensure findings is always an array
+    if (!Array.isArray(analysisData.findings)) {
+      analysisData.findings = [];
+    }
+
+    // Translate findings
+    for (let i = 0; i < analysisData.findings.length; i++) {
+      let finding = analysisData.findings[i];
+      if (finding && typeof finding === 'object') {
+        finding = { ...finding };
+        finding.title = typeof finding.title === 'string' ? finding.title : '';
+        finding.title = await translateText(finding.title, outputLanguage);
+        
+        finding.description = typeof finding.description === 'string' ? finding.description : '';
+        finding.description = await translateText(finding.description, outputLanguage);
+        
+        if (Array.isArray(finding.recommendations)) {
+          finding.recommendations = await Promise.all(finding.recommendations.map((rec: string) => translateText(rec, outputLanguage)));
         } else {
-          analysisData.findings[i] = {};
+          finding.recommendations = [];
         }
+        if (finding.clauseReference) {
+          finding.clauseReference = typeof finding.clauseReference === 'string' ? finding.clauseReference : '';
+          finding.clauseReference = await translateText(finding.clauseReference, outputLanguage);
+        }
+        analysisData.findings[i] = finding;
+      } else {
+        analysisData.findings[i] = {
+          title: getTranslatedMessage('no_title_provided', outputLanguage),
+          description: getTranslatedMessage('no_description_provided', outputLanguage),
+          riskLevel: 'none',
+          jurisdiction: 'US',
+          category: 'risk',
+          recommendations: []
+        };
       }
     }
 
+    // Process jurisdiction summaries
     if (analysisData.jurisdictionSummaries && typeof analysisData.jurisdictionSummaries === 'object') {
       const newJurisdictionSummaries: Record<string, any> = {};
       for (const key in analysisData.jurisdictionSummaries) {
@@ -1070,11 +932,11 @@ The user has specified the following jurisdictions for this analysis: ${userSele
             summary.keyFindings = [];
           }
           newJurisdictionSummaries[key] = summary;
-        } else {
-          newJurisdictionSummaries[key] = {};
         }
       }
       analysisData.jurisdictionSummaries = newJurisdictionSummaries;
+    } else {
+      analysisData.jurisdictionSummaries = {};
     }
 
     // Translate advanced fields if present
@@ -1086,17 +948,19 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       if (analysisData.contractValue) analysisData.contractValue = await translateText(analysisData.contractValue, outputLanguage);
       if (Array.isArray(analysisData.parties)) {
         analysisData.parties = await Promise.all(analysisData.parties.map((p: string) => translateText(p, outputLanguage)));
+      } else {
+        analysisData.parties = [];
       }
       if (analysisData.liabilityCapSummary) analysisData.liabilityCapSummary = await translateText(analysisData.liabilityCapSummary, outputLanguage);
       if (analysisData.indemnificationClauseSummary) analysisData.indemnificationClauseSummary = await translateText(analysisData.indemnificationClauseSummary, outputLanguage);
       if (analysisData.confidentialityObligationsSummary) analysisData.confidentialityObligationsSummary = await translateText(analysisData.confidentialityObligationsSummary, outputLanguage);
     }
 
-    const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
-    const dataProtectionImpact = typeof analysisData.dataProtectionImpact === 'string' ? analysisData.dataProtectionImpact : null;
+    const executiveSummary = analysisData.executiveSummary;
+    const dataProtectionImpact = analysisData.dataProtectionImpact;
     const complianceScore = typeof analysisData.complianceScore === 'number' ? analysisData.complianceScore : 0;
-    const findings = Array.isArray(analysisData.findings) ? analysisData.findings : [];
-    const jurisdictionSummaries = typeof analysisData.jurisdictionSummaries === 'object' && analysisData.jurisdictionSummaries !== null ? analysisData.jurisdictionSummaries : {};
+    const findings = analysisData.findings;
+    const jurisdictionSummaries = analysisData.jurisdictionSummaries;
 
     await supabase.from('contracts').update({ processing_progress: 70 }).eq('id', contractId);
 
@@ -1110,7 +974,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const processedIndemnificationClauseSummary = analysisData.indemnificationClauseSummary || notSpecifiedTranslatedString;
     const processedConfidentialityObligationsSummary = analysisData.confidentialityObligationsSummary || notSpecifiedTranslatedString;
 
-    // ADDED: Process and store artifacts
+    // Process artifacts
     let redlinedClauseArtifactPath: string | null = null;
     if (isAdvancedPlanUser && analysisData.redlinedClauseArtifact && analysisData.redlinedClauseArtifact.redlinedVersion) {
       const artifactContent = JSON.stringify(analysisData.redlinedClauseArtifact, null, 2);
@@ -1118,7 +982,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       const artifactFilePath = `${userId}/${contractId}/${artifactFileName}`;
 
       const { error: uploadArtifactError } = await supabase.storage
-        .from('contract_artifacts') // NEW STORAGE BUCKET
+        .from('contract_artifacts')
         .upload(artifactFilePath, artifactContent, {
           contentType: 'application/json',
           upsert: true,
@@ -1131,6 +995,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       }
     }
 
+    // Generate report
     const { data: reportData, error: reportError } = await supabase.functions.invoke('generate-analysis-report', {
       body: {
         contractId: contractId,
@@ -1150,13 +1015,12 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           liability_cap_summary: processedLiabilityCapSummary,
           indemnification_clause_summary: processedIndemnificationClauseSummary,
           confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
-          // ADDED: Pass artifact path to report generator
           redlined_clause_artifact_path: redlinedClauseArtifactPath,
         },
         outputLanguage: outputLanguage,
       },
       headers: {
-        'Authorization': `Bearer ${token}`, // Pass the current user's token
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -1167,6 +1031,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const reportHtmlContent = reportData?.htmlContent || null;
     const reportLink = reportData?.url || null;
 
+    // Store analysis results
     const { data: analysisResult, error: analysisError } = await supabase
       .from('analysis_results')
       .insert({
@@ -1186,7 +1051,6 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         indemnification_clause_summary: processedIndemnificationClauseSummary,
         confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
         performed_advanced_analysis: performAdvancedAnalysis,
-        // ADDED: Store artifact path in DB
         redlined_clause_artifact_path: redlinedClauseArtifactPath,
       })
       .select()
@@ -1196,12 +1060,13 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       throw analysisError;
     }
 
+    // Insert findings
     const findingsToInsert = findings.map((finding: any) => ({
       analysis_result_id: analysisResult.id,
       title: typeof finding.title === 'string' ? finding.title : getTranslatedMessage('no_title_provided', outputLanguage),
       description: typeof finding.description === 'string' ? finding.description : getTranslatedMessage('no_description_provided', outputLanguage),
       risk_level: typeof finding.riskLevel === 'string' ? finding.riskLevel : 'none',
-      jurisdiction: typeof finding.jurisdiction === 'string' ? finding.jurisdiction : 'EU',
+      jurisdiction: typeof finding.jurisdiction === 'string' ? finding.jurisdiction : 'US',
       category: typeof finding.category === 'string' ? finding.category : 'risk',
       recommendations: Array.isArray(finding.recommendations) ? finding.recommendations : [],
       clause_reference: typeof finding.clauseReference === 'string' ? finding.clauseReference : null,
@@ -1217,6 +1082,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       }
     }
     
+    // Finalize contract status
     const { error: updateContractError } = await supabase
       .from('contracts')
       .update({ status: 'completed', processing_progress: 100, subscription_id: userSubscriptionId, output_language: outputLanguage, translated_name: translatedContractName })
@@ -1231,6 +1097,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       throw new Error(`Failed to finalize contract status: ${updateContractError.message}`);
     }
 
+    // Send email notification
     const { data: emailTriggerData, error: emailTriggerError } = await supabase.functions.invoke('trigger-report-email', {
       body: {
         userId: userId,
@@ -1248,10 +1115,9 @@ The user has specified the following jurisdictions for this analysis: ${userSele
 
     if (emailTriggerError) {
       console.error('contract-analyzer: Error invoking trigger-report-email Edge Function:', emailTriggerError);
-    } else {
-      // trigger-report-email Edge Function invoked successfully.
     }
 
+    // Create notifications
     const notificationContractName = translatedContractName;
 
     if (userNotificationSettings['analysis-complete']?.inApp) {
