@@ -321,8 +321,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         </div>
       ) : null}
 
-      {/* ADDED: Artifacts Section (Conditional for Advanced Plan) */}
-      {isAdvancedPlan && analysisResult.redlinedClauseArtifactPath && (
+      {/* MODIFIED: Artifacts Section (Conditional for performedAdvancedAnalysis) */}
+      {analysisResult.performedAdvancedAnalysis && analysisResult.redlinedClauseArtifactPath && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
           {loadingRedlinedClause ? (
