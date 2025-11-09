@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary, RedlinedClauseArtifact } from '../../types'; // MODIFIED: Import RedlinedClauseArtifact
+import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary, RedlinedClauseArtifact } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react'; // MODIFIED: Added Download icon
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react';
 import Button from '../ui/Button';
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
@@ -11,7 +11,7 @@ import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
 import { useTranslation } from 'react-i18next';
-import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
+import { useSubscription } from '../../hooks/useSubscription';
 
 interface AnalysisResultsProps {
   analysisResult?: AnalysisResult;
@@ -29,7 +29,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
-  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use subscription hook
+  const { subscription, loading: loadingSubscription } = useSubscription();
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
@@ -41,15 +41,16 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
   // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
   useEffect(() => {
-    const fetchRedlinedClause = async () => {
-      if (!isAdvancedPlan || !analysisResult?.redlinedClauseArtifactPath) {
-        setRedlinedClauseContent(null);
-        return;
-      }
+    // MODIFIED: Condition changed to check analysisResult.performedAdvancedAnalysis
+    if (!analysisResult?.performedAdvancedAnalysis || !analysisResult?.redlinedClauseArtifactPath) {
+      setRedlinedClauseContent(null);
+      return;
+    }
 
-      setLoadingRedlinedClause(true);
-      setRedlinedClauseError(null);
-      try {
+    setLoadingRedlinedClause(true);
+    setRedlinedClauseError(null);
+    try {
+      const fetchRedlinedClause = async () => {
         const { data, error } = await supabase.storage
           .from('contract_artifacts') // NEW STORAGE BUCKET
           .download(analysisResult.redlinedClauseArtifactPath);
@@ -58,17 +59,15 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
         const text = await data.text();
         setRedlinedClauseContent(JSON.parse(text));
-      } catch (err: any) {
-        console.error('Error fetching redlined clause artifact:', err);
-        setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
-      } finally {
-        setLoadingRedlinedClause(false);
-      }
-    };
-
-    fetchRedlinedClause();
-  }, [analysisResult?.redlinedClauseArtifactPath, isAdvancedPlan, t]);
-
+      };
+      fetchRedlinedClause();
+    } catch (err: any) {
+      console.error('Error fetching redlined clause artifact:', err);
+      setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
+    } finally {
+      setLoadingRedlinedClause(false);
+    }
+  }, [analysisResult?.redlinedClauseArtifactPath, analysisResult?.performedAdvancedAnalysis, t]); // MODIFIED: Dependency changed
 
   if (!analysisResult) {
     return (
@@ -246,6 +245,18 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               >
                 {isEmailing ? t('emailing') : t('email_full_report')}
               </Button>
+              {/* The "Reanalyze Contract" button is commented out below */}
+              {/*
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleReanalyze}
+                disabled={isReanalyzing}
+                icon={<RefreshCw className="w-4 h-4" />}
+              >
+                {isReanalyzing ? t('reanalyzing') : t('reanalyze_contract')}
+              </Button>
+              */}
             </div>
           )}
         </div>
