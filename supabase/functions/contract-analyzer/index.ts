@@ -76,175 +76,112 @@ async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promis
   }
 }
 
-// REPLACE the cleanJsonString function with this much more aggressive version:
+// MODIFIED: Replaced existing cleanJsonString with a more robust version
 function cleanJsonString(jsonString: string): string {
   if (!jsonString || typeof jsonString !== 'string') {
     return '{}';
   }
 
-  console.log("cleanJsonString: Original input length:", jsonString.length);
-  
-  // Remove markdown code blocks FIRST
+  // 1. Remove markdown code blocks (```json ... ```)
   let cleaned = jsonString.replace(/```json\s*|\s*```/g, '').trim();
-  
-  // Extract JSON object more carefully
+
+  // 2. Extract the outermost JSON structure (object or array)
+  let startIndex = -1;
+  let endIndex = -1;
+
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
-  
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    console.warn("cleanJsonString: No valid JSON object structure found");
-    return '{}';
+  const firstBracket = cleaned.indexOf('[');
+  const lastBracket = cleaned.lastIndexOf(']');
+
+  // Prioritize object if both exist and it's a valid range
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    startIndex = firstBrace;
+    endIndex = lastBrace;
+  } else if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+    // Fallback to array if no valid object or array is the primary structure
+    startIndex = firstBracket;
+    endIndex = lastBracket;
   }
-  
-  cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-  
-  // FIX: Aggressively fix common JSON issues
-  // 1. Fix unescaped quotes within strings - look for patterns like: "text "problem" text"
-  cleaned = cleaned.replace(/("([^"\\]|\\.)*")/g, (match) => {
-    // Count quotes in the matched string
-    const quoteCount = (match.match(/"/g) || []).length;
-    if (quoteCount % 2 === 0) {
-      return match; // Even number of quotes, probably fine
-    }
-    // Odd number - escape the middle quotes
-    return match.replace(/([^\\])"/g, '$1\\"');
+
+  if (startIndex === -1 || endIndex === -1) {
+    console.warn("cleanJsonString: No valid JSON object or array structure found. Returning original string.");
+    return jsonString; // Return original if no clear JSON structure
+  }
+
+  cleaned = cleaned.substring(startIndex, endIndex + 1);
+
+  // 3. Remove comments (single-line and multi-line) - LLMs sometimes add these
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+
+  // 4. Replace unescaped control characters (newlines, tabs, backslashes) within string values
+  // This regex targets string content (between unescaped quotes) and replaces problematic characters.
+  // It's a heuristic and might not be perfect for all malformed JSON.
+  cleaned = cleaned.replace(/\"(.*?)(?<!\\)\"/g, (match, p1) => {
+    let fixedContent = p1.replace(/\n/g, '\\n')
+                         .replace(/\r/g, '\\r')
+                         .replace(/\t/g, '\\t');
+    // Escape unescaped double quotes within the string content
+    fixedContent = fixedContent.replace(/(?<!\\)"/g, '\\"');
+    // Escape unescaped backslashes within the string content
+    fixedContent = fixedContent.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+    return `"${fixedContent}"`;
   });
-  
-  // 2. Fix missing commas between object properties
-  cleaned = cleaned.replace(/"\s*\n\s*"/g, '",\n  "');
-  cleaned = cleaned.replace(/"\s*}\s*"/g, '"\n},\n"');
-  
-  // 3. Remove trailing commas from arrays and objects
+
+  // 5. Remove trailing commas from objects and arrays
   cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
-  
-  // 4. Fix missing commas in arrays
-  cleaned = cleaned.replace(/"\s*"\s*([}\]])/g, '","$1');
-  
-  console.log("cleanJsonString: After cleaning length:", cleaned.length);
-  
+
+  // 6. Heuristic to fix missing commas between array elements (e.g., `}{` or `][` patterns)
+  // This is a common LLM error and can cause "Expected ',' or ']'"
+  cleaned = cleaned.replace(/}(\s*){/g, '},{'); // Fix missing comma between objects in an array
+  cleaned = cleaned.replace(/](\s*)\[/g, '],['); // Fix missing comma between arrays in an array
+
   return cleaned;
 }
 
-// REPLACE the safeJsonParse function with this more targeted version:
-function safeJsonParse(input: string, context: string = 'unknown'): any {
-  if (!input || typeof input !== 'string') {
-    throw new Error(`Invalid input for JSON parsing in ${context}`);
+// MODIFIED: Replaced existing safeJsonParse with a more robust version
+function safeJsonParse(jsonString: string, context: string = 'unknown', userPreferredLanguage: string = 'en'): any {
+  let cleanedOutput = jsonString;
+  let parsedResult: any = null;
+
+  try {
+    console.info(`safeJsonParse: Starting aggressive cleanup for ${context}`);
+    cleanedOutput = cleanJsonString(jsonString);
+    console.info(`safeJsonParse: Aggressive cleanup completed for ${context}. Cleaned length: ${cleanedOutput.length}`);
+  } catch (e: any) {
+    console.error(`safeJsonParse: Error during aggressive cleanup for ${context}: ${e.message}`);
+    // Fallback to original string if cleanup itself fails
+    cleanedOutput = jsonString;
   }
 
-  console.log(`safeJsonParse: Starting parse for ${context}`);
-  
-  let cleaned = cleanJsonString(input);
-  
-  // Multiple parsing strategies with better error reporting
-  const strategies = [
-    {
-      name: "Direct parse",
-      fn: () => JSON.parse(cleaned)
-    },
-    {
-      name: "Fix trailing commas", 
-      fn: () => {
-        const fixed = cleaned.replace(/,\s*([}\]])/g, '$1');
-        return JSON.parse(fixed);
-      }
-    },
-    {
-      name: "Fix unclosed quotes",
-      fn: () => {
-        // Add missing quotes at the end of strings
-        let fixed = cleaned;
-        // Look for patterns like: "text... (without closing quote)
-        fixed = fixed.replace(/("([^"\\]|\\.)*)(\n\s*[}\]])/g, '$1"$3');
-        return JSON.parse(fixed);
-      }
-    },
-    {
-      name: "Extract and validate JSON structure",
-      fn: () => {
-        // Try to build valid JSON from the structure
-        const lines = cleaned.split('\n');
-        let inString = false;
-        let escapeNext = false;
-        let fixedLines = [];
-        
-        for (let line of lines) {
-          let fixedLine = '';
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            
-            if (escapeNext) {
-              fixedLine += char;
-              escapeNext = false;
-              continue;
-            }
-            
-            if (char === '\\') {
-              fixedLine += char;
-              escapeNext = true;
-              continue;
-            }
-            
-            if (char === '"') {
-              inString = !inString;
-              fixedLine += char;
-              continue;
-            }
-            
-            // If we're in a string and hit a newline without closing quote, add escape
-            if (inString && char === '\n') {
-              fixedLine += '\\n';
-              continue;
-            }
-            
-            fixedLine += char;
-          }
-          fixedLines.push(fixedLine);
-        }
-        
-        return JSON.parse(fixedLines.join('\n'));
-      }
-    },
-    {
-      name: "Last resort: manual JSON construction",
-      fn: () => {
-        console.log("safeJsonParse: Attempting manual JSON construction");
-        // Extract the main structure and manually fix it
-        const execSummaryMatch = cleaned.match(/"executiveSummary":\s*"([^"]*)"/);
-        const dataProtectionMatch = cleaned.match(/"dataProtectionImpact":\s*"([^"]*)"/);
-        const complianceScoreMatch = cleaned.match(/"complianceScore":\s*(\d+)/);
-        
-        if (!execSummaryMatch) {
-          throw new Error("Could not extract executiveSummary");
-        }
-        
-        const manualJson = {
-          executiveSummary: execSummaryMatch[1],
-          dataProtectionImpact: dataProtectionMatch ? dataProtectionMatch[1] : "",
-          complianceScore: complianceScoreMatch ? parseInt(complianceScoreMatch[1]) : 50,
-          findings: [],
-          jurisdictionSummaries: {}
-        };
-        
-        return manualJson;
-      }
-    }
-  ];
+  try {
+    parsedResult = JSON.parse(cleanedOutput);
+    console.info(`safeJsonParse: JSON.parse succeeded for ${context}.`);
+    return parsedResult;
+  } catch (parseError: any) {
+    console.error(`safeJsonParse: JSON.parse failed for ${context} after cleanup: ${parseError.message}`);
+    console.error(`safeJsonParse: Problematic string (first 500 chars):`, cleanedOutput.substring(0, 500));
+    console.error(`safeJsonParse: Problematic string (last 500 chars):`, cleanedOutput.substring(cleanedOutput.length - 500));
 
-  for (let i = 0; i < strategies.length; i++) {
-    try {
-      const result = strategies[i].fn();
-      console.log(`safeJsonParse: Strategy "${strategies[i].name}" succeeded`);
-      return result;
-    } catch (error) {
-      console.log(`safeJsonParse: Strategy "${strategies[i].name}" failed:`, error.message);
-      if (i === strategies.length - 1) {
-        console.error(`safeJsonParse: All strategies failed. First 500 chars of problematic JSON:`, cleaned.substring(0, 500));
-        throw new Error(`JSON parsing failed in ${context}: ${error.message}`);
-      }
-    }
+    // If parsing still fails, return a minimal valid JSON structure
+    return {
+      executiveSummary: getTranslatedMessage('error_failed_to_parse_ai_response_summary', userPreferredLanguage),
+      dataProtectionImpact: getTranslatedMessage('error_failed_to_parse_ai_response_data_protection', userPreferredLanguage),
+      complianceScore: 0,
+      findings: [],
+      jurisdictionSummaries: {},
+      effectiveDate: getTranslatedMessage('not_specified', userPreferredLanguage),
+      terminationDate: getTranslatedMessage('not_specified', userPreferredLanguage),
+      renewalDate: getTranslatedMessage('not_specified', userPreferredLanguage),
+      contractType: getTranslatedMessage('not_specified', userPreferredLanguage),
+      contractValue: getTranslatedMessage('not_specified', userPreferredLanguage),
+      parties: [],
+      liabilityCapSummary: getTranslatedMessage('not_specified', userPreferredLanguage),
+      indemnificationClauseSummary: getTranslatedMessage('not_specified', userPreferredLanguage),
+      confidentialityObligationsSummary: getTranslatedMessage('not_specified', userPreferredLanguage),
+      performedAdvancedAnalysis: false,
+    };
   }
-
-  throw new Error(`Unexpected error in JSON parsing for ${context}`);
 }
 
 // Helper function for translation with improved prompt
@@ -611,7 +548,8 @@ Deno.serve(async (req) => {
       throw new Error(getTranslatedMessage('error_failed_to_fetch_contract_details', userPreferredLanguage));
     }
 
-    const userSelectedJurisdictions = contractDetails.jurisdictions.join(', ');
+    // MODIFIED: Keep userSelectedJurisdictions as an array
+    const userSelectedJurisdictions = contractDetails.jurisdictions;
     const fetchedContractName = contractDetails.name;
 
     let processedContractText = contractText;
@@ -724,7 +662,7 @@ CRITICAL JSON VALIDATION:
 - ENSURE all string values are properly escaped (e.g., double quotes (\"), newlines (\\n), and backslashes (\\\\)).
 - VERIFY that all array elements are separated by commas, and there are NO trailing commas in arrays or objects.
 - CONFIRM that all object key-value pairs are separated by commas, and there are NO trailing commas.
-- DOUBLE-CHECK all brackets \`[]\` and braces \`{}\` are correctly matched and closed.
+- DOUBLE-CHECK all brackets `\\[\\]` and braces `\\{\\}` are correctly matched and closed.
 - IF YOU ARE UNSURE ABOUT JSON FORMATTING, PRIORITIZE VALIDITY OVER CONTENT.
 - All text fields within the JSON output MUST be generated in English for consistent input to the next stage.
 `;
@@ -744,7 +682,7 @@ CRITICAL JSON VALIDATION:
         throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
       try {
-        analysisData = JSON.parse(gpt4oOutputContent);
+        analysisData = safeJsonParse(gpt4oOutputContent, "GPT-4o (Eyes)", userPreferredLanguage);
       } catch (parseError: any) {
         console.error("contract-analyzer: JSON parsing failed for GPT-4o output. Raw output:", gpt4oOutputContent);
         throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (GPT-4o): ${parseError.message}`);
@@ -828,8 +766,9 @@ Before output, verify:
 - No unescaped quotes in string values
 - No trailing commas
 - All arrays and objects properly closed
+- Each element within an array (e.g., 'findings', 'recommendations', 'parties') MUST be a valid JSON value (string, object, etc.) and MUST be separated by a comma. There must be NO missing commas between array elements.
 
-Contract jurisdictions to focus on: ${userSelectedJurisdictions}
+Contract jurisdictions to focus on: ${userSelectedJurisdictions.join(', ')}
 Output language: ${outputLanguage}
 `;
 
@@ -837,7 +776,7 @@ Output language: ${outputLanguage}
       const cacheKeyContent = JSON.stringify({
         contractText: processedContractText,
         metadata: analysisData,
-        jurisdictions: userSelectedJurisdictions,
+        jurisdictions: userSelectedJurisdictions, // MODIFIED: Keep as array
         outputLanguage: outputLanguage,
         advancedAnalysis: performAdvancedAnalysis,
       });
@@ -863,15 +802,15 @@ Output language: ${outputLanguage}
         analysisData = await retry(async () => {
           const claudeCompletion = await anthropic.messages.create({
             model: "claude-sonnet-4-5",
-            max_tokens: 4000, // Reduced from 5000 to prevent overly complex JSON
-            temperature: 0.1,
+            max_tokens: 8000, // MODIFIED: Reverted max_tokens to 8000
+            temperature: 0.1, // Keep temperature low for consistent JSON
             system: claudeSystemPrompt,
             messages: [
               {
                 role: "user",
                 content: [
-                  { type: "text", text: `Contract Text (first 50,000 chars):\n\n${processedContractText.substring(0, 50000)}` },
-                  { type: "text", text: `\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` }
+                  { type: "text", text: `Full Contract Text:\n\n${processedContractText}` },
+                  { type: "text", text: `\n\nStructured Metadata from GPT-4o:\n${JSON.stringify(analysisData, null, 2)}` }
                 ]
               }
             ],
@@ -886,8 +825,8 @@ Output language: ${outputLanguage}
           console.log("contract-analyzer: DEBUG - First 200 chars of Claude output:", claudeOutputContent.substring(0, 200));
           
           // Use enhanced safe JSON parsing
-          return safeJsonParse(claudeOutputContent, "Claude analysis");
-        }, 2, 1000); // Reduce retries to 2 to avoid timeout cascades
+          return safeJsonParse(claudeOutputContent, "Claude analysis", userPreferredLanguage);
+        }, 1, 1000); // Retry 1 time with exponential backoff starting at 1s
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
@@ -896,7 +835,7 @@ Output language: ${outputLanguage}
           .from('cached_clause_analysis')
           .insert({
             clause_hash: cacheHash,
-            jurisdiction: userSelectedJurisdictions,
+            jurisdiction: userSelectedJurisdictions, // MODIFIED: Keep as array
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
             llm_model: 'claude-sonnet-4-5',
             cached_result: analysisData,
@@ -990,7 +929,7 @@ OUTPUT LANGUAGE INSTRUCTIONS:
 All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 
 JURISDICTION FOCUS:
-The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
+The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
 `;
 
       const gpt4oCompletion = await openai.chat.completions.create({
@@ -1008,7 +947,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
       }
       try {
-        analysisData = safeJsonParse(aiResponseContent, "GPT-4o All-in-One");
+        analysisData = safeJsonParse(aiResponseContent, "GPT-4o All-in-One", userPreferredLanguage);
       } catch (parseError: any) {
         console.error("contract-analyzer: JSON parsing failed for GPT-4o All-in-One output. Raw output:", aiResponseContent);
         throw new Error(`${getTranslatedMessage('error_failed_to_parse_ai_response', userPreferredLanguage)} (GPT-4o All-in-One): ${parseError.message}`);
