@@ -818,7 +818,7 @@ Output language: ${outputLanguage}`;
         try {
           analysisData = await retry(async () => {
             try {
-              console.log(`contract-analyzer: Calling Claude with contract length: ${contractTextForClaude.length} chars`);
+              console.log(`contract-analyzer: Calling Claude with contract length: ${processedContractText.length} chars`);
               
               const claudeCompletion = await anthropic.messages.create({
                 model: "claude-sonnet-4-5-20250514",
@@ -876,14 +876,14 @@ Remember: Output ONLY the JSON object with properly escaped strings. No markdown
           // If Claude keeps failing with API errors, fall back to GPT-4o
           if (claudeRetryError.message && claudeRetryError.message.includes('CLAUDE_API_ERROR')) {
             console.warn("contract-analyzer: Claude API failed after retries. Falling back to GPT-4o for analysis.");
-            console.warn(`contract-analyzer: Note - Contract length: ${contractTextForClaude.length} chars. GPT-4o may have limitations with very large contracts.`);
+            console.warn(`contract-analyzer: Note - Contract length: ${processedContractText.length} chars. GPT-4o may have limitations with very large contracts.`);
             
             // For very large contracts, use a more aggressive truncation for GPT-4o
-            let gpt4oContractText = contractTextForClaude;
+            let gpt4oContractText = processedContractText;
             const GPT4O_MAX_LENGTH = 120000; // GPT-4o has smaller context window
-            if (contractTextForClaude.length > GPT4O_MAX_LENGTH) {
+            if (processedContractText.length > GPT4O_MAX_LENGTH) {
               console.warn(`contract-analyzer: Truncating contract to ${GPT4O_MAX_LENGTH} chars for GPT-4o fallback.`);
-              gpt4oContractText = contractTextForClaude.substring(0, GPT4O_MAX_LENGTH) + "\n\n[... Contract truncated for GPT-4o processing ...]";
+              gpt4oContractText = processedContractText.substring(0, GPT4O_MAX_LENGTH) + "\n\n[... Contract truncated for GPT-4o processing ...]";
             }
             
             // Fallback to GPT-4o with a simplified prompt
