@@ -821,7 +821,7 @@ Output language: ${outputLanguage}`;
               console.log(`contract-analyzer: Calling Claude with contract length: ${processedContractText.length} chars`);
               
               const claudeCompletion = await anthropic.messages.create({
-                model: "claude-sonnet-4-5-20250514",
+                model: "claude-sonnet-4-5",
                 max_tokens: 16000, // Increased for comprehensive output on large contracts
                 temperature: 0.1,
                 system: claudeSystemPrompt,
@@ -962,7 +962,7 @@ Jurisdictions: ${userSelectedJurisdictions.join(', ')}`;
             clause_hash: cacheHash,
             jurisdiction: userSelectedJurisdictions,
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
-            llm_model: 'claude-sonnet-4-5-20250514',
+            llm_model: 'claude-sonnet-4-5',
             cached_result: analysisData,
           });
         if (insertCacheError) {
