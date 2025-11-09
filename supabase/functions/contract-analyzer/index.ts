@@ -831,7 +831,7 @@ Output language: ${outputLanguage}`;
                     content: `Analyze this contract and output ONLY valid JSON with no additional text.
 
 Full Contract Text:
-${contractTextForClaude}
+${processedContractText}
 
 Structured Metadata:
 ${JSON.stringify(analysisData, null, 2)}
