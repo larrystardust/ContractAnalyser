@@ -1737,5 +1737,21 @@
   "contract_analysis_in_progress": "تحليل العقد قيد التقدم",
   "contract_being_analyzed": "يتم تحليل العقد",
   "may_take_minutes": "قد يستغرق هذا بضع دقائق.",
-  "reanalyze_contract": "إعادة تحليل العقد"
+  "reanalyze_contract": "إعادة تحليل العقد",
+
+  "category_contract_terms": "شروط العقد",
+  "category_regulatory_compliance": "الامتثال التنظيمي",
+  "category_liability": "المسؤولية",
+  "category_tenant_rights": "حقوق المستأجر",
+  "category_financial_terms": "الشروط المالية",
+  "category_termination": "الإنهاء",
+  "category_property_condition": "حالة الممتلكات",
+  "category_property_management": "إدارة الممتلكات",
+  "category_contract_formation": "تكوين العقد",
+  "category_risk_allocation": "توزيع المخاطر",
+  "category_insurance": "التأمين",
+  "category_pension_retirement": "المعاشات التقاعدية والتقاعد",
+
+  "jurisdiction_nigeria": "نيجيريا",
+  "jurisdiction_ie": "أيرلندا (IE)"
 }
