@@ -814,49 +814,144 @@ Output language: ${outputLanguage}`;
       } else {
         console.log("contract-analyzer: DEBUG - Cache miss. Calling Claude Sonnet 4.5...");
 
-        // ENHANCED: Claude call with retry and robust parsing
-        analysisData = await retry(async () => {
-          const claudeCompletion = await anthropic.messages.create({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 8000,
-            temperature: 0.1,
-            system: claudeSystemPrompt,
-            messages: [
-              {
-                role: "user",
-                content: `Analyze this contract and output ONLY valid JSON with no additional text.
+        // ENHANCED: Claude call with better error handling and extended timeout
+        try {
+          analysisData = await retry(async () => {
+            try {
+              console.log(`contract-analyzer: Calling Claude with contract length: ${contractTextForClaude.length} chars`);
+              
+              const claudeCompletion = await anthropic.messages.create({
+                model: "claude-sonnet-4-5-20250514",
+                max_tokens: 16000, // Increased for comprehensive output on large contracts
+                temperature: 0.1,
+                system: claudeSystemPrompt,
+                messages: [
+                  {
+                    role: "user",
+                    content: `Analyze this contract and output ONLY valid JSON with no additional text.
 
 Full Contract Text:
-${processedContractText}
+${contractTextForClaude}
 
 Structured Metadata:
 ${JSON.stringify(analysisData, null, 2)}
 
 Remember: Output ONLY the JSON object with properly escaped strings. No markdown, no code blocks, no extra text.`
+                  }
+                ],
+              });
+
+              const claudeOutputContent = claudeCompletion.content[0].text;
+              if (!claudeOutputContent) {
+                throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
               }
-            ],
-          });
 
-          const claudeOutputContent = claudeCompletion.content[0].text;
-          if (!claudeOutputContent) {
-            throw new Error(getTranslatedMessage('error_no_content_from_claude', userPreferredLanguage));
-          }
+              console.log("contract-analyzer: DEBUG - Claude response received. Output length:", claudeOutputContent.length);
+              console.log("contract-analyzer: DEBUG - First 300 chars:", claudeOutputContent.substring(0, 300));
+              console.log("contract-analyzer: DEBUG - Last 300 chars:", claudeOutputContent.substring(claudeOutputContent.length - 300));
+              
+              // Use enhanced safe JSON parsing
+              const parsed = safeJsonParse(claudeOutputContent, "Claude Sonnet 4.5 analysis", userPreferredLanguage);
+              
+              // Validate that we got meaningful data
+              if (!parsed.executiveSummary || parsed.executiveSummary.includes('error_failed_to_parse')) {
+                console.warn("contract-analyzer: Claude output appears to be a fallback structure. May need to retry...");
+                throw new Error("Claude returned unparseable or fallback data");
+              }
+              
+              console.log("contract-analyzer: DEBUG - Claude analysis parsed successfully");
+              return parsed;
+            } catch (claudeError: any) {
+              // Check if it's a 500 error or overloaded error from Anthropic API
+              if (claudeError.status === 500 || claudeError.status === 529 || 
+                  (claudeError.message && (claudeError.message.includes('500') || claudeError.message.includes('529') || claudeError.message.includes('overloaded')))) {
+                console.error("contract-analyzer: Claude API error (500/529/overloaded). This may be temporary API instability.");
+                console.error("contract-analyzer: Error details:", claudeError.message);
+                throw new Error("CLAUDE_API_ERROR"); // Special error to trigger fallback
+              }
+              throw claudeError;
+            }
+          }, 2, 5000); // Retry up to 2 times with 5 second delay for large contracts
+        } catch (claudeRetryError: any) {
+          // If Claude keeps failing with API errors, fall back to GPT-4o
+          if (claudeRetryError.message && claudeRetryError.message.includes('CLAUDE_API_ERROR')) {
+            console.warn("contract-analyzer: Claude API failed after retries. Falling back to GPT-4o for analysis.");
+            console.warn(`contract-analyzer: Note - Contract length: ${contractTextForClaude.length} chars. GPT-4o may have limitations with very large contracts.`);
+            
+            // For very large contracts, use a more aggressive truncation for GPT-4o
+            let gpt4oContractText = contractTextForClaude;
+            const GPT4O_MAX_LENGTH = 120000; // GPT-4o has smaller context window
+            if (contractTextForClaude.length > GPT4O_MAX_LENGTH) {
+              console.warn(`contract-analyzer: Truncating contract to ${GPT4O_MAX_LENGTH} chars for GPT-4o fallback.`);
+              gpt4oContractText = contractTextForClaude.substring(0, GPT4O_MAX_LENGTH) + "\n\n[... Contract truncated for GPT-4o processing ...]";
+            }
+            
+            // Fallback to GPT-4o with a simplified prompt
+            const gpt4oFallbackPrompt = `You are a legal contract analysis AI. Analyze the contract and output ONLY valid JSON.
 
-          console.log("contract-analyzer: DEBUG - Raw Claude output length:", claudeOutputContent.length);
-          console.log("contract-analyzer: DEBUG - First 300 chars of Claude output:", claudeOutputContent.substring(0, 300));
-          console.log("contract-analyzer: DEBUG - Last 300 chars of Claude output:", claudeOutputContent.substring(claudeOutputContent.length - 300));
-          
-          // Use enhanced safe JSON parsing
-          const parsed = safeJsonParse(claudeOutputContent, "Claude Sonnet 4.5 analysis", userPreferredLanguage);
-          
-          // Validate that we got meaningful data
-          if (!parsed.executiveSummary || parsed.executiveSummary.includes('error_failed_to_parse')) {
-            console.warn("contract-analyzer: Claude output appears to be a fallback structure. Retrying...");
-            throw new Error("Claude returned unparseable or fallback data");
+JSON STRUCTURE (output this exact structure):
+{
+  "executiveSummary": "Brief summary under 1500 chars",
+  "dataProtectionImpact": "Data protection analysis under 1500 chars",
+  "complianceScore": 75,
+  "findings": [
+    {
+      "title": "Short title",
+      "description": "Description under 800 chars",
+      "riskLevel": "high",
+      "jurisdiction": "UK",
+      "category": "data-protection",
+      "recommendations": ["Rec 1", "Rec 2"],
+      "clauseReference": "Section X"
+    }
+  ],
+  "jurisdictionSummaries": {
+    "UK": {
+      "jurisdiction": "UK",
+      "applicableLaws": ["Law 1", "Law 2"],
+      "keyFindings": ["Finding 1", "Finding 2"],
+      "riskLevel": "high"
+    }
+  },
+  "effectiveDate": "2025-08-11",
+  "terminationDate": "2026-08-12",
+  "renewalDate": "${notSpecifiedTranslatedString}",
+  "contractType": "Service Agreement",
+  "contractValue": "${notSpecifiedTranslatedString}",
+  "parties": ["Party 1", "Party 2"],
+  "liabilityCapSummary": "Summary",
+  "indemnificationClauseSummary": "Summary",
+  "confidentialityObligationsSummary": "Summary"
+}
+
+Output language: ${outputLanguage}
+Jurisdictions: ${userSelectedJurisdictions.join(', ')}`;
+
+            const gpt4oFallbackCompletion = await openai.chat.completions.create({
+              model: "gpt-4o",
+              messages: [
+                { role: "system", content: gpt4oFallbackPrompt },
+                { 
+                  role: "user", 
+                  content: `Contract Text:\n\n${gpt4oContractText}\n\nMetadata:\n${JSON.stringify(analysisData, null, 2)}` 
+                },
+              ],
+              response_format: { type: "json_object" },
+              temperature: 0.2,
+            });
+
+            const gpt4oFallbackContent = gpt4oFallbackCompletion.choices[0].message?.content;
+            if (!gpt4oFallbackContent) {
+              throw new Error(getTranslatedMessage('error_no_content_from_openai', userPreferredLanguage));
+            }
+            
+            analysisData = safeJsonParse(gpt4oFallbackContent, "GPT-4o Fallback", userPreferredLanguage);
+            console.log("contract-analyzer: DEBUG - GPT-4o Fallback analysis completed successfully");
+          } else {
+            // Re-throw if it's a different error
+            throw claudeRetryError;
           }
-          
-          return parsed;
-        }, 2, 2000); // Retry up to 2 times with 2 second initial delay
+        }
         
         console.log("contract-analyzer: DEBUG - Claude Sonnet 4.5 (Brain) analysis data:", analysisData);
 
@@ -867,7 +962,7 @@ Remember: Output ONLY the JSON object with properly escaped strings. No markdown
             clause_hash: cacheHash,
             jurisdiction: userSelectedJurisdictions,
             analysis_type: performAdvancedAnalysis ? 'advanced_dream_team' : 'basic_dream_team',
-            llm_model: 'claude-sonnet-4-5',
+            llm_model: 'claude-sonnet-4-5-20250514',
             cached_result: analysisData,
           });
         if (insertCacheError) {
