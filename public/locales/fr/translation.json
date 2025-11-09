@@ -1743,5 +1743,21 @@
   "contract_analysis_in_progress": "Analyse du contrat en cours",
   "contract_being_analyzed": "Le contrat est en cours d'analyse",
   "may_take_minutes": "Cela peut prendre quelques minutes.",
-  "reanalyze_contract": "Réanalyser le contrat"
+  "reanalyze_contract": "Réanalyser le contrat",
+
+  "category_contract_terms": "Conditions contractuelles",
+  "category_regulatory_compliance": "Conformité réglementaire",
+  "category_liability": "Responsabilité",
+  "category_tenant_rights": "Droits des locataires",
+  "category_financial_terms": "Conditions financières",
+  "category_termination": "Résiliation",
+  "category_property_condition": "État de la propriété",
+  "category_property_management": "Gestion immobilière",
+  "category_contract_formation": "Formation du contrat",
+  "category_risk_allocation": "Répartition des risques",
+  "category_insurance": "Assurance",
+  "category_pension_retirement": "Retraite et pensions",
+
+  "jurisdiction_nigeria": "Nigéria",
+  "jurisdiction_ie": "Irlande (IE)"
 }
