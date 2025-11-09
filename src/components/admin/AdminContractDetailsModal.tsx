@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react'; // MODIFIED: Added useEffect, useState
+import React, { useState, useEffect } from 'react';
 import { AdminContract } from '../../services/adminService';
 import AnalysisResults from '../analysis/AnalysisResults';
 import JurisdictionSummary from '../analysis/JurisdictionSummary';
 import Card, { CardBody } from '../ui/Card';
-import { User, Mail, FileText, Calendar, Download, Loader2 } from 'lucide-react'; // MODIFIED: Added Download, Loader2
+import { User, Mail, FileText, Calendar, Download, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
-import { supabase } from '../../lib/supabase'; // ADDED: Import supabase client
-import { RedlinedClauseArtifact } from '../../types'; // ADDED: Import RedlinedClauseArtifact
+import { useSubscription } from '../../hooks/useSubscription';
+import { supabase } from '../../lib/supabase';
+import { RedlinedClauseArtifact } from '../../types';
 
 interface AdminContractDetailsModalProps {
   contract: AdminContract;
@@ -15,7 +15,7 @@ interface AdminContractDetailsModalProps {
 
 const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ contract }) => {
   const { t } = useTranslation();
-  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use subscription hook
+  const { subscription, loading: loadingSubscription } = useSubscription();
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
@@ -27,15 +27,16 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
 
   // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
   useEffect(() => {
-    const fetchRedlinedClause = async () => {
-      if (!isAdvancedPlan || !contract.analysisResult?.redlinedClauseArtifactPath) {
-        setRedlinedClauseContent(null);
-        return;
-      }
+    // MODIFIED: Condition changed to check contract.analysisResult?.performedAdvancedAnalysis
+    if (!contract.analysisResult?.performedAdvancedAnalysis || !contract.analysisResult?.redlinedClauseArtifactPath) {
+      setRedlinedClauseContent(null);
+      return;
+    }
 
-      setLoadingRedlinedClause(true);
-      setRedlinedClauseError(null);
-      try {
+    setLoadingRedlinedClause(true);
+    setRedlinedClauseError(null);
+    try {
+      const fetchRedlinedClause = async () => {
         const { data, error } = await supabase.storage
           .from('contract_artifacts') // NEW STORAGE BUCKET
           .download(contract.analysisResult.redlinedClauseArtifactPath);
@@ -44,16 +45,15 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
 
         const text = await data.text();
         setRedlinedClauseContent(JSON.parse(text));
-      } catch (err: any) {
-        console.error('Error fetching redlined clause artifact:', err);
-        setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
-      } finally {
-        setLoadingRedlinedClause(false);
-      }
-    };
-
-    fetchRedlinedClause();
-  }, [contract.analysisResult?.redlinedClauseArtifactPath, isAdvancedPlan, t]);
+      };
+      fetchRedlinedClause();
+    } catch (err: any) {
+      console.error('Error fetching redlined clause artifact:', err);
+      setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
+    } finally {
+      setLoadingRedlinedClause(false);
+    }
+  }, [contract.analysisResult?.redlinedClauseArtifactPath, contract.analysisResult?.performedAdvancedAnalysis, t]); // MODIFIED: Dependency changed
 
   // ADDED: Handle download of redlined clause artifact
   const handleDownloadRedlinedClause = async () => {
@@ -121,8 +121,8 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
         <>
           <AnalysisResults analysisResult={contract.analysisResult} isSample={false} contractName={contract.translated_name || contract.name} />
 
-          {/* ADDED: Artifacts Section (Conditional for Advanced Plan) */}
-          {isAdvancedPlan && contract.analysisResult.redlinedClauseArtifactPath && (
+          {/* MODIFIED: Artifacts Section (Conditional for performedAdvancedAnalysis) */}
+          {contract.analysisResult.performedAdvancedAnalysis && contract.analysisResult.redlinedClauseArtifactPath && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
               {loadingRedlinedClause ? (
