@@ -246,15 +246,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               >
                 {isEmailing ? t('emailing') : t('email_full_report')}
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleReanalyze}
-                disabled={isReanalyzing}
-                icon={<RefreshCw className="w-4 h-4" />}
-              >
-                {isReanalyzing ? t('reanalyzing') : t('reanalyze_contract')}
-              </Button>
             </div>
           )}
         </div>
