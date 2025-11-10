@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
     }
 
     // Fetch the artifact JSON from storage using the service role key
+    // Since the bucket is public, we could also use the public URL directly,
+    // but using download with service role is fine and ensures access even if RLS changes.
     const { data: artifactBlob, error: downloadError } = await supabase.storage
       .from('contract_artifacts')
       .download(artifactPath);
