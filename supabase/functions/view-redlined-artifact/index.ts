@@ -121,6 +121,10 @@ Deno.serve(async (req) => {
                   <div class="section-title">${getTranslatedMessage('suggested_revision', outputLanguage)}</div>
                   <pre class="code-block">${suggestedRevision || getTranslatedMessage('not_available', outputLanguage)}</pre>
               </div>
+              <div class="footer">
+                  <p>${getTranslatedMessage('footer_copyright', outputLanguage, { year: new Date().getFullYear() })}</p>
+                  <p>${getTranslatedMessage('footer_disclaimer', outputLanguage)}</p>
+              </div>
           </div>
       </body>
       </html>
