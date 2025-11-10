@@ -273,6 +273,7 @@ export const edgeTranslations = {
     error_no_content_from_claude: "No content received from Claude Sonnet 4.5.",
 
     category_contract_terms: "Contract Terms",
+    category_commercial_terms: "Commercial Terms",
     category_regulatory_compliance: "Regulatory Compliance",
     category_liability: "Liability",
     contract_analysis_in_progress: "Contract analysis in progress",
@@ -568,6 +569,7 @@ export const edgeTranslations = {
     error_no_content_from_claude: "No se recibió contenido de Claude Sonnet 4.5.",
 
     category_contract_terms: "Términos contractuales",
+    category_commercial_terms: "Términos comerciales",
     category_regulatory_compliance: "Cumplimiento normative",
     category_liability: "Responsabilidad",
     contract_analysis_in_progress: "Análisis de contrato en curso",
@@ -863,6 +865,7 @@ export const edgeTranslations = {
     error_no_content_from_claude: "Aucun contenu reçu de Claude Sonnet 4.5.",
 
     category_contract_terms: "Conditions contractuelles",
+    category_commercial_terms: "Conditions commerciales",
     category_regulatory_compliance: "Conformité réglementaire",
     category_liability: "Responsabilité",
     contract_analysis_in_progress: "Analyse du contrat en cours",
@@ -1158,6 +1161,7 @@ export const edgeTranslations = {
     error_no_content_from_claude: "لم يتم استلام أي محتوى من Claude Sonnet 4.5.",
 
     category_contract_terms: "شروط العقد",
+    category_commercial_terms: "الشروط التجارية",
     category_regulatory_compliance: "الامتثال التنظيمي",
     category_liability: "المسؤولية",
     contract_analysis_in_progress: "تحليل العقد قيد التقدم",
