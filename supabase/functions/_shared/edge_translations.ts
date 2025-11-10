@@ -310,6 +310,7 @@ export const edgeTranslations = {
     no_report_or_artifact_url_provided: "No report or artifact URL provided.",
     failed_to_load_artifact: "Failed to load artifact.",
     or_copy_link: "Or copy this link",
+    category_legal_compliance: "Legal Compliance",
       
   },
   es: {
@@ -623,6 +624,7 @@ export const edgeTranslations = {
     no_report_or_artifact_url_provided: "No se proporcionó URL de informe o artefacto.",
     failed_to_load_artifact: "Error al cargar el artefacto.",
     or_copy_link: "O copie este enlace",
+    category_legal_compliance: "Cumplimiento Legal",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -935,6 +937,7 @@ export const edgeTranslations = {
     no_report_or_artifact_url_provided: "Aucun rapport ou URL d'artefact fourni.",
     failed_to_load_artifact: "Échec du chargement de l'artefact.",
     or_copy_link: "Ou copier ce lien",
+    category_legal_compliance: "Conformité Légale",
 
   },
   ar: {
@@ -1248,6 +1251,7 @@ export const edgeTranslations = {
     no_report_or_artifact_url_provided: "لم يتم توفير رابط التقرير أو الأثر.",
     failed_to_load_artifact: "فشل تحميل الأثر.",
     or_copy_link: "أو انسخ هذا الرابط",
+    category_legal_compliance: "الامتثال القانوني",
   }
 };
 
