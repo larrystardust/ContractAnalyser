@@ -80,15 +80,17 @@ Deno.serve(async (req) => {
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; background-color: #f9f9f9; }
+      h1, h2, h3, h4 { color: #0056b3; margin-bottom: 15px; } /* Added h4 and margin-bottom */
       .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-      h1, h2, h3 { color: #0056b3; margin-bottom: 15px; }
-      .section { margin-bottom: 25px; padding: 20px; border: 1px solid #eee; border-radius: 5px; background-color: #fff; }
+      .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff; } /* Adjusted padding/border to match report.css */
       .section-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; color: #333; }
       .code-block { background-color: #f0f0f0; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; border: 1px solid #ddd; }
+      .code-block pre { margin: 0; padding: 0; } /* Ensure no extra margin/padding on pre inside code-block */
       .original-text { color: #555; }
       .redlined-text { color: red; font-weight: bold; }
       .suggested-text { color: green; font-weight: bold; }
       .finding-id { font-size: 0.9em; color: #777; margin-top: 10px; }
+      .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; } /* Added footer style */
     `;
 
     const htmlContent = `
