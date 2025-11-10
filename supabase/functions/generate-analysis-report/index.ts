@@ -137,6 +137,13 @@ Deno.serve(async (req) => {
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
+    // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
+    let redlinedArtifactViewerUrl = '';
+    if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
+      const hardcodedPrefix = "https://contractanalyser.com/public-report-view?url=https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/contract_artifacts/";
+      redlinedArtifactViewerUrl = `${hardcodedPrefix}${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
+    }
+
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
       h1, h2, h3, h4 { color: #0056b3; }
