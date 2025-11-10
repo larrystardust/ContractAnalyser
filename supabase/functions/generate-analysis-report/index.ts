@@ -116,8 +116,7 @@ Deno.serve(async (req) => {
             liability_cap_summary,
             indemnification_clause_summary,
             confidentiality_obligations_summary,
-            redlined_clause_artifact_path,
-            performed_advanced_analysis
+            redlined_clause_artifact_path
           )
         `)
         .eq('id', contractId)
@@ -137,16 +136,6 @@ Deno.serve(async (req) => {
     }
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
-
-    // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
-    // This URL will be used as a clickable link in both the HTML report and email
-    let redlinedArtifactViewerUrl = '';
-    if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
-      // Get the base URL for the application (from environment variable or request origin)
-      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin') || 'https://www.contractanalyser.com';
-      // Construct the public report viewer URL with artifact path and language parameters
-      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
-    }
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
@@ -172,32 +161,12 @@ Deno.serve(async (req) => {
       .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
       .jurisdiction-summary { border: 1px solid #cce5ff; background-color: #e0f2ff; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
       .jurisdiction-summary h4 { margin-top: 0; color: #0056b3; }
-      /* ADDED: Styles for redlined artifact section */
+      /* ADDED: Styles for redlined artifact */
       .artifact-section { margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
       .artifact-section h3 { color: #0056b3; margin-bottom: 10px; }
       .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
       .redlined-text { color: red; font-weight: bold; }
       .suggested-text { color: green; font-weight: bold; }
-      /* ADDED: Enhanced button styling for artifact link - works well in emails */
-      .artifact-link-button {
-        display: inline-block;
-        padding: 12px 24px;
-        margin: 10px 0;
-        background-color: #0056b3;
-        color: white !important;
-        text-decoration: none !important;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 16px;
-        text-align: center;
-        transition: background-color 0.3s ease;
-      }
-      .artifact-link-button:hover {
-        background-color: #003d82;
-      }
-      .artifact-link-button:active {
-        background-color: #002855;
-      }
     `;
 
     let htmlContent = `
@@ -253,30 +222,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <!-- MODIFIED: Email-friendly clickable button using table-based layout for maximum compatibility -->
-                  <!-- This approach works reliably in all major email clients (Gmail, Outlook, Apple Mail, etc.) -->
-                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 20px auto;">
-                      <tr>
-                          <td style="border-radius: 5px; background-color: #0056b3; text-align: center;">
-                              <a href="${redlinedArtifactViewerUrl}" 
-                                 target="_blank" 
-                                 rel="noopener noreferrer"
-                                 style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; font-family: Arial, sans-serif;">
-                                  ${getTranslatedMessage('view_artifact', outputLanguage)}
-                              </a>
-                          </td>
-                      </tr>
-                  </table>
-                  <!-- Fallback text link for email clients - ensures users can always access the artifact -->
-                  <p style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;">
-                      ${getTranslatedMessage('or_copy_link', outputLanguage)}: 
-                      <a href="${redlinedArtifactViewerUrl}" 
-                         target="_blank" 
-                         rel="noopener noreferrer" 
-                         style="color: #0056b3; text-decoration: underline; word-break: break-all;">
-                          ${redlinedArtifactViewerUrl}
-                      </a>
-                  </p>
+                  <p><a href="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}" target="_blank">${getTranslatedMessage('download_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
