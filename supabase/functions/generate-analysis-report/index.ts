@@ -139,9 +139,12 @@ Deno.serve(async (req) => {
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
     // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
+    // This URL will be used as a clickable link in both the HTML report and email
     let redlinedArtifactViewerUrl = '';
     if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
-      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+      // Get the base URL for the application (from environment variable or request origin)
+      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin') || 'https://www.contractanalyser.com';
+      // Construct the public report viewer URL with artifact path and language parameters
       redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
     }
 
@@ -169,12 +172,32 @@ Deno.serve(async (req) => {
       .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
       .jurisdiction-summary { border: 1px solid #cce5ff; background-color: #e0f2ff; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
       .jurisdiction-summary h4 { margin-top: 0; color: #0056b3; }
-      /* ADDED: Styles for redlined artifact */
+      /* ADDED: Styles for redlined artifact section */
       .artifact-section { margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
       .artifact-section h3 { color: #0056b3; margin-bottom: 10px; }
       .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
       .redlined-text { color: red; font-weight: bold; }
       .suggested-text { color: green; font-weight: bold; }
+      /* ADDED: Enhanced button styling for artifact link - works well in emails */
+      .artifact-link-button {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 10px 0;
+        background-color: #0056b3;
+        color: white !important;
+        text-decoration: none !important;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+        transition: background-color 0.3s ease;
+      }
+      .artifact-link-button:hover {
+        background-color: #003d82;
+      }
+      .artifact-link-button:active {
+        background-color: #002855;
+      }
     `;
 
     let htmlContent = `
@@ -230,7 +253,21 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="${redlinedArtifactViewerUrl}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: underline;">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
+                  <!-- MODIFIED: Enhanced clickable button link that opens in new tab/window -->
+                  <!-- This link works in both HTML reports and email clients -->
+                  <p style="text-align: center; margin: 20px 0;">
+                      <a href="${redlinedArtifactViewerUrl}" 
+                         target="_blank" 
+                         rel="noopener noreferrer" 
+                         class="artifact-link-button"
+                         style="display: inline-block; padding: 12px 24px; background-color: #0056b3; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                          ${getTranslatedMessage('view_artifact', outputLanguage)}
+                      </a>
+                  </p>
+                  <!-- Fallback text link for email clients that don't support styled buttons -->
+                  <p style="text-align: center; font-size: 0.9em; color: #666;">
+                      ${getTranslatedMessage('or_copy_link', outputLanguage)}: <a href="${redlinedArtifactViewerUrl}" target="_blank" rel="noopener noreferrer" style="color: #0056b3; word-break: break-all;">${redlinedArtifactViewerUrl}</a>
+                  </p>
               </div>
               ` : ''}
 
