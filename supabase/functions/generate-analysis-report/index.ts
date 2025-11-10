@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
             liability_cap_summary,
             indemnification_clause_summary,
             confidentiality_obligations_summary,
-            redlined_clause_artifact_path
+            redlined_clause_artifact_path,
+            performed_advanced_analysis
           )
         `)
         .eq('id', contractId)
@@ -136,6 +137,13 @@ Deno.serve(async (req) => {
     }
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
+
+    // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
+    let redlinedArtifactViewerUrl = '';
+    if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
+      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
+    }
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
@@ -222,7 +230,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}" target="_blank">${getTranslatedMessage('download_artifact', outputLanguage)}</a></p>
+                  <p><a href="${redlinedArtifactViewerUrl}" target="_blank">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
