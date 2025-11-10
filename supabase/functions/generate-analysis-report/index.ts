@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}" target="_blank">${getTranslatedMessage('download_artifact', outputLanguage)}</a></p>
+                  p><a href="https://contractanalyser.com/public-report-view?url=https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/contract_artifacts/${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: underline;">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
