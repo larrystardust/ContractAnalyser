@@ -4,7 +4,7 @@ import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
 import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react';
 import Button from '../ui/Button';
-import { getRiskBorderColor, getRiskTextColor } from '../../utils/riskUtils';
+import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils'; // MODIFIED: Added countFindingsByRisk
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
