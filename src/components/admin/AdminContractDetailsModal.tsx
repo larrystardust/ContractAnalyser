@@ -14,53 +14,19 @@ interface AdminContractDetailsModalProps {
 }
 
 const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ contract }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const { subscription, loading: loadingSubscription } = useSubscription();
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
 
-  // REMOVED: State for redlined clause artifact content
-  // const [redlinedClauseContent, setRedlinedClauseContent] = useState<RedlinedClauseArtifact | null>(null);
-  // const [loadingRedlinedClause, setLoadingRedlinedClause] = useState(false);
-  // const [redlinedClauseError, setRedlinedClauseError] = useState<string | null>(null);
-
-  // REMOVED: useEffect to fetch redlined clause artifact
-  // useEffect(() => {
-  //   if (!contract.analysisResult?.performedAdvancedAnalysis || !contract.analysisResult?.redlinedClauseArtifactPath) {
-  //     setRedlinedClauseContent(null);
-  //     return;
-  //   }
-  //
-  //   setLoadingRedlinedClause(true);
-  //   setRedlinedClauseError(null);
-  //   try {
-  //     const fetchRedlinedClause = async () => {
-  //       const { data, error } = await supabase.storage
-  //         .from('contract_artifacts')
-  //         .download(contract.analysisResult.redlinedClauseArtifactPath);
-  //
-  //       if (error) throw error;
-  //
-  //       const text = await data.text();
-  //       setRedlinedClauseContent(JSON.parse(text));
-  //     };
-  //     fetchRedlinedClause();
-  //   } catch (err: any) {
-  //     console.error('Error fetching redlined clause artifact:', err);
-  //     setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
-  //   } finally {
-  //     setLoadingRedlinedClause(false);
-  //   }
-  // }, [contract.analysisResult?.redlinedClauseArtifactPath, contract.analysisResult?.performedAdvancedAnalysis, t]);
-
-  // MODIFIED: Handle download of redlined clause artifact to use public URL
+  // MODIFIED: Handle download of redlined clause artifact to use PublicReportViewerPage
   const handleDownloadRedlinedClause = () => {
-    if (!contract.analysisResult?.redlinedClauseArtifactPath) return;
+    if (!contract.analysisResult?.redlinedClauseArtifactPath || !contract.analysisResult?.contract_id) return;
 
-    const publicUrl = `${supabase.storage.from('contract_artifacts').getPublicUrl(contract.analysisResult.redlinedClauseArtifactPath).data.publicUrl}`;
-    window.open(publicUrl, '_blank');
-    alert(t('redlined_clause_download_started'));
+    // Construct the URL to PublicReportViewerPage, passing artifactPath and lang
+    const viewerUrl = `/public-report-view?artifactPath=${encodeURIComponent(contract.analysisResult.redlinedClauseArtifactPath)}&lang=${i18n.language}`;
+    window.open(viewerUrl, '_blank');
   };
 
   const getStatusLabel = (status: string): string => {
@@ -109,8 +75,6 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
           {contract.analysisResult.performedAdvancedAnalysis && contract.analysisResult.redlinedClauseArtifactPath && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
-              {/* REMOVED: loadingRedlinedClause and redlinedClauseError display */}
-              {/* REMOVED: redlinedClauseContent display */}
               <p className="text-sm text-gray-600 mb-4">
                 {t('redlined_clause_artifact_description', { findingId: contract.analysisResult.redlinedClauseArtifactPath.split('/').pop()?.split('.')[0] || t('not_specified') })}
               </p>
@@ -120,7 +84,7 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
                 onClick={handleDownloadRedlinedClause}
                 icon={<Download className="w-4 h-4" />}
               >
-                {t('download_artifact')}
+                {t('view_artifact')} {/* MODIFIED: Changed button text */}
               </Button>
             </div>
           )}
