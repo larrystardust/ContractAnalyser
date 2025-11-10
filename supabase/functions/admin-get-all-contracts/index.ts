@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
           compliance_score,
           jurisdiction_summaries,
           report_file_path,
-          performed_advanced_analysis, // Ensure this is present
-          redlined_clause_artifact_path, // Ensure this is present
+          performed_advanced_analysis, 
+          redlined_clause_artifact_path, 
           findings (
             id,
             title,
@@ -136,8 +136,8 @@ Deno.serve(async (req) => {
           complianceScore: latestAnalysisResult.compliance_score,
           jurisdictionSummaries: latestAnalysisResult.jurisdiction_summaries,
           reportFilePath: latestAnalysisResult.report_file_path,
-          performedAdvancedAnalysis: latestAnalysisResult.performed_advanced_analysis, // ADDED: Map this
-          redlinedClauseArtifactPath: latestAnalysisResult.redlined_clause_artifact_path, // ADDED: Map this
+          performedAdvancedAnalysis: latestAnalysisResult.performed_advanced_analysis, 
+          redlinedClauseArtifactPath: latestAnalysisResult.redlined_clause_artifact_path,
           findings: latestAnalysisResult.findings.map(f => ({
             id: f.id,
             analysis_result_id: latestAnalysisResult.id,
