@@ -81,7 +81,7 @@ export const getJurisdictionColor = (jurisdiction: Jurisdiction): string => {
 };
 
 export const getAllJurisdictions = (): Jurisdiction[] => {
-  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Islamic Law', 'Nigeria', 'Others']; // MODIFIED: Added 'Nigeria'
+  return ['UK', 'EU', 'Ireland', 'US', 'Canada', 'Australia', 'Islamic Law', 'Others']; // MODIFIED: Removed 'Nigeria'
 };
 
 export const getJurisdictionBorderColor = (jurisdiction: Jurisdiction): string => {
