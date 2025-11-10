@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
             liability_cap_summary,
             indemnification_clause_summary,
             confidentiality_obligations_summary,
-            redlined_clause_artifact_path
+            redlined_clause_artifact_path,
+            performed_advanced_analysis
           )
         `)
         .eq('id', contractId)
@@ -132,10 +133,24 @@ Deno.serve(async (req) => {
       }
 
       finalContractName = contractData.name;
-      finalAnalysisResult = contractData.analysis_results;
+      const sortedAnalysisResults = contractData.analysis_results
+        ? [...contractData.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        : [];
+      finalAnalysisResult = sortedAnalysisResults.length > 0 ? sortedAnalysisResults[0] : null;
+
+      if (!finalAnalysisResult) {
+        return corsResponse({ error: 'No valid analysis result found for the contract.' }, 404);
+      }
     }
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
+
+    // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
+    let redlinedArtifactViewerUrl = '';
+    if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
+      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
+    }
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
@@ -164,7 +179,7 @@ Deno.serve(async (req) => {
       /* ADDED: Styles for redlined artifact */
       .artifact-section { margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
       .artifact-section h3 { color: #0056b3; margin-bottom: 10px; }
-      .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
+      .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; border: 1px solid #ddd; }
       .redlined-text { color: red; font-weight: bold; }
       .suggested-text { color: green; font-weight: bold; }
     `;
@@ -204,25 +219,27 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
+              ${finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
-                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>
-                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date}</p>
-                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date}</p>
-                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type}</p>
-                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value}</p>
+                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value || getTranslatedMessage('not_specified', outputLanguage)}</p>
                   <p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${partiesString}</p>
-                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>
-                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
-                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
+                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
               </div>
+              ` : ''}
 
-              ${finalAnalysisResult.redlined_clause_artifact_path ? `
+              ${finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section artifact-section">
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/view-redlined-artifact?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}" target="_blank">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
+                  <p><a href="${redlinedArtifactViewerUrl}" target="_blank">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
