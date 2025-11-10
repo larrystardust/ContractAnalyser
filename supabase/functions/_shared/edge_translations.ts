@@ -309,6 +309,7 @@ export const edgeTranslations = {
     error_invalid_artifact_format: "Invalid artifact format.",
     no_report_or_artifact_url_provided: "No report or artifact URL provided.",
     failed_to_load_artifact: "Failed to load artifact.",
+    or_copy_link: "Or copy this link",
       
   },
   es: {
@@ -621,6 +622,7 @@ export const edgeTranslations = {
     error_invalid_artifact_format: "Formato de artefacto inválido.",
     no_report_or_artifact_url_provided: "No se proporcionó URL de informe o artefacto.",
     failed_to_load_artifact: "Error al cargar el artefacto.",
+    or_copy_link: "O copie este enlace",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -932,6 +934,8 @@ export const edgeTranslations = {
     error_invalid_artifact_format: "Format d'artefact invalide.",
     no_report_or_artifact_url_provided: "Aucun rapport ou URL d'artefact fourni.",
     failed_to_load_artifact: "Échec du chargement de l'artefact.",
+    or_copy_link: "Ou copier ce lien",
+
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -1243,6 +1247,7 @@ export const edgeTranslations = {
     error_invalid_artifact_format: "تنسيق الأثر غير صالح.",
     no_report_or_artifact_url_provided: "لم يتم توفير رابط التقرير أو الأثر.",
     failed_to_load_artifact: "فشل تحميل الأثر.",
+    or_copy_link: "أو انسخ هذا الرابط",
   }
 };
 
