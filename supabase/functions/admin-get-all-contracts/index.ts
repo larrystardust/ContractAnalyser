@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
           compliance_score,
           jurisdiction_summaries,
           report_file_path,
-          performed_advanced_analysis, // ADDED: Explicitly select this column
-          redlined_clause_artifact_path, // ADDED: Explicitly select this column
+          performed_advanced_analysis, // Ensure this is present
+          redlined_clause_artifact_path, // Ensure this is present
           findings (
             id,
             title,
