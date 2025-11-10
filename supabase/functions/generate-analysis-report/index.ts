@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
             indemnification_clause_summary,
             confidentiality_obligations_summary,
             redlined_clause_artifact_path,
-            performed_advanced_analysis
+            performed_advanced_analysis // ADDED: Explicitly select this column
           )
         `)
         .eq('id', contractId)
