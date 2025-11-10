@@ -116,8 +116,7 @@ Deno.serve(async (req) => {
             liability_cap_summary,
             indemnification_clause_summary,
             confidentiality_obligations_summary,
-            redlined_clause_artifact_path,
-            performed_advanced_analysis // ADDED: Ensure this is selected
+            redlined_clause_artifact_path
           )
         `)
         .eq('id', contractId)
@@ -133,33 +132,10 @@ Deno.serve(async (req) => {
       }
 
       finalContractName = contractData.name;
-      // MODIFIED: Sort analysis_results and pick the latest one
-      const sortedAnalysisResults = contractData.analysis_results
-        ? [...contractData.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        : [];
-      finalAnalysisResult = sortedAnalysisResults.length > 0 ? sortedAnalysisResults[0] : null;
-
-      if (!finalAnalysisResult) {
-        return corsResponse({ error: 'No valid analysis result found for the contract.' }, 404);
-      }
+      finalAnalysisResult = contractData.analysis_results;
     }
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
-
-    // REMOVED: The block that generates redlinedArtifactSignedUrl
-    // let redlinedArtifactSignedUrl = '';
-    // if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
-    //   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    //     .from('contract_artifacts')
-    //     .createSignedUrl(finalAnalysisResult.redlined_clause_artifact_path, 3600); // URL valid for 1 hour (3600 seconds)
-
-    //   if (signedUrlError) {
-    //     console.error('Error generating signed URL for redlined artifact:', signedUrlError);
-    //     redlinedArtifactSignedUrl = '#error-generating-url';
-    //   } else {
-    //     redlinedArtifactSignedUrl = signedUrlData.signedUrl;
-    //   }
-    // }
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
@@ -228,22 +204,20 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
-                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>
+                  <p><strong>${getTranslatedMessage('termination_date', outputLanguage)}:</strong> ${finalAnalysisResult.termination_date}</p>
+                  <p><strong>${getTranslatedMessage('renewal_date', outputLanguage)}:</strong> ${finalAnalysisResult.renewal_date}</p>
+                  <p><strong>${getTranslatedMessage('contract_type', outputLanguage)}:</strong> ${finalAnalysisResult.contract_type}</p>
+                  <p><strong>${getTranslatedMessage('contract_value', outputLanguage)}:</strong> ${finalAnalysisResult.contract_value}</p>
                   <p><strong>${getTranslatedMessage('parties', outputLanguage)}:</strong> ${partiesString}</p>
-                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
-                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary || getTranslatedMessage('not_specified', outputLanguage)}</p>
+                  <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>
+                  <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
+                  <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div>
-              ` : ''}
 
-              ${finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path ? `
+              ${finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section artifact-section">
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
