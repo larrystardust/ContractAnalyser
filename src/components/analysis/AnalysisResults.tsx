@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary, RedlinedClauseArtifact } from '../../types';
+import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary, RedlinedClauseArtifact } from '../../types'; // MODIFIED: Import RedlinedClauseArtifact
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react';
+import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react'; // MODIFIED: Added Download icon
 import Button from '../ui/Button';
-import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils'; // MODIFIED: Added countFindingsByRisk
+import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useContracts } from '../../context/ContractContext';
 import { useTranslation } from 'react-i18next';
-import { useSubscription } from '../../hooks/useSubscription';
+import { useSubscription } from '../../hooks/useSubscription'; // ADDED: Import useSubscription
 
 interface AnalysisResultsProps {
   analysisResult?: AnalysisResult;
@@ -21,7 +21,7 @@ interface AnalysisResultsProps {
 }
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, contractName }) => {
-  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
+  const { t } = useTranslation();
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -29,10 +29,46 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   const session = useSession();
   const { defaultJurisdictions, loading: loadingUserProfile } = useUserProfile();
   const { reanalyzeContract, refetchContracts } = useContracts();
-  const { subscription, loading: loadingSubscription } = useSubscription();
+  const { subscription, loading: loadingSubscription } = useSubscription(); // ADDED: Use subscription hook
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
+
+  // ADDED: State for redlined clause artifact content
+  const [redlinedClauseContent, setRedlinedClauseContent] = useState<RedlinedClauseArtifact | null>(null);
+  const [loadingRedlinedClause, setLoadingRedlinedClause] = useState(false);
+  const [redlinedClauseError, setRedlinedClauseError] = useState<string | null>(null);
+
+  // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
+  useEffect(() => {
+    const fetchRedlinedClause = async () => {
+      if (!isAdvancedPlan || !analysisResult?.redlinedClauseArtifactPath) {
+        setRedlinedClauseContent(null);
+        return;
+      }
+
+      setLoadingRedlinedClause(true);
+      setRedlinedClauseError(null);
+      try {
+        const { data, error } = await supabase.storage
+          .from('contract_artifacts') // NEW STORAGE BUCKET
+          .download(analysisResult.redlinedClauseArtifactPath);
+
+        if (error) throw error;
+
+        const text = await data.text();
+        setRedlinedClauseContent(JSON.parse(text));
+      } catch (err: any) {
+        console.error('Error fetching redlined clause artifact:', err);
+        setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
+      } finally {
+        setLoadingRedlinedClause(false);
+      }
+    };
+
+    fetchRedlinedClause();
+  }, [analysisResult?.redlinedClauseArtifactPath, isAdvancedPlan, t]);
+
 
   if (!analysisResult) {
     return (
@@ -170,13 +206,28 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     }
   };
 
-  // MODIFIED: Handle download of redlined clause artifact to use PublicReportViewerPage
-  const handleDownloadRedlinedClause = () => {
-    if (!analysisResult?.redlinedClauseArtifactPath || !analysisResult?.contract_id) return;
+  // ADDED: Handle download of redlined clause artifact
+  const handleDownloadRedlinedClause = async () => {
+    if (!analysisResult?.redlinedClauseArtifactPath) return;
 
-    // Construct the URL to PublicReportViewerPage, passing artifactPath and lang
-    const viewerUrl = `/public-report-view?artifactPath=${encodeURIComponent(analysisResult.redlinedClauseArtifactPath)}&lang=${i18n.language}`;
-    window.open(viewerUrl, '_blank');
+    try {
+      const { data, error } = await supabase.storage
+        .from('contract_artifacts')
+        .createSignedUrl(analysisResult.redlinedClauseArtifactPath, 60); // 60 seconds validity
+
+      if (error) throw error;
+
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.download = `redlined_clause_${analysisResult.contract_id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert(t('redlined_clause_download_started'));
+    } catch (err: any) {
+      console.error('Error downloading redlined clause artifact:', err);
+      alert(t('failed_to_download_redlined_clause', { message: err.message }));
+    }
   };
 
   return (
@@ -195,18 +246,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               >
                 {isEmailing ? t('emailing') : t('email_full_report')}
               </Button>
-              {/* The "Reanalyze Contract" button is commented out below */}
-              {/*
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleReanalyze}
-                disabled={isReanalyzing}
-                icon={<RefreshCw className="w-4 h-4" />}
-              >
-                {isReanalyzing ? t('reanalyzing') : t('reanalyze_contract')}
-              </Button>
-              */}
             </div>
           )}
         </div>
@@ -282,21 +321,45 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         </div>
       ) : null}
 
-      {/* MODIFIED: Artifacts Section (Conditional for performedAdvancedAnalysis) */}
-      {analysisResult.performedAdvancedAnalysis && analysisResult.redlinedClauseArtifactPath && (
+      {/* ADDED: Artifacts Section (Conditional for Advanced Plan) */}
+      {isAdvancedPlan && analysisResult.redlinedClauseArtifactPath && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            {t('redlined_clause_artifact_description', { findingId: analysisResult.redlinedClauseArtifactPath.split('/').pop()?.split('.')[0] || t('not_specified') })}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownloadRedlinedClause}
-            icon={<Download className="w-4 h-4" />}
-          >
-            {t('view_artifact')} {/* MODIFIED: Changed button text */}
-          </Button>
+          {loadingRedlinedClause ? (
+            <div className="text-center py-4">
+              <Loader2 className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-500">{t('loading_artifact')}</p>
+            </div>
+          ) : redlinedClauseError ? (
+            <div className="text-center py-4 text-red-600">
+              <p>{redlinedClauseError}</p>
+            </div>
+          ) : redlinedClauseContent ? (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-800">{t('redlined_clause_artifact')}</h3>
+              <p className="text-sm text-gray-600">
+                {t('redlined_clause_artifact_description', { findingId: redlinedClauseContent.findingId || t('not_specified') })}
+              </p>
+              <div className="bg-gray-100 p-4 rounded-md font-mono text-sm overflow-x-auto">
+                <p className="font-bold text-gray-700">{t('original_clause')}:</p>
+                <pre className="whitespace-pre-wrap text-gray-800">{redlinedClauseContent.originalClause}</pre>
+                <p className="font-bold text-gray-700 mt-4">{t('redlined_version')}:</p>
+                <pre className="whitespace-pre-wrap text-red-600">{redlinedClauseContent.redlinedVersion}</pre>
+                <p className="font-bold text-gray-700 mt-4">{t('suggested_revision')}:</p>
+                <pre className="whitespace-pre-wrap text-green-600">{redlinedClauseContent.suggestedRevision}</pre>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadRedlinedClause}
+                icon={<Download className="w-4 h-4" />}
+              >
+                {t('download_artifact')}
+              </Button>
+            </div>
+          ) : (
+            <p className="text-gray-500">{t('no_artifacts_generated')}</p>
+          )}
         </div>
       )}
       
@@ -327,7 +390,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-          {t(getJurisdictionLabel(jurisdiction))}
+              {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
