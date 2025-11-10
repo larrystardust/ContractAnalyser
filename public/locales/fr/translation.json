@@ -1762,5 +1762,16 @@
   "category_personnel": "Personnel",
 
   "jurisdiction_nigeria": "Nigéria",
-  "jurisdiction_ie": "Irlande (IE)"
+  "jurisdiction_ie": "Irlande (IE)",
+
+  "redlined_clause_artifact_viewer": "Visionneuse d'artefacts de clause annotée",
+  "associated_finding_id": "ID de constatation associée",
+  "not_available": "Non disponible",
+  "view_artifact": "Voir l'artefact",
+  "message_missing_artifact_path": "Chemin de l'artefact manquant.",
+  "error_failed_to_download_artifact": "Échec du téléchargement de l'artefact : {errorMessage}",
+  "error_artifact_not_found": "Artefact introuvable.",
+  "error_invalid_artifact_format": "Format d'artefact invalide.",
+  "no_report_or_artifact_url_provided": "Aucun rapport ou URL d'artefact fourni.",
+  "failed_to_load_artifact": "Échec du chargement de l'artefact."
 }
