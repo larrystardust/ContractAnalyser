@@ -146,6 +146,21 @@ Deno.serve(async (req) => {
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
+    // REMOVED: The block that generates redlinedArtifactSignedUrl
+    // let redlinedArtifactSignedUrl = '';
+    // if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
+    //   const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    //     .from('contract_artifacts')
+    //     .createSignedUrl(finalAnalysisResult.redlined_clause_artifact_path, 3600); // URL valid for 1 hour (3600 seconds)
+
+    //   if (signedUrlError) {
+    //     console.error('Error generating signed URL for redlined artifact:', signedUrlError);
+    //     redlinedArtifactSignedUrl = '#error-generating-url';
+    //   } else {
+    //     redlinedArtifactSignedUrl = signedUrlData.signedUrl;
+    //   }
+    // }
+
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
       h1, h2, h3, h4 { color: #0056b3; }
