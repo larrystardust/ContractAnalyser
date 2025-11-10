@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}" target="_blank">${getTranslatedMessage('download_artifact', outputLanguage)}</a></p>
+                  <p><a href="${Deno.env.get('SUPABASE_URL')}/functions/v1/view-redlined-artifact?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}" target="_blank">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
