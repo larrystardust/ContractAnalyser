@@ -4,7 +4,7 @@ import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
 import { AlertCircle, Info, FilePlus, Mail, RefreshCw, Loader2, Download } from 'lucide-react';
 import Button from '../ui/Button';
-import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
+import { getRiskBorderColor, getRiskTextColor } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '@supabase/auth-helpers-react';
@@ -21,7 +21,7 @@ interface AnalysisResultsProps {
 }
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSample = false, onReanalyzeInitiated, contractName }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // MODIFIED: Destructure i18n
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | 'all'>('all');
   const [expandedFindings, setExpandedFindings] = useState<string[]>([]);
   const [isEmailing, setIsEmailing] = useState(false);
@@ -33,40 +33,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
 
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
-
-  // REMOVED: State for redlined clause artifact content
-  // const [redlinedClauseContent, setRedlinedClauseContent] = useState<RedlinedClauseArtifact | null>(null);
-  // const [loadingRedlinedClause, setLoadingRedlinedClause] = useState(false);
-  // const [redlinedClauseError, setRedlinedClauseError] = useState<string | null>(null);
-
-  // REMOVED: useEffect to fetch redlined clause artifact
-  // useEffect(() => {
-  //   if (!analysisResult?.performedAdvancedAnalysis || !analysisResult?.redlinedClauseArtifactPath) {
-  //     setRedlinedClauseContent(null);
-  //     return;
-  //   }
-  //
-  //   setLoadingRedlinedClause(true);
-  //   setRedlinedClauseError(null);
-  //   try {
-  //     const fetchRedlinedClause = async () => {
-  //       const { data, error } = await supabase.storage
-  //         .from('contract_artifacts')
-  //         .download(analysisResult.redlinedClauseArtifactPath);
-  //
-  //       if (error) throw error;
-  //
-  //       const text = await data.text();
-  //       setRedlinedClauseContent(JSON.parse(text));
-  //     };
-  //     fetchRedlinedClause();
-  //   } catch (err: any) {
-  //     console.error('Error fetching redlined clause artifact:', err);
-  //     setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
-  //   } finally {
-  //     setLoadingRedlinedClause(false);
-  //   }
-  // }, [analysisResult?.redlinedClauseArtifactPath, analysisResult?.performedAdvancedAnalysis, t]);
 
   if (!analysisResult) {
     return (
@@ -204,13 +170,13 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     }
   };
 
-  // MODIFIED: Handle download of redlined clause artifact to use public URL
+  // MODIFIED: Handle download of redlined clause artifact to use PublicReportViewerPage
   const handleDownloadRedlinedClause = () => {
-    if (!analysisResult?.redlinedClauseArtifactPath) return;
+    if (!analysisResult?.redlinedClauseArtifactPath || !analysisResult?.contract_id) return;
 
-    const publicUrl = `${supabase.storage.from('contract_artifacts').getPublicUrl(analysisResult.redlinedClauseArtifactPath).data.publicUrl}`;
-    window.open(publicUrl, '_blank');
-    alert(t('redlined_clause_download_started'));
+    // Construct the URL to PublicReportViewerPage, passing artifactPath and lang
+    const viewerUrl = `/public-report-view?artifactPath=${encodeURIComponent(analysisResult.redlinedClauseArtifactPath)}&lang=${i18n.language}`;
+    window.open(viewerUrl, '_blank');
   };
 
   return (
@@ -320,8 +286,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       {analysisResult.performedAdvancedAnalysis && analysisResult.redlinedClauseArtifactPath && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
-          {/* REMOVED: loadingRedlinedClause and redlinedClauseError display */}
-          {/* REMOVED: redlinedClauseContent display */}
           <p className="text-sm text-gray-600 mb-4">
             {t('redlined_clause_artifact_description', { findingId: analysisResult.redlinedClauseArtifactPath.split('/').pop()?.split('.')[0] || t('not_specified') })}
           </p>
@@ -331,7 +295,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
             onClick={handleDownloadRedlinedClause}
             icon={<Download className="w-4 h-4" />}
           >
-            {t('download_artifact')}
+            {t('view_artifact')} {/* MODIFIED: Changed button text */}
           </Button>
         </div>
       )}
@@ -363,7 +327,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                 }`}
             >
-              {t(getJurisdictionLabel(jurisdiction))}
+          {t(getJurisdictionLabel(jurisdiction))}
             </button>
           );
         })}
