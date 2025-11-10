@@ -253,20 +253,29 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <!-- MODIFIED: Enhanced clickable button link that opens in new tab/window -->
-                  <!-- This link works in both HTML reports and email clients -->
-                  <p style="text-align: center; margin: 20px 0;">
+                  <!-- MODIFIED: Email-friendly clickable button using table-based layout for maximum compatibility -->
+                  <!-- This approach works reliably in all major email clients (Gmail, Outlook, Apple Mail, etc.) -->
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 20px auto;">
+                      <tr>
+                          <td style="border-radius: 5px; background-color: #0056b3; text-align: center;">
+                              <a href="${redlinedArtifactViewerUrl}" 
+                                 target="_blank" 
+                                 rel="noopener noreferrer"
+                                 style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; font-family: Arial, sans-serif;">
+                                  ${getTranslatedMessage('view_artifact', outputLanguage)}
+                              </a>
+                          </td>
+                      </tr>
+                  </table>
+                  <!-- Fallback text link for email clients - ensures users can always access the artifact -->
+                  <p style="text-align: center; font-size: 14px; color: #666; margin-top: 15px;">
+                      ${getTranslatedMessage('or_copy_link', outputLanguage)}: 
                       <a href="${redlinedArtifactViewerUrl}" 
                          target="_blank" 
                          rel="noopener noreferrer" 
-                         class="artifact-link-button"
-                         style="display: inline-block; padding: 12px 24px; background-color: #0056b3; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                          ${getTranslatedMessage('view_artifact', outputLanguage)}
+                         style="color: #0056b3; text-decoration: underline; word-break: break-all;">
+                          ${redlinedArtifactViewerUrl}
                       </a>
-                  </p>
-                  <!-- Fallback text link for email clients that don't support styled buttons -->
-                  <p style="text-align: center; font-size: 0.9em; color: #666;">
-                      ${getTranslatedMessage('or_copy_link', outputLanguage)}: <a href="${redlinedArtifactViewerUrl}" target="_blank" rel="noopener noreferrer" style="color: #0056b3; word-break: break-all;">${redlinedArtifactViewerUrl}</a>
                   </p>
               </div>
               ` : ''}
