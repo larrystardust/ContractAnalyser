@@ -311,6 +311,9 @@ export const edgeTranslations = {
     failed_to_load_artifact: "Failed to load artifact.",
     or_copy_link: "Or copy this link",
     category_legal_compliance: "Legal Compliance",
+
+    email_view_redlined_artifact: "View the Redlined Clause Artifact:",
+    email_view_redlined_artifact_button: "View Redlined Artifact",
       
   },
   es: {
@@ -625,6 +628,9 @@ export const edgeTranslations = {
     failed_to_load_artifact: "Error al cargar el artefacto.",
     or_copy_link: "O copie este enlace",
     category_legal_compliance: "Cumplimiento Legal",
+
+    email_view_redlined_artifact: "Ver el artefacto de cláusula con marcas de revisión:",
+    email_view_redlined_artifact_button: "Ver artefacto con marcas de revisión",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -939,6 +945,9 @@ export const edgeTranslations = {
     or_copy_link: "Ou copier ce lien",
     category_legal_compliance: "Conformité Légale",
 
+    email_view_redlined_artifact: "Voir l'artefact de clause annotée :",
+    email_view_redlined_artifact_button: "Voir l'artefact annoté",
+
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -1252,6 +1261,9 @@ export const edgeTranslations = {
     failed_to_load_artifact: "فشل تحميل الأثر.",
     or_copy_link: "أو انسخ هذا الرابط",
     category_legal_compliance: "الامتثال القانوني",
+
+    email_view_redlined_artifact: "عرض أثر البند المعدل:",
+    email_view_redlined_artifact_button: "عرض أثر البند المعدل",
   }
 };
 
