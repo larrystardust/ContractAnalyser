@@ -1772,5 +1772,7 @@
   "error_artifact_not_found": "Artifact not found.",
   "error_invalid_artifact_format": "Invalid artifact format.",
   "no_report_or_artifact_url_provided": "No report or artifact URL provided.",
-  "failed_to_load_artifact": "Failed to load artifact."
+  "failed_to_load_artifact": "Failed to load artifact.",
+  "email_view_redlined_artifact": "View the Redlined Clause Artifact:",
+  "email_view_redlined_artifact_button": "View Redlined Artifact"
 }
