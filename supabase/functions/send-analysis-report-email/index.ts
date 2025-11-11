@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
             <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
             ${redlinedClauseArtifactPath && performedAdvancedAnalysis ? `
               <p>${getTranslatedMessage('email_view_redlined_artifact', userPreferredLanguage)}</p>
-              <p><a href="${appBaseUrl}/public-report-view?url=${redlinedClauseArtifactPath}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
+              <p><a href="${appBaseUrl}/public-report-view?url=${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${redlinedClauseArtifactPath}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
             ` : ''}
             <hr/>
             ${reportHtmlContent}
