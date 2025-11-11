@@ -1768,5 +1768,7 @@
   "error_artifact_not_found": "الأثر غير موجود.",
   "error_invalid_artifact_format": "تنسيق الأثر غير صالح.",
   "no_report_or_artifact_url_provided": "لم يتم توفير رابط التقرير أو الأثر.",
-  "failed_to_load_artifact": "فشل تحميل الأثر."
+  "failed_to_load_artifact": "فشل تحميل الأثر.",
+  "email_view_redlined_artifact": "عرض أثر البند المعدل:",
+  "email_view_redlined_artifact_button": "عرض أثر البند المعدل"
 }
