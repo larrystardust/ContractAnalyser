@@ -5,7 +5,6 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next'; // ADDED
 
 const PublicReportViewerPage: React.FC = () => {
-  alert('PublicReportViewerPage loaded!'); // ADD THIS LINE TEMPORARILY
   const [searchParams] = useSearchParams();
   const location = useLocation(); // ADDED
   const reportUrl = searchParams.get('url'); // For main analysis reports
@@ -106,6 +105,7 @@ const PublicReportViewerPage: React.FC = () => {
   // Render the HTML content directly within a minimal container
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <h1 style={{ color: 'red', fontSize: '3em', textAlign: 'center' }}>DEBUG: Public Report Viewer Page Loaded!</h1> {/* ADD THIS LINE */}
       <div className="container mx-auto px-4">
         <Card>
           <CardBody>
