@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     // ADDED: Fetch the output_language from the contracts table
     const { data: contractLanguageData, error: contractLanguageError } = await supabase
       .from('contracts')
-      .select('output_language')
+      .select('output_language, analysis_results(redlined_clause_artifact_path, performed_advanced_analysis)') // MODIFIED
       .eq('id', contractId)
       .single();
 
@@ -135,6 +135,9 @@ Deno.serve(async (req) => {
         reportHtmlContent: reportHtmlContent || 'Report content not available.', // Provide fallback
         reportLink: reportLink || 'N/A', // Provide fallback
         userPreferredLanguage: userPreferredLanguage,
+        // ADDED: Pass redlined_clause_artifact_path if available
+        redlinedClauseArtifactPath: contractData?.analysis_results?.[0]?.redlined_clause_artifact_path || null,
+        performedAdvancedAnalysis: contractData?.analysis_results?.[0]?.performed_advanced_analysis || false,
       },
       headers: {
         'Authorization': `Bearer ${token}`, // Pass the current user's token
