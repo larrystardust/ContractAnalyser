@@ -5,6 +5,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next'; // ADDED
 
 const PublicReportViewerPage: React.FC = () => {
+  alert('PublicReportViewerPage loaded!'); // ADD THIS LINE TEMPORARILY
   const [searchParams] = useSearchParams();
   const location = useLocation(); // ADDED
   const reportUrl = searchParams.get('url'); // For main analysis reports
