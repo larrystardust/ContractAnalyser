@@ -105,7 +105,7 @@ const PublicReportViewerPage: React.FC = () => {
   // Render the HTML content directly within a minimal container
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <h1 style={{ color: 'red', fontSize: '3em', textAlign: 'center' }}>DEBUG: Public Report Viewer Page Loaded!</h1> {/* ADD THIS LINE */}
+      <h1 style={{ color: 'red', fontSize: '3em', textAlign: 'center' }}>DEBUG: Public Report Viewer Page Loaded!</h1>
       <div className="container mx-auto px-4">
         <Card>
           <CardBody>
