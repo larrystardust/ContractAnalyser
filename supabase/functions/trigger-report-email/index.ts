@@ -114,6 +114,10 @@ Deno.serve(async (req) => {
     const emailSubject = getTranslatedMessage('email_subject_report_ready', userPreferredLanguage, { contractName: contractName || contractId }); // MODIFIED
     const emailMessage = reportSummary; // This is the executive summary
 
+    console.log('trigger-report-email: DEBUG - reportLink being passed:', reportLink); // ADDED LOG
+    console.log('trigger-report-email: DEBUG - redlinedClauseArtifactPath being passed:', contractData?.analysis_results?.[0]?.redlined_clause_artifact_path || null); // ADDED LOG
+    console.log('trigger-report-email: DEBUG - performedAdvancedAnalysis being passed:', contractData?.analysis_results?.[0]?.performed_advanced_analysis || false); // ADDED LOG
+
     // console.log('trigger-report-email: Parameters for send-analysis-report-email:'); // REMOVED
     // console.log(`  userId: ${userId}`); // REMOVED
     // console.log(`  recipientEmail: ${recipientEmail}`); // REMOVED
