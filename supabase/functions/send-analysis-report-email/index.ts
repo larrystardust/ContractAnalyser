@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
             <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
             ${redlinedClauseArtifactPath && performedAdvancedAnalysis ? `
               <p>${getTranslatedMessage('email_view_redlined_artifact', userPreferredLanguage)}</p>
-              <p><a href="${appBaseUrl}/public-report-view?artifactPath=${redlinedClauseArtifactPath}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
+              <p><a href="${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
             ` : ''}
             <hr/>
             ${reportHtmlContent}
