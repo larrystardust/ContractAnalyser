@@ -23,7 +23,7 @@ function corsResponse(body: string | object | null, status = 200, origin: string
     'Access-Control-Allow-Origin': accessControlAllowOrigin,
     'Access-Control-Allow-Methods': 'GET, OPTIONS', // Changed to GET
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
-    'Content-Type': contentType, // Dynamic content type
+    'Content-Type': 'application/json', // Dynamic content type
   };
   if (status === 204) {
     return new Response(null, { status, headers });
