@@ -1774,5 +1774,7 @@
   "error_artifact_not_found": "Artefact introuvable.",
   "error_invalid_artifact_format": "Format d'artefact invalide.",
   "no_report_or_artifact_url_provided": "Aucun rapport ou URL d'artefact fourni.",
-  "failed_to_load_artifact": "Échec du chargement de l'artefact."
+  "failed_to_load_artifact": "Échec du chargement de l'artefact.",
+  "email_view_redlined_artifact": "Voir l'artefact de clause annotée :",
+  "email_view_redlined_artifact_button": "Voir l'artefact annoté"
 }
