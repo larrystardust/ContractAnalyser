@@ -1765,5 +1765,7 @@
   "error_artifact_not_found": "Artefacto no encontrado.",
   "error_invalid_artifact_format": "Formato de artefacto inválido.",
   "no_report_or_artifact_url_provided": "No se proporcionó URL de informe o artefacto.",
-  "failed_to_load_artifact": "Error al cargar el artefacto."
+  "failed_to_load_artifact": "Error al cargar el artefacto.",
+  "email_view_redlined_artifact": "Ver el artefacto de cláusula con marcas de revisión:",
+  "email_view_redlined_artifact_button": "Ver artefacto con marcas de revisión"
 }
