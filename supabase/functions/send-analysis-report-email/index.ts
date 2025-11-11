@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage } = await req.json(); // MODIFIED: Added userPreferredLanguage
+    const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage, redlinedClauseArtifactPath, performedAdvancedAnalysis } = await req.json(); // MODIFIED
 
     // The strict check is removed here as fallbacks are provided upstream in trigger-report-email
     if (!userId || !recipientEmail || !subject || !message || !userPreferredLanguage) {
@@ -83,6 +83,10 @@ Deno.serve(async (req) => {
           ${reportLink && reportLink !== 'N/A' ? `
             <p>${getTranslatedMessage('email_view_full_report', userPreferredLanguage)}</p>
             <p><a href="${publicReportViewerUrl}">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
+            ${redlinedClauseArtifactPath && performedAdvancedAnalysis ? `
+              <p>${getTranslatedMessage('email_view_redlined_artifact', userPreferredLanguage)}</p>
+              <p><a href="${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
+            ` : ''}
             <hr/>
             ${reportHtmlContent}
             <hr/>
