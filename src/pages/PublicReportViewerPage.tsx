@@ -47,7 +47,7 @@ const PublicReportViewerPage: React.FC = () => {
         // Scenario 2: Displaying a redlined clause artifact (HTML content from Edge Function)
         try {
           // Construct the URL to the view-redlined-artifact Edge Function
-          const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${encodeURIComponent(artifactPath)}&lang=${lang || i18n.language}`;
+          const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${artifactPath}&lang=${lang || i18n.language}`;
           
           console.log('PublicReportViewerPage: Fetching artifact from:', artifactViewerUrl); // ADDED
 
