@@ -17,11 +17,14 @@ const PublicReportViewerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // ADDED: Debugging logs
+    debugger; // ADD THIS LINE
+    // ADDED: Debugging logs to confirm URL parameter parsing
     console.log('PublicReportViewerPage: useEffect triggered.');
     console.log('PublicReportViewerPage: location.search (raw):', location.search);
-    console.log('PublicReportViewerPage: reportUrl from searchParams:', reportUrl);
-    console.log('PublicReportViewerPage: artifactPath from searchParams:', artifactPath);
+    console.log('PublicReportViewerPage: searchParams object:', Array.from(searchParams.entries())); // Log all entries
+    console.log('PublicReportViewerPage: reportUrl from searchParams:', searchParams.get('url'));
+    console.log('PublicReportViewerPage: artifactPath from searchParams:', searchParams.get('artifactPath'));
+    console.log('PublicReportViewerPage: lang from searchParams:', searchParams.get('lang'));
 
     const fetchContent = async () => {
       setLoading(true);
@@ -49,7 +52,7 @@ const PublicReportViewerPage: React.FC = () => {
           // Construct the URL to the view-redlined-artifact Edge Function
           const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${artifactPath}&lang=${lang || i18n.language}`;
           
-          console.log('PublicReportViewerPage: Fetching artifact from:', artifactViewerUrl); // ADDED
+          console.log('PublicReportViewerPage: Fetching artifact from:', artifactViewerUrl); // ADDED LOG HERE
 
           const response = await fetch(artifactViewerUrl);
 
