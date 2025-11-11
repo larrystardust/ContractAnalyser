@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom'; // MODIFIED: Add useLocation
 import Card, { CardBody } from '../components/ui/Card';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next'; // ADDED
 
 const PublicReportViewerPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation(); // ADDED
   const reportUrl = searchParams.get('url'); // For main analysis reports
   const artifactPath = searchParams.get('artifactPath'); // For redlined artifacts
   const lang = searchParams.get('lang'); // For redlined artifacts, to pass to Edge Function
@@ -16,6 +17,12 @@ const PublicReportViewerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // ADDED: Debugging logs
+    console.log('PublicReportViewerPage: useEffect triggered.');
+    console.log('PublicReportViewerPage: location.search (raw):', location.search);
+    console.log('PublicReportViewerPage: reportUrl from searchParams:', reportUrl);
+    console.log('PublicReportViewerPage: artifactPath from searchParams:', artifactPath);
+
     const fetchContent = async () => {
       setLoading(true);
       setError(null);
@@ -40,8 +47,10 @@ const PublicReportViewerPage: React.FC = () => {
         // Scenario 2: Displaying a redlined clause artifact (HTML content from Edge Function)
         try {
           // Construct the URL to the view-redlined-artifact Edge Function
-          const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${lang || i18n.language}`;
+          const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${encodeURIComponent(artifactPath)}&lang=${lang || i18n.language}`;
           
+          console.log('PublicReportViewerPage: Fetching artifact from:', artifactViewerUrl); // ADDED
+
           const response = await fetch(artifactViewerUrl);
 
           if (!response.ok) {
@@ -65,7 +74,7 @@ const PublicReportViewerPage: React.FC = () => {
     };
 
     fetchContent();
-  }, [reportUrl, artifactPath, lang, t, i18n.language]); // MODIFIED: Added lang and i18n.language to dependencies
+  }, [reportUrl, artifactPath, lang, t, i18n.language, location.search]); // MODIFIED: Added location.search to dependencies
 
   if (loading) {
     return (
