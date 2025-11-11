@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
     // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
     let redlinedArtifactViewerUrl = '';
     if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
-      const hardcodedPrefix = "https://contractanalyser.com/public-report-view?url=https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/contract_artifacts/";
-      redlinedArtifactViewerUrl = `${hardcodedPrefix}${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
+      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?url=${finalAnalysisResult.redlined_clause_artifact_path}&lang=${outputLanguage}`;
     }
 
     const embeddedCss = `
@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
-                  <p><a href="https://contractanalyser.com/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: underline;">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
+                  <p><a href="${redlinedArtifactViewerUrl}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: underline;">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
               ` : ''}
 
