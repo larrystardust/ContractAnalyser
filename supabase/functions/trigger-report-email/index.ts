@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
     }
 
     // ADDED: Fetch the output_language from the contracts table
-    const { data: contractLanguageData, error: contractLanguageError } = await supabase
+    const { data: contractData, contractLanguageData, error: contractLanguageError } = await supabase
       .from('contracts')
       .select('output_language, analysis_results(redlined_clause_artifact_path, performed_advanced_analysis)') // MODIFIED
       .eq('id', contractId)
