@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     let redlinedArtifactViewerUrl = '';
     if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
       const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
-      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?url=${finalAnalysisResult.redlined_clause_artifact_path}&lang=${outputLanguage}`;
+      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?url=${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/contract_artifacts/${finalAnalysisResult.redlined_clause_artifact_path}&lang=${outputLanguage}`;
     }
 
     const embeddedCss = `
