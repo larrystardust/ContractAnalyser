@@ -46,9 +46,6 @@ Deno.serve(async (req) => {
   try {
     const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage, redlinedClauseArtifactPath, performedAdvancedAnalysis } = await req.json(); // MODIFIED
 
-    console.log('send-analysis-report-email: DEBUG - reportLink received:', reportLink); // ADDED LOG
-    console.log('send-analysis-report-email: DEBUG - redlinedClauseArtifactPath received:', redlinedClauseArtifactPath); // ADDED LOG
-    console.log('send-analysis-report-email: DEBUG - performedAdvancedAnalysis received:', performedAdvancedAnalysis); // ADDED LOG
     console.log('send-analysis-report-email: appBaseUrl:', Deno.env.get('APP_BASE_URL') || req.headers.get('Origin'));
 
     // The strict check is removed here as fallbacks are provided upstream in trigger-report-email
@@ -74,9 +71,7 @@ Deno.serve(async (req) => {
     // MODIFIED: Removed encodeURIComponent around reportLink
     const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${reportLink}`;
     const redlinedArtifactLink = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}`; // ADDED for logging
-
-    console.log('send-analysis-report-email: DEBUG - Final publicReportViewerUrl:', publicReportViewerUrl); // ADDED LOG
-    console.log('send-analysis-report-email: DEBUG - Final redlinedArtifactLink:', redlinedArtifactLink); // ADDED LOG
+    
 
     // --- START: Email Service Integration ---
     try {
@@ -94,7 +89,7 @@ Deno.serve(async (req) => {
             <p><a href="${publicReportViewerUrl}" target="_blank">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
             ${redlinedClauseArtifactPath && performedAdvancedAnalysis ? `
               <p>${getTranslatedMessage('email_view_redlined_artifact', userPreferredLanguage)}</p>
-              <p><a href="${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
+              <p><a href="${redlinedArtifactLink}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
             ` : ''}
             <hr/>
             ${reportHtmlContent}
