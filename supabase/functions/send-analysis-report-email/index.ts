@@ -46,6 +46,10 @@ Deno.serve(async (req) => {
   try {
     const { userId, recipientEmail, subject, message, recipientName, reportHtmlContent, reportLink, userPreferredLanguage, redlinedClauseArtifactPath, performedAdvancedAnalysis } = await req.json(); // MODIFIED
 
+    console.log('send-analysis-report-email: redlinedClauseArtifactPath:', redlinedClauseArtifactPath);
+    console.log('send-analysis-report-email: performedAdvancedAnalysis:', performedAdvancedAnalysis);
+    console.log('send-analysis-report-email: appBaseUrl:', Deno.env.get('APP_BASE_URL') || req.headers.get('Origin'));
+
     // The strict check is removed here as fallbacks are provided upstream in trigger-report-email
     if (!userId || !recipientEmail || !subject || !message || !userPreferredLanguage) {
       return corsResponse({ error: 'Missing essential email parameters: userId, recipientEmail, subject, message, userPreferredLanguage' }, 400);
