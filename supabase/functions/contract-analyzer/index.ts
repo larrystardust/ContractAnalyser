@@ -780,7 +780,52 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact": {
+  "redlinedClauseArtifact 1": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 2": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 3": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 4": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 5": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 6": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 7": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 8": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 9": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 10": {
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
