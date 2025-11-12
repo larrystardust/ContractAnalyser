@@ -42,7 +42,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
   useEffect(() => {
     const fetchRedlinedClause = async () => {
-      if (!isAdvancedPlan || !analysisResult?.redlinedClauseArtifactPath) {
+      if (!analysisResult?.redlinedClauseArtifactPath || !analysisResult?.performedAdvancedAnalysis) {
         setRedlinedClauseContent(null);
         return;
       }
@@ -67,7 +67,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
     };
 
     fetchRedlinedClause();
-  }, [analysisResult?.redlinedClauseArtifactPath, isAdvancedPlan, t]);
+  }, [analysisResult?.redlinedClauseArtifactPath, analysisResult?.performedAdvancedAnalysis, t]);
 
 
   if (!analysisResult) {
