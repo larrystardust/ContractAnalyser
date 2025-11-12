@@ -736,13 +736,7 @@ ANALYSIS CHECKLIST (use internally, don't output):
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
 
 CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
-For EVERY finding with riskLevel "high", you MUST include a corresponding redlinedClauseArtifact in the redlinedClauseArtifacts array. Each artifact must be concise and must contain:
-- originalClause: The exact problematic clause text from the contract
-- redlinedVersion: The clause with strikethroughs showing what to remove and highlights showing what to add
-- suggestedRevision: Your recommended improved version of the clause
-- findingId: "finding reference"
-
-If there are over 3 high-risk findings, present only the 2 most critical artifacts. 
+Focus on the top 2 most critical high-risk findings and present only the 2 most critical artifacts. 
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
@@ -780,12 +774,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact 1": {
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-  "redlinedClauseArtifact 2": {
+  "redlinedClauseArtifact": {
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
@@ -839,7 +828,7 @@ Output language: ${outputLanguage}`;
               
               const claudeCompletion = await anthropic.messages.create({
                 model: "claude-sonnet-4-20250514",
-                max_tokens: 20000, // Increased for comprehensive output on large contracts
+                max_tokens: 8192, // Increased for comprehensive output on large contracts
                 temperature: 0.1,
                 system: claudeSystemPrompt,
                 messages: [
