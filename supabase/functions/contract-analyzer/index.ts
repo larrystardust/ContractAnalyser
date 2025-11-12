@@ -776,6 +776,41 @@ REQUIRED JSON STRUCTURE (output this exact structure):
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
     "findingId": "finding reference"
   }
 }
