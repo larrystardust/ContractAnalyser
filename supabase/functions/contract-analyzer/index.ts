@@ -775,11 +775,11 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
   "redlinedClauseArtifact": {
-    "originalClause": "original text with escaped quotes",
+    "originalClause 1": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
     "findingId": "finding reference",
-  "redlinedClauseArtifact": {
+  "redlinedClauseArtifact 2": {
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
