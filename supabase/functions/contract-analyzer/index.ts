@@ -754,7 +754,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "complianceScore": 75,
   "findings": [
     {
-      "findingId": ["finding-1", "finding-2"]
+      "findingId": ["finding reference 1", "finding reference 2"]
       "title": "Short title",
       "description": "Description under 800 chars",
       "riskLevel": "high",
@@ -785,7 +785,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
       "originalClause": "The exact problematic clause text from the contract with all quotes escaped",
       "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
       "suggestedRevision": "Complete improved version of the clause with all quotes escaped",
-      "findingId": ["finding-1", "finding-2"]  
+      "findingId": ["finding reference 1", "finding reference 2"]  
   }
 }
 
