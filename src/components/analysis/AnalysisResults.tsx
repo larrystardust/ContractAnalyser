@@ -349,6 +349,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
                 <p className="font-bold text-gray-700 mt-4">{t('suggested_revision')}:</p>
                 <pre className="whitespace-pre-wrap text-green-600">{redlinedClauseContent.suggestedRevision}</pre>
               </div>
+              {/* Commented out to make it no longer visible */}
+              {/*
               <Button
                 variant="outline"
                 size="sm"
@@ -357,6 +359,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
               >
                 {t('download_artifact')}
               </Button>
+              */}
             </div>
           ) : (
             <p className="text-gray-500">{t('no_artifacts_generated')}</p>
