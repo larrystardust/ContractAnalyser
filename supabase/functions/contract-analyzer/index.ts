@@ -772,10 +772,10 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact": ["Clause 1", "Clause 2", "Clause 3"], {
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
+  "redlinedClauseArtifact": {
+    "originalClause": ["Clause 1", "Clause 2", "Clause 3"], "original text with escaped quotes",
+    "redlinedVersion": ["Clause 1", "Clause 2", "Clause 3"], "redlined text with escaped quotes",
+    "suggestedRevision": ["Clause 1", "Clause 2", "Clause 3"], "suggested text with escaped quotes",
     "findingId": "finding reference"
   }
 }
