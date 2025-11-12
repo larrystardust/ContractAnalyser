@@ -706,7 +706,7 @@ CRITICAL JSON VALIDATION:
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
 
       // ENHANCED: Ultra-strict Claude prompt with explicit JSON formatting rules
-      const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. You must analyze the provided contract and output ONLY valid, parseable JSON.
+const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. You must analyze the provided contract and output ONLY valid, parseable JSON.
 
 CRITICAL JSON FORMATTING RULES (YOU MUST FOLLOW THESE EXACTLY):
 1. Output ONLY the JSON object - no markdown, no code blocks, no additional text before or after
@@ -734,7 +734,15 @@ ANALYSIS CHECKLIST (use internally, don't output):
 8. Drafting Quality - definitions, clarity, precision, consistency
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
-11. List redlined clause artifacts of all the high risk clauses
+
+CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
+For EVERY finding with riskLevel "high", you MUST include a corresponding redlinedClauseArtifact in the redlinedClauseArtifacts array. Each artifact must contain:
+- originalClause: The exact problematic clause text from the contract
+- redlinedVersion: The clause with strikethroughs showing what to remove and highlights showing what to add
+- suggestedRevision: Your recommended improved version of the clause
+- findingId: A unique identifier matching the high-risk finding (e.g., "finding-1", "finding-2")
+
+If there are 3 high-risk findings, there MUST be 3 artifacts. If there are 10 high-risk findings, there MUST be 10 artifacts.
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
@@ -746,6 +754,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "complianceScore": 75,
   "findings": [
     {
+      "findingId": "finding-1",
       "title": "Short title",
       "description": "Description under 800 chars",
       "riskLevel": "high",
@@ -753,6 +762,16 @@ REQUIRED JSON STRUCTURE (output this exact structure):
       "category": "data-protection",
       "recommendations": ["Recommendation 1", "Recommendation 2"],
       "clauseReference": "Section X"
+    },
+    {
+      "findingId": "finding-2",
+      "title": "Another high risk issue",
+      "description": "Description under 800 chars",
+      "riskLevel": "high",
+      "jurisdiction": "EU",
+      "category": "compliance",
+      "recommendations": ["Recommendation 1", "Recommendation 2"],
+      "clauseReference": "Section Y"
     }
   ],
   "jurisdictionSummaries": {
@@ -772,12 +791,20 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact": {
-    "originalClause": ["Clause 1", "Clause 2", "Clause 3"], "original text with escaped quotes",
-    "redlinedVersion": ["Clause 1", "Clause 2", "Clause 3"], "redlined text with escaped quotes",
-    "suggestedRevision": ["Clause 1", "Clause 2", "Clause 3"], "suggested text with escaped quotes",
-    "findingId": "finding reference"
-  }
+  "redlinedClauseArtifacts": [
+    {
+      "findingId": "finding-1",
+      "originalClause": "The exact problematic clause text from the contract with all quotes escaped",
+      "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
+      "suggestedRevision": "Complete improved version of the clause with all quotes escaped"
+    },
+    {
+      "findingId": "finding-2",
+      "originalClause": "Another problematic clause text with all quotes escaped",
+      "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
+      "suggestedRevision": "Complete improved version of this clause with all quotes escaped"
+    }
+  ]
 }
 
 VALIDATION CHECKLIST BEFORE OUTPUT:
@@ -788,6 +815,9 @@ VALIDATION CHECKLIST BEFORE OUTPUT:
 ✓ All commas between array/object elements are present
 ✓ All brackets and braces are matched
 ✓ Output would pass JSON.parse() without errors
+✓ Every finding with riskLevel "high" has a findingId
+✓ Every high-risk findingId has a corresponding artifact in redlinedClauseArtifacts array
+✓ The number of high-risk findings equals the number of redlinedClauseArtifacts
 
 Contract jurisdictions: ${userSelectedJurisdictions.join(', ')}
 Output language: ${outputLanguage}`;
