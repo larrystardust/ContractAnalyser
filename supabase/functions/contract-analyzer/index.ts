@@ -754,7 +754,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "complianceScore": 75,
   "findings": [
     {
-      "findingId": "finding-1",
+      "findingId": ["finding-1", "finding-2"]
       "title": "Short title",
       "description": "Description under 800 chars",
       "riskLevel": "high",
@@ -762,16 +762,6 @@ REQUIRED JSON STRUCTURE (output this exact structure):
       "category": "data-protection",
       "recommendations": ["Recommendation 1", "Recommendation 2"],
       "clauseReference": "Section X"
-    },
-    {
-      "findingId": "finding-2",
-      "title": "Another high risk issue",
-      "description": "Description under 800 chars",
-      "riskLevel": "high",
-      "jurisdiction": "EU",
-      "category": "compliance",
-      "recommendations": ["Recommendation 1", "Recommendation 2"],
-      "clauseReference": "Section Y"
     }
   ],
   "jurisdictionSummaries": {
