@@ -1761,6 +1761,8 @@
   "category_legal_compliance": "Legal Compliance",
   "category_financial": "Financial",
   "category_indemnification": "Indemnification",
+  "category_consumer_protection": "Consumer Protection",
+  "category_payment_terms": "Payment Terms",
 
   "jurisdiction_nigeria": "Nigeria",
   "jurisdiction_ie": "Ireland (IE)",
