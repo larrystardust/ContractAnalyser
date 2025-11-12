@@ -82,6 +82,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
+        console.log('ContractContext: Raw dbContract from Supabase:', dbContract); // ADDED LOG
         const sortedAnalysisResults = dbContract.analysis_results
           ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           : [];
@@ -89,7 +90,16 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const analysisResultData = sortedAnalysisResults.length > 0
           ? sortedAnalysisResults[0]
           : undefined;
+        console.log('ContractContext: Extracted analysisResultData (latest):', analysisResultData); // ADDED LOG       
 
+            // ADDED: Map the new flag
+            redlinedClauseArtifactPath: analysisResultData.redlined_clause_artifact_path, // ADDED: Map the new path
+          } : undefined,
+        };
+        console.log('ContractContext: Final analysisResult object being constructed:', {
+          performedAdvancedAnalysis: analysisResultData?.performed_advanced_analysis,
+          redlinedClauseArtifactPath: analysisResultData?.redlined_clause_artifact_path,
+        }); // ADDED LOG
         return {
           id: dbContract.id,
           user_id: dbContract.user_id,
