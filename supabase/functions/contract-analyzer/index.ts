@@ -734,7 +734,15 @@ ANALYSIS CHECKLIST (use internally, don't output):
 8. Drafting Quality - definitions, clarity, precision, consistency
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
-11. List redlined clause artifacts of all the high risk clauses
+
+CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
+For EVERY finding with riskLevel "high", you MUST include a corresponding redlinedClauseArtifact in the redlinedClauseArtifacts array. Each artifact must contain:
+- originalClause: The exact problematic clause text from the contract
+- redlinedVersion: The clause with strikethroughs showing what to remove and highlights showing what to add
+- suggestedRevision: Your recommended improved version of the clause
+- findingId: "finding reference"
+
+If there are 3 high-risk findings, there MUST be 3 artifacts. If there are 10 high-risk findings, there MUST be 10 artifacts.
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
@@ -773,41 +781,6 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
   "redlinedClauseArtifact": {
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference",
-
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
