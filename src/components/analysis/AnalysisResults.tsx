@@ -42,7 +42,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
   // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
   useEffect(() => {
     const fetchRedlinedClause = async () => {
+      console.log('AnalysisResults: useEffect fetchRedlinedClause triggered.');
+      console.log('AnalysisResults: Condition check for fetching artifact:', {
+        redlinedClauseArtifactPath: analysisResult?.redlinedClauseArtifactPath,
+        performedAdvancedAnalysis: analysisResult?.performedAdvancedAnalysis,
+      });
+
       if (!analysisResult?.redlinedClauseArtifactPath || !analysisResult?.performedAdvancedAnalysis) {
+        console.log('AnalysisResults: Skipping artifact fetch due to missing path or performedAdvancedAnalysis flag.');
         setRedlinedClauseContent(null);
         return;
       }
@@ -50,6 +57,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
       setLoadingRedlinedClause(true);
       setRedlinedClauseError(null);
       try {
+        console.log('AnalysisResults: Attempting to download artifact from:', analysisResult.redlinedClauseArtifactPath);
         const { data, error } = await supabase.storage
           .from('contract_artifacts') // NEW STORAGE BUCKET
           .download(analysisResult.redlinedClauseArtifactPath);
@@ -57,12 +65,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         if (error) throw error;
 
         const text = await data.text();
+        console.log('AnalysisResults: Successfully downloaded artifact text.');
         setRedlinedClauseContent(JSON.parse(text));
       } catch (err: any) {
-        console.error('Error fetching redlined clause artifact:', err);
-        setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
+        console.error('AnalysisResults: Error fetching redlined clause artifact:', err);
+        setRedlinedClauseError(err.message || t('failed_to_load_redlined_clause', { message: err.message }));
       } finally {
         setLoadingRedlinedClause(false);
+        console.log('AnalysisResults: Finished artifact fetch attempt.');
       }
     };
 
@@ -321,7 +331,15 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysisResult, isSam
         </div>
       ) : null}
 
-      {/* ADDED: Artifacts Section (Conditional for Advanced Plan) */}
+      {/* ADDED: Artifacts Section (Conditional for Advanced Plan) 
+      {/* ADDED: Debugging logs for Artifacts Section rendering */}
+      {console.log('AnalysisResults: Rendering Artifacts Section check:', {
+        performedAdvancedAnalysis: analysisResult.performedAdvancedAnalysis,
+        redlinedClauseArtifactPath: analysisResult.redlinedClauseArtifactPath,
+        loadingRedlinedClause: loadingRedlinedClause,
+        redlinedClauseError: redlinedClauseError,
+        redlinedClauseContent: redlinedClauseContent ? 'present' : 'absent',
+      })}
       {analysisResult.performedAdvancedAnalysis && analysisResult.redlinedClauseArtifactPath && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
