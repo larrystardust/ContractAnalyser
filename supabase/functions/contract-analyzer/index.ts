@@ -742,7 +742,7 @@ For EVERY finding with riskLevel "high", you MUST include a corresponding redlin
 - suggestedRevision: Your recommended improved version of the clause
 - findingId: "finding reference"
 
-If there are over 3 high-risk findings, highlight only the 2 most critical artifacts. 
+If there are over 3 high-risk findings, present only the 2 most critical artifacts. 
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
