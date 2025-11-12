@@ -736,13 +736,13 @@ ANALYSIS CHECKLIST (use internally, don't output):
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
 
 CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
-For EVERY finding with riskLevel "high", you MUST include a corresponding redlinedClauseArtifact in the redlinedClauseArtifacts array. Each artifact must contain:
+EVERY finding with riskLevel "high", MUST be included in the redlinedClauseArtifact in the redlinedClauseArtifacts array. The artifact must contain:
 - originalClause: The exact problematic clause text from the contract
 - redlinedVersion: The clause with strikethroughs showing what to remove and highlights showing what to add
 - suggestedRevision: Your recommended improved version of the clause
 - findingId: A unique identifier matching the high-risk finding (e.g., "finding-1", "finding-2")
 
-If there are 3 high-risk findings, there MUST be 3 artifacts. If there are 10 high-risk findings, there MUST be 10 artifacts.
+If there are 3 high-risk findings, the 3 MUST be in the redlinedClauseArtifacts array. If there are 10 high-risk findings, the 10 MUST be in the redlinedClauseArtifacts array.
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
@@ -791,8 +791,7 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifacts": [
-    {
+  "redlinedClauseArtifacts": {
       "findingId": "finding-1",
       "originalClause": "The exact problematic clause text from the contract with all quotes escaped",
       "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
@@ -802,9 +801,8 @@ REQUIRED JSON STRUCTURE (output this exact structure):
       "findingId": "finding-2",
       "originalClause": "Another problematic clause text with all quotes escaped",
       "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
-      "suggestedRevision": "Complete improved version of this clause with all quotes escaped"
-    }
-  ]
+      "suggestedRevision": "Complete improved version of this clause with all quotes escaped"   
+  }
 }
 
 VALIDATION CHECKLIST BEFORE OUTPUT:
