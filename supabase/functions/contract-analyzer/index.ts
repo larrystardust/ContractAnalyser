@@ -733,10 +733,7 @@ ANALYSIS CHECKLIST (use internally, don't output):
 7. Commercial Fairness - balance of obligations, feasibility, ambiguities
 8. Drafting Quality - definitions, clarity, precision, consistency
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
-10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
-
-CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
-Focus on the top 2 most critical high-risk findings and present only the 2 most critical artifacts. 
+10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses 
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
@@ -774,7 +771,12 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact": {
+  "redlinedClauseArtifact 1": {
+    "originalClause": "original text with escaped quotes",
+    "redlinedVersion": "redlined text with escaped quotes",
+    "suggestedRevision": "suggested text with escaped quotes",
+    "findingId": "finding reference",
+  "redlinedClauseArtifact 2": {
     "originalClause": "original text with escaped quotes",
     "redlinedVersion": "redlined text with escaped quotes",
     "suggestedRevision": "suggested text with escaped quotes",
