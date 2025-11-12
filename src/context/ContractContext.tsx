@@ -92,14 +92,6 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           : undefined;
         console.log('ContractContext: Extracted analysisResultData (latest):', analysisResultData); // ADDED LOG       
 
-            // ADDED: Map the new flag
-            redlinedClauseArtifactPath: analysisResultData.redlined_clause_artifact_path, // ADDED: Map the new path
-          } : undefined,
-        };
-        console.log('ContractContext: Final analysisResult object being constructed:', {
-          performedAdvancedAnalysis: analysisResultData?.performed_advanced_analysis,
-          redlinedClauseArtifactPath: analysisResultData?.redlined_clause_artifact_path,
-        }); // ADDED LOG
         return {
           id: dbContract.id,
           user_id: dbContract.user_id,
