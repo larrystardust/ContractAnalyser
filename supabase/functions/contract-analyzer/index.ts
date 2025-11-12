@@ -735,6 +735,9 @@ ANALYSIS CHECKLIST (use internally, don't output):
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
 
+JURISDICTION FOCUS:
+Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
+
 REQUIRED JSON STRUCTURE (output this exact structure):
 {
   "executiveSummary": "Brief summary under 1500 chars with all quotes escaped",
