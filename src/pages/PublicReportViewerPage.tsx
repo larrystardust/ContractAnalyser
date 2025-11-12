@@ -5,7 +5,6 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next'; // ADDED
 
 const PublicReportViewerPage: React.FC = () => {
-  console.log('PublicReportViewerPage: Component function started.'); // ADD THIS LINE
   const [searchParams] = useSearchParams();
   const location = useLocation(); // ADDED
   const reportUrl = searchParams.get('url'); // For main analysis reports
@@ -18,15 +17,6 @@ const PublicReportViewerPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    debugger; // ADD THIS LINE
-    // ADDED: Debugging logs to confirm URL parameter parsing
-    console.log('PublicReportViewerPage: useEffect triggered.');
-    console.log('PublicReportViewerPage: location.search (raw):', location.search);
-    console.log('PublicReportViewerPage: searchParams object:', Array.from(searchParams.entries())); // Log all entries
-    console.log('PublicReportViewerPage: reportUrl from searchParams:', searchParams.get('url'));
-    console.log('PublicReportViewerPage: artifactPath from searchParams:', searchParams.get('artifactPath'));
-    console.log('PublicReportViewerPage: lang from searchParams:', searchParams.get('lang'));
-
     const fetchContent = async () => {
       setLoading(true);
       setError(null);
@@ -52,8 +42,6 @@ const PublicReportViewerPage: React.FC = () => {
         try {
           // Construct the URL to the view-redlined-artifact Edge Function
           const artifactViewerUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/view-redlined-artifact?artifactPath=${artifactPath}&lang=${lang || i18n.language}`;
-          
-          console.log('PublicReportViewerPage: Fetching artifact from:', artifactViewerUrl); // ADDED LOG HERE
 
           const response = await fetch(artifactViewerUrl);
 
