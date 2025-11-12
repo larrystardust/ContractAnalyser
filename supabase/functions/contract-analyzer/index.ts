@@ -879,7 +879,7 @@ Output language: ${outputLanguage}`;
               
               const claudeCompletion = await anthropic.messages.create({
                 model: "claude-sonnet-4-20250514",
-                max_tokens: 16000, // Increased for comprehensive output on large contracts
+                max_tokens: 20000, // Increased for comprehensive output on large contracts
                 temperature: 0.1,
                 system: claudeSystemPrompt,
                 messages: [
