@@ -1624,7 +1624,7 @@
   "landing_advanced_features_cta": "Explore Advanced Plans",
 
   "what_are_advanced_features_q": "What are Advanced Features?",
-  "what_are_advanced_features_a": "Advanced Features provide deeper insights and enhanced functionalities for contract analysis, including key date tracking, detailed party analysis, contract type and value extraction, advanced search filters, and comprehensive reports. These features are designed for more proactive contract management and strategic decision-making.",
+  "what_are_advanced_features_a": "Advanced features in ContractAnalyser utilize a 'Dream Team' of sophisticated AI models, including Claude AI, to provide deeper, more nuanced insights into your contracts. These features go beyond basic analysis to offer capabilities like key date tracking, detailed contract metadata extraction (type, value, parties), critical clause summaries (liability caps, indemnification, confidentiality), and advanced search filters. This powerful combination ensures a comprehensive and highly accurate understanding of your legal documents.",
   "how_do_advanced_features_benefit_q": "How do Advanced Features benefit me?",
   "how_do_advanced_features_benefit_a": "Advanced Features help you save more time by automating the extraction of critical contract details, mitigate risks with proactive alerts for key dates, and make more informed strategic decisions with comprehensive data and analytics. They transform your contract management from reactive to proactive.",
   "how_to_access_advanced_features_q": "How can I access Advanced Features?",
