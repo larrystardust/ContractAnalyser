@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'; // ADDED
 
 const PublicReportViewerPage: React.FC = () => {
   alert('PublicReportViewerPage loaded!'); // ADD THIS LINE TEMPORARILY
+  console.log('PublicReportViewerPage: Component function started.'); // ADD THIS LINE
   const [searchParams] = useSearchParams();
   const location = useLocation(); // ADDED
   const reportUrl = searchParams.get('url'); // For main analysis reports
