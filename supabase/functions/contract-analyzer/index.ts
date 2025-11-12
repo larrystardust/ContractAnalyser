@@ -782,16 +782,10 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
   "redlinedClauseArtifacts": {
-      "findingId": "finding-1",
       "originalClause": "The exact problematic clause text from the contract with all quotes escaped",
       "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
-      "suggestedRevision": "Complete improved version of the clause with all quotes escaped"
-    },
-    {
-      "findingId": "finding-2",
-      "originalClause": "Another problematic clause text with all quotes escaped",
-      "redlinedVersion": "Text showing [REMOVE: old text] and [ADD: new text] with all quotes escaped",
-      "suggestedRevision": "Complete improved version of this clause with all quotes escaped"   
+      "suggestedRevision": "Complete improved version of the clause with all quotes escaped",
+      "findingId": ["finding-1", "finding-2"]  
   }
 }
 
@@ -804,8 +798,8 @@ VALIDATION CHECKLIST BEFORE OUTPUT:
 ✓ All brackets and braces are matched
 ✓ Output would pass JSON.parse() without errors
 ✓ Every finding with riskLevel "high" has a findingId
-✓ Every high-risk findingId has a corresponding artifact in redlinedClauseArtifacts array
-✓ The number of high-risk findings equals the number of redlinedClauseArtifacts
+✓ Every high-risk findingId has a corresponding entry in redlinedClauseArtifacts array
+✓ The number of high-risk findings equals the number of redlinedClauseArtifacts array
 
 Contract jurisdictions: ${userSelectedJurisdictions.join(', ')}
 Output language: ${outputLanguage}`;
