@@ -734,7 +734,7 @@ ANALYSIS CHECKLIST (use internally, don't output):
 8. Drafting Quality - definitions, clarity, precision, consistency
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
-11. Provide redlined clause artifact of all high risk clauses
+11. Redlined clause artifact of all high risk clauses
 
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
