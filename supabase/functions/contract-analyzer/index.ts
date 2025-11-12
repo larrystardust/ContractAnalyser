@@ -735,9 +735,6 @@ ANALYSIS CHECKLIST (use internally, don't output):
 9. Execution & Post-Signing - signatories, witnessing, ongoing obligations
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
 
-CRITICAL REQUIREMENT FOR HIGH-RISK CLAUSES:
-Brief concise summary 
-
 JURISDICTION FOCUS:
 Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}.
 
