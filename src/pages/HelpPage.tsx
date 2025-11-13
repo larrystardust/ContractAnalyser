@@ -129,7 +129,7 @@ const HelpPage: React.FC = () => {
           </li>
           <li>
             <strong>{t('what_file_types_q')}</strong>
-            <p className="ml-4">{t('what_file_types_a_ocr')}</p> {/* MODIFIED: Use new translation key */}
+            <p className="ml-4">{t('what_file_types_a_ocr')} {t('help_large_document_analysis_detail')}</p> {/* MODIFIED: Append new detail */}
           </li>
           <li> {/* ADDED: New FAQ entry for OCR */}
             <strong>{t('how_does_ocr_work_q')}</strong>
