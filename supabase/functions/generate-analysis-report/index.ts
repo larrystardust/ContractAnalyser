@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
             indemnification_clause_summary,
             confidentiality_obligations_summary,
             redlined_clause_artifact_path
+            performed_advanced_analysis
           )
         `)
         .eq('id', contractId)
@@ -137,10 +138,12 @@ Deno.serve(async (req) => {
 
     const partiesString = (finalAnalysisResult.parties && finalAnalysisResult.parties.length > 0) ? finalAnalysisResult.parties.join(', ') : getTranslatedMessage('not_specified', outputLanguage);
 
+    // MODIFIED: Declare appBaseUrl here to ensure it's always defined
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
+
     // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
     let redlinedArtifactViewerUrl = '';
     if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
-      const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
       // Correctly pass artifactPath and lang to the PublicReportViewerPage
       redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
     }
@@ -172,9 +175,13 @@ Deno.serve(async (req) => {
       /* ADDED: Styles for redlined artifact */
       .artifact-section { margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
       .artifact-section h3 { color: #0056b3; margin-bottom: 10px; }
-      .artifact-code { background-color: #eee; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
+      .code-block { background-color: #eee; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-word; border: 1px solid #ddd; }
+      .code-block pre { margin: 0; padding: 0; } /* Ensure no extra margin/padding on pre inside code-block */
+      .original-text { color: #555; }
       .redlined-text { color: red; font-weight: bold; }
       .suggested-text { color: green; font-weight: bold; }
+      .finding-id { font-size: 0.9em; color: #777; margin-top: 10px; }
+      .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; } /* Added footer style */
     `;
 
     let htmlContent = `
