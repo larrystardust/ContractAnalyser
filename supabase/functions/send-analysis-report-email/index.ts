@@ -87,6 +87,10 @@ Deno.serve(async (req) => {
           ${reportLink && reportLink !== 'N/A' ? `
             <p>${getTranslatedMessage('email_view_full_report', userPreferredLanguage)}</p>
             <p><a href="${publicReportViewerUrl}" target="_blank">${getTranslatedMessage('email_view_full_report_button', userPreferredLanguage)}</a></p>
+            ${redlinedClauseArtifactPath && performedAdvancedAnalysis ? `
+              <p>${getTranslatedMessage('email_view_redlined_artifact', userPreferredLanguage)}</p>
+              <p><a href="${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}" target="_blank">${getTranslatedMessage('email_view_redlined_artifact_button', userPreferredLanguage)}</a></p>
+            ` : ''}
             <hr/>
             ${reportHtmlContent}
             <hr/>
