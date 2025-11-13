@@ -1778,5 +1778,9 @@
   "no_report_or_artifact_url_provided": "No report or artifact URL provided.",
   "failed_to_load_artifact": "Failed to load artifact.",
   "email_view_redlined_artifact": "View the Redlined Clause Artifact:",
-  "email_view_redlined_artifact_button": "View Redlined Artifact"
+  "email_view_redlined_artifact_button": "View Redlined Artifact",
+
+  "landing_benefits_large_document_analysis_title": "Large Document Analysis",
+  "landing_benefits_large_document_analysis_description": "Analyze extensive contracts up to 250 pages (standard) or 400 pages (well-spaced) in a single pass, ensuring comprehensive review without manual chunking.",
+  "help_large_document_analysis_detail": "ContractAnalyser can process large documents, typically up to 250 pages of standard contracts or 400 pages of well-spaced documents, in a single analysis. This includes both PDF and Word documents."
 }
