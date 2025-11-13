@@ -1771,5 +1771,9 @@
   "no_report_or_artifact_url_provided": "No se proporcionó URL de informe o artefacto.",
   "failed_to_load_artifact": "Error al cargar el artefacto.",
   "email_view_redlined_artifact": "Ver el artefacto de cláusula con marcas de revisión:",
-  "email_view_redlined_artifact_button": "Ver artefacto con marcas de revisión"
+  "email_view_redlined_artifact_button": "Ver artefacto con marcas de revisión",
+
+  "landing_benefits_large_document_analysis_title": "Análisis de Documentos Grandes",
+  "landing_benefits_large_document_analysis_description": "Analice contratos extensos de hasta 250 páginas (estándar) o 400 páginas (bien espaciadas) en una sola pasada, asegurando una revisión exhaustiva sin fragmentación manual.",
+  "help_large_document_analysis_detail": "ContractAnalyser puede procesar documentos grandes, típicamente hasta 250 páginas de contratos estándar o 400 páginas de documentos bien espaciados, en un solo análisis. Esto incluye documentos PDF y Word."
 }
