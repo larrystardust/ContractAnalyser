@@ -1784,5 +1784,8 @@
 
   "landing_benefits_large_document_analysis_title": "Analyse de Grands Documents",
   "landing_benefits_large_document_analysis_description": "Analysez des contrats volumineux jusqu'à 250 pages (standard) ou 400 pages (bien espacées) en une seule passe, garantissant un examen complet sans découpage manuel.",
-  "help_large_document_analysis_detail": "ContractAnalyser peut traiter de grands documents, généralement jusqu'à 250 pages de contrats standard ou 400 pages de documents bien espacés, en une seule analyse. Cela inclut les documents PDF et Word."
+  "help_large_document_analysis_detail": "ContractAnalyser peut traiter de grands documents, généralement jusqu'à 250 pages de contrats standard ou 400 pages de documents bien espacés, en une seule analyse. Cela inclut les documents PDF et Word.",
+
+  "audit_event_type_SCAN_SESSION_CREATED": "Session de numérisation créée",
+  "audit_event_type_SCAN_SESSION_DELETED": "Session de numérisation supprimée"
 }
