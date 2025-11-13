@@ -1763,6 +1763,8 @@
   "category_indemnification": "Indemnification",
   "category_consumer_protection": "Consumer Protection",
   "category_payment_terms": "Payment Terms",
+  "category_force_majeure": "Force Majeure",
+  "category_performance_standards": "Performance Standards",
 
   "jurisdiction_nigeria": "Nigeria",
   "jurisdiction_ie": "Ireland (IE)",
