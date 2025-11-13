@@ -56,6 +56,7 @@ export type Database = {
           liability_cap_summary: string | null
           parties: string[] | null
           performed_advanced_analysis: boolean | null
+          redlined_clause_artifact_path: string | null
           renewal_date: string | null
           report_file_path: string | null
           termination_date: string | null
@@ -77,6 +78,7 @@ export type Database = {
           liability_cap_summary?: string | null
           parties?: string[] | null
           performed_advanced_analysis?: boolean | null
+          redlined_clause_artifact_path?: string | null
           renewal_date?: string | null
           report_file_path?: string | null
           termination_date?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           liability_cap_summary?: string | null
           parties?: string[] | null
           performed_advanced_analysis?: boolean | null
+          redlined_clause_artifact_path?: string | null
           renewal_date?: string | null
           report_file_path?: string | null
           termination_date?: string | null
@@ -177,6 +180,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cached_clause_analysis: {
+        Row: {
+          analysis_type: string
+          cached_result: Json
+          clause_hash: string
+          created_at: string
+          id: string
+          jurisdiction: string[] | null
+          llm_model: string
+        }
+        Insert: {
+          analysis_type: string
+          cached_result: Json
+          clause_hash: string
+          created_at?: string
+          id?: string
+          jurisdiction?: string[] | null
+          llm_model: string
+        }
+        Update: {
+          analysis_type?: string
+          cached_result?: Json
+          clause_hash?: string
+          created_at?: string
+          id?: string
+          jurisdiction?: string[] | null
+          llm_model?: string
+        }
+        Relationships: []
       }
       contracts: {
         Row: {
