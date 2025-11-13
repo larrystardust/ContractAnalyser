@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera, CalendarDays, Search } from 'lucide-react'; // MODIFIED: Added CalendarDays, Search icons
+import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera, CalendarDays, Search, Maximize } from 'lucide-react'; // MODIFIED: Added Maximize icon
 import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
@@ -194,6 +194,7 @@ const LandingPage: React.FC = () => {
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_instant_deployment_title')}**: {t('landing_intro_instant_deployment_description')}</li> {/* MODIFIED */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_universal_compatibility_title')}**: {t('landing_intro_universal_compatibility_description_ocr')}</li> {/* MODIFIED: Updated description */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_global_expertise_title')}**: {t('landing_intro_global_expertise_description')}</li> {/* MODIFIED */}
+                  <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_benefits_large_document_analysis_title')}**: {t('landing_benefits_large_document_analysis_description')}</li> {/* ADDITION: Large Document Analysis in Introduction */}
                   <li><CheckCircle className="inline-block h-5 w-5 mr-2 text-green-300" /> **{t('landing_intro_actionable_output_title')}**: {t('landing_intro_actionable_output_description')}</li> {/* MODIFIED */}
                 </ul>
               </div>
