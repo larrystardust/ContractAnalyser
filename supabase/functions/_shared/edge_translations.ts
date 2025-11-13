@@ -318,6 +318,9 @@ export const edgeTranslations = {
 
     email_view_redlined_artifact: "View the Redlined Clause Artifact:",
     email_view_redlined_artifact_button: "View Redlined Artifact",
+
+    audit_event_type_SCAN_SESSION_CREATED: "Scan Session Created",
+    audit_event_type_SCAN_SESSION_DELETED: "Scan Session Deleted",
       
   },
   es: {
@@ -639,6 +642,9 @@ export const edgeTranslations = {
 
     email_view_redlined_artifact: "Ver el artefacto de cláusula con marcas de revisión:",
     email_view_redlined_artifact_button: "Ver artefacto con marcas de revisión",
+
+    audit_event_type_SCAN_SESSION_CREATED: "Sesión de escaneo creada",
+    audit_event_type_SCAN_SESSION_DELETED: "Sesión de escaneo eliminada",
   },
   fr: {
     report_title: "Rapport d'Analyse de Contrat",
@@ -960,6 +966,9 @@ export const edgeTranslations = {
     email_view_redlined_artifact: "Voir l'artefact de clause annotée :",
     email_view_redlined_artifact_button: "Voir l'artefact annoté",
 
+    audit_event_type_SCAN_SESSION_CREATED: "Session de numérisation créée",
+    audit_event_type_SCAN_SESSION_DELETED: "Session de numérisation supprimée",
+
   },
   ar: {
     report_title: "تقرير تحليل العقد",
@@ -1280,6 +1289,9 @@ export const edgeTranslations = {
 
     email_view_redlined_artifact: "عرض أثر البند المعدل:",
     email_view_redlined_artifact_button: "عرض أثر البند المعدل",
+
+    audit_event_type_SCAN_SESSION_CREATED: "تم إنشاء جلسة المسح",
+    audit_event_type_SCAN_SESSION_DELETED: "تم حذف جلسة المسح",
   }
 };
 
