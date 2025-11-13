@@ -704,6 +704,20 @@ CRITICAL JSON VALIDATION:
 
       // Phase 2: Claude Sonnet 4.5 as "Brain" for deep legal analysis
       await supabase.from('contracts').update({ processing_progress: 50 }).eq('id', contractId);
+      
+      // OPTIMIZATION: Claude Sonnet 4.5 can handle up to 200K tokens (~800K characters)
+      // We'll use a limit of 600K characters to leave room for metadata and system prompt
+      const MAX_CONTRACT_LENGTH = 600000; // Maximum for Claude Sonnet 4.5
+      let contractTextForClaude = processedContractText;
+      let wasContractTruncated = false;
+      
+      if (processedContractText.length > MAX_CONTRACT_LENGTH) {
+        console.warn(`contract-analyzer: Contract text extremely large (${processedContractText.length} chars). Truncating to ${MAX_CONTRACT_LENGTH} chars.`);
+        contractTextForClaude = processedContractText.substring(0, MAX_CONTRACT_LENGTH) + "\n\n[... Contract truncated due to extreme length. Analysis based on first portion ...]";
+        wasContractTruncated = true;
+      } else {
+        console.log(`contract-analyzer: Contract text length: ${processedContractText.length} chars (within Claude's capacity).`);
+      }
 
       // ENHANCED: Ultra-strict Claude prompt with explicit JSON formatting rules
       const claudeSystemPrompt = `You are a highly sophisticated legal contract analysis AI. You must analyze the provided contract and output ONLY valid, parseable JSON.
