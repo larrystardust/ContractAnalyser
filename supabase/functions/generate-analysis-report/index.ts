@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
 
     // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
     let redlinedArtifactViewerUrl = '';
-    if (finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.redlined_clause_artifact_path) {
+    if (finalAnalysisResult.redlined_clause_artifact_path) { // MODIFIED: Removed performed_advanced_analysis check
       // Correctly pass artifactPath and lang to the PublicReportViewerPage
       redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
     }
