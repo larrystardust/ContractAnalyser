@@ -1774,5 +1774,9 @@
   "no_report_or_artifact_url_provided": "لم يتم توفير رابط التقرير أو الأثر.",
   "failed_to_load_artifact": "فشل تحميل الأثر.",
   "email_view_redlined_artifact": "عرض أثر البند المعدل:",
-  "email_view_redlined_artifact_button": "عرض أثر البند المعدل"
+  "email_view_redlined_artifact_button": "عرض أثر البند المعدل",
+
+  "landing_benefits_large_document_analysis_title": "تحليل المستندات الكبيرة",
+  "landing_benefits_large_document_analysis_description": "حلل العقود الكبيرة التي تصل إلى 250 صفحة (عادية) أو 400 صفحة (متباعدة جيدًا) في تمريرة واحدة، مما يضمن مراجعة شاملة دون تقسيم يدوي.",
+  "help_large_document_analysis_detail": "يمكن لـ ContractAnalyser معالجة المستندات الكبيرة، عادةً ما يصل إلى 250 صفحة من العقود القياسية أو 400 صفحة من المستندات المتباعدة جيدًا، في تحليل واحد. يشمل ذلك مستندات PDF و Word."
 }
