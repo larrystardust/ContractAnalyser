@@ -1778,5 +1778,8 @@
 
   "landing_benefits_large_document_analysis_title": "تحليل المستندات الكبيرة",
   "landing_benefits_large_document_analysis_description": "حلل العقود الكبيرة التي تصل إلى 250 صفحة (عادية) أو 400 صفحة (متباعدة جيدًا) في تمريرة واحدة، مما يضمن مراجعة شاملة دون تقسيم يدوي.",
-  "help_large_document_analysis_detail": "يمكن لـ ContractAnalyser معالجة المستندات الكبيرة، عادةً ما يصل إلى 250 صفحة من العقود القياسية أو 400 صفحة من المستندات المتباعدة جيدًا، في تحليل واحد. يشمل ذلك مستندات PDF و Word."
+  "help_large_document_analysis_detail": "يمكن لـ ContractAnalyser معالجة المستندات الكبيرة، عادةً ما يصل إلى 250 صفحة من العقود القياسية أو 400 صفحة من المستندات المتباعدة جيدًا، في تحليل واحد. يشمل ذلك مستندات PDF و Word.",
+
+  "audit_event_type_SCAN_SESSION_CREATED": "تم إنشاء جلسة المسح",
+  "audit_event_type_SCAN_SESSION_DELETED": "تم حذف جلسة المسح"
 }
