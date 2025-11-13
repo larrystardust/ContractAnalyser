@@ -282,6 +282,13 @@ const LandingPage: React.FC = () => {
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
+                <Maximize className="h-8 w-8 text-red-600 flex-shrink-0" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_large_document_analysis_title')}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_large_document_analysis_description')}</p>
+                </div>
+              </div>
+              <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
                 <BarChart className="h-8 w-8 text-red-600 flex-shrink-0" />
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_advanced_feature_reports_analytics_title')}</h3>
