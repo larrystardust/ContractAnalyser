@@ -1778,6 +1778,8 @@
   "landing_benefits_large_document_analysis_title": "Análisis de Documentos Grandes",
   "landing_benefits_large_document_analysis_description": "Analice contratos extensos de hasta 250 páginas (estándar) o 400 páginas (bien espaciadas) en una sola pasada, asegurando una revisión exhaustiva sin fragmentación manual.",
   "help_large_document_analysis_detail": "ContractAnalyser puede procesar documentos grandes, típicamente hasta 250 páginas de contratos estándar o 400 páginas de documentos bien espaciados, en un solo análisis. Esto incluye documentos PDF y Word.",
+  "landing_advanced_feature_redlined_artifacts_title": "Artefactos de Cláusulas Tachadas",
+  "landing_advanced_feature_redlined_artifacts_description": "Genere automáticamente versiones tachadas de las cláusulas, resaltando los cambios y sugiriendo revisiones para la negociación.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "Sesión de escaneo creada",
   "audit_event_type_SCAN_SESSION_DELETED": "Sesión de escaneo eliminada"
