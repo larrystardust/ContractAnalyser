@@ -217,6 +217,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('data_protection_impact', outputLanguage)}</h2>
                   <p>${finalAnalysisResult.data_protection_impact}</p>
               </div>
+              ` : ''}
 
               ${finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section">
@@ -231,8 +232,9 @@ Deno.serve(async (req) => {
                   <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
                   <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div>
+              ` : ''}
 
-              ${redlinedArtifactViewerUrl ? `
+              ${finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section artifact-section">
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
