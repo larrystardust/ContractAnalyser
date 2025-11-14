@@ -183,7 +183,7 @@ const ReportsPage: React.FC = () => {
                       return translatedValue;
                     })()}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900">()</p>
+                  <p className="text-3xl font-bold text-gray-900">{count}</p>
                 </CardBody>
               </Card>
             ))}
