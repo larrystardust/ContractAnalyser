@@ -219,7 +219,6 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
                   <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>
