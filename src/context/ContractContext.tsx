@@ -82,7 +82,7 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setErrorContracts(error);
     } else {
       const fetchedContracts: Contract[] = data.map((dbContract: any) => {
-        console.log('ContractContext: Raw dbContract from Supabase:', dbContract); // ADDED LOG
+        // console.log('ContractContext: Raw dbContract from Supabase:', dbContract); // ADDED LOG
         const sortedAnalysisResults = dbContract.analysis_results
           ? [...dbContract.analysis_results].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           : [];
@@ -90,10 +90,10 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const analysisResultData = sortedAnalysisResults.length > 0
           ? sortedAnalysisResults[0]
           : undefined;
-        console.log('ContractContext: Extracted analysisResultData (latest):', analysisResultData); // ADDED LOG
-        console.log('ContractContext: Final analysisResult object being constructed:', {
-          performedAdvancedAnalysis: analysisResultData?.performed_advanced_analysis,
-          redlinedClauseArtifactPath: analysisResultData?.redlined_clause_artifact_path,
+        // console.log('ContractContext: Extracted analysisResultData (latest):', analysisResultData); // ADDED LOG
+        // console.log('ContractContext: Final analysisResult object being constructed:', {
+          // performedAdvancedAnalysis: analysisResultData?.performed_advanced_analysis,
+          // redlinedClauseArtifactPath: analysisResultData?.redlined_clause_artifact_path,
         }); // ADDED LOG
       
         return {
@@ -276,15 +276,15 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prevContracts,
       ]);
 
-      console.log('Invoking contract-analyzer with payload:');
-      console.log('  contract_id:', data.id);
-      console.log('  contract_text (length):', newContractData.contractText.length);
-      console.log('  image_datas (present):', newContractData.imageDatas && newContractData.imageDatas.length > 0);
-      console.log('  image_datas (count):', newContractData.imageDatas?.length);
-      console.log('  perform_ocr_flag:', newContractData.performOcr);
-      console.log('  perform_analysis:', newContractData.performAnalysis);
-      console.log('  perform_advanced_analysis:', newContractData.performAdvancedAnalysis); // ADDED: Log new flag
-      console.log('  credit_cost:', newContractData.creditCost);
+      // console.log('Invoking contract-analyzer with payload:');
+      // console.log('  contract_id:', data.id);
+      // console.log('  contract_text (length):', newContractData.contractText.length);
+      // console.log('  image_datas (present):', newContractData.imageDatas && newContractData.imageDatas.length > 0);
+      // console.log('  image_datas (count):', newContractData.imageDatas?.length);
+      // console.log('  perform_ocr_flag:', newContractData.performOcr);
+      // console.log('  perform_analysis:', newContractData.performAnalysis);
+      // console.log('  perform_advanced_analysis:', newContractData.performAdvancedAnalysis); // ADDED: Log new flag
+      // console.log('  credit_cost:', newContractData.creditCost);
 
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('contract-analyzer', {
         body: {
