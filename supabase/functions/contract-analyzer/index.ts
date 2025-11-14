@@ -662,6 +662,9 @@ Return your findings strictly as a valid JSON object with the following structur
   ]
 }
 
+JURISDICTION FOCUS:
+Primary focus on the specified following jurisdictions: ${userSelectedJurisdictions.join(', ')}. And jurisdictions mentioned within the contract.
+
 NOTES:
 - Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use 'not_specified'.
 - Ensure the JSON is valid and strictly adheres to the specified structure.
@@ -1071,7 +1074,7 @@ OUTPUT LANGUAGE INSTRUCTIONS:
 All text fields within the JSON output (executiveSummary, dataProtectionImpact, title, description, recommendations, keyFindings, applicableLaws, clauseReference) MUST be generated in ${outputLanguage}. If translation is necessary, perform it accurately.
 
 JURISDICTION FOCUS:
-The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}. Prioritize findings and applicable laws relevant to these jurisdictions. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions.
+The user has specified the following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}. Prioritize findings and applicable laws relevant to these jurisdictions and the jurisdictions mentioned in the contract. If a finding is relevant to multiple jurisdictions, you may include it, but ensure the primary focus remains on the user's selected jurisdictions and the jurisdictions mentioned in the contract.
 `;
 
       const gpt4oCompletion = await openai.chat.completions.create({
