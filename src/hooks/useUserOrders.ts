@@ -17,9 +17,9 @@ export function useUserOrders() {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const fetchOrders = useCallback(async (currentCustomerId: string | null) => {
-    console.log('useUserOrders: fetchOrders called with customerId:', currentCustomerId); // ADDED LOG
+    // console.log('useUserOrders: fetchOrders called with customerId:', currentCustomerId); // ADDED LOG
     if (!session?.user?.id || !currentCustomerId) {
-      console.log('useUserOrders: No session user ID or currentCustomerId. Skipping order fetch.'); // ADDED LOG
+      // console.log('useUserOrders: No session user ID or currentCustomerId. Skipping order fetch.'); // ADDED LOG
       setOrders([]);
       setLoading(false);
       return;
@@ -40,7 +40,7 @@ export function useUserOrders() {
         throw ordersError;
       }
 
-      console.log('useUserOrders: Fetched orders for customerId', currentCustomerId, ':', ordersData); // ADDED LOG
+      // console.log('useUserOrders: Fetched orders for customerId', currentCustomerId, ':', ordersData); // ADDED LOG
       setOrders(ordersData || []);
     } catch (err: any) {
       console.error('useUserOrders: Error fetching user orders:', err);
@@ -52,7 +52,7 @@ export function useUserOrders() {
 
   useEffect(() => {
     async function getCustomerIdAndInitialOrders() {
-      console.log('useUserOrders: getCustomerIdAndInitialOrders called. Session user ID:', session?.user?.id); // ADDED LOG
+      // console.log('useUserOrders: getCustomerIdAndInitialOrders called. Session user ID:', session?.user?.id); // ADDED LOG
       if (!session?.user?.id) {
         setCustomerId(null);
         setOrders([]);
@@ -75,18 +75,18 @@ export function useUserOrders() {
         }
 
         const fetchedCustomerId = customerData?.customer_id || null;
-        console.log('useUserOrders: Fetched customerId for user', session.user.id, ':', fetchedCustomerId); // ADDED LOG
+        // console.log('useUserOrders: Fetched customerId for user', session.user.id, ':', fetchedCustomerId); // ADDED LOG
         setCustomerId(fetchedCustomerId);
 
         if (fetchedCustomerId) {
           await fetchOrders(fetchedCustomerId);
         } else {
-          console.log('useUserOrders: No customerId found for user. Setting orders to empty.'); // ADDED LOG
+          // console.log('useUserOrders: No customerId found for user. Setting orders to empty.'); // ADDED LOG
           setOrders([]);
           setLoading(false);
         }
       } catch (err: any) {
-        console.error('useUserOrders: Error fetching customer ID or initial orders:', err);
+        // console.error('useUserOrders: Error fetching customer ID or initial orders:', err);
         setError(err);
         setLoading(false);
       }
@@ -97,7 +97,7 @@ export function useUserOrders() {
 
   useEffect(() => {
     if (customerId) {
-      console.log('useUserOrders: Subscribing to realtime changes for customerId:', customerId); // ADDED LOG
+      // console.log('useUserOrders: Subscribing to realtime changes for customerId:', customerId); // ADDED LOG
       const newChannel = supabase
         .channel(`stripe_orders_for_customer:${customerId}`)
         .on(
@@ -109,7 +109,7 @@ export function useUserOrders() {
             filter: `customer_id=eq.${customerId}`,
           },
           (payload) => {
-            console.log('useUserOrders: Realtime update for stripe_orders received:', payload); // ADDED LOG
+            // console.log('useUserOrders: Realtime update for stripe_orders received:', payload); // ADDED LOG
             fetchOrders(customerId);
           }
         )
@@ -120,7 +120,7 @@ export function useUserOrders() {
     return () => {
       const currentChannel = channelRef.current;
       if (currentChannel && (currentChannel.state === 'joined' || currentChannel.state === 'joining')) {
-        console.log('useUserOrders: Unsubscribing from realtime channel for customerId:', customerId); // ADDED LOG
+        // console.log('useUserOrders: Unsubscribing from realtime channel for customerId:', customerId); // ADDED LOG
         supabase.removeChannel(currentChannel);
       }
       channelRef.current = null;
@@ -131,7 +131,7 @@ export function useUserOrders() {
     const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
     const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
 
-    console.log('useUserOrders: hasAvailableSingleUse called. SingleUsePriceId:', singleUsePriceId); // ADDED LOG
+    // console.log('useUserOrders: hasAvailableSingleUse called. SingleUsePriceId:', singleUsePriceId); // ADDED LOG
 
     if (!singleUsePriceId) {
       console.warn('useUserOrders: Single-use product price ID not found in stripe-config.ts');
@@ -145,7 +145,7 @@ export function useUserOrders() {
       (order.credits_remaining || 0) > 0 && // Check credits_remaining
       order.price_id === singleUsePriceId
     );
-    console.log('useUserOrders: hasAvailableSingleUse result:', result); // ADDED LOG
+    // console.log('useUserOrders: hasAvailableSingleUse result:', result); // ADDED LOG
     return result;
   };
 
@@ -165,7 +165,7 @@ export function useUserOrders() {
       (order.credits_remaining || 0) > 0 && // Check credits_remaining
       order.price_id === singleUsePriceId
     );
-    console.log('useUserOrders: getAvailableSingleUseOrderId result:', availableOrder ? availableOrder.id : null); // ADDED LOG
+    // console.log('useUserOrders: getAvailableSingleUseOrderId result:', availableOrder ? availableOrder.id : null); // ADDED LOG
     return availableOrder ? availableOrder.id : null;
   };
 
@@ -174,7 +174,7 @@ export function useUserOrders() {
     const singleUseProduct = stripeProducts.find(p => p.mode === 'payment');
     const singleUsePriceId = singleUseProduct?.pricing.one_time?.priceId;
 
-    console.log('useUserOrders: getTotalSingleUseCredits called. SingleUsePriceId:', singleUsePriceId); // ADDED LOG
+    // console.log('useUserOrders: getTotalSingleUseCredits called. SingleUsePriceId:', singleUsePriceId); // ADDED LOG
 
     if (!singleUsePriceId) {
       console.warn('useUserOrders: Single-use product price ID not found in stripe-config.ts');
@@ -187,14 +187,14 @@ export function useUserOrders() {
       }
       return total;
     }, 0);
-    console.log('useUserOrders: Total available single-use credits:', totalCredits); // ADDED LOG
+    // console.log('useUserOrders: Total available single-use credits:', totalCredits); // ADDED LOG
     return totalCredits;
   };
 
   // ADDED: New function to check if user has enough credits for a specific amount
   const hasEnoughCredits = useCallback((requiredCredits: number): boolean => {
     const result = getTotalSingleUseCredits() >= requiredCredits;
-    console.log('useUserOrders: hasEnoughCredits called. Required:', requiredCredits, 'Available:', getTotalSingleUseCredits(), 'Result:', result); // ADDED LOG
+    // console.log('useUserOrders: hasEnoughCredits called. Required:', requiredCredits, 'Available:', getTotalSingleUseCredits(), 'Result:', result); // ADDED LOG
     return result;
   }, [getTotalSingleUseCredits]);
 
