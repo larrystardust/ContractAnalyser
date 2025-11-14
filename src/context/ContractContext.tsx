@@ -95,6 +95,9 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // performedAdvancedAnalysis: analysisResultData?.performed_advanced_analysis,
           // redlinedClauseArtifactPath: analysisResultData?.redlined_clause_artifact_path,
         // }); // ADDED LOG
+
+        // Define valid risk levels for validation
+        const validRiskLevels: RiskLevel[] = ['high', 'medium', 'low', 'none'];
       
         return {
           id: dbContract.id,
@@ -125,7 +128,8 @@ export const ContractProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               analysis_result_id: dbFinding.analysis_result_id,
               title: dbFinding.title,
               description: dbFinding.description,
-              riskLevel: dbFinding.risk_level,
+              // MODIFIED: Validate dbFinding.risk_level
+              riskLevel: validRiskLevels.includes(dbFinding.risk_level) ? dbFinding.risk_level : 'none',
               jurisdiction: dbFinding.jurisdiction,
               category: dbFinding.category,
               recommendations: dbFinding.recommendations,
