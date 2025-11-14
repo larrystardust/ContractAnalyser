@@ -217,6 +217,7 @@ Deno.serve(async (req) => {
                   <h2>${getTranslatedMessage('data_protection_impact', outputLanguage)}</h2>
                   <p>${finalAnalysisResult.data_protection_impact}</p>
               </div>
+              ` : ''}
 
               ${finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section">
