@@ -329,8 +329,8 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
     }
     // For AdvancedSubscription, currentCreditCost remains 0 as everything is included
 
-    console.log(`ContractUpload: DEBUG - Final currentCreditCost calculated: ${currentCreditCost}`);
-    console.log(`ContractUpload: DEBUG - isAdvancedSubscription: ${isAdvancedSubscription}, isBasicSubscription: ${isBasicSubscription}, performAdvancedAnalysis: ${performAdvancedAnalysis}`);
+    // console.log(`ContractUpload: DEBUG - Final currentCreditCost calculated: ${currentCreditCost}`);
+    // console.log(`ContractUpload: DEBUG - isAdvancedSubscription: ${isAdvancedSubscription}, isBasicSubscription: ${isBasicSubscription}, performAdvancedAnalysis: ${performAdvancedAnalysis}`);
 
 
     // MODIFIED: Update credit checks for submission
@@ -585,7 +585,7 @@ const ContractUpload: React.FC<ContractUploadProps> = ({
 
   // Debugging log for the translation key
   const debugTranslation = t('perform_advanced_analysis_with_credits', { cost: advancedAnalysisAddonCost, count: availableCredits });
-  console.log('DEBUG: perform_advanced_analysis_with_credits translation output:', debugTranslation);
+  // console.log('DEBUG: perform_advanced_analysis_with_credits translation output:', debugTranslation);
 
 
   return (
