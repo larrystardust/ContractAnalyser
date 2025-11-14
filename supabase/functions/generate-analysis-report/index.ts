@@ -230,8 +230,7 @@ Deno.serve(async (req) => {
                   <p><strong>${getTranslatedMessage('liability_cap_summary', outputLanguage)}:</strong> ${finalAnalysisResult.liability_cap_summary}</p>
                   <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
                   <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
-              </div>
-              ` : ''}
+              </div
 
               ${finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section artifact-section">
