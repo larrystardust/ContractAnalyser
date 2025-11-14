@@ -1785,6 +1785,8 @@
   "landing_benefits_large_document_analysis_title": "Large Document Analysis",
   "landing_benefits_large_document_analysis_description": "Analyze extensive contracts up to 250 pages (standard) or 400 pages (well-spaced) in a single pass, ensuring comprehensive review without manual chunking.",
   "help_large_document_analysis_detail": "ContractAnalyser can process large documents, typically up to 250 pages of standard contracts or 400 pages of well-spaced documents, in a single analysis. This includes both PDF and Word documents.",
+  "landing_advanced_feature_redlined_artifacts_title": "Redlined Clause Artifacts",
+  "landing_advanced_feature_redlined_artifacts_description": "Automatically generate redlined versions of clauses, highlighting changes and suggesting revisions for negotiation.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "Scan Session Created",
   "audit_event_type_SCAN_SESSION_DELETED": "Scan Session Deleted"
