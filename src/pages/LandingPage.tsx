@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera, CalendarDays, Search, Maximize } from 'lucide-react'; // MODIFIED: Added Maximize icon
+import { Scale, AlertTriangle, CheckCircle, Lightbulb, Upload, FileText, BarChart, DollarSign, Users, Briefcase, Building, Handshake, ShieldCheck, Clock, Zap, Camera, CalendarDays, Search, Maximize, GitCompare } from 'lucide-react'; // MODIFIED: Added GitCompare icon
 import Button from '../components/ui/Button';
 import StructuredData from '../components/StructuredData';
 import { useTranslation } from 'react-i18next';
@@ -286,6 +286,13 @@ const LandingPage: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_benefits_large_document_analysis_title')}</h3>
                   <p className="text-gray-600 dark:text-gray-400">{t('landing_benefits_large_document_analysis_description')}</p>
+                </div>
+              </div>
+              <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
+                <GitCompare className="h-8 w-8 text-red-600 flex-shrink-0" />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('landing_advanced_feature_redlined_artifacts_title')}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">{t('landing_advanced_feature_redlined_artifacts_description')}</p>
                 </div>
               </div>
               <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md flex items-start space-x-4">
