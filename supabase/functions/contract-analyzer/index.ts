@@ -1044,17 +1044,6 @@ Return your findings strictly as a valid JSON object with the following structur
       "keyFindings": ["...", "..."],
       "riskLevel": "high"
     }
-  },
-  "effectiveDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "terminationDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "renewalDate": "YYYY-MM-DD or '${notSpecifiedTranslatedString}'",
-  "contractType": "...",
-  "contractValue": "...",
-  "parties": ["...", "..."],
-  "liabilityCapSummary": "...",
-  "indemnificationClauseSummary": "...",
-  "confidentialityObligationsSummary": "..."
-}
 
 NOTES:  
 - Ensure the JSON is valid and strictly adheres to the specified structure.  
