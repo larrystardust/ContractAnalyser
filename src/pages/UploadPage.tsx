@@ -53,7 +53,7 @@ const UploadPage: React.FC = () => {
   // REMOVED: States for contract naming modal from UploadPage
 
   useEffect(() => {
-    console.log('UploadPage: isUploading state changed to:', isUploading);
+    // console.log('UploadPage: isUploading state changed to:', isUploading);
   }, [isUploading]);
 
   // Effect for mobile scan session management
@@ -79,7 +79,7 @@ const UploadPage: React.FC = () => {
 
     newChannel
       .on('broadcast', { event: 'mobile_ready' }, async (payload) => { // Desktop now LISTENS for mobile_ready
-        console.log('UploadPage: Mobile ready signal received:', payload);
+        // console.log('UploadPage: Mobile ready signal received:', payload);
         setMobileScanStatus('connected');
         // Once mobile is ready, desktop sends its ready signal
         await newChannel.send({
@@ -87,11 +87,11 @@ const UploadPage: React.FC = () => {
           event: 'desktop_ready',
           payload: { userId: session.user.id },
         });
-        console.log('UploadPage: Sent desktop_ready signal in response to mobile_ready.');
+        // console.log('UploadPage: Sent desktop_ready signal in response to mobile_ready.');
       })
       .on('broadcast', { event: 'image_data' }, async (payload: { payload: ScanSessionMessage }) => {
         const message = payload.payload;
-        console.log('UploadPage: Image data message received:', message);
+        // console.log('UploadPage: Image data message received:', message);
 
         if (message.type === 'image_captured' && message.payload?.imageUrl) {
           try {
@@ -131,7 +131,7 @@ const UploadPage: React.FC = () => {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('UploadPage: Subscribed to desktop scan session channel. Waiting for mobile_ready...');
+          // console.log('UploadPage: Subscribed to desktop scan session channel. Waiting for mobile_ready...');
           // Desktop does NOT send desktop_ready immediately. It waits for mobile_ready.
         } else if (status === 'CHANNEL_ERROR') {
           setMobileScanStatus('error');
@@ -266,7 +266,7 @@ const UploadPage: React.FC = () => {
         scanSessionId: data.scanSessionId,
         authToken: data.auth_token,
       }));
-      console.log('UploadPage: Context stored in localStorage for mobile auth.');
+      // console.log('UploadPage: Context stored in localStorage for mobile auth.');
 
       setShowQrCode(true); // Show QR code once session is created
     } catch (err: any) {
