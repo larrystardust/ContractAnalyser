@@ -144,28 +144,28 @@ const ReportsPage: React.FC = () => {
               <CardBody className="text-center">
                 <FileText className="h-10 w-10 text-blue-600 mx-auto mb-3" />
                 <p className="text-sm text-gray-600">{t('total_contracts')}</p>
-                <p className="text-3xl font-bold text-gray-900">{totalContracts}</p>
+                <p className="text-3xl font-bold text-gray-900">{String(totalContracts)}</p> {/* MODIFIED */}
               </CardBody>
             </Card>
             <Card>
               <CardBody className="text-center">
                 <CheckCircle className="h-10 w-10 text-green-600 mx-auto mb-3" />
                 <p className="text-sm text-gray-600">{t('completed_analyses')}</p>
-                <p className="text-3xl font-bold text-gray-900">{completedContracts}</p>
+                <p className="text-3xl font-bold text-gray-900">{String(completedContracts)}</p> {/* MODIFIED */}
               </CardBody>
             </Card>
             <Card>
               <CardBody className="text-center">
                 <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-3" />
                 <p className="text-sm text-gray-600">{t('analyzing')}</p>
-                <p className="text-3xl font-bold text-gray-900">{analyzingContracts}</p>
+                <p className="text-3xl font-bold text-gray-900">{String(analyzingContracts)}</p> {/* MODIFIED */}
               </CardBody>
             </Card>
             <Card>
               <CardBody className="text-center">
                 <Clock className="h-10 w-10 text-gray-500 mx-auto mb-3" />
                 <p className="text-sm text-gray-600">{t('pending')}</p>
-                <p className="text-3xl font-bold text-gray-900">{pendingContracts}</p>
+                <p className="text-3xl font-bold text-gray-900">{String(pendingContracts)}</p> {/* MODIFIED */}
               </CardBody>
             </Card>
           </div>
@@ -183,7 +183,7 @@ const ReportsPage: React.FC = () => {
                       return translatedValue;
                     })()}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900">{count}</p>
+                  <p className="text-3xl font-bold text-gray-900">{String(count)}</p> {/* MODIFIED */}
                 </CardBody>
               </Card>
             ))}
