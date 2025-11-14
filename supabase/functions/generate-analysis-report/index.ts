@@ -219,7 +219,7 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${finalAnalysisResult.performed_advanced_analysis && finalAnalysisResult.advanced_analysis_details  ? `
+              ${finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section">
                   <h2>${getTranslatedMessage('advanced_analysis_details', outputLanguage)}</h2>
                   <p><strong>${getTranslatedMessage('effective_date', outputLanguage)}:</strong> ${finalAnalysisResult.effective_date}</p>
@@ -234,15 +234,13 @@ Deno.serve(async (req) => {
               </div>
               ` : ''}
 
-              ${finalAnalysisResult.redlined_clause_artifact_path ? `
               <div class="section artifact-section">
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
                   <p>${getTranslatedMessage('redlined_clause_artifact_description_report', outputLanguage)}</p>
                   <p><a href="${redlinedArtifactViewerUrl}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: underline;">${getTranslatedMessage('view_artifact', outputLanguage)}</a></p>
               </div>
-              ` : ''}
-
+          
               <div class="section">
                   <h2>${getTranslatedMessage('jurisdiction_summaries', outputLanguage)}</h2>
                   ${Object.keys(finalAnalysisResult.jurisdiction_summaries).length > 0 ?
