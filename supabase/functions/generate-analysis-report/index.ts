@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
                   <p><strong>${getTranslatedMessage('indemnification_clause_summary', outputLanguage)}:</strong> ${finalAnalysisResult.indemnification_clause_summary}</p>
                   <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div>
-              ` : ''}
+              `}
 
               ${redlinedArtifactViewerUrl ? `
               <div class="section artifact-section">
