@@ -788,13 +788,17 @@ REQUIRED JSON STRUCTURE (output this exact structure):
   "liabilityCapSummary": "Summary of liability caps",
   "indemnificationClauseSummary": "Summary of indemnification",
   "confidentialityObligationsSummary": "Summary of confidentiality",
-  "redlinedClauseArtifact": {
-    "originalClause": "original text with escaped quotes",
-    "redlinedVersion": "redlined text with escaped quotes",
-    "suggestedRevision": "suggested text with escaped quotes",
-    "findingId": "finding reference"
-  }
+  "redlinedClauseArtifacts": [ // MODIFIED: Changed to array and plural name
+    {
+      "originalClause": "original text with escaped quotes",
+      "redlinedVersion": "redlined text with escaped quotes",
+      "suggestedRevision": "suggested text with escaped quotes",
+      "findingId": "finding reference"
+    }
+  ]
 }
+
+NOTE: For "redlinedClauseArtifacts", generate an array containing the 2-3 most critical redlined clauses.
 
 VALIDATION CHECKLIST BEFORE OUTPUT:
 ✓ No text outside the JSON object
