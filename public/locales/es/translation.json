@@ -1726,6 +1726,7 @@
   "redlined_version": "Versión Marcada",
   "suggested_revision": "Revisión Sugerida",
   "download_artifact": "Descargar Artefacto",
+  "download_all_artifacts": "Descargar Todos los Artefactos",
   "failed_to_load_redlined_clause": "Error al cargar el artefacto de cláusula marcada: {{message}}",
   "redlined_clause_download_started": "Descarga de la cláusula marcada iniciada.",
   "failed_to_download_redlined_clause": "Error al descargar el artefacto de cláusula marcada: {{message}}",
