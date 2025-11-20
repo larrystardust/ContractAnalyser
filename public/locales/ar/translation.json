@@ -1729,6 +1729,7 @@
   "redlined_version": "النسخة المخططة",
   "suggested_revision": "المراجعة المقترحة",
   "download_artifact": "تنزيل التحفة",
+  "download_all_artifacts": "تنزيل جميع المخرجات",
   "failed_to_load_redlined_clause": "فشل تحميل تحفة البند المخطط: {{message}}",
   "redlined_clause_download_started": "بدأ تنزيل البند المخطط.",
   "failed_to_download_redlined_clause": "فشل تنزيل تحفة البند المخطط: {{message}}",
