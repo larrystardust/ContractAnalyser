@@ -205,6 +205,7 @@ function safeJsonParse(jsonString: string, context: string = 'unknown', userPref
       indemnificationClauseSummary: getTranslatedMessage('not_specified', userPreferredLanguage),
       confidentialityObligationsSummary: getTranslatedMessage('not_specified', userPreferredLanguage),
       performedAdvancedAnalysis: false,
+      redlinedClauseArtifacts: [], // Ensure this is an empty array for fallback
     };
   }
 }
@@ -945,7 +946,8 @@ JSON STRUCTURE (output this exact structure):
   "parties": ["Party 1", "Party 2"],
   "liabilityCapSummary": "Summary",
   "indemnificationClauseSummary": "Summary",
-  "confidentialityObligationsSummary": "Summary"
+  "confidentialityObligationsSummary": "Summary",
+  "redlinedClauseArtifacts": [] // Ensure fallback includes this
 }
 
 Output language: ${outputLanguage}
@@ -1166,6 +1168,20 @@ The user has specified the following jurisdictions for this analysis: ${userSele
       if (analysisData.liabilityCapSummary) analysisData.liabilityCapSummary = await translateText(analysisData.liabilityCapSummary, outputLanguage);
       if (analysisData.indemnificationClauseSummary) analysisData.indemnificationClauseSummary = await translateText(analysisData.indemnificationClauseSummary, outputLanguage);
       if (analysisData.confidentialityObligationsSummary) analysisData.confidentialityObligationsSummary = await translateText(analysisData.confidentialityObligationsSummary, outputLanguage);
+
+      // MODIFIED: Translate redlinedClauseArtifacts if present
+      if (Array.isArray(analysisData.redlinedClauseArtifacts)) {
+        for (let i = 0; i < analysisData.redlinedClauseArtifacts.length; i++) {
+          let artifact = analysisData.redlinedClauseArtifacts[i];
+          if (artifact && typeof artifact === 'object') {
+            artifact = { ...artifact };
+            if (artifact.originalClause) artifact.originalClause = await translateText(artifact.originalClause, outputLanguage);
+            if (artifact.redlinedVersion) artifact.redlinedVersion = await translateText(artifact.redlinedVersion, outputLanguage);
+            if (artifact.suggestedRevision) artifact.suggestedRevision = await translateText(artifact.suggestedRevision, outputLanguage);
+            analysisData.redlinedClauseArtifacts[i] = artifact;
+          }
+        }
+      }
     }
 
     const executiveSummary = typeof analysisData.executiveSummary === 'string' ? analysisData.executiveSummary : getTranslatedMessage('no_executive_summary_provided', outputLanguage);
@@ -1186,11 +1202,11 @@ The user has specified the following jurisdictions for this analysis: ${userSele
     const processedIndemnificationClauseSummary = analysisData.indemnificationClauseSummary || notSpecifiedTranslatedString;
     const processedConfidentialityObligationsSummary = analysisData.confidentialityObligationsSummary || notSpecifiedTranslatedString;
 
-    // Process and store artifacts
+    // MODIFIED: Process and store redlinedClauseArtifacts (plural)
     let redlinedClauseArtifactPath: string | null = null;
-    if (performAdvancedAnalysis && analysisData.redlinedClauseArtifact && analysisData.redlinedClauseArtifact.redlinedVersion) {
-      const artifactContent = JSON.stringify(analysisData.redlinedClauseArtifact, null, 2);
-      const artifactFileName = `redlined-clause-${contractId}-${Date.now()}.json`;
+    if (performAdvancedAnalysis && Array.isArray(analysisData.redlinedClauseArtifacts) && analysisData.redlinedClauseArtifacts.length > 0) {
+      const artifactContent = JSON.stringify(analysisData.redlinedClauseArtifacts, null, 2); // Stringify the entire array
+      const artifactFileName = `redlined-clauses-${contractId}-${Date.now()}.json`; // Changed filename to plural
       const artifactFilePath = `${userId}/${contractId}/${artifactFileName}`;
 
       const { error: uploadArtifactError } = await supabase.storage
@@ -1201,7 +1217,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
         });
 
       if (uploadArtifactError) {
-        console.error('contract-analyzer: Error uploading redlined clause artifact:', uploadArtifactError);
+        console.error('contract-analyzer: Error uploading redlined clause artifacts:', uploadArtifactError);
       } else {
         redlinedClauseArtifactPath = artifactFilePath;
       }
@@ -1227,6 +1243,7 @@ The user has specified the following jurisdictions for this analysis: ${userSele
           indemnification_clause_summary: processedIndemnificationClauseSummary,
           confidentiality_obligations_summary: processedConfidentialityObligationsSummary,
           redlined_clause_artifact_path: redlinedClauseArtifactPath,
+          performed_advanced_analysis: performAdvancedAnalysis, // Pass this flag to generate-analysis-report
         },
         outputLanguage: outputLanguage,
       },
