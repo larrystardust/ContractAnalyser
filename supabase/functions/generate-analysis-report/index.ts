@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
 
     // MODIFIED: Construct the URL to PublicReportViewerPage for the redlined artifact
     let redlinedArtifactViewerUrl = '';
-    if (finalAnalysisResult.redlined_clause_artifact_path) { // MODIFIED: Removed performed_advanced_analysis check
+    if (finalAnalysisResult.redlined_clause_artifact_path && finalAnalysisResult.performed_advanced_analysis) { // ADDED: Check performed_advanced_analysis
       // Correctly pass artifactPath and lang to the PublicReportViewerPage
       redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(finalAnalysisResult.redlined_clause_artifact_path)}&lang=${outputLanguage}`;
     }
@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
                   <p><strong>${getTranslatedMessage('confidentiality_obligations_summary', outputLanguage)}:</strong> ${finalAnalysisResult.confidentiality_obligations_summary}</p>
               </div
 
-              ${finalAnalysisResult.redlined_clause_artifact_path ? `
+              ${finalAnalysisResult.redlined_clause_artifact_path && finalAnalysisResult.performed_advanced_analysis ? `
               <div class="section artifact-section">
                   <h2>${getTranslatedMessage('artifacts_section_title', outputLanguage)}</h2>
                   <h3>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h3>
