@@ -20,12 +20,12 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
   // ADDED: Determine if user is on an advanced plan
   const isAdvancedPlan = subscription && (subscription.tier === 4 || subscription.tier === 5);
 
-  // ADDED: State for redlined clause artifact content
-  const [redlinedClauseContent, setRedlinedClauseContent] = useState<RedlinedClauseArtifact | null>(null);
+  // MODIFIED: State for redlined clause artifact content now expects an array
+  const [redlinedClauseContent, setRedlinedClauseContent] = useState<RedlinedClauseArtifact[] | null>(null);
   const [loadingRedlinedClause, setLoadingRedlinedClause] = useState(false);
   const [redlinedClauseError, setRedlinedClauseError] = useState<string | null>(null);
 
-  // ADDED: Fetch redlined clause artifact if path exists and user is on advanced plan
+  // MODIFIED: Fetch redlined clause artifact if path exists and user is on advanced plan
   useEffect(() => {
     const fetchRedlinedClause = async () => {
       if (!isAdvancedPlan || !contract.analysisResult?.redlinedClauseArtifactPath) {
@@ -37,13 +37,14 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
       setRedlinedClauseError(null);
       try {
         const { data, error } = await supabase.storage
-          .from('contract_artifacts') // NEW STORAGE BUCKET
+          .from('contract_artifacts')
           .download(contract.analysisResult.redlinedClauseArtifactPath);
 
         if (error) throw error;
 
         const text = await data.text();
-        setRedlinedClauseContent(JSON.parse(text));
+        // MODIFIED: Parse as an array of RedlinedClauseArtifact
+        setRedlinedClauseContent(JSON.parse(text) as RedlinedClauseArtifact[]);
       } catch (err: any) {
         console.error('Error fetching redlined clause artifact:', err);
         setRedlinedClauseError(t('failed_to_load_redlined_clause', { message: err.message }));
@@ -55,7 +56,7 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
     fetchRedlinedClause();
   }, [contract.analysisResult?.redlinedClauseArtifactPath, isAdvancedPlan, t]);
 
-  // ADDED: Handle download of redlined clause artifact
+  // MODIFIED: Handle download of redlined clause artifacts (plural)
   const handleDownloadRedlinedClause = async () => {
     if (!contract.analysisResult?.redlinedClauseArtifactPath) return;
 
@@ -68,7 +69,8 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
 
       const link = document.createElement('a');
       link.href = data.signedUrl;
-      link.download = `redlined_clause_${contract.id}.json`;
+      // MODIFIED: Change download filename to reflect array
+      link.download = `redlined_clauses_${contract.id}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -134,27 +136,32 @@ const AdminContractDetailsModal: React.FC<AdminContractDetailsModalProps> = ({ c
                 <div className="text-center py-4 text-red-600">
                   <p>{redlinedClauseError}</p>
                 </div>
-              ) : redlinedClauseContent ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-800">{t('redlined_clause_artifact')}</h3>
-                  <p className="text-sm text-gray-600">
-                    {t('redlined_clause_artifact_description', { findingId: redlinedClauseContent.findingId || t('not_specified') })}
-                  </p>
-                  <div className="bg-gray-100 p-4 rounded-md font-mono text-sm overflow-x-auto">
-                    <p className="font-bold text-gray-700">{t('original_clause')}:</p>
-                    <pre className="whitespace-pre-wrap text-gray-800">{redlinedClauseContent.originalClause}</pre>
-                    <p className="font-bold text-gray-700 mt-4">{t('redlined_version')}:</p>
-                    <pre className="whitespace-pre-wrap text-red-600">{redlinedClauseContent.redlinedVersion}</pre>
-                    <p className="font-bold text-gray-700 mt-4">{t('suggested_revision')}:</p>
-                    <pre className="whitespace-pre-wrap text-green-600">{redlinedClauseContent.suggestedRevision}</pre>
-                  </div>
+              ) : redlinedClauseContent && redlinedClauseContent.length > 0 ? ( // MODIFIED: Check if array and not empty
+                <div className="space-y-6"> {/* MODIFIED: Added space-y-6 for spacing between multiple artifacts */}
+                  {redlinedClauseContent.map((artifact, index) => ( // MODIFIED: Map over the array
+                    <div key={index} className="space-y-4 border-b pb-4 last:border-b-0 last:pb-0"> {/* MODIFIED: Added key and border for separation */}
+                      <h3 className="text-lg font-medium text-gray-800">{t('redlined_clause_artifact')} {index + 1}</h3> {/* MODIFIED: Added index to title */}
+                      <p className="text-sm text-gray-600">
+                        {t('redlined_clause_artifact_description', { findingId: artifact.findingId || t('not_specified') })}
+                      </p>
+                      <div className="bg-gray-100 p-4 rounded-md font-mono text-sm overflow-x-auto">
+                        <p className="font-bold text-gray-700">{t('original_clause')}:</p>
+                        <pre className="whitespace-pre-wrap text-gray-800">{artifact.originalClause}</pre>
+                        <p className="font-bold text-gray-700 mt-4">{t('redlined_version')}:</p>
+                        <pre className="whitespace-pre-wrap text-red-600">{artifact.redlinedVersion}</pre>
+                        <p className="font-bold text-gray-700 mt-4">{t('suggested_revision')}:</p>
+                        <pre className="whitespace-pre-wrap text-green-600">{artifact.suggestedRevision}</pre>
+                      </div>
+                    </div>
+                  ))}
+                  {/* MODIFIED: Download button for the entire array */}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleDownloadRedlinedClause}
                     icon={<Download className="w-4 h-4" />}
                   >
-                    {t('download_artifact')}
+                    {t('download_all_artifacts')} {/* MODIFIED: Changed text */}
                   </Button>
                 </div>
               ) : (
