@@ -1735,6 +1735,7 @@
   "redlined_version": "Version Surlignée",
   "suggested_revision": "Révision Suggérée",
   "download_artifact": "Télécharger l'Artefact",
+  "download_all_artifacts": "Télécharger Tous les Artefacts",
   "failed_to_load_redlined_clause": "Échec du chargement de l'artefact de clause surlignée : {{message}}",
   "redlined_clause_download_started": "Téléchargement de la clause surlignée démarré.",
   "failed_to_download_redlined_clause": "Échec du téléchargement de l'artefact de clause surlignée : {{message}}",
