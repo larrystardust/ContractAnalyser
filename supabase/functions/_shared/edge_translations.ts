@@ -303,6 +303,7 @@ export const edgeTranslations = {
     error_failed_to_parse_ai_response_summary: "Failed to generate executive summary due to AI response parsing error.",
     error_failed_to_parse_ai_response_data_protection: "Failed to generate data protection impact due to AI response parsing error.",
 
+    redlined_clause_artifacts_title: "Redlined Clause Artifacts",
     redlined_clause_artifact_viewer: "Redlined Clause Artifact Viewer",
     associated_finding_id: "Associated Finding ID",
     original_clause: "Original Clause",
@@ -629,6 +630,7 @@ export const edgeTranslations = {
     error_failed_to_parse_ai_response_summary: "No se pudo generar el resumen ejecutivo debido a un error de análisis de la respuesta de la IA.",
     error_failed_to_parse_ai_response_data_protection: "No se pudo generar el impacto en la protección de datos debido a un error de análisis de la respuesta de la IA.",
 
+    redlined_clause_artifacts_title: "Artefactos de Cláusulas Tachadas",
     redlined_clause_artifact_viewer: "Visor de artefactos de cláusula con marcas de revisión",
     associated_finding_id: "ID de hallazgo asociado",
     original_clause: "Cláusula original",
@@ -954,6 +956,7 @@ export const edgeTranslations = {
     error_failed_to_parse_ai_response_summary: "Échec de la génération du résumé exécutif en raison d'une erreur d'analyse de la réponse de l'IA.",
     error_failed_to_parse_ai_response_data_protection: "Échec de la génération de l'impact sur la protection des données en raison d'une erreur d'analyse de la réponse de l'IA.",
 
+    redlined_clause_artifacts_title: "Artefacts de Clauses Raturées",
     redlined_clause_artifact_viewer: "Visionneuse d'artefacts de clause annotée",
     associated_finding_id: "ID de constatation associée",
     original_clause: "Clause originale",
@@ -1280,6 +1283,7 @@ export const edgeTranslations = {
     error_failed_to_parse_ai_response_summary: "فشل في إنشاء الملخص التنفيذي بسبب خطأ في تحليل استجابة الذكاء الاصطناعي.",
     error_failed_to_parse_ai_response_data_protection: "فشل في إنشاء تأثير حماية البيانات بسبب خطأ في تحليل استجابة الذكاء الاصطناعي.",
 
+    redlined_clause_artifacts_title: "التحف البنود المعدلة",
     redlined_clause_artifact_viewer: "عارض أثر البند المعدل",
     associated_finding_id: "معرف الاكتشاف المرتبط",
     original_clause: "البند الأصلي",
