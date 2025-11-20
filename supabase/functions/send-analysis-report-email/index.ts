@@ -70,7 +70,12 @@ Deno.serve(async (req) => {
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || req.headers.get('Origin');
     // MODIFIED: Removed encodeURIComponent around reportLink
     const publicReportViewerUrl = `${appBaseUrl}/public-report-view?url=${reportLink}`;
-    const redlinedArtifactLink = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}`; // ADDED for logging
+    
+    // ADDED: Construct the URL for the redlined artifact viewer
+    let redlinedArtifactViewerUrl = '';
+    if (redlinedClauseArtifactPath && performedAdvancedAnalysis) {
+      redlinedArtifactViewerUrl = `${appBaseUrl}/public-report-view?artifactPath=${encodeURIComponent(redlinedClauseArtifactPath)}&lang=${userPreferredLanguage}`;
+    }
     
 
     // --- START: Email Service Integration ---
