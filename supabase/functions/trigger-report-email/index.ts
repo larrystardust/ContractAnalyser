@@ -95,20 +95,21 @@ Deno.serve(async (req) => {
       return corsResponse({ message: 'Email sending skipped due to user preference' });
     }
 
-    // ADDED: Fetch the output_language from the contracts table
-    const { data: contractData, contractLanguageData, error: contractLanguageError } = await supabase
+    // MODIFIED: Fetch the output_language, redlined_clause_artifact_path, and performed_advanced_analysis from the contracts table
+    const { data: contractData, error: contractFetchError } = await supabase
       .from('contracts')
-      .select('output_language, analysis_results(redlined_clause_artifact_path, performed_advanced_analysis)') // MODIFIED
+      .select('output_language, analysis_results(redlined_clause_artifact_path, performed_advanced_analysis)')
       .eq('id', contractId)
       .single();
 
     let userPreferredLanguage = 'en'; // Default fallback
-    if (contractLanguageError) {
-      console.error(`Error fetching output_language for contract ${contractId}:`, contractLanguageError);
-    } else if (contractLanguageData?.output_language) {
-      userPreferredLanguage = contractLanguageData.output_language;
+    if (contractFetchError) { // MODIFIED: Use contractFetchError
+      console.error(`Error fetching contract details for email:`, contractFetchError); // MODIFIED: Use contractFetchError
+      return corsResponse({ error: 'Failed to fetch contract details for email.' }, 500);
+    } else if (contractData?.output_language) { // MODIFIED: Use contractData
+      userPreferredLanguage = contractData.output_language; // MODIFIED: Use contractData
     }
-    // END ADDED
+    // END MODIFIED
 
     // Prepare parameters for send-analysis-report-email and log them
     const emailSubject = getTranslatedMessage('email_subject_report_ready', userPreferredLanguage, { contractName: contractName || contractId }); // MODIFIED
