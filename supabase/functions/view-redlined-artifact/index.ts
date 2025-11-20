@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     }
 
     const artifactText = await artifactBlob.text();
-    let artifactData;
+    let artifactData: any;
     try {
       artifactData = JSON.parse(artifactText);
     } catch (parseError) {
@@ -76,7 +76,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: getTranslatedMessage('error_invalid_artifact_format', outputLanguage) }, 500, origin);
     }
 
-    const { originalClause, redlinedVersion, suggestedRevision, findingId } = artifactData;
+    // MODIFIED: Expect artifactData to be an array
+    const redlinedArtifacts = Array.isArray(artifactData) ? artifactData : [artifactData]; // Ensure it's always an array
 
     const embeddedCss = `
       body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; background-color: #f9f9f9; }
@@ -91,7 +92,32 @@ Deno.serve(async (req) => {
       .suggested-text { color: green; font-weight: bold; }
       .finding-id { font-size: 0.9em; color: #777; margin-top: 10px; }
       .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; } /* Added footer style */
+      .artifact-item { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed #ccc; }
+      .artifact-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     `;
+
+    // MODIFIED: Generate HTML for each artifact in the array
+    const artifactsHtml = redlinedArtifacts.map((artifact, index) => `
+      <div class="artifact-item">
+          <h2>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)} ${redlinedArtifacts.length > 1 ? `#${index + 1}` : ''}</h2>
+          ${artifact.findingId ? `<p class="finding-id">${getTranslatedMessage('associated_finding_id', outputLanguage)}: ${artifact.findingId}</p>` : ''}
+
+          <div class="section">
+              <div class="section-title">${getTranslatedMessage('original_clause', outputLanguage)}</div>
+              <pre class="code-block original-text">${artifact.originalClause || getTranslatedMessage('not_available', outputLanguage)}</pre>
+          </div>
+
+          <div class="section">
+              <div class="section-title">${getTranslatedMessage('redlined_version', outputLanguage)}</div>
+              <pre class="code-block redlined-text">${artifact.redlinedVersion || getTranslatedMessage('not_available', outputLanguage)}</pre>
+          </div>
+
+          <div class="section">
+              <div class="section-title">${getTranslatedMessage('suggested_revision', outputLanguage)}</div>
+              <pre class="code-block suggested-text">${artifact.suggestedRevision || getTranslatedMessage('not_available', outputLanguage)}</pre>
+          </div>
+      </div>
+    `).join('');
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -104,23 +130,8 @@ Deno.serve(async (req) => {
       </head>
       <body>
           <div class="container">
-              <h1>${getTranslatedMessage('redlined_clause_artifact', outputLanguage)}</h1>
-              ${findingId ? `<p class="finding-id">${getTranslatedMessage('associated_finding_id', outputLanguage)}: ${findingId}</p>` : ''}
-
-              <div class="section">
-                  <div class="section-title">${getTranslatedMessage('original_clause', outputLanguage)}</div>
-                  <pre class="code-block original-text">${originalClause || getTranslatedMessage('not_available', outputLanguage)}</pre>
-              </div>
-
-              <div class="section">
-                  <div class="section-title">${getTranslatedMessage('redlined_version', outputLanguage)}</div>
-                  <pre class="code-block">${redlinedVersion || getTranslatedMessage('not_available', outputLanguage)}</pre>
-              </div>
-
-              <div class="section">
-                  <div class="section-title">${getTranslatedMessage('suggested_revision', outputLanguage)}</div>
-                  <pre class="code-block">${suggestedRevision || getTranslatedMessage('not_available', outputLanguage)}</pre>
-              </div>
+              <h1>${getTranslatedMessage('redlined_clause_artifacts_title', outputLanguage)}</h1>
+              ${artifactsHtml}
               <div class="footer">
                   <p>${getTranslatedMessage('footer_copyright', outputLanguage, { year: new Date().getFullYear() })}</p>
                   <p>${getTranslatedMessage('footer_disclaimer', outputLanguage)}</p>
