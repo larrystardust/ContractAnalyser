@@ -1733,6 +1733,7 @@
   "redlined_version": "Redlined Version",
   "suggested_revision": "Suggested Revision",
   "download_artifact": "Download Artifact",
+  "download_all_artifacts": "Download All Artifacts",
   "failed_to_load_redlined_clause": "Failed to load redlined clause artifact: {{message}}",
   "redlined_clause_download_started": "Redlined clause download started.",
   "failed_to_download_redlined_clause": "Failed to download redlined clause artifact: {{message}}",
