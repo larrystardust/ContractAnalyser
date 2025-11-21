@@ -64,16 +64,32 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
         return 'bg-pink-600 text-white';
       case 'commercial': // ADDED for completeness
         return 'bg-yellow-600 text-white';
+     case 'discrimination': // ADDED for completeness
+        return 'bg-red-500 text-white';
+      case 'pricing': // ADDED for completeness
+        return 'bg-green-500 text-white';
       default:
         return 'bg-gray-600 text-white';
     }
   };
 
+  const categoryLabelKey = getCategoryLabel(category);
+
+  let displayedLabel: string;
+  if (categoryLabelKey.startsWith('DYNAMIC_LLM_CATEGORY:')) {
+    const normalizedCategory = categoryLabelKey.substring('DYNAMIC_LLM_CATEGORY:'.length);
+    // Attempt to translate the normalized category, otherwise use it as is
+    const translatedCategoryPart = t(normalizedCategory, { defaultValue: normalizedCategory.replace(/_/g, ' ') });
+    displayedLabel = `${t('category_prefix')} ${translatedCategoryPart}`;
+  } else {
+    displayedLabel = t(categoryLabelKey);
+  }
+
   return (
     <span 
       className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(category)} ${className}`}
     >
-      {t(getCategoryLabel(category))} {/* Correctly uses imported getCategoryLabel */}
+      {displayedLabel}
     </span>
   );
 };
