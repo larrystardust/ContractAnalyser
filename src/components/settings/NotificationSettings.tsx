@@ -246,18 +246,18 @@ const NotificationSettings: React.FC = () => {
                     <ToggleSwitch
                       checked={finalEmailChecked} // MODIFIED: Use finalEmailChecked
                       onChange={(checked) => updatePreference(id, 'email', checked)}
-                      disabled={isDisabledForEmail || isDisabledForAdvanced} // MODIFIED: Disable if email or advanced
+                      disabled={isDisabledForEmail || isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
                     />
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
                       checked={pref.inApp}
                       onChange={(checked) => updatePreference(id, 'inApp', checked)}
-                      disabled={isDisabledForAdvanced} // MODIFIED: Disable if advanced
+                      disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan 
                     />
                   </div>
                   {/* ADDED: Red text message for disabled advanced features */}
-                  {isDisabledForAdvanced && (
+                  {isDisabled && (
                     <div className="col-span-3 text-xs text-red-500 mt-1">
                       {t('advanced_features_disabled_message')}
                     </div>
