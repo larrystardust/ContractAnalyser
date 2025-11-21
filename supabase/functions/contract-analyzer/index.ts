@@ -664,7 +664,7 @@ Return your findings strictly as a valid JSON object with the following structur
 }
 
 JURISDICTION FOCUS:
-Primary focus on the specified following jurisdictions: ${userSelectedJurisdictions.join(', ')}. And jurisdictions mentioned within the contract.
+Primary focus on the specified following jurisdictions: ${userSelectedJurisdictions.join(', ')}. And the jurisdictions mentioned within the contract.
 
 NOTES:
 - Dates should be in YYYY-MM-DD format. If only month/year or year is available, use 'YYYY-MM-01' or 'YYYY-01-01'. If no date is found, use 'not_specified'.
@@ -754,7 +754,7 @@ ANALYSIS CHECKLIST (use internally, don't output):
 10. Red Flags - unilateral terms, unlimited liability, auto-renewals, one-sided clauses
 
 JURISDICTION FOCUS:
-Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}. And jurisdictions mentioned within the contract.
+Primary focus on the specified following jurisdictions for this analysis: ${userSelectedJurisdictions.join(', ')}. And the jurisdictions mentioned within the contract.
 
 REQUIRED JSON STRUCTURE (output this exact structure):
 {
