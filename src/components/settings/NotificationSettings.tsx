@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // MODIFIED: Added useCallback
 import { Bell, Mail, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
 import Card, { CardBody, CardHeader } from '../ui/Card';
@@ -74,47 +74,49 @@ const NotificationSettings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchNotificationPreferences = async () => {
-      if (!session?.user?.id) {
-        setIsLoading(false);
-        return;
+  // MODIFIED: Wrapped fetchNotificationPreferences in useCallback
+  const fetchNotificationPreferences = useCallback(async () => {
+    if (!session?.user?.id) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('notification_settings')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+        throw fetchError;
       }
-      setIsLoading(true);
-      setError(null);
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('profiles')
-          .select('notification_settings')
-          .eq('id', session.user.id)
-          .maybeSingle();
 
-        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
-          throw fetchError;
-        }
-
-        if (data?.notification_settings) {
-          const fetchedSettings = data.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
-          // Merge fetched settings with defaults to ensure all types are present
-          setPreferences(prev => {
-            const merged = { ...prev }; // Start with current defaults
-            for (const key in notificationTypes) {
-              if (fetchedSettings[key]) {
-                merged[key] = fetchedSettings[key];
-              }
+      if (data?.notification_settings) {
+        const fetchedSettings = data.notification_settings as Record<string, { email: boolean; inApp: boolean }>;
+        // Merge fetched settings with defaults to ensure all types are present
+        setPreferences(prev => {
+          const merged = { ...prev }; // Start with current defaults
+          for (const key in notificationTypes) {
+            if (fetchedSettings[key]) {
+              merged[key] = fetchedSettings[key];
             }
-            return merged;
-          });
-        }
-      } catch (err: any) {
-        console.error('Error fetching notification preferences:', err);
-        setError(err.message || t('failed_to_load_notification_preferences'));
-      } finally {
-        setIsLoading(false);
+          }
+          return merged;
+        });
       }
-    };
+    } catch (err: any) {
+      console.error('Error fetching notification preferences:', err);
+      setError(err.message || t('failed_to_load_notification_preferences'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [session?.user?.id, supabase, t]); // Dependencies for useCallback
+
+  useEffect(() => {
     fetchNotificationPreferences();
-  }, [session?.user?.id, supabase, t]);
+  }, [fetchNotificationPreferences]); // MODIFIED: Dependency for useEffect is now the memoized function
 
   const updatePreference = (id: string, type: 'email' | 'inApp', value: boolean) => {
     setPreferences(prev => ({
