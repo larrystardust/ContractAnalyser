@@ -232,6 +232,10 @@ const NotificationSettings: React.FC = () => {
               const isAdvancedNotification = id === 'renewal-alerts' || id === 'termination-alerts';
               const isDisabled = isAdvancedNotification && !isAdvancedPlan;
 
+              // MODIFIED: Determine if email toggle should be disabled for 'analysis-complete' and 'high-risk-findings'
+              const isDisabledForEmail = id === 'analysis-complete' || id === 'high-risk-findings';
+              const finalEmailChecked = isDisabledForEmail ? false : pref.email; // Force unchecked if disabled
+
               return (
                 <div key={id} className="grid grid-cols-3 gap-4 items-center py-3">
                   <div>
@@ -240,20 +244,20 @@ const NotificationSettings: React.FC = () => {
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
-                      checked={pref.email}
+                      checked={finalEmailChecked} // MODIFIED: Use finalEmailChecked
                       onChange={(checked) => updatePreference(id, 'email', checked)}
-                      disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
+                      disabled={isDisabledForEmail || isDisabledForAdvanced} // MODIFIED: Disable if email or advanced
                     />
                   </div>
                   <div className="flex justify-center">
                     <ToggleSwitch
                       checked={pref.inApp}
                       onChange={(checked) => updatePreference(id, 'inApp', checked)}
-                      disabled={isDisabled} // MODIFIED: Disable if advanced and not on advanced plan
+                      disabled={isDisabledForAdvanced} // MODIFIED: Disable if advanced
                     />
                   </div>
                   {/* ADDED: Red text message for disabled advanced features */}
-                  {isDisabled && (
+                  {isDisabledForAdvanced && (
                     <div className="col-span-3 text-xs text-red-500 mt-1">
                       {t('advanced_features_disabled_message')}
                     </div>
