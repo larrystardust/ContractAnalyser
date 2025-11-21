@@ -12,13 +12,13 @@ const notificationTypes = {
   'analysis-complete': {
     titleKey: 'analysis_complete',
     descriptionKey: 'get_notified_when_contract_analysis_is_finished',
-    defaultEmail: true,
+    defaultEmail: false, // MODIFIED: Changed to false
     defaultInApp: true
   },
   'high-risk-findings': {
     titleKey: 'high_risk_findings',
     descriptionKey: 'immediate_alerts_for_high-risk_compliance_issues',
-    defaultEmail: true,
+    defaultEmail: false, // MODIFIED: Changed to false
     defaultInApp: true
   },
   'weekly-reports': {
