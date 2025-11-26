@@ -1790,5 +1790,36 @@
   "landing_advanced_feature_redlined_artifacts_description": "قم بإنشاء إصدارات معدلة تلقائيًا للبنود، مع إبراز التغييرات واقتراح المراجعات للتفاوض.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "تم إنشاء جلسة المسح",
-  "audit_event_type_SCAN_SESSION_DELETED": "تم حذف جلسة المسح"
+  "audit_event_type_SCAN_SESSION_DELETED": "تم حذف جلسة المسح",
+
+  "contract_type_licensing_agreement": "اتفاقية ترخيص",
+  "contract_value_5m_usd": "5 ملايين دولار أمريكي",
+  "parties_licensor_inc": "المرخص Inc.",
+  "parties_global_distributor_ltd": "الموزع العالمي المحدودة",
+  "liability_cap_summary_2x_annual_fees": "المسؤولية القصوى تعادل ضعف الرسوم السنوية.",
+  "indemnification_clause_summary_mutual_breaches_ip": "تعويض متبادل عن الانتهاكات والتعدي على الملكية الفكرية.",
+  "confidentiality_obligations_summary_perpetual": "التزامات السرية الدائمة.",
+
+  "original_clause_licensor_indemnify_defects": "يجب على المرخص أن يعوض المرخص له عن أي وجميع المطالبات الناشئة عن عيوب في المنتجات المرخصة.",
+  "redlined_version_licensor_indemnify_defects_misuse": "يجب على المرخص أن يعوض المرخص له عن أي وجميع المطالبات الناشئة عن عيوب في المنتجات المرخصة، *شريطة ألا تكون هذه العيوب ناتجة عن سوء استخدام المرخص له*.",
+  "suggested_revision_clarify_indemnification_scope": "توضيح نطاق التعويض لاستبعاد خطأ المرخص له.",
+
+  "contract_type_partnership_deed": "عقد شراكة",
+  "contract_value_not_specified": "غير محدد",
+  "parties_canadian_partner_corp": "شركة الشريك الكندي",
+  "parties_australian_ventures_pty_ltd": "مشاريع أسترالية بي تي واي المحدودة",
+  "liability_cap_summary_capital_contribution": "المسؤولية محدودة بالمساهمة الرأسمالية.",
+  "indemnification_clause_summary_cross_indemnification": "تعويض متبادل عن تصرفات الشركاء.",
+  "confidentiality_obligations_summary_partnership_2_years": "التزامات السرية لمدة عامين بعد الإنهاء.",
+
+  "original_clause_governing_law_ontario": "يخضع هذا العقد لقوانين أونتاريو، كندا.",
+  "redlined_version_governing_law_ontario_nsw": "يخضع هذا العقد لقوانين أونتاريو، كندا، *وحيثما ينطبق ذلك، قوانين نيو ساوث ويلز، أستراليا*.",
+  "suggested_revision_include_australian_jurisdiction": "تضمين الولاية القضائية الأسترالية لإنفاذ القانون عبر الحدود.",
+
+  "original_clause_disputes_arbitration_toronto": "يتم حل أي نزاعات تنشأ بموجب هذا العقد عن طريق التحكيم في تورونتو.",
+  "redlined_version_disputes_arbitration_toronto_sydney": "يتم حل أي نزاعات تنشأ بموجب هذا العقد عن طريق التحكيم في تورونتو، *أو سيدني، أستراليا، بناءً على اختيار المدعي*.",
+  "suggested_revision_flexibility_dispute_resolution": "توفير المرونة في موقع حل النزاعات.",
+
+  "no_artifacts_to_download": "لا توجد عناصر قابلة للتنزيل.",
+  "redlined_clause_artifacts_title": "عناصر بند مراجعة"
 }
