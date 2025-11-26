@@ -1787,5 +1787,36 @@
   "landing_advanced_feature_redlined_artifacts_description": "Genere automáticamente versiones tachadas de las cláusulas, resaltando los cambios y sugiriendo revisiones para la negociación.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "Sesión de escaneo creada",
-  "audit_event_type_SCAN_SESSION_DELETED": "Sesión de escaneo eliminada"
+  "audit_event_type_SCAN_SESSION_DELETED": "Sesión de escaneo eliminada",
+
+  "contract_type_licensing_agreement": "Acuerdo de licencia",
+  "contract_value_5m_usd": "5 millones de USD",
+  "parties_licensor_inc": "Licensor Inc.",
+  "parties_global_distributor_ltd": "Global Distributor Ltd.",
+  "liability_cap_summary_2x_annual_fees": "Responsabilidad limitada a 2 veces las tarifas anuales.",
+  "indemnification_clause_summary_mutual_breaches_ip": "Indemnización mutua por incumplimientos e infracción de propiedad intelectual.",
+  "confidentiality_obligations_summary_perpetual": "Obligaciones de confidencialidad perpetuas.",
+
+  "original_clause_licensor_indemnify_defects": "El Licenciante indemnizará al Licenciatario contra todas y cada una de las reclamaciones que surjan de defectos en los Productos Licenciados.",
+  "redlined_version_licensor_indemnify_defects_misuse": "El Licenciante indemnizará al Licenciatario contra todas y cada una de las reclamaciones que surjan de defectos en los Productos Licenciados, *siempre que dichos defectos no se deban al uso indebido del Licenciatario*.",
+  "suggested_revision_clarify_indemnification_scope": "Aclarar el alcance de la indemnización para excluir la culpa del Licenciatario.",
+
+  "contract_type_partnership_deed": "Escritura de sociedad",
+  "contract_value_not_specified": "No especificado",
+  "parties_canadian_partner_corp": "Canadian Partner Corp.",
+  "parties_australian_ventures_pty_ltd": "Australian Ventures Pty Ltd.",
+  "liability_cap_summary_capital_contribution": "Responsabilidad limitada a la aportación de capital.",
+  "indemnification_clause_summary_cross_indemnification": "Indemnización cruzada por acciones de los socios.",
+  "confidentiality_obligations_summary_partnership_2_years": "Obligaciones de confidencialidad durante 2 años después de la terminación.",
+
+  "original_clause_governing_law_ontario": "Este Contrato se regirá por las leyes de Ontario, Canadá.",
+  "redlined_version_governing_law_ontario_nsw": "Este Contrato se regirá por las leyes de Ontario, Canadá, *y, cuando corresponda, por las leyes de Nueva Gales del Sur, Australia*.",
+  "suggested_revision_include_australian_jurisdiction": "Incluir la jurisdicción australiana para la aplicabilidad transfronteriza.",
+
+  "original_clause_disputes_arbitration_toronto": "Cualquier disputa que surja de este Contrato se resolverá mediante arbitraje en Toronto.",
+  "redlined_version_disputes_arbitration_toronto_sydney": "Cualquier disputa que surja de este Contrato se resolverá mediante arbitraje en Toronto, *o Sídney, Australia, a elección del demandante*.",
+  "suggested_revision_flexibility_dispute_resolution": "Proporcionar flexibilidad para la ubicación de resolución de disputas.",
+
+  "no_artifacts_to_download": "No hay artefactos para descargar.",
+  "redlined_clause_artifacts_title": "Artefactos de cláusulas con marcas de revisión"
 }
