@@ -1796,5 +1796,36 @@
   "landing_advanced_feature_redlined_artifacts_description": "Générez automatiquement des versions biffées des clauses, en mettant en évidence les modifications et en suggérant des révisions pour la négociation.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "Session de numérisation créée",
-  "audit_event_type_SCAN_SESSION_DELETED": "Session de numérisation supprimée"
+  "audit_event_type_SCAN_SESSION_DELETED": "Session de numérisation supprimée",
+
+  "contract_type_licensing_agreement": "Contrat de licence",
+  "contract_value_5m_usd": "5 millions USD",
+  "parties_licensor_inc": "Concédant Inc.",
+  "parties_global_distributor_ltd": "Distributeur Mondial Ltée",
+  "liability_cap_summary_2x_annual_fees": "Responsabilité limitée à 2 fois les frais annuels.",
+  "indemnification_clause_summary_mutual_breaches_ip": "Indemnisation mutuelle pour les violations et la contrefaçon de propriété intellectuelle.",
+  "confidentiality_obligations_summary_perpetual": "Obligations de confidentialité perpétuelles.",
+
+  "original_clause_licensor_indemnify_defects": "Le concédant indemnisera le licencié contre toutes réclamations découlant de défauts dans les produits sous licence.",
+  "redlined_version_licensor_indemnify_defects_misuse": "Le concédant indemnisera le licencié contre toutes réclamations découlant de défauts dans les produits sous licence, *à condition que ces défauts ne soient pas dus à une mauvaise utilisation par le licencié*.",
+  "suggested_revision_clarify_indemnification_scope": "Clarifier la portée de l'indemnisation pour exclure la faute du licencié.",
+
+  "contract_type_partnership_deed": "Acte de partenariat",
+  "contract_value_not_specified": "Non spécifié",
+  "parties_canadian_partner_corp": "Canadian Partner Corp.",
+  "parties_australian_ventures_pty_ltd": "Australian Ventures Pty Ltd.",
+  "liability_cap_summary_capital_contribution": "Responsabilité limitée à l'apport en capital.",
+  "indemnification_clause_summary_cross_indemnification": "Indemnisation croisée pour les actions des partenaires.",
+  "confidentiality_obligations_summary_partnership_2_years": "Obligations de confidentialité pendant 2 ans après la résiliation.",
+
+  "original_clause_governing_law_ontario": "Le présent acte est régi par les lois de l'Ontario, Canada.",
+  "redlined_version_governing_law_ontario_nsw": "Le présent acte est régi par les lois de l'Ontario, Canada, *et, le cas échéant, par les lois de la Nouvelle-Galles du Sud, Australie*.",
+  "suggested_revision_include_australian_jurisdiction": "Inclure la juridiction australienne pour l'applicabilité transfrontalière.",
+
+  "original_clause_disputes_arbitration_toronto": "Tout litige découlant du présent acte sera résolu par arbitrage à Toronto.",
+  "redlined_version_disputes_arbitration_toronto_sydney": "Tout litige découlant du présent acte sera résolu par arbitrage à Toronto, *ou Sydney, Australie, au choix du demandeur*.",
+  "suggested_revision_flexibility_dispute_resolution": "Offrir une flexibilité pour le lieu de résolution des litiges.",
+
+  "no_artifacts_to_download": "Aucun artefact à télécharger.",
+  "redlined_clause_artifacts_title": "Artefacts de clauses annotées"
 }
