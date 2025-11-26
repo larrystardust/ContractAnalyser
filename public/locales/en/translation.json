@@ -1794,5 +1794,36 @@
   "landing_advanced_feature_redlined_artifacts_description": "Automatically generate redlined versions of clauses, highlighting changes and suggesting revisions for negotiation.",
 
   "audit_event_type_SCAN_SESSION_CREATED": "Scan Session Created",
-  "audit_event_type_SCAN_SESSION_DELETED": "Scan Session Deleted"
+  "audit_event_type_SCAN_SESSION_DELETED": "Scan Session Deleted",
+
+  "contract_type_licensing_agreement": "Licensing Agreement",
+  "contract_value_5m_usd": "5 Million USD",
+  "parties_licensor_inc": "Licensor Inc.",
+  "parties_global_distributor_ltd": "Global Distributor Ltd.",
+  "liability_cap_summary_2x_annual_fees": "Liability capped at 2x annual fees.",
+  "indemnification_clause_summary_mutual_breaches_ip": "Mutual indemnification for breaches and IP infringement.",
+  "confidentiality_obligations_summary_perpetual": "Perpetual confidentiality obligations.",
+
+  "original_clause_licensor_indemnify_defects": "The Licensor shall indemnify the Licensee against any and all claims arising from defects in the Licensed Products.",
+  "redlined_version_licensor_indemnify_defects_misuse": "The Licensor shall indemnify the Licensee against any and all claims arising from defects in the Licensed Products, *provided such defects are not due to Licensee's misuse*.",
+  "suggested_revision_clarify_indemnification_scope": "Clarify scope of indemnification to exclude Licensee's fault.",
+
+  "contract_type_partnership_deed": "Partnership Deed",
+  "contract_value_not_specified": "Not Specified",
+  "parties_canadian_partner_corp": "Canadian Partner Corp.",
+  "parties_australian_ventures_pty_ltd": "Australian Ventures Pty Ltd.",
+  "liability_cap_summary_capital_contribution": "Liability limited to capital contribution.",
+  "indemnification_clause_summary_cross_indemnification": "Cross-indemnification for partner actions.",
+  "confidentiality_obligations_summary_partnership_2_years": "Confidentiality obligations for 2 years post-termination.",
+
+  "original_clause_governing_law_ontario": "This Deed shall be governed by the laws of Ontario, Canada.",
+  "redlined_version_governing_law_ontario_nsw": "This Deed shall be governed by the laws of Ontario, Canada, *and where applicable, the laws of New South Wales, Australia*.",
+  "suggested_revision_include_australian_jurisdiction": "Include Australian jurisdiction for cross-border enforceability.",
+
+  "original_clause_disputes_arbitration_toronto": "Any disputes arising under this Deed shall be resolved by arbitration in Toronto.",
+  "redlined_version_disputes_arbitration_toronto_sydney": "Any disputes arising under this Deed shall be resolved by arbitration in Toronto, *or Sydney, Australia, at the claimant's election*.",
+  "suggested_revision_flexibility_dispute_resolution": "Provide flexibility for dispute resolution location.",
+
+  "no_artifacts_to_download": "No artifacts to download.",
+  "redlined_clause_artifacts_title": "Redlined Clause Artifacts"
 }
