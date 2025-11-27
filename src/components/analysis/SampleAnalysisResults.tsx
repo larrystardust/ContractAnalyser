@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { AnalysisResult, Finding, Jurisdiction, JurisdictionSummary } from '../../types';
 import Card, { CardBody, CardHeader } from '../ui/Card';
 import { RiskBadge, JurisdictionBadge, CategoryBadge } from '../ui/Badge';
-import { AlertCircle, Info, FilePlus } from 'lucide-react';
+import { AlertCircle, Info, FilePlus, Download } from 'lucide-react';
+import Button from '../ui/Button'; // ADDED: Import Button
 import { getRiskBorderColor, getRiskTextColor, countFindingsByRisk } from '../../utils/riskUtils';
 import { getJurisdictionLabel } from '../../utils/jurisdictionUtils';
 import { useTranslation } from 'react-i18next';
