@@ -155,6 +155,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
                 </div>
               </div>
             ))}
+            {/*
             <Button
               variant="outline"
               size="sm"
@@ -163,6 +164,7 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
             >
               {t('download_all_artifacts')}
             </Button>
+            */}
           </div>
         </div>
       )}
