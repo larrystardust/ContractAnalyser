@@ -36,6 +36,25 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
   
   const jurisdictions = Object.keys(jurisdictionSummaries) as Jurisdiction[];
 
+  // ADDED: Handle download of redlined clause artifacts for sample data
+  const handleDownloadRedlinedClause = () => {
+    if (!analysisResult.redlinedClauseArtifactsData || analysisResult.redlinedClauseArtifactsData.length === 0) {
+      alert(t('no_artifacts_to_download'));
+      return;
+    }
+    const jsonString = JSON.stringify(analysisResult.redlinedClauseArtifactsData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `redlined_clauses_sample_${analysisResult.contract_id}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    alert(t('redlined_clause_download_started'));
+  };
+  
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -115,6 +134,37 @@ const SampleAnalysisResults: React.FC<SampleAnalysisResultsProps> = ({ analysisR
           </div>
         </div>
       ) : null}
+      
+      {/* ADDED: Artifacts Section for Sample Data */}
+      {analysisResult.performedAdvancedAnalysis && analysisResult.redlinedClauseArtifactsData && analysisResult.redlinedClauseArtifactsData.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('artifacts_section_title')}</h2>
+          <div className="space-y-6">
+            {analysisResult.redlinedClauseArtifactsData.map((artifact, index) => (
+              <div key={index} className="space-y-4 border-b pb-4 last:border-b-0 last:pb-0">
+                <h3 className="text-lg font-medium text-gray-800">{t('redlined_clause_artifact')} {analysisResult.redlinedClauseArtifactsData!.length > 1 ? `#${index + 1}` : ''}</h3>
+                {artifact.findingId && <p className="text-sm text-gray-600">{t('associated_finding_id')}: {artifact.findingId}</p>}
+                <div className="bg-gray-100 p-4 rounded-md font-mono text-sm overflow-x-auto">
+                  <p className="font-bold text-gray-700">{t('original_clause')}:</p>
+                  <pre className="whitespace-pre-wrap text-gray-800">{t(artifact.originalClause)}</pre>
+                  <p className="font-bold text-gray-700 mt-4">{t('redlined_version')}:</p>
+                  <pre className="whitespace-pre-wrap text-red-600">{t(artifact.redlinedVersion)}</pre>
+                  <p className="font-bold text-gray-700 mt-4">{t('suggested_revision')}:</p>
+                  <pre className="whitespace-pre-wrap text-green-600">{t(artifact.suggestedRevision)}</pre>
+                </div>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadRedlinedClause}
+              icon={<Download className="w-4 h-4" />}
+            >
+              {t('download_all_artifacts')}
+            </Button>
+          </div>
+        </div>
+      )}
       
       <div className="flex flex-wrap gap-2 mb-4">
         <button
