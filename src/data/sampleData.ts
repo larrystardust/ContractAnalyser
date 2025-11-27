@@ -292,7 +292,7 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
     };
   }
 
-  return {
+  const baseAnalysisResult: AnalysisResult = {
     id: `ar-${contractId}`,
     contract_id: contractId,
     executiveSummary,
@@ -302,7 +302,63 @@ export const generateSampleAnalysisResult = (contractId: string, jurisdictions: 
     complianceScore,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    performedAdvancedAnalysis: false, // Default to false
   };
+
+  // ADDED: Specific advanced analysis details for contract ID 2
+  if (contractId === '2') {
+    return {
+      ...baseAnalysisResult,
+      performedAdvancedAnalysis: true,
+      effectiveDate: '2025-01-01',
+      terminationDate: '2030-12-31',
+      renewalDate: '2026-01-01',
+      contractType: 'contract_type_licensing_agreement', // Use translation key
+      contractValue: 'contract_value_5m_usd', // Use translation key
+      parties: ['parties_licensor_inc', 'parties_global_distributor_ltd'], // Use translation keys
+      liabilityCapSummary: 'liability_cap_summary_2x_annual_fees', // Use translation key
+      indemnificationClauseSummary: 'indemnification_clause_summary_mutual_breaches_ip', // Use translation key
+      confidentialityObligationsSummary: 'confidentiality_obligations_summary_perpetual', // Use translation key
+      redlinedClauseArtifactsData: [
+        {
+          originalClause: 'original_clause_licensor_indemnify_defects', // Use translation key
+          redlinedVersion: 'redlined_version_licensor_indemnify_defects_misuse', // Use translation key
+          suggestedRevision: 'suggested_revision_clarify_indemnification_scope' // Use translation key
+        }
+      ]
+    };
+  }
+
+  // ADDED: Specific advanced analysis details for contract ID 6
+  if (contractId === '6') {
+    return {
+      ...baseAnalysisResult,
+      performedAdvancedAnalysis: true,
+      effectiveDate: '2024-06-15',
+      terminationDate: '2029-06-14',
+      renewalDate: '2025-06-15',
+      contractType: 'contract_type_partnership_deed', // Use translation key
+      contractValue: 'contract_value_not_specified', // Use translation key
+      parties: ['parties_canadian_partner_corp', 'parties_australian_ventures_pty_ltd'], // Use translation keys
+      liabilityCapSummary: 'liability_cap_summary_capital_contribution', // Use translation key
+      indemnificationClauseSummary: 'indemnification_clause_summary_cross_indemnification', // Use translation key
+      confidentialityObligationsSummary: 'confidentiality_obligations_summary_partnership_2_years', // Use translation key
+      redlinedClauseArtifactsData: [
+        {
+          originalClause: 'original_clause_governing_law_ontario', // Use translation key
+          redlinedVersion: 'redlined_version_governing_law_ontario_nsw', // Use translation key
+          suggestedRevision: 'suggested_revision_include_australian_jurisdiction' // Use translation key
+        },
+        {
+          originalClause: 'original_clause_disputes_arbitration_toronto', // Use translation key
+          redlinedVersion: 'redlined_version_disputes_arbitration_toronto_sydney', // Use translation key
+          suggestedRevision: 'suggested_revision_flexibility_dispute_resolution' // Use translation key
+        }
+      ]
+    };
+  }
+
+  return baseAnalysisResult;
 };
 
 sampleContracts.forEach(contract => {
