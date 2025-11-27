@@ -118,7 +118,7 @@ const SampleDashboardContent: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 {t('select_completed_sample_contract_to_view_analysis')}
               </p>
-              <Link to="/signup">
+              <Link to="/pricing">
                 <Button variant="primary" size="lg" icon={<Sparkles className="w-5 h-5" />}>
                   {t('upgrade_to_analyze_own_contracts_button')}
                 </Button>
