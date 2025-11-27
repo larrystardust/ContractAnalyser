@@ -65,6 +65,7 @@ export interface AnalysisResult {
   confidentialityObligationsSummary?: string | null;
   performedAdvancedAnalysis?: boolean; // ADDED: New flag for advanced analysis
   redlinedClauseArtifactPath?: string | null; // ADDED: Path to the redlined clause artifact
+  redlinedClauseArtifactsData?: RedlinedClauseArtifact[]; // ADDED: For embedded sample artifact data
 }
 
 export interface JurisdictionSummary {
