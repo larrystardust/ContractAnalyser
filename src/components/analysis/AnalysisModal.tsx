@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from '../ui/Modal';
 import AnalysisResults from './AnalysisResults';
+import SampleAnalysisResults from './SampleAnalysisResults'; // ADDED: Import SampleAnalysisResults
 import JurisdictionSummary from './JurisdictionSummary';
 import { Contract } from '../../types';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,13 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
       className="max-w-5xl" // Adjust modal width for better content display
     >
       <div className="space-y-6">
+        {isSampleContract ? ( // MODIFIED: Conditionally render SampleAnalysisResults
+          <SampleAnalysisResults
+            analysisResult={contract.analysisResult!} // Assert non-null as we check status
+            isSample={true}
+            contractName={contract.name}
+          />
+        ) : (
         <AnalysisResults
           analysisResult={contract.analysisResult} // Pass analysisResult, which might be undefined
           isSample={isSampleContract} // MODIFIED: Pass the new isSampleContract prop
@@ -43,6 +51,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({
           // MODIFIED: Ensure contract.name is translated before passing to AnalysisResults
           contractName={contract.translated_name || t(contract.name)}
         />
+      )}
 
         {/* MODIFIED: Conditionally render Jurisdiction Summaries only if analysisResult and summaries exist */}
         {contract.analysisResult && contract.analysisResult.jurisdictionSummaries && Object.keys(contract.analysisResult.jurisdictionSummaries).length > 0 && (
