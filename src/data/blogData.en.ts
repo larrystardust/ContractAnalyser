@@ -54,7 +54,7 @@ export const blogPostsEn: BlogPost[] = [
       '**Ready to unlock unparalleled insights into your contracts?**',
       '**[Sign Up for Free and Get Your First Analysis Report!](https://contractanalyser.com/signup)** | **[Explore Our Advanced Features](https://contractanalyser.com/landing-pricing)**'
     ],
-    imageUrl: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2', // Placeholder, consider a more report-focused image
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20image%20english.png',
   },
   {
     slug: 'demystifying-ocr-turning-scanned-documents-into-actionable-data',
