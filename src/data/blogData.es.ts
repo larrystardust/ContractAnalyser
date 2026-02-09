@@ -2,7 +2,7 @@ import { BlogPost } from './blogData';
 
 export const blogPostsEs: BlogPost[] = [
   {
-    slug: 'compliance-made-easy-ais-role-in-navigating-regulatory-landscapes',
+    slug: 'cumplimiento-facil-el-papel-de-la-ia-en-la-navegacion-de-los-paisajes-regulatorios',
     title: 'Cumplimiento fácil: el papel de la IA en la navegación de los paisajes regulatorios',
     author: 'Matt Johnson',
     date: '2026-02-09',
