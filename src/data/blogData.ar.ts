@@ -1,10 +1,10 @@
 import { BlogPost } from './blogData';
 
 export const blogPostsAr: BlogPost[] = [
-  
+  {  
     slug: 'compliance-made-easy-ais-role-in-navigating-regulatory-landscapes',
     title: 'الامتثال أصبح سهلاً: دور الذكاء الاصطناعي في التنقل في المشهد التنظيمي',
-    author: 'Matt Johnson',
+    author: 'مات جونسون',
     date: '2026-02-09',
     excerpt: 'عالم الأعمال عبارة عن متاهة من القواعد واللوائح. تحكي هذه المقالة قصة أنيا، صاحبة العمل التي حولت مخاوفها المتعلقة بالامتثال إلى ثقة باستخدام الذكاء الاصطناعي للتنقل بسهولة في المشهد القانوني المعقد وحماية عملها.',
     content: [
