@@ -16,7 +16,7 @@ export const blogPostsEn: BlogPost[] = [
       "Today, Sarah runs her business with a calm confidence she never thought possible. She feels 90% confident with any contract that comes her way, whether it's for new staff, clients, or her landlord. Her contracts are professional, clear, and protect her business without costing a fortune. She’s no longer scared of signing something that will come back to bite her. Instead, she’s building a stable, transparent business, knowing that her agreements are tidy enough to withstand any future scrutiny. Sarah isn't just cleaning homes; she's cleaning up her contracts and building a rock-solid future!",
       "Are you, like Sarah, an overwhelmed owner tired of feeling at the mercy of complex contracts? What's one contract clause that always makes you feel lost? How much would it mean to your business to have clear, simple guidance on every agreement you sign?",
       '**Ready to simplify your legal documents?**',
-      '**[Sign Up and Experience AI-Powered Legal comprehension with ContractAnalyser!](https://contractanalyser.com/signup)**'
+      '**[Sign Up and Experience AI-Powered Legal Comprehension with ContractAnalyser!](https://contractanalyser.com/signup)**'
     ],
     imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Sarah%20split%20image.png',
   },
