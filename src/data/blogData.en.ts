@@ -18,7 +18,7 @@ export const blogPostsEn: BlogPost[] = [
       '**Ready to simplify your legal documents?**',
       '**[Sign Up and Experience AI-Powered Legal understanding with ContractAnalyser!](https://contractanalyser.com/signup)**
     ],
-    imageUrl: "https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Sarah%20split%20image.png",
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Sarah%20split%20image.png',
   },
   {
     slug: 'compliance-made-easy-ais-role-in-navigating-regulatory-landscapes',
