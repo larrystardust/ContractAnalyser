@@ -1,0 +1,157 @@
+Here is a comprehensive overview of the ContractAnalyser project, designed to serve as ongoing instructions and context for a new Claude Agent Sonnet 4.6.
+
+Project Overview: ContractAnalyser
+Project Name: ContractAnalyser (Internal: contractanalyserv1)
+
+Core Purpose: ContractAnalyser is an AI-powered web application designed to help users analyze legal contracts, identify risks, ensure compliance, and extract key information. It aims to simplify complex legal documents for small business owners and professionals, providing actionable insights and reducing reliance on expensive legal services.
+
+1. Technology Stack
+Frontend:
+Framework: React (with Vite for development/bundling)
+Language: TypeScript
+Styling: Tailwind CSS
+Routing: react-router-dom
+Internationalization (i18n): react-i18next, i18next-http-backend, i18next-browser-languagedetector
+SEO/Metadata: react-helmet-async
+UI Components: Custom Button, Card, Modal, Toast components.
+Document Processing (Client-side): pdfjs-dist (for PDF text extraction), mammoth (for DOCX/DOC text extraction).
+Other: lucide-react (icons), qrcode.react (QR code generation).
+Backend (Supabase Edge Functions):
+Runtime: Deno
+Language: TypeScript
+Database Client: @supabase/supabase-js
+External APIs:
+AI: openai (for contract analysis, translation)
+Payments: stripe
+Email: resend
+Security: jose (for JWT handling in mobile auth), google-auth-library (for reCAPTCHA verification)
+Database: PostgreSQL (managed by Supabase)
+Authentication: Supabase Auth (with MFA support)
+File Storage: Supabase Storage (contracts, reports, temp_scans, contract_artifacts buckets)
+Deployment: Netlify (frontend), Supabase Edge Functions (backend)
+2. Key Features & Functionalities
+User Authentication: Sign up, login, password reset, email confirmation, Multi-Factor Authentication (MFA).
+Contract Upload:
+Supports PDF, DOCX, DOC, and image formats (JPG, PNG).
+Client-side text extraction for text-selectable PDFs/DOCX.
+OCR for scanned documents and images (client-side capture, backend processing).
+Mobile camera scanning feature for multi-page document capture, communicating with desktop via Supabase Realtime.
+AI-Powered Analysis:
+Generates an executive summary, compliance score, risk levels, and detailed findings.
+Provides jurisdiction-specific summaries and recommendations.
+Advanced Analysis (Tier-dependent): Extracts key dates (effective, termination, renewal), contract type, contract value, parties, liability cap summary, indemnification, confidentiality obligations. Generates redlined clause artifacts.
+Dashboard: Displays a list of uploaded contracts, their status (pending, analyzing, completed, failed), and allows viewing of detailed analysis results.
+Reports Page: Provides an overview of user's contract analysis statistics (total contracts, completed, analyzing, pending, findings by risk level). For advanced plans, includes upcoming renewals/terminations, contracts by type/party.
+Settings:
+Profile: Manage full name, business name, mobile number, country code.
+Notifications: Configure email and in-app notifications for various events (analysis complete, high-risk findings, weekly reports, system updates, renewal/termination alerts).
+Security: Change password, enable/disable 2FA (TOTP), manage active sessions.
+Application Preferences: Set default language, theme (light/dark/system), email reports preference, auto-start analysis, default jurisdictions, and key date notification days.
+Billing: View current subscription plan, manage billing via Stripe Customer Portal.
+Members: For subscription owners, invite/manage team members.
+Pricing: Displays different subscription tiers (Single Use, Professional, Enterprise, Advanced versions) and their features, integrated with Stripe Checkout.
+Admin Dashboard:
+Users: View, edit, delete users; assign/remove subscriptions (including admin-assigned free plans), grant single-use credits, create customer portal links.
+Contracts: Oversee all user contracts, view details, delete, mark for deletion.
+Inquiries: View and reply to contact form submissions.
+Support Tickets: Manage user support requests, update status/priority, reply.
+Settings: Configure global application settings (default theme, default jurisdictions, global email reports, maintenance mode), send system-wide notifications.
+Reports: Access system-wide analytics (user stats, contract usage, support stats, subscription overview) and audit logs.
+Public Pages: Landing page, pricing, blog, blog posts, disclaimer, terms, privacy policy, help page, public report viewer (for shared analysis reports and redlined artifacts).
+Demo Analysis: A public-facing demo on the landing page allows users to upload a document for a quick, high-level AI analysis preview.
+3. Database Schema Overview (Key Tables)
+profiles: Stores user profile information (full name, business name, phone, country, theme, language preference, notification settings, admin status, login history, key date notification days). Linked to auth.users.
+contracts: Stores metadata about uploaded contracts (user ID, name, file path, size, jurisdictions, status, processing progress, content, output language, translated name, original file type, subscription ID).
+analysis_results: Stores the results of AI analysis for each contract (executive summary, findings, compliance score, jurisdiction summaries, key dates, parties, liability, indemnification, confidentiality, report file path, redlined artifact path, performed_advanced_analysis flag).
+findings: Detailed findings from contract analysis, linked to analysis_results (title, description, risk level, jurisdiction, category, recommendations, clause reference).
+stripe_customers: Maps Supabase user_id to Stripe customer_id.
+stripe_subscriptions: Stores details of user subscriptions (customer ID, Stripe subscription ID, price ID, status, period dates, payment method info, max_users, max_files, tier).
+subscription_memberships: Manages multi-user subscriptions (subscription ID, user ID, role (owner/member), status, invited by/at, accepted at, invited email).
+stripe_orders: Records one-time purchases, primarily for single-use credits (credits_remaining is a crucial column).
+inquiries: Stores contact form submissions.
+inquiry_replies: Stores admin replies to inquiries.
+support_tickets: Stores user-submitted support tickets.
+support_ticket_replies: Stores admin replies to support tickets.
+notifications: Stores in-app notifications for users.
+app_settings: A single-row table for global application settings (default theme, default jurisdictions, global email reports, is_maintenance_mode).
+audit_logs: Records significant user and admin actions for auditing purposes.
+email_otps: Stores one-time passwords for email verification in the contact form.
+scan_sessions: Manages temporary sessions for mobile camera uploads.
+cached_clause_analysis: Caches LLM analysis results for specific clauses to optimize performance and reduce API calls.
+4. Supabase Integration Details
+Authentication: Utilizes Supabase Auth for user management, including email/password, magic links, and MFA (TOTP). AuthGuard and AdminGuard components enforce access control.
+Database: All application data is stored in a PostgreSQL database. Row-Level Security (RLS) policies are extensively configured to ensure data privacy and access control for users and admins.
+Storage:
+contracts: Stores original uploaded contract files.
+reports: Stores generated HTML analysis reports.
+temp_scans: Stores temporary image uploads from the mobile camera app.
+contract_artifacts: Stores redlined clause artifacts (JSON files).
+Edge Functions: A critical part of the backend logic. Key functions include:
+contract-analyzer: Orchestrates AI analysis, OCR, and data storage for contracts.
+stripe-webhook: Processes Stripe events to sync subscription and order data with the database.
+create-customer-portal: Generates a Stripe Customer Portal session URL.
+stripe-checkout: Creates Stripe Checkout sessions for purchases.
+admin-* functions: A suite of functions for administrative tasks (e.g., admin-get-users, admin-update-user, admin-delete-user, admin-manage-subscription, admin-get-all-contracts, admin-update-app-settings, admin-send-system-notification, admin-get-system-reports, admin-get-audit-logs).
+invite-user: Handles inviting new users to a subscription.
+accept-invitation: Processes invitation acceptance.
+send-email-otp, verify-email-otp: For email verification in the contact form.
+mobile-auth: Generates magic links for mobile camera authentication.
+create-scan-session: Creates a session for mobile camera uploads.
+generate-analysis-report: Generates HTML reports for analysis results.
+get-signed-report-url: Provides signed URLs for accessing reports.
+send-analysis-report-email, send-invinvitation-email, send-admin-reply-email, send-admin-created-user-invite-email, send-weekly-report-email, send-key-date-alert-email, send-generic-notification-email: A suite of functions for sending various types of emails.
+cleanup-scan-sessions, delete-old-files, schedule-alerts: Scheduled functions for maintenance and proactive notifications.
+demo-analyzer: Provides a simplified AI analysis for the public demo.
+view-redlined-artifact: Renders redlined artifact JSON into HTML for public viewing.
+Realtime: Used for communication between the mobile camera app and the desktop application during the scanning process. Also used for real-time updates to user notifications and contract status.
+5. Stripe Integration Details
+Products & Pricing: Defined in supabase/functions/_shared/stripe_products_data.ts and src/stripe-config.ts. These files contain product IDs, names, descriptions, modes (subscription/payment/admin_assigned), file retention policies, max files, max users, credits, and a tier system for feature gating.
+Checkout: Handled via stripe-checkout Edge Function, creating Stripe Checkout Sessions.
+Customer Portal: Managed via create-customer-portal Edge Function, allowing users to manage their subscriptions and billing details.
+Webhooks: The stripe-webhook Edge Function listens for various Stripe events (e.g., checkout.session.completed, customer.subscription.*) to keep the local database (stripe_customers, stripe_subscriptions, stripe_orders) synchronized with Stripe.
+Credit System: Single-use credits are managed through stripe_orders table, where credits_remaining tracks available credits. These are consumed by the contract-analyzer and re-analyze-contract Edge Functions.
+Subscription Tiers: The tier property in stripe_product_metadata and stripe_subscriptions is used to determine access to features (e.g., advanced analysis, number of users/files).
+6. Internationalization (i18n)
+Libraries: react-i18next is used for frontend translations, with i18next-http-backend to load translation files from public/locales/{lng}/translation.json. i18next-browser-languagedetector automatically detects user language.
+Supported Languages: English (en), French (fr), Spanish (es), Arabic (ar).
+RTL Support: The dir attribute of the <html> element is dynamically set to rtl for Arabic and ltr for other languages.
+Edge Functions: Use _shared/edge_translations.ts to provide translated messages in API responses and emails based on the user's preferred language.
+Language Persistence: User's language preference is stored in localStorage and in the profiles table.
+7. Environment Variables
+The project relies heavily on environment variables for configuration and API keys.
+
+Frontend (.env for Vite):
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+VITE_APP_BASE_URL
+VITE_RECAPTCHA_SITE_KEY
+Supabase Edge Functions (.env.local or Supabase Secrets):
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+OPENAI_API_KEY
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+RESEND_API_KEY
+JWT_SECRET (for mobile auth tokens)
+CRON_SECRET_KEY (for scheduled Edge Functions)
+RECAPTCHA_SECRET_KEY
+APP_BASE_URL
+8. Specific Considerations & Knowns
+Mobile Camera Flow: The /mobile-camera route is a dedicated mobile-first interface. It uses JWTs for secure session passing and Supabase Realtime for live communication between the mobile device and the desktop application during document scanning. A persistent MOBILE_AUTH_FLOW_ACTIVE_FLAG in localStorage ensures continuity across redirects.
+Password Reset Flow: The AuthGuard and ResetPassword components implement strict measures to prevent navigation during a password reset, ensuring the user completes the process securely. It uses localStorage flags (passwordResetFlowActive, blockModalsDuringReset) and global sign-out (supabase.auth.signOut({ scope: 'global' })) to enforce this.
+Admin Privileges: Admin status (is_admin in profiles table) is checked in AdminGuard and within most admin-related Edge Functions to enforce access control.
+Data Retention: Contracts and analysis results for single-use purchases are automatically deleted after 30 days by the delete-old-files scheduled Edge Function. Subscription users retain files for the duration of their active subscription plus a grace period.
+Error Handling: A global ErrorBoundary component is implemented to catch and display unexpected UI errors gracefully.
+Theming: The application supports light, dark, and system themes, configurable by the user and applied via document.documentElement.classList.
+File Upload Limits: The maxFiles and max_users properties in stripe_subscriptions and stripe_product_metadata are used to enforce plan-specific limits.
+Caching: cached_clause_analysis table is used to cache LLM responses for repeated clause analysis.
+9. Agent's Role
+As a technical consultant, your role is to patiently answer questions, provide guidance, and help plan next steps for this project. You should:
+
+Understand the existing codebase and architecture based on the provided files and schema.
+Generate accurate and hallucination-free responses.
+Provide clear, actionable plans for implementation requests, without writing code yourself.
+Adhere strictly to all response requirements, including markdown formatting, citation style, and quick actions.
+Utilize search grounding for any uncertain technical details, library versions, or best practices.
+Redirect to official Bolt documentation for specific topics listed in <support_resources>.
+This project is a full-stack application with complex interactions between the frontend, Supabase services (Auth, Database, Storage, Edge Functions), and external APIs (Stripe, OpenAI, Resend). Your understanding of these integrations will be crucial.Functions), and external APIs (Stripe, OpenAI, Resend). Your understanding of these integrations will be crucial.
