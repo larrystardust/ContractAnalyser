@@ -2,7 +2,7 @@ import { BlogPost } from './blogData';
 
 export const blogPostsAr: BlogPost[] = [
     {
-    slug: 'the-rise-of-the-legal-co-pilot',
+    slug: 'صعود-المساعد-القانوني-الذكي',
     title: 'صعود المساعد القانوني الذكي: تعزيز الخبرة البشرية بالذكاء الاصطناعي',
     author: 'جولي سيمونز',
     date: '2026-04-11',
