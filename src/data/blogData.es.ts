@@ -2,7 +2,7 @@ import { BlogPost } from './blogData';
 
 export const blogPostsEs: BlogPost[] = [
     {
-    slug: 'the-rise-of-the-legal-co-pilot',
+    slug: 'el-auge-del-co-piloto-juridico',
     title: 'El Auge del Co-Piloto Jurídico: Potenciando la Experiencia Humana con IA',
     author: 'Julie Simmons',
     date: '2026-04-11',
