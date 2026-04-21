@@ -240,7 +240,7 @@
     '**¿Listo para revisar tu próximo contrato con proveedor con confianza?**',
     '**[Regístrate Gratis y Analiza tus Contratos con Proveedores con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Nuestras Funciones Avanzadas para la Gestión de Carteras de Contratos](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/female%20and%20male%20seated%20across.png',
 },
 
 
