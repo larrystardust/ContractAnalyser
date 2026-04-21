@@ -121,6 +121,6 @@
     '**Prêt à reprendre le contrôle de vos coûts juridiques ?**',
     '**[Inscrivez-vous Gratuitement et Analysez Votre Premier Contrat avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Voir Nos Formules et Tarifs](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20at%20her%20desk.png',
 },
 
