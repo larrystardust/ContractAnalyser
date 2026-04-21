@@ -62,5 +62,5 @@
       '**Prêt à repérer les signaux d\'alarme contractuels avant qu\'ils ne vous coûtent cher ?**',
       '**[Inscrivez-vous Gratuitement et Analysez Votre Premier Contrat avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez ce que l\'Analyse Avancée peut Faire](https://contractanalyser.com/landing-pricing)**',
     ],
-    imageUrl: 'https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/businesswoman.png',
   },
