@@ -129,6 +129,6 @@
     '**Ready to take control of your legal costs?**',
     '**[Sign Up for Free and Analyse Your First Contract with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See Our Plans and Pricing](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20at%20her%20desk.png',
 },
 
