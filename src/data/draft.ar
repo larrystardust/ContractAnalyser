@@ -182,7 +182,7 @@
     '**هل أنت مستعد لبناء أسس قانونية تتوسع مع عملك؟**',
     '**[سجّل مجاناً وابدأ تحليل عقودك مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[استكشف ميزاتنا المتقدمة للأعمال في حالة النمو](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/man%20checking%20document.png',
 },
 
 
