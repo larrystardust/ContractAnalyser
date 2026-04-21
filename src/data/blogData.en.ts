@@ -67,7 +67,7 @@ export const blogPostsEn: BlogPost[] = [
       '**Ready to experience the power of your AI legal co-pilot?**',
       '**[Sign Up for Free and Analyse Your First Contract with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See What Advanced Analysis Can Do](https://contractanalyser.com/landing-pricing)**',
     ],
-    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/blog%20image%20lawyer%20and%20robot%20enlarged.png',
+    imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/businesswoman.png',
   },
   {
     slug: "the-overwhelmed-owner-of-a-local-small-home-services-company",
