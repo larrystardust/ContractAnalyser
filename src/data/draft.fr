@@ -1,5 +1,5 @@
   {
-    slug: '7-contract-red-flags-every-small-business-owner-must-know',
+    slug: '7-signaux-dalarme-contractuels-que-tout-proprietaire-de-petite-entreprise-doit-connaitre',
     title: '7 Signaux d\'Alarme Contractuels que Tout Propriétaire de Petite Entreprise Doit Connaître',
     author: 'Julie Simmons',
     date: '2026-05-08',
