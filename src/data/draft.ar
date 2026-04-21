@@ -242,7 +242,7 @@
     '**هل أنت مستعد لمراجعة عقد مورّدك القادم بثقة؟**',
     '**[سجّل مجاناً وحلّل عقود مورديك مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[استكشف ميزاتنا المتقدمة لإدارة محافظ العقود](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/female%20and%20male%20seated%20across.png',
 },
 
 
