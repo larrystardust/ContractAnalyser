@@ -292,7 +292,7 @@
     '**Ready to review your next vendor contract with confidence?**',
     '**[Sign Up for Free and Analyse Your Vendor Contracts with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See Our Advanced Features for Contract Portfolio Management](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/female%20and%20male%20seated%20across.png',
 },
 
 
