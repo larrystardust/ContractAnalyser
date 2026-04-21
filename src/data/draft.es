@@ -180,7 +180,7 @@
     '**¿Listo para construir las bases jurídicas que escalan con tu negocio?**',
     '**[Regístrate Gratis y Empieza a Analizar Tus Contratos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Explora Nuestras Funciones Avanzadas para Empresas en Crecimiento](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/man%20checking%20document.png',
 },
 
 
