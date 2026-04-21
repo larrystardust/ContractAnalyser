@@ -120,6 +120,6 @@
     '**¿Listo para tomar el control de tus costes jurídicos?**',
     '**[Regístrate Gratis y Analiza Tu Primer Contrato con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Ver Nuestros Planes y Precios](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20at%20her%20desk.png',
 },
 
