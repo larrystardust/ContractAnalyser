@@ -120,6 +120,6 @@
     '**هل أنت مستعد للسيطرة على تكاليفك القانونية؟**',
     '**[سجّل مجاناً وحلّل عقدك الأول مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اطّلع على خططنا وأسعارنا](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20at%20her%20desk.png',
 },
 
