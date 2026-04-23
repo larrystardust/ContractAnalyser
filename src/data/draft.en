@@ -539,7 +539,7 @@
     '**Ready to find and fix data privacy gaps in your contracts?**',
     '**[Sign Up for Free and Analyse Your Contracts for Data Privacy Compliance with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Identifies Compliance Risks](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20of%20two%20hands.png',
 },
 
 
