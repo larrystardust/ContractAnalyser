@@ -477,7 +477,7 @@
     '**هل أنت مستعد لرؤية عقودك بلغة بسيطة؟**',
     '**[سجّل مجاناً واحصل على تحليل بلغة بسيطة لأول عقد مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[استكشف خططنا وابدأ في تبسيط عقودك اليوم](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Simplified%20contract.png',
 },
 
 
