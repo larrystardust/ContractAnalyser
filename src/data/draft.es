@@ -525,7 +525,7 @@
     '**¿Listo para cerrar más rápido y dejar de perder tratos por retrasos contractuales?**',
     '**[Regístrate Gratis y Analiza Tu Primer Contrato en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Acelera la Velocidad de los Tratos](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/digital%20contract.png',
 },
 
 
