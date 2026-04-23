@@ -423,7 +423,7 @@
     '**هل أنت مستعد للعثور على ثغرات خصوصية البيانات في عقودك وإصلاحها؟**',
     '**[سجّل مجاناً وحلّل عقودك للتحقق من الامتثال لخصوصية البيانات مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يحدد ContractAnalyser مخاطر الامتثال](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20of%20two%20hands.png',
 },
 
 
