@@ -474,7 +474,7 @@
     '**¿Listo para ver tus contratos en lenguaje claro?**',
     '**[Regístrate Gratis y Obtén un Análisis en Lenguaje Claro de Tu Primer Contrato con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Explora Nuestros Planes y Empieza a Simplificar Tus Contratos Hoy](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Simplified%20contract.png',
 },
 
 
