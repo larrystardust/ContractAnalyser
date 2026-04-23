@@ -479,7 +479,7 @@
     '**Prêt à voir vos contrats en langage clair ?**',
     '**[Inscrivez-vous Gratuitement et Obtenez une Analyse en Langage Clair de Votre Premier Contrat avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Explorez Nos Formules et Commencez à Simplifier Vos Contrats Aujourd\'hui](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Simplified%20contract.png',
 },
 
 
