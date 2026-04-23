@@ -426,7 +426,7 @@
     '**Prêt à identifier et corriger les lacunes en matière de confidentialité des données dans vos contrats ?**',
     '**[Inscrivez-vous Gratuitement et Analysez vos Contrats pour la Conformité à la Confidentialité des Données avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Identifie les Risques de Conformité](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20of%20two%20hands.png',
 },
 
 
