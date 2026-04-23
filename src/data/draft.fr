@@ -530,7 +530,7 @@
     '**Prêt à conclure plus rapidement et à arrêter de perdre des transactions à cause de retards contractuels ?**',
     '**[Inscrivez-vous Gratuitement et Analysez Votre Premier Contrat en Minutes avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Accélère la Vélocité des Transactions](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/digital%20contract.png',
 },
 
 
