@@ -421,7 +421,7 @@
     '**¿Listo para encontrar y corregir las brechas de privacidad de datos en tus contratos?**',
     '**[Regístrate Gratis y Analiza tus Contratos para el Cumplimiento de Privacidad de Datos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica los Riesgos de Cumplimiento](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20of%20two%20hands.png',
 },
 
 
