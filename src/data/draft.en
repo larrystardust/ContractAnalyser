@@ -623,7 +623,7 @@
     '**Ready to see your contracts in plain language?**',
     '**[Sign Up for Free and Get a Plain-Language Analysis of Your First Contract with ContractAnalyser!](https://contractanalyser.com/signup)** | **[Explore Our Plans and Start Simplifying Your Contracts Today](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Simplified%20contract.png',
 },
 
 
