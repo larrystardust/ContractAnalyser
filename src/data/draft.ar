@@ -847,7 +847,7 @@
     '**هل أنت مستعد لفهم ما يُغطيه ضمان منتجك فعلاً قبل الحاجة لتقديم مطالبة؟**',
     '**[سجّل مجاناً وحلّل أي ضمان أو سياسة إرجاع في دقائق مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يستخلص ContractAnalyser الشروط الأهم لحقوقك كمستهلك](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20by%20the%20counter.png',
 },
 
 
