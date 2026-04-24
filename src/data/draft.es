@@ -844,7 +844,7 @@
     '**¿Listo para entender lo que realmente cubre tu garantía de producto antes de necesitar hacer una reclamación?**',
     '**[Regístrate Gratis y Analiza Cualquier Garantía o Política de Devolución en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Extrae los Términos Más Importantes para Tus Derechos como Consumidor](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20by%20the%20counter.png',
 },
 
 
