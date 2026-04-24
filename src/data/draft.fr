@@ -849,7 +849,7 @@
     '**Prêt à comprendre ce que votre garantie produit couvre réellement avant de devoir faire une réclamation ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quelle Garantie ou Politique de Retour en Minutes avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Extrait les Termes les Plus Importants pour Vos Droits de Consommateur](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/woman%20by%20the%20counter.png',
 },
 
 
