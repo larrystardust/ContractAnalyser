@@ -1137,7 +1137,7 @@
     '**Ready to understand exactly what your loan agreement commits you to?**',
     '**[Sign Up for Free and Analyse Any Loan Agreement in Minutes with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Flags Hidden Fees and Penalty Clauses Before You Sign](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20hands.png',
 },
 
 
