@@ -901,7 +901,7 @@
     '**Prêt à voir exactement à quoi vous engage un contrat de service — avant que le prélèvement automatique ne parte ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quel Contrat de Service en Minutes avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Identifie les Reconductions Automatiques, les Frais Cachés et les Pièges d\'Annulation Avant que Vous Signiez](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/frustrated%20person.png',
 },
 
 
