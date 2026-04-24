@@ -628,7 +628,7 @@
     '**¿Quieres dejar de aceptar términos que no entiendes?**',
     '**[Regístrate Gratis y Analiza Cualquier Documento de Términos y Condiciones en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica Cláusulas Ocultas y Protege Tus Derechos](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/finger%20on%20phone.png',
 },
 
 
