@@ -1315,7 +1315,7 @@
     '**Ready to see exactly what a service contract is committing you to — before the direct debit goes out?**',
     '**[Sign Up for Free and Analyse Any Service Contract in Minutes with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Flags Auto-Renewals, Hidden Fees, and Cancellation Traps Before You Sign](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/frustrated%20person.png',
 },
 
 
