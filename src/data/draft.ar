@@ -687,7 +687,7 @@
     '**هل أنت مستعد لفهم عقد إيجارك قبل توقيعه؟**',
     '**[سجّل مجاناً وحلّل عقد إيجارك في دقائق مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحدد ContractAnalyser البنود الأهم للمستأجرين](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/young%20male%20seated.png',
 },
 
 
