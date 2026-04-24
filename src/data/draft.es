@@ -896,7 +896,7 @@
     '**¿Listo para ver exactamente a qué te compromete un contrato de servicio — antes de que salga el débito directo?**',
     '**[Regístrate Gratis y Analiza Cualquier Contrato de Servicio en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica Renovaciones Automáticas, Cargos Ocultos y Trampas de Cancelación Antes de que Firmes](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/frustrated%20person.png',
 },
 
 
