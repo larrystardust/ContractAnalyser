@@ -577,7 +577,7 @@
     '**¿Listo para asegurarte de que cada contrato que firmas está protegiendo tu negocio como debería?**',
     '**[Regístrate Gratis y Empieza a Revisar Tus Contratos Comerciales con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica los Riesgos en Tus Acuerdos](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/handshake%20contract.png',
 },
 
 
