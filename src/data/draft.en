@@ -1401,7 +1401,7 @@
     '**Ready to make every contract you sign one you fully understand?**',
     '**[Sign Up for Free and Run Any Contract Through ContractAnalyser in Minutes!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Works Through the Full Checklist for You — Automatically](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/pen%20in%20hand.png',
 },
 
 
