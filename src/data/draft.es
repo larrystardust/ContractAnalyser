@@ -941,7 +941,7 @@
     '**¿Listo para hacer de cada contrato que firmes uno que comprendes completamente?**',
     '**[Regístrate Gratis y Analiza Cualquier Contrato con ContractAnalyser en Minutos!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Trabaja Automáticamente a Través de la Lista de Verificación Completa por Ti](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/pen%20in%20hand.png',
 },
 
 
