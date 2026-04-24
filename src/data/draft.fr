@@ -633,7 +633,7 @@
     '**Vous voulez arrêter d\'accepter des conditions que vous ne comprenez pas ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quelles Conditions Générales en Minutes avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Identifie les Clauses Cachées et Protège Vos Droits](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/finger%20on%20phone.png',
 },
 
 
