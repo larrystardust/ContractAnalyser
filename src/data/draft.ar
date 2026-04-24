@@ -899,7 +899,7 @@
     '**هل أنت مستعد لرؤية ما يُلزمك به عقد الخدمة بالضبط — قبل خروج أمر الخصم التلقائي؟**',
     '**[سجّل مجاناً وحلّل أي عقد خدمة في دقائق مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحدد ContractAnalyser التجديدات التلقائية والرسوم الخفية وأفخاخ الإلغاء قبل أن توقّع](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/frustrated%20person.png',
 },
 
 
