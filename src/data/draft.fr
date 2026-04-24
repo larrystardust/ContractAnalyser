@@ -946,7 +946,7 @@
     '**Prêt à faire de chaque contrat que vous signez un contrat que vous comprenez pleinement ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quel Contrat avec ContractAnalyser en Minutes !](https://contractanalyser.com/signup)** | **[Voyez Comment ContractAnalyser Parcourt Automatiquement la Liste de Contrôle Complète pour Vous](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/pen%20in%20hand.png',
 },
 
 
