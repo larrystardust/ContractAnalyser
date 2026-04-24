@@ -631,7 +631,7 @@
     '**هل تريد التوقف عن قبول شروط لا تفهمها؟**',
     '**[سجّل مجاناً وحلّل أي وثيقة شروط وأحكام في دقائق مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحدد ContractAnalyser البنود الخفية ويحمي حقوقك](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/finger%20on%20phone.png',
 },
 
 
