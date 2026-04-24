@@ -788,7 +788,7 @@
     '**¿Listo para entender exactamente a qué te compromete tu contrato de préstamo?**',
     '**[Regístrate Gratis y Analiza Cualquier Contrato de Préstamo en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica Tarifas Ocultas y Cláusulas de Penalidad Antes de que Firmes](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20hands.png',
 },
 
 
