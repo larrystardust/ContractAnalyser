@@ -735,7 +735,7 @@
     '**¿Listo para entender exactamente lo que tu contrato de trabajo te pide aceptar?**',
     '**[Regístrate Gratis y Analiza Tu Contrato de Trabajo en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica las Cláusulas Más Importantes Antes de que Firmes](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/employment%20contract.png',
 },
 
 
