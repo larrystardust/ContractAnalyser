@@ -776,7 +776,7 @@
     '**Ready to ensure every contract you sign is protecting your business the way it should?**',
     '**[Sign Up for Free and Start Reviewing Your Business Contracts with ContractAnalyser!](https://contractanalyser.com/signup)** | **[Explore How ContractAnalyser Identifies the Risks in Your Agreements](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/handshake%20contract.png',
 },
 
 
