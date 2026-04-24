@@ -944,7 +944,7 @@
     '**هل أنت مستعد لجعل كل عقد توقّعه عقداً تفهمه تماماً؟**',
     '**[سجّل مجاناً وحلّل أي عقد مع ContractAnalyser في دقائق!](https://contractanalyser.com/signup)** | **[اكتشف كيف يعمل ContractAnalyser تلقائياً على قائمة التحقق الكاملة نيابةً عنك](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/pen%20in%20hand.png',
 },
 
 
