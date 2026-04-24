@@ -684,7 +684,7 @@
     '**¿Listo para entender tu contrato de arrendamiento antes de firmarlo?**',
     '**[Regístrate Gratis y Analiza Tu Contrato de Arrendamiento en Minutos con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Identifica las Cláusulas Más Importantes para los Inquilinos](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/young%20male%20seated.png',
 },
 
 
