@@ -948,7 +948,7 @@
     '**Ready to understand your lease before you sign it?**',
     '**[Sign Up for Free and Analyse Your Lease Agreement in Minutes with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Identifies the Clauses That Matter Most to Renters](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/young%20male%20seated.png',
 },
 
 
