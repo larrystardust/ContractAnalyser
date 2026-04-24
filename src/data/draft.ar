@@ -580,7 +580,7 @@
     '**هل أنت مستعد للتأكد من أن كل عقد توقّعه يحمي شركتك كما ينبغي؟**',
     '**[سجّل مجاناً وابدأ مراجعة عقودك التجارية مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحدد ContractAnalyser المخاطر في اتفاقياتك](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/handshake%20contract.png',
 },
 
 
