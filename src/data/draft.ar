@@ -738,7 +738,7 @@
     '**هل أنت مستعد لفهم ما يطلب منك عقد عملك الموافقة عليه بالضبط؟**',
     '**[سجّل مجاناً وحلّل عقد عملك في دقائق مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحدد ContractAnalyser البنود الأهم قبل أن توقّع](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/employment%20contract.png',
 },
 
 
