@@ -1084,7 +1084,7 @@
     '**تريد أن ترى كيف يبدو التحليل القانوني المدعوم بمعالجة اللغة الطبيعية في الممارسة؟**',
     '**[سجّل مجاناً وحلّل أي عقد مع محرك الذكاء الاصطناعي لـ ContractAnalyser في دقائق!](https://contractanalyser.com/signup)** | **[اكتشف العمق الكامل لمراجعة العقود المدعومة بالذكاء الاصطناعي في ContractAnalyser](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20text.png',
 },
 
 
