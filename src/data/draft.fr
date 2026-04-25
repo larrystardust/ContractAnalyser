@@ -1131,7 +1131,7 @@
     '**Prêt à mettre l\'IA prédictive au travail sur vos contrats ?**',
     '**[Inscrivez-vous Gratuitement et Obtenez Votre Première Évaluation des Risques Alimentée par l\'IA avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment l\'Analyse Prédictive de ContractAnalyser Peut Transformer Votre Prise de Décision Juridique](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/sophisticated%20office.png',
 },
 
 
