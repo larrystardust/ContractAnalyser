@@ -1129,7 +1129,7 @@
     '**هل أنت مستعد لتوظيف الذكاء الاصطناعي التنبؤي في عقودك؟**',
     '**[سجّل مجاناً واحصل على أول تقييم مخاطر مدعوم بالذكاء الاصطناعي مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يمكن للتحليل التنبؤي في ContractAnalyser أن يُحوّل عملية اتخاذ قراراتك القانونية](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/sophisticated%20office.png',
 },
 
 
