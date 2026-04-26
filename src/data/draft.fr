@@ -1169,7 +1169,7 @@
     '**Vous voulez voir l\'automatisation des flux juridiques par apprentissage automatique en action ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quel Contrat avec le Moteur d\'Analyse ML de ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez la Capacité Complète de la Révision de Contrats Alimentée par l\'IA de ContractAnalyser](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Document%20workflow.png',
 },
 
 
