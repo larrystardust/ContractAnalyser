@@ -1767,7 +1767,7 @@
     '**Want to see machine learning-powered legal workflow automation in action?**',
     '**[Sign Up for Free and Run Any Contract Through ContractAnalyser\'s ML-Powered Analysis Engine!](https://contractanalyser.com/signup)** | **[Discover the Full Capability of ContractAnalyser\'s AI-Driven Contract Review](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Document%20workflow.png',
 },
 
 
