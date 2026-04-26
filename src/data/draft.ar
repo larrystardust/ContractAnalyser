@@ -1167,7 +1167,7 @@
     '**تريد أن ترى أتمتة سير العمل القانوني بالتعلم الآلي على أرض الواقع؟**',
     '**[سجّل مجاناً وحلّل أي عقد مع محرك التحليل المدعوم بالتعلم الآلي في ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف القدرة الكاملة لمراجعة العقود المدعومة بالذكاء الاصطناعي في ContractAnalyser](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Document%20workflow.png',
 },
 
 
