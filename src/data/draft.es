@@ -1081,7 +1081,7 @@
     '**¿Quieres ver cómo se ve el análisis legal impulsado por PLN en la práctica?**',
     '**[Regístrate Gratis y Analiza Cualquier Contrato con el Motor de IA de ContractAnalyser en Minutos!](https://contractanalyser.com/signup)** | **[Descubre la Profundidad Total de la Revisión de Contratos Impulsada por IA de ContractAnalyser](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20text.png',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/contract%20text.png',
 },
 
 {
