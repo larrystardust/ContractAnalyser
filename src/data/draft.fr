@@ -1086,7 +1086,7 @@
     '**Vous voulez voir à quoi ressemble l\'analyse juridique alimentée par TLN en pratique ?**',
     '**[Inscrivez-vous Gratuitement et Analysez n\'importe quel Contrat avec le Moteur IA de ContractAnalyser en Minutes !](https://contractanalyser.com/signup)** | **[Découvrez la Profondeur Complète de la Révision de Contrats Alimentée par l\'IA de ContractAnalyser](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/closeup%20text.png',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/contract%20text.png',
 },
 
 {
