@@ -1259,7 +1259,7 @@
     '**¿Listo para añadir el análisis de contratos por IA a tu kit de nómada digital?**',
     '**[Regístrate Gratis y Analiza Tu Primer Contrato con ContractAnalyser — ¡Desde Cualquier Lugar del Mundo!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Protege a los Profesionales Remotos en Todas las Jurisdicciones](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Remote%20workspace.png',
 },
 
 
