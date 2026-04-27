@@ -1844,7 +1844,7 @@
     '**Ready to let AI find the twenty percent that matters in your contracts?**',
     '**[Sign Up for Free and Get an Instant AI-Powered Analysis of Any Contract with ContractAnalyser!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Surfaces What Matters Most in Every Document](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/contract%20review.png',
 },
 
 
