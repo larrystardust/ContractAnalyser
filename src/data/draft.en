@@ -1923,7 +1923,7 @@
     '**Ready to add AI-powered contract review to your digital nomad toolkit?**',
     '**[Sign Up for Free and Analyse Your First Contract with ContractAnalyser — From Anywhere in the World!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Protects Remote Professionals Across Every Jurisdiction](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Remote%20workspace.png',
 },
 
 
