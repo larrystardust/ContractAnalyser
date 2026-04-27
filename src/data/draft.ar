@@ -1262,7 +1262,7 @@
     '**هل أنت مستعد لإضافة تحليل العقود بالذكاء الاصطناعي إلى مجموعة أدواتك كبدوي رقمي؟**',
     '**[سجّل مجاناً وحلّل عقدك الأول مع ContractAnalyser — من أي مكان في العالم!](https://contractanalyser.com/signup)** | **[اكتشف كيف يحمي ContractAnalyser المهنيين عن بُعد في جميع الولايات القضائية](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Remote%20workspace.png',
 },
 
 
