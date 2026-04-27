@@ -1214,7 +1214,7 @@
     '**هل أنت مستعد لدع الذكاء الاصطناعي يجد العشرين بالمئة التي تهم في عقودك؟**',
     '**[سجّل مجاناً واحصل على تحليل فوري مدعوم بالذكاء الاصطناعي لأي عقد مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُبرز ContractAnalyser ما يهم أكثر في كل وثيقة](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/contract%20review.png',
 },
 
 
