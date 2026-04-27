@@ -1211,7 +1211,7 @@
     '**¿Listo para dejar que la IA encuentre el veinte por ciento que importa en tus contratos?**',
     '**[Regístrate Gratis y Obtén un Análisis Instantáneo Impulsado por IA de Cualquier Contrato con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Destaca lo que Más Importa en Cada Documento](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/contract%20review.png',
 },
 
 
