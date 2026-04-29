@@ -1309,7 +1309,7 @@
     '**¿Listo para ir más allá de la automatización y aprovechar la IA como verdadero socio estratégico para tus contratos y decisiones legales?**',
     '**[Regístrate Gratis y Experimenta la Inteligencia Estratégica de ContractAnalyser Hoy!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Transforma los Datos Contractuales en Insight Estratégico](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/corporate%20boardroom.png',
 },
 
 
