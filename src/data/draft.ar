@@ -1312,7 +1312,7 @@
     '**هل أنت مستعد للتجاوز عن الأتمتة وتوظيف الذكاء الاصطناعي شريكاً استراتيجياً حقيقياً لعقودك وقراراتك القانونية؟**',
     '**[سجّل مجاناً واكتشف الاستخبارات الاستراتيجية لـ ContractAnalyser اليوم!](https://contractanalyser.com/signup)** | **[اكتشف كيف يُحوّل ContractAnalyser بيانات العقود إلى رؤية استراتيجية](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/corporate%20boardroom.png',
 },
 
 
