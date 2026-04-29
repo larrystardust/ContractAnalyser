@@ -1364,7 +1364,7 @@
     '**هل أنت مستعد للتوقف عن الضغط على "موافق" بشكل أعمى والبدء في فهم ما تُوقّعه فعلاً؟**',
     '**[سجّل مجاناً وحلّل فوراً أي شروط خدمة أو اتفاقية ترخيص مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[اكتشف كيف يحميك ContractAnalyser بصفتك مستهلكاً رقمياً](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/legal%20workspace.png',
 },
 
 
