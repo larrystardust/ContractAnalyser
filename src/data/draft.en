@@ -2063,7 +2063,7 @@
     '**Ready to stop clicking "I agree" blindly and start understanding exactly what you\'re signing?**',
     '**[Sign Up for Free and Analyse Any Terms of Service or EULA with ContractAnalyser Instantly!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Protects You as a Digital Consumer](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/legal%20workspace.png',
 },
 
 
