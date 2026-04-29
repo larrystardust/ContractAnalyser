@@ -1366,7 +1366,7 @@
     '**Prêt à arrêter de cliquer sur "Accepter" à l\'aveugle et à comprendre exactement ce que vous signez ?**',
     '**[Inscrivez-vous Gratuitement et Analysez Instantanément Toutes les Conditions d\'Utilisation ou CLUF avec ContractAnalyser !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Vous Protège en tant que Consommateur Numérique](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/legal%20workspace.png',
 },
 
 
