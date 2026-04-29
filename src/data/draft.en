@@ -1986,7 +1986,7 @@
     '**Ready to move beyond automation and harness AI as a true strategic partner for your contracts and legal decisions?**',
     '**[Sign Up for Free and Experience ContractAnalyser\'s AI-Powered Strategic Intelligence Today!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Transforms Contract Data Into Strategic Insight](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/corporate%20boardroom.png',
 },
 
 
