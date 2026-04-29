@@ -1361,7 +1361,7 @@
     '**¿Listo para dejar de hacer clic en "Aceptar" a ciegas y empezar a entender exactamente lo que estás firmando?**',
     '**[Regístrate Gratis y Analiza Instantáneamente Cualquier Términos de Servicio o EULA con ContractAnalyser!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Te Protege como Consumidor Digital](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/legal%20workspace.png',
 },
 
 
