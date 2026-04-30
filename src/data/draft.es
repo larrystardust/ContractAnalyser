@@ -1464,7 +1464,7 @@
     '**¿Listo para revisar tu contrato de reforma antes de firmar y proteger tu hogar y tu presupuesto?**',
     '**[Regístrate Gratis y Analiza Tu Acuerdo de Contratista con ContractAnalyser Hoy!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Protege a los Propietarios](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Renovation%20planning.png',
 },
 
 
