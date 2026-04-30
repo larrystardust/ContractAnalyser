@@ -1413,7 +1413,7 @@
     '**¿Listo para entender de verdad los acuerdos de inversión que has estado firmando?**',
     '**[Regístrate Gratis y Analiza tus Documentos de Corretaje o Fondos con ContractAnalyser Hoy!](https://contractanalyser.com/signup)** | **[Descubre Cómo ContractAnalyser Protege Tus Intereses Financieros](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Financial%20overview.png',
 },
 
 
