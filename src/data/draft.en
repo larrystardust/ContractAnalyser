@@ -2237,7 +2237,7 @@
     '**Ready to review your renovation contract before you sign — and protect your home and your budget?**',
     '**[Sign Up for Free and Analyse Your Contractor Agreement with ContractAnalyser Today!](https://contractanalyser.com/signup)** | **[See How ContractAnalyser Protects Homeowners](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Renovation%20planning.png',
 },
 
 
