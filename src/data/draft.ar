@@ -1416,7 +1416,7 @@
     '**هل أنت مستعد لفهم اتفاقيات الاستثمار التي كنت توقّعها حقاً؟**',
     '**[سجّل مجاناً وحلّل وثائق الوساطة أو الصناديق مع ContractAnalyser اليوم!](https://contractanalyser.com/signup)** | **[اكتشف كيف يحمي ContractAnalyser مصالحك المالية](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Financial%20overview.png',
 },
 
 
