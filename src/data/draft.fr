@@ -1469,7 +1469,7 @@
     '**Prêt à examiner votre contrat de rénovation avant de signer et à protéger votre maison et votre budget ?**',
     '**[Inscrivez-vous Gratuitement et Analysez Votre Accord d\'Entrepreneur avec ContractAnalyser Aujourd\'hui !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Protège les Propriétaires](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Renovation%20planning.png',
 },
 
 
