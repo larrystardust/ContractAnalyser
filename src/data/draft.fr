@@ -1418,7 +1418,7 @@
     '**Prêt à vraiment comprendre les accords d\'investissement que vous avez signés ?**',
     '**[Inscrivez-vous Gratuitement et Analysez vos Documents de Courtage ou de Fonds avec ContractAnalyser Aujourd\'hui !](https://contractanalyser.com/signup)** | **[Découvrez Comment ContractAnalyser Protège Vos Intérêts Financiers](https://contractanalyser.com/landing-pricing)**',
   ],
-  imageUrl: 'YOUR_IMAGE_URL_HERE',
+  imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/Financial%20overview.png',
 },
 
 
