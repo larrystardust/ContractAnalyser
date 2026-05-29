@@ -1,6 +1,6 @@
 import { BlogPost } from './blogData';
 
-export const blogPostsEs: BlogPost[] = 
+export const blogPostsEs: BlogPost[] = [ 
   {
   slug: 'como-ahorrar-miles-en-honorarios-legales-guia-para-pequenas-empresas',
   title: 'Cómo Ahorrar Miles en Honorarios Legales: Guía para Pequeñas Empresas',
