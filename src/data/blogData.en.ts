@@ -1,7 +1,6 @@
 import { BlogPost } from './blogData';
 
-export const blogPostsEn: BlogPost[] = [
-  
+export const blogPostsEn: BlogPost[] = [  
   {
   slug: 'how-to-save-thousands-on-legal-fees-a-small-business-guide',
   title: 'How to Save Thousands on Legal Fees: A Small Business Guide',
