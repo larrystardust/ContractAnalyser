@@ -61,7 +61,7 @@ export const blogPostsAr: BlogPost[] = [
     '**[سجّل مجاناً وابدأ تحليل عقودك مع ContractAnalyser!](https://contractanalyser.com/signup)** | **[استكشف ميزاتنا المتقدمة للأعمال في حالة النمو](https://contractanalyser.com/landing-pricing)**',
   ],
   imageUrl: 'https://qexmdkniehdrumcsshvr.supabase.co/storage/v1/object/public/images/man%20checking%20document.png',
-},
+  },
   {
   slug: 'كيف-توفر-الاف-الدولارات-في-الرسوم-القانونية-دليل-الاعمال-الصغيرة',
   title: 'كيف توفّر الآلاف في الرسوم القانونية: دليل الأعمال الصغيرة',
